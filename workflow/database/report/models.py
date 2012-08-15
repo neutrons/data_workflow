@@ -6,14 +6,23 @@ class DataRun(models.Model):
         TODO: the instrument name should be part of the run data object
     """
     run_number = models.IntegerField()
+    ipts_number = models.IntegerField(null=True)
+    instrument = models.CharField(max_length=20, null=True)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
+
+    def __unicode__(self):
+        return "%s_%d" % (self.instrument, self.run_number)
+
     
-class StatusInfo(models.Model):
+class StatusQueue(models.Model):
     """
-        Table containing the ActiveMQ destination names
+        Table containing the ActiveMQ queue names
         used as status
     """
     name = models.CharField(max_length=100)
+    
+    def __unicode__(self):
+        return self.name
     
 class RunStatus(models.Model):
     """
@@ -26,8 +35,11 @@ class RunStatus(models.Model):
     ## DataRun this run status belongs to
     run_id = models.ForeignKey(DataRun)
     ## Long name for this status
-    queue_id = models.ForeignKey(StatusInfo)
+    queue_id = models.ForeignKey(StatusQueue)
     ## ActiveMQ message ID
     message_id = models.CharField(max_length=100, null=True)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
+    
+    def __unicode__(self):
+        return "%s: %s" % (str(self.run_id), str(self.queue_id))
     

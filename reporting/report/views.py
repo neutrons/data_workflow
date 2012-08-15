@@ -6,8 +6,9 @@ from report.models import DataRun, RunStatus
 def summary(request):
     return HttpResponse("Summary view")
 
-
-def detail(request, run_id):
+def detail(request, instrument, run_id):
+    if instrument.upper() not in ['EQSANS']:
+        return HttpResponse("[%s] is not a supported instrument" % instrument)
     
     run_object = DataRun.objects.filter(run_number=run_id)
     if len(run_object)>0:
@@ -22,3 +23,5 @@ def detail(request, run_id):
                                                     })
     return HttpResponse(reply)
 
+def instrument_summary(request, instrument):
+    return HttpResponse("%s summary view" % instrument)

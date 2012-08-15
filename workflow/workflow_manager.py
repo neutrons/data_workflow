@@ -6,6 +6,9 @@
 import time
 import states
 import stomp
+import sys
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class WorkflowManager(stomp.ConnectionListener):
 
@@ -35,9 +38,12 @@ class WorkflowManager(stomp.ConnectionListener):
             action_cls = getattr(states, destination)
             if action_cls is not None:
                 action = action_cls(self._connection)
-                action(headers, message)
+                try:
+                    action(headers, message)
+                except:
+                    logging.error(sys.exc_value)
         else:
-            print "Unrecognized destination: %s" % destination
+            logging.error("Unrecognized destination: %s" % destination)
         
     def on_disconnected(self):
         self._connected = False
@@ -60,7 +66,7 @@ class WorkflowManager(stomp.ConnectionListener):
             conn.subscribe(destination=q, ack='auto')
         self._connection = conn
         self._connected = True
-        print "Connected to %s:%d\n" % conn.get_host_and_port()
+        logging.info("Connected to %s:%d\n" % conn.get_host_and_port())
     
     def _disconnect(self):
         """
