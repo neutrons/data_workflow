@@ -9,6 +9,8 @@ DATABASES = {
     }
 }
 
+TIME_ZONE = 'America/New_York'
+
 INSTALLED_APPS = (
     'report',
     )

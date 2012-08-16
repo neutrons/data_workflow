@@ -24,11 +24,12 @@ class StatusQueue(models.Model):
     def __unicode__(self):
         return self.name
     
+    
 class RunStatus(models.Model):
     """
         Map ActiveMQ messages, which have a header like this:
-        headers: {'expires': '0', 'timestamp': '1344613053723', '
-                  destination': '/queue/POSTPROCESS.DATA_READY', 
+        headers: {'expires': '0', 'timestamp': '1344613053723', 
+                  'destination': '/queue/POSTPROCESS.DATA_READY', 
                   'persistent': 'true', 'priority': '5', 
                   'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
     """

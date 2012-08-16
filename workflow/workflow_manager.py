@@ -34,16 +34,23 @@ class WorkflowManager(stomp.ConnectionListener):
         destination = headers["destination"].replace('/queue/','')
         destination = destination.replace('.', '_')
         destination = destination.capitalize()
+        
+        # Find a custom action for this message
+        action = None
         if hasattr(states, destination):
             action_cls = getattr(states, destination)
             if action_cls is not None:
                 action = action_cls(self._connection)
-                try:
-                    action(headers, message)
-                except:
-                    logging.error(sys.exc_value)
-        else:
-            logging.error("Unrecognized destination: %s" % destination)
+                
+        # If no custom action was found, use the default
+        if action is None:
+            action = states.StateAction(self._connection)
+        
+        # Execute the appropriate action
+        try:
+            action(headers, message)
+        except:
+            logging.error(sys.exc_value)
         
     def on_disconnected(self):
         self._connected = False
