@@ -8,7 +8,7 @@ import states
 import stomp
 import sys
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.getLogger().setLevel(logging.INFO)
 
 class WorkflowManager(stomp.ConnectionListener):
 
@@ -40,11 +40,11 @@ class WorkflowManager(stomp.ConnectionListener):
         if hasattr(states, destination):
             action_cls = getattr(states, destination)
             if action_cls is not None:
-                action = action_cls(self._connection)
+                action = action_cls()
                 
         # If no custom action was found, use the default
         if action is None:
-            action = states.StateAction(self._connection)
+            action = states.StateAction()
         
         # Execute the appropriate action
         try:
@@ -91,7 +91,9 @@ class WorkflowManager(stomp.ConnectionListener):
         self.connect()
         while(self._connected):
             time.sleep(waiting_period)
-            #print "query DB for unfinished tasks"
+            #from workflow_process import WorkflowProcess
+            #wk = WorkflowProcess()
+            #wk.verify_workflow()
     
     def processing_loop(self):
         """
