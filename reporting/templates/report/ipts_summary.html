@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} Data Processing Report {% endblock %}
+
+{% block banner %}{{ instrument }} Data Processing Report {% endblock %}
+
+{% block content %}
+
+List of {{ instrument }} runs for IPTS {{ ipts_number }}:<br>
+  	<div id="details">
+  	<table cellspacing="0" class="message_table">
+  	<thead>
+  	<tr>
+  		<th>Run number</th> <th>Time</th>
+  	</tr>
+  	</thead>
+  	<tbody>
+   	{% for item in run_list %}
+	   	<tr>
+	   	<td><a href='{{ base_run_url }}{{ item.run_number }}/'>{{ item.run_number }}</a></td><td>{{ item.created_on }}</td>
+	   	</tr>
+   	{% endfor %}
+   	</tbody>
+   	</table>
+   	</div>
+
+{% endblock %}

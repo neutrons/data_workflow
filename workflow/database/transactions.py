@@ -5,13 +5,14 @@ import os
 import sys
 import json
 import logging
+import traceback
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "database.settings")
 
 # The report database module must be on the python path for Django to find it 
 sys.path.append(os.path.dirname(__file__))
 
 # Import your models for use in your script
-from database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
+from database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary, IPTS, Instrument
 
 def add_status_entry(headers, data):
     """
@@ -54,9 +55,37 @@ def add_status_entry(headers, data):
         run_id = run_ids[0]
     else:
         logging.info("Creating entry for run %d" % run_number)
+        
+        # Look for instrument
+        instrument = data_dict["instrument"].lower()
+        instrument_ids = Instrument.objects.filter(name=instrument)
+        if len(instrument_ids)>0:
+            instrument_id = instrument_ids[0]
+        else:
+            instrument_id = Instrument(name=instrument)
+            instrument_id.save()
+
+        # Look for IPTS ID
+        ipts = data_dict["ipts"]
+        ipts_ids = IPTS.objects.filter(ipts_number=ipts)
+        if len(ipts_ids)>0:
+            ipts_id = ipts_ids[0]
+        else:
+            ipts_id = IPTS(ipts_number=ipts)
+            ipts_id.save()
+            
+        # Add instrument to IPTS if not already in there
+        try:
+            if IPTS.objects.filter(id=ipts_id.id, instruments__in=[instrument_id]).count()==0:
+                ipts_id.instruments.add(instrument_id)
+                ipts_id.save()
+        except:
+            traceback.print_exc()
+            logging(sys.exc_value)
+        
         run_id = DataRun(run_number=run_number,
-                         instrument=data_dict["instrument"],
-                         ipts_number=data_dict["ipts"],
+                         instrument_id=instrument_id,
+                         ipts_id=ipts_id,
                          file=data_dict["data_file"])
         run_id.save()
         

@@ -1,24 +1,65 @@
 from django.db import models
 
+class InstrumentManager(models.Manager):
+    def find_instrument(self, instrument):
+        """
+            Get the object associated to an instrument name
+        """
+        instrument_ids = super(InstrumentManager, self).get_query_set().filter(name=instrument.lower())
+        if len(instrument_ids) > 0:
+            return instrument_ids[0]
+        return None
+        
+
+class Instrument(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+    objects = InstrumentManager()
+    def __unicode__(self):
+        return self.name
+    
+    
+class IPTSManager(models.Manager):
+    
+    def ipts_for_instrument(self, instrument_id):
+        return super(IPTSManager, self).get_query_set().filter(instrument_id=instrument_id)
+        
+        
+class IPTS(models.Model):
+    """
+        Table holding IPTS information
+    """
+    ipts_number =  models.IntegerField(unique=True)
+    instruments = models.ManyToManyField(Instrument)
+    objects = IPTSManager()
+    
+    def __unicode__(self):
+        return "IPTS-%d" % self.ipts_number
+    
+    def number_of_runs(self, instrument_id=None):
+        if instrument_id is None:
+            return DataRun.objects.filter(ipts_id=self).distinct().count()
+        return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id)
+
+    
 class DataRun(models.Model):
     """
         TODO: run number should be unique for a given instrument
         TODO: the instrument name should be part of the run data object
     """
     run_number = models.IntegerField()
-    ipts_number = models.IntegerField(null=True)
-    instrument = models.CharField(max_length=20, null=True)
+    ipts_id = models.ForeignKey(IPTS)
+    instrument_id = models.ForeignKey(Instrument)
     file = models.CharField(max_length=128)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
 
     def __unicode__(self):
-        return "%s_%d" % (self.instrument, self.run_number)
+        return "%s_%d" % (self.instrument_id, self.run_number)
 
     def json_encode(self):
         """
             Encode the object as a JSON dictionnary
         """
-        return {"instrument": self.instrument,
+        return {"instrument": self.instrument_id,
                 "ipts": "IPTS-%d" % self.ipts,
                 "run_number": self.run_number,
                 "data_file": self.file}
@@ -110,6 +151,12 @@ class WorkflowSummary(models.Model):
     reduction_catalog_started = models.BooleanField(default=False)
     
     objects = WorkflowSummaryManager()
+    
+    def __unicode__(self):
+        if self.complete is True:
+            return "%s: complete" % str(self.run_id)
+        else:
+            return str(self.run_id)
     
     def update(self):
         """

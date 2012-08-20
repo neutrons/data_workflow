@@ -37,7 +37,7 @@ header {
 	display:block;
 	margin-left:80px;
 	margin-right:auto;
-	margin-top:80px;
+	margin-top:15px;
 }
 
 .banner_title {
@@ -47,7 +47,7 @@ header {
 	text-align:left;
 	padding-left:250px;
 	padding-top:30px;
-	font-size:30px;
+	font-size:24px;
 	color:#5B4729;
 	font-weight: bold;
 }
@@ -71,10 +71,10 @@ p {
 	padding:7px;
 }
 
-a:link {color:#930; text-decoration:none;}      /* unvisited link */
-a:visited {color:#6C6; text-decoration:none;}  /* visited link */
+a:link {color:#006633; text-decoration:none;}      /* unvisited link */
+a:visited {color:#006633; text-decoration:none;}  /* visited link */
 a:hover {color:#F90; text-decoration:none;}  /* mouse over link */
-a:active {color:#F90; text-decoration:none;}  /* selected link */
+a:active {color:#006633; text-decoration:none;}  /* selected link */
 
 #headerLogoLeft {
 	padding-right:50px;
