@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
+{% block banner %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
 
 {% block summary %}
   	{{ instrument }} run {{ run_object.run_number }}<br>
+  	Title: {{ icat_info.title|default:"unknown" }}<br>
   	Last known location: {{ run_object.file }}
+  	
 {% endblock %}
 
 {% block content %}

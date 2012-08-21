@@ -31,13 +31,13 @@ class IPTS(models.Model):
     """
         Table holding IPTS information
     """
-    ipts_number =  models.IntegerField(unique=True)
+    expt_name = models.CharField(max_length=20, unique=True)
     instruments = models.ManyToManyField(Instrument)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = IPTSManager()
     
     def __unicode__(self):
-        return "IPTS-%d" % self.ipts_number
+        return self.expt_name
     
     def number_of_runs(self, instrument_id=None):
         if instrument_id is None:
@@ -64,7 +64,7 @@ class DataRun(models.Model):
             Encode the object as a JSON dictionnary
         """
         return {"instrument": self.instrument_id,
-                "ipts": "IPTS-%d" % self.ipts,
+                "ipts": str(self.ipts_id),
                 "run_number": self.run_number,
                 "data_file": self.file}
     

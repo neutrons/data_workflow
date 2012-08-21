@@ -17,7 +17,7 @@ List of instruments:<br>
   	<tbody>
    	{% for item in instruments %}
 	   	<tr>
-	   	<td><a href='{{ base_instrument_url }}{{ item.name }}/'>{{ item.name }}</a></td><td>{{ item.number_of_runs }}</td>
+	   	<td><a href='{{ base_instrument_url }}{{ item.name }}/'>{{ item.name|upper }}</a></td><td>{{ item.number_of_runs }}</td>
 	   	</tr>
    	{% endfor %}
    	</tbody>

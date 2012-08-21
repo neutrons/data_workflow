@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
+from icat_server_communication import get_run_info, get_event_nexus_file
 
 def confirm_instrument(view):
     """
@@ -31,10 +32,13 @@ def detail(request, instrument, run_id):
     if len(run_object)>0:
         run_object = run_object[0]
 
+    icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
+    #file_path = get_event_nexus_file(instrument, run_id)
+    
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('report.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
-            reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.ipts_number]), str(run_object.ipts_id).lower(),  
+            reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),  
             run_id          
             ) 
     
@@ -44,6 +48,7 @@ def detail(request, instrument, run_id):
                                                      'run_object':run_object,
                                                      'status':status_objects,
                                                      'breadcrumbs':breadcrumbs,
+                                                     'icat_info':icat_info,
                                                     })
 
 def instrument_summary(request, instrument):
@@ -52,7 +57,7 @@ def instrument_summary(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
     # Get list of IPTS
-    ipts = IPTS.objects.filter(instruments=instrument_id).order_by('ipts_number')
+    ipts = IPTS.objects.filter(instruments=instrument_id).order_by('expt_name')
     
     # Get base URL
     base_url = reverse('report.views.ipts_summary',args=[instrument,'0000'])
@@ -72,7 +77,7 @@ def instrument_summary(request, instrument):
 @confirm_instrument
 def ipts_summary(request, instrument, ipts):
     
-    ipts_ids = IPTS.objects.filter(ipts_number=ipts)
+    ipts_ids = IPTS.objects.filter(expt_name=ipts)
     if len(ipts_ids)==0:
         raise Http404
     ipts_id = ipts_ids[0]

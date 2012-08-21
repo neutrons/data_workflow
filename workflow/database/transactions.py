@@ -67,11 +67,11 @@ def add_status_entry(headers, data):
 
         # Look for IPTS ID
         ipts = data_dict["ipts"]
-        ipts_ids = IPTS.objects.filter(ipts_number=ipts)
+        ipts_ids = IPTS.objects.filter(expt_name=ipts)
         if len(ipts_ids)>0:
             ipts_id = ipts_ids[0]
         else:
-            ipts_id = IPTS(ipts_number=ipts)
+            ipts_id = IPTS(expt_name=ipts)
             ipts_id.save()
             
         # Add instrument to IPTS if not already in there

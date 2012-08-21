@@ -13,6 +13,9 @@ def decode_message(message):
         
         Old system: /SNS/EQSANS/IPTS-1234/.../EQSANS_5678_event.nxs
         ADARA:      /SNS/EQSANS/IPTS-1234/nexus/EQSANS_5678.nxs.h5
+        
+        Calibration runs, etc... have 2009_06_24_CAL instead
+        of IPTS-xxxx
     """
     tokens = message.split('/')
     if len(tokens)<6:
@@ -29,16 +32,9 @@ def decode_message(message):
     except:
         raise RuntimeError, "Could not parse run number in %s" % message
     
-    # Get ipts number
-    try:
-        ipts = tokens[3].split('-')[1]
-    except:
-        logging.error("Could not parse %s: %s" % (tokens[3], sys.exc_value))
-        ipts=None
-    
     # Create payload for the message
     data = {"instrument": tokens[2].lower(),
-            "ipts": ipts,
+            "ipts": tokens[3].lower(),
             "run_number": run_number,
             "data_file": message}
     return data
