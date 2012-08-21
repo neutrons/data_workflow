@@ -17,6 +17,9 @@ class Instrument(models.Model):
     def __unicode__(self):
         return self.name
     
+    def number_of_runs(self):
+        return DataRun.objects.filter(instrument_id=self).count()
+    
     
 class IPTSManager(models.Manager):
     
@@ -30,6 +33,7 @@ class IPTS(models.Model):
     """
     ipts_number =  models.IntegerField(unique=True)
     instruments = models.ManyToManyField(Instrument)
+    created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = IPTSManager()
     
     def __unicode__(self):

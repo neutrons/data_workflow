@@ -4,6 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^$', include('report.urls')),
     url(r'^report/', include('report.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

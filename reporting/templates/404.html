@@ -5,7 +5,7 @@
 <![endif]-->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>{% block title %}Data Processing Report{% endblock %}</title>
+<title>SNS Data Processing Report</title>
 
 <link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
 
@@ -14,23 +14,11 @@
 <body>
 
 	<header>
-    	<div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
+    	<div class="banner_title">Data Processing Report</div>
     </header>
 
-	<div class="breadcrumbs">
-	{% block breadcrumb %}
-		{% if breadcrumbs %}
-			{{ breadcrumbs|safe }}
-	  	{% else %}
-	  		<a href="/">home</a>
-	  	{% endif %}
-	{% endblock %}
-	</div>
-
-	{% block summary %}{% endblock %}
-	
   	<div class="instructions">
-  		{% block content %}{% endblock %}
+  		The page you requested could not be found!
     </div>
 
 <footer>    

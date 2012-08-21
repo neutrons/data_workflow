@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}SNS Data Processing Report {% endblock %}
+
+{% block banner %}SNS Data Processing Report {% endblock %}
+
+{% block content %}
+
+List of instruments:<br>
+  	<div id="details">
+  	<table cellspacing="0" class="message_table">
+  	<thead>
+  	<tr>
+  		<th>Instrument</th> <th>Number of runs</th>
+  	</tr>
+  	</thead>
+  	<tbody>
+   	{% for item in instruments %}
+	   	<tr>
+	   	<td><a href='{{ base_instrument_url }}{{ item.name }}/'>{{ item.name }}</a></td><td>{{ item.number_of_runs }}</td>
+	   	</tr>
+   	{% endfor %}
+   	</tbody>
+   	</table>
+   	</div>
+
+{% endblock %}

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}SNS Data Processing Report {% endblock %}
+{% block title %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
 
-{% block banner %}SNS Data Processing Report {% endblock %}
+{% block summary %}
+  	{{ instrument }} run {{ run_object.run_number }}<br>
+  	Last known location: {{ run_object.file }}
+{% endblock %}
 
 {% block content %}
-
-  	Status report for {{ instrument }} run {{ run_id }}<br>
-  	
   	<div id="details">
   	<table cellspacing="0" class="message_table">
   	<thead>
