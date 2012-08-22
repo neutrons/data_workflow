@@ -12,6 +12,7 @@ queues = ['POSTPROCESS.DATA_READY',
           'REDUCTION.NOT_NEEDED',
           'REDUCTION_CATALOG.STARTED',
           'REDUCTION_CATALOG.COMPLETE',
+          'POSTPROCESS.INFO',
           'POSTPROCESS.ERROR']
 
 mng = WorkflowManager(brokers, icat_user, icat_passcode, queues)
