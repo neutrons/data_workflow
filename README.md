@@ -1,5 +1,5 @@
-data_workflow
-=============
+Data Workflow Manager
+---------------------
 
 WARNING: This software is still a feasibility prototype.
 
@@ -24,3 +24,18 @@ SNS data workflow manager and reporting app
 - Reporting: Reporting application for the workflow manager.
 	The reporting app is built using django. It connects to the reporting
 	database used by the workflow manager.
+
+	Apache installation:
+	- Make sure djando, stomp and MySQLdb are properly installed
+	- Make sure the DB information in /var/www/workflow/app/reporting_app/settings.py is correct
+	- Run make install, which will install the app in /var/www/workflow
+	- If you don't have mod_wsgi on your system, get it here: http://code.google.com/p/modwsgi
+	- Add the following lines to httpd.conf
+		LoadModule wsgi_module libexec/apache2/mod_wsgi.so
+		Include /var/www/workflow/apache/apache_django_wsgi.conf
+	- apachectl restart	
+	
+	Note: if you get an error to the effect that _mysql.so is unable to find libmysqlclient.18.dylib,
+	make sure you have a sym link in /usr/lib pointing to /usr/local/mysql/lib
+	(http://stackoverflow.com/questions/6383310/python-mysqldb-library-not-loaded-libmysqlclient-18-dylib)
+	
