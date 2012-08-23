@@ -3,7 +3,11 @@ prefix := /var/www/workflow
 all:
 	echo "Run make install to install the workflow manager and the web app"
 	
-install:
+workflow:
+	# Install the workflow manager, which defines the database schema
+	python setup.py install
+	
+install: workflow
 	# Make sure the install directories exist
 	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
 	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
@@ -25,6 +29,9 @@ install:
 	# Create the database tables. The database itself must have been
 	# created on the server already
 	cd $(prefix)/app; python manage.py syncdb
+	
+.PHONY: install
+.PHONY: workflow
 	
 	
 	
