@@ -1,4 +1,5 @@
 from django.db import models
+import json
 
 class InstrumentManager(models.Manager):
     def find_instrument(self, instrument):
@@ -18,6 +19,9 @@ class Instrument(models.Model):
         return self.name
     
     def number_of_runs(self):
+        """
+            Returns the total number of runs for this instrument
+        """
         return DataRun.objects.filter(instrument_id=self).count()
     
     
@@ -40,6 +44,11 @@ class IPTS(models.Model):
         return self.expt_name
     
     def number_of_runs(self, instrument_id=None):
+        """
+            Returns the total number of runs for this IPTS
+            on the given instrument.
+            @param instrument_id: Instrument object
+        """
         if instrument_id is None:
             return DataRun.objects.filter(ipts_id=self).distinct().count()
         return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id)
@@ -63,10 +72,10 @@ class DataRun(models.Model):
         """
             Encode the object as a JSON dictionnary
         """
-        return {"instrument": self.instrument_id,
-                "ipts": str(self.ipts_id),
-                "run_number": self.run_number,
-                "data_file": self.file}
+        return json.dumps({"instrument": self.instrument_id,
+                           "ipts": str(self.ipts_id),
+                           "run_number": self.run_number,
+                           "data_file": self.file})
     
 class StatusQueue(models.Model):
     """
