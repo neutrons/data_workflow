@@ -21,8 +21,10 @@ def summary(request):
     # Get base URL
     base_url = reverse('report.views.instrument_summary',args=['aaaa'])
     base_url = base_url.replace('/aaaa','')
+    breadcrumbs = "home"
 
     return render_to_response('report/global_summary.html', {'instruments':instruments,
+                                                             'breadcrumbs':breadcrumbs,
                                                              'base_instrument_url':base_url})
 
 @confirm_instrument
