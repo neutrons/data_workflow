@@ -48,9 +48,15 @@
 	right:200px;
 }
 
-#placeholder
-{
+#placeholder {
 	width:600px;height:400px;
+}
+
+#tooltip {
+    border: 1px solid #CDC0B0;
+    padding: 2px;
+    background-color: #eeeeee;
+	opacity: 1.0;
 }
 
 .message_table {

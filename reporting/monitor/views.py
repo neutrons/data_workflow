@@ -9,6 +9,8 @@ from report.views import confirm_instrument
 from monitor.models import Parameter, ReportedValue
 from report.models import Instrument
 
+import time
+
 def generate(instrument, parameter):
     import datetime
     import math
@@ -38,10 +40,8 @@ def live_parameter(request, instrument, parameter):
     #generate(instrument_id, parameter_id)
     
     points = []
-    t0 = values[0].timestamp
-    for pt in values[1:]:
-        elapsed = t0-pt.timestamp
-        points.append([elapsed.seconds/60000.0, float(pt.value), 10.0])
+    for pt in values:
+        points.append([time.mktime(pt.timestamp.timetuple()), float(pt.value), 10.0])
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
