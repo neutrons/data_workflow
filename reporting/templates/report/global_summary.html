@@ -11,13 +11,15 @@ List of instruments:<br>
   	<table cellspacing="0" class="message_table">
   	<thead>
   	<tr>
-  		<th>Instrument</th> <th>Number of runs</th>
+  		<th>Instrument</th> <th>Number of experiments</th> <th>Number of runs</th>
   	</tr>
   	</thead>
   	<tbody>
    	{% for item in instruments %}
 	   	<tr>
-	   	<td><a href='{{ base_instrument_url }}{{ item.name }}/'>{{ item.name|upper }}</a></td><td>{{ item.number_of_runs }}</td>
+	   	<td><a href='{{ base_instrument_url }}{{ item.name }}/'>{{ item.name|upper }}</a></td>
+	   	<td>{{ item.number_of_expts }} </td>
+	   	<td>{{ item.number_of_runs }}</td>
 	   	</tr>
    	{% endfor %}
    	</tbody>

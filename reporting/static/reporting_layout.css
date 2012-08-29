@@ -13,6 +13,46 @@
 	color: #5e5e5e;
 }
 
+/* Flot plots */
+.flotplot
+{	
+	padding-left: 50px;	
+	padding-bottom:25px;
+}
+
+.flotplot #y_label {
+	display:block; 
+	text-align:right;
+	position:relative;
+	right:410px; top:420px;
+	
+	/* Safari */
+	-webkit-transform: rotate(-90deg);
+	
+	/* Firefox */
+	-moz-transform: rotate(-90deg);
+	
+	/* IE */
+	-ms-transform: rotate(-90deg);
+	
+	/* Opera */
+	-o-transform: rotate(-90deg);
+	
+	/* Internet Explorer */
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+.flotplot #x_label {
+	display:block; 
+	position:relative;
+	text-align:right;
+	right:200px;
+}
+
+#placeholder
+{
+	width:600px;height:400px;
+}
+
 .message_table {
 	font-size: 14px;
 }
@@ -75,7 +115,7 @@ a:active {color:#0077cc; text-decoration:none;}  /* selected link */
 	margin-right:0 auto;
 }
 
-.instructions {
+.box {
 	text-align:left;
 	margin-left:auto;
 	margin-right:auto;

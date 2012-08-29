@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument|upper }} Live Monitor {% endblock %}
+{% block banner %}{{ instrument|upper }} Live Monitor {% endblock %}
+
+{% block summary %}
+  	Current run <b>{{ run_object.run_number|default:"unknown" }}</b><br>
+  	Title: {{ icat_info.title|default:"unknown" }}<br>
+  	
+{% endblock %}
+
+{% block content %}
+  	<div id="details">
+
+   	</div>
+{% endblock %}

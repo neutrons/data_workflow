@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument|upper }} Live Monitor {% endblock %}
+
+{% block header %}
+	<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../excanvas.min.js"></script><![endif]-->
+	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.js"></script>
+	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.errorbars.js"></script>
+	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.navigate.js"></script>
+	
+  	<script type="text/javascript">
+  	function on_load(){
+		var iq_data = {{points|safe}}; 
+		var data_points = { 
+			show: true, 
+			fill: true,
+			errorbars: "y",
+			yerr: {show: true, upperCap: "-", lowerCap: "-", asymmetric:false}
+		};
+
+		var data = [ { color: "blue", points: data_points, data: iq_data, label: "{{ parameter }}"} ];
+		var options = {
+			series: { lines: { show: true }, points: { show: true }, shadowSize: 0 },
+			lines: { show: true, fill: true, fillColor: "rgba(255, 255, 255, 0.2)", lineWidth: 2 },
+			zoom: { interactive: true, amount: 1.05 },
+			grid: { hoverable: true, clickable: false },
+			pan: { interactive: true },
+			legend: { margin: [10,10] },
+		};  
+		
+		
+		if(iq_data.length>0){
+			$.plot($("#placeholder"), data , options);
+		};  		
+  	};
+  	</script>
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+	window.onload=on_load;
+</script>
+{% endblock %}
+
+{% block banner %}{{ instrument|upper }} Live Monitor {% endblock %}
+
+{% block summary %}
+
+  	Current run <b>{{ run_object.run_number|default:"unknown" }}</b><br>
+  	Title: {{ icat_info.title|default:"unknown" }}<br>
+  	
+{% endblock %}
+
+{% block content %}
+	{{ parameter }} distribution
+	<div class="flotplot">
+		<div id="y_label">{{ parameter }}</div>
+		<div id="placeholder"></div>
+		<div id="x_label">Time [s]</div>
+	</div>
+	
+	Available parameters:
+	{{ parameter|lower }}
+	{% for p in parameter_list %}
+		{% if p|lower != parameter|lower %}
+			| <a href='{{ base_monitor_url }}{{ p }}/'>{{ p }}</a>
+		{% endif %}
+	{% endfor %}
+	
+{% endblock %}
