@@ -8,14 +8,15 @@
 <title>{% block title %}Data Processing Report{% endblock %}</title>
 
 <link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
-
+{% block header %}{% endblock %}
 </head>
  
 <body>
-
-	<header>
+	{% block bodytop %}
+	{% endblock %}
+	<p>
     	<div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
-    </header>
+    </p>
 
 	<div class="breadcrumbs">
 	{% block breadcrumb %}
@@ -29,7 +30,7 @@
 
 	{% block summary %}{% endblock %}
 	
-  	<div class="instructions">
+  	<div class="box">
   		{% block content %}{% endblock %}
     </div>
 

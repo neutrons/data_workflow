@@ -24,6 +24,11 @@ class Instrument(models.Model):
         """
         return DataRun.objects.filter(instrument_id=self).count()
     
+    def number_of_expts(self):
+        """
+            Returns the total number of experiments for this instrument
+        """
+        return IPTS.objects.filter(instruments=self).count()
     
 class IPTSManager(models.Manager):
     
