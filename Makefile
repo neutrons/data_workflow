@@ -19,6 +19,9 @@ check:
 workflow: check
 	# Install the workflow manager, which defines the database schema
 	python setup.py install
+
+clean:
+	rm -fR *.pyc
 	
 install: workflow
 	# Make sure the install directories exist
@@ -29,15 +32,12 @@ install: workflow
 	# Install application code
 	cp reporting/manage.py $(prefix)/app
 	cp -R reporting/report $(prefix)/app
-	cp -R reporting/monitor $(prefix)/app
 	cp -R reporting/static $(prefix)/app
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app
 	
 	# Install apache config
 	cp -R reporting/apache $(prefix)
-	
-	# Chmod/chown the whole thing to the proper user
 
 	# Collect the static files and install them
 	cd $(prefix)/app; python manage.py collectstatic --noinput
@@ -51,6 +51,3 @@ install: workflow
 .PHONY: check
 .PHONY: install
 .PHONY: workflow
-	
-	
-	
