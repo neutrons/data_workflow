@@ -45,7 +45,15 @@
 	display:block; 
 	position:relative;
 	text-align:right;
-	right:200px;
+	right:210px;
+}
+
+.flotplot #linlog {
+	display:block; 
+	position:relative;
+	text-align:right;
+	right:210px;
+	top:20px;
 }
 
 #placeholder {

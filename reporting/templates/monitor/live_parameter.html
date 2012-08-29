@@ -9,8 +9,20 @@
 	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.errorbars.js"></script>
 	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.navigate.js"></script>
 	<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.time.js"></script>
+	<script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.cookie.js"></script>
 	
   	<script type="text/javascript">
+  	
+  	function log_scale() {
+  		$.cookie('is_log', 'true');
+  		location.reload();
+  	};
+  	
+  	function linear_scale() {
+  		$.cookie('is_log', 'false');
+  		location.reload();
+  	};
+  	
   	function on_load(){
 		var iq_data = {{points|safe}}; 
 		var data_points = { 
@@ -29,8 +41,14 @@
 			pan: { interactive: true },
 			legend: { margin: [10,10] },
 			xaxis: { mode: "time" },
+			yaxis: { transform: function (v) { if (v>0)return Math.log(v); else return 0.0;},
+		        	 inverseTransform: function (v) { return Math.exp(v); } },
 		};  
 		
+		if ($.cookie('is_log')!='true') {
+			options.yaxis.transform = null;
+			options.yaxis.inverseTransform = null;
+		};
 		
 		if(iq_data.length>0){
 			$.plot($("#placeholder"), data , options);
@@ -88,6 +106,9 @@
 {% block content %}
 	{{ parameter }} distribution
 	<div class="flotplot">
+		<div id="linlog">
+			<a href="javascript: log_scale();">log</a> | <a href="javascript: linear_scale();">linear</a>
+		</div>
 		<div id="y_label">{{ parameter }}</div>
 		<div id="placeholder"></div>
 		<div id="x_label">Time [s]</div>
