@@ -4,16 +4,12 @@ import sys
 import os
 import stomp
 import json
+from workflow.settings import *
+
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "database.settings")
 # The report database module must be on the python path for Django to find it 
 sys.path.append(os.path.abspath('database'))
-
-# List of brokers
-brokers = [("mac83808.ornl.gov", 61613), 
-           ("mac83086.ornl.gov", 61613)]
-
-icat_user = "icat"
-icat_passcode = "icat"
 
 def send(destination, message):
     """
@@ -23,7 +19,9 @@ def send(destination, message):
     """
     conn = stomp.Connection(host_and_ports=brokers, 
                     user=icat_user, passcode=icat_passcode, 
-                    wait_on_receipt=True, version=1.0)
+                    wait_on_receipt=True)
+#                    wait_on_receipt=True, version=1.0)
+
     conn.start()
     conn.connect()
     conn.send(destination=destination, message=message)

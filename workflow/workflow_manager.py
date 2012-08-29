@@ -10,6 +10,7 @@ import sys
 import logging
 logging.getLogger().setLevel(logging.INFO)
 
+
 class WorkflowManager(stomp.ConnectionListener):
 
     def __init__(self, brokers, user, passcode, queues=[]):
@@ -21,7 +22,6 @@ class WorkflowManager(stomp.ConnectionListener):
         self._delay = 5.0
         self._connection = None
         self._connected = False
-        
     def on_message(self, headers, message):
         """
             Process a message. 
@@ -50,7 +50,7 @@ class WorkflowManager(stomp.ConnectionListener):
         try:
             action(headers, message)
         except:
-            logging.error(sys.exc_value)
+            logging.error(sys.exc_info())
         
     def on_disconnected(self):
         self._connected = False
@@ -65,7 +65,8 @@ class WorkflowManager(stomp.ConnectionListener):
         conn = stomp.Connection(host_and_ports=self._brokers, 
                                 user=self._user,
                                 passcode=self._passcode, 
-                                wait_on_receipt=True, version=1.0)
+                                wait_on_receipt=True)
+#                                wait_on_receipt=True, version=1.0)
         conn.set_listener('workflow_manager', self)
         conn.start()
         conn.connect()

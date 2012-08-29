@@ -1,5 +1,5 @@
 from workflow_manager import WorkflowManager
-from activemq_settings import *
+from workflow.settings import *
 
 # List of queues to listen to. Each queue must have a
 # corresponding class in states.py

@@ -22,8 +22,10 @@ workflow: check
 
 clean:
 	rm -fR *.pyc
+	rm -fR build/
 	
-install: workflow
+install: clean workflow
+       
 	# Make sure the install directories exist
 	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
 	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
@@ -33,6 +35,7 @@ install: workflow
 	cp reporting/manage.py $(prefix)/app
 	cp -R reporting/report $(prefix)/app
 	cp -R reporting/static $(prefix)/app
+	cp -R reporting/monitor $(prefix)/app
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app
 	

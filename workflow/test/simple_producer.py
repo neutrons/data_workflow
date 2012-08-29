@@ -3,14 +3,8 @@
 """
 import stomp
 import json
+from workflow.settings import *
 
-
-# List of brokers
-brokers = [("mac83808.ornl.gov", 61613), 
-           ("mac83086.ornl.gov", 61613)]
-
-icat_user = "icat"
-icat_passcode = "icat"
 
 def send(destination, message):
     """
@@ -20,7 +14,8 @@ def send(destination, message):
     """
     conn = stomp.Connection(host_and_ports=brokers, 
                     user=icat_user, passcode=icat_passcode, 
-                    wait_on_receipt=True, version=1.0)
+                    wait_on_receipt=True)
+#                    wait_on_receipt=True, version=1.0)
     conn.start()
     conn.connect()
     conn.send(destination=destination, message=message)
@@ -29,10 +24,12 @@ def send(destination, message):
     
 data_dict = {"instrument": "HYSA",
              "ipts": "IPTS-%d" % 5678,
-             "run_number": 1234,
+             "run_number": 1241,
              "data_file": 'optional'}
 
 data = json.dumps(data_dict)
 
 send('LIVEDATA.UPDATE', data)
+#send('CATALOG.DATA_READY', data)
+send('POSTPROCESS.DATA_READY', data)
 

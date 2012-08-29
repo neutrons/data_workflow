@@ -3,9 +3,7 @@
 """
 import time
 import stomp
-
-brokers = [("mac83808.ornl.gov", 61613), 
-           ("mac83086.ornl.gov", 61613)]
+from workflow.settings import *
 
 class Listener(stomp.ConnectionListener):
     def __init__(self, ):
@@ -17,7 +15,8 @@ class Listener(stomp.ConnectionListener):
     def send(self, destination, message):
         conn = stomp.Connection(host_and_ports=brokers, 
                         user="icat", passcode="icat", 
-                        wait_on_receipt=True, version=1.0)
+#                        wait_on_receipt=True, version=1.0)
+                        wait_on_receipt=True)
         conn.set_listener('worker_bee', self)
         conn.start()
         conn.connect()
@@ -44,7 +43,8 @@ class Listener(stomp.ConnectionListener):
     def subscribe(self):
         conn = stomp.Connection(host_and_ports=brokers, 
                                 user="icat", passcode="icat", 
-                                wait_on_receipt=True, version=1.0)
+#                                wait_on_receipt=True, version=1.0)
+                                wait_on_receipt=True)
         conn.set_listener('worker_bee', self)
         conn.start()
         conn.connect(wait=True)
