@@ -15,7 +15,6 @@ class Listener(stomp.ConnectionListener):
     def send(self, destination, message):
         conn = stomp.Connection(host_and_ports=brokers, 
                         user="icat", passcode="icat", 
-#                        wait_on_receipt=True, version=1.0)
                         wait_on_receipt=True)
         conn.set_listener('worker_bee', self)
         conn.start()
@@ -43,7 +42,6 @@ class Listener(stomp.ConnectionListener):
     def subscribe(self):
         conn = stomp.Connection(host_and_ports=brokers, 
                                 user="icat", passcode="icat", 
-#                                wait_on_receipt=True, version=1.0)
                                 wait_on_receipt=True)
         conn.set_listener('worker_bee', self)
         conn.start()

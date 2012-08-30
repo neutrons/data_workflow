@@ -66,7 +66,6 @@ class WorkflowManager(stomp.ConnectionListener):
                                 user=self._user,
                                 passcode=self._passcode, 
                                 wait_on_receipt=True)
-#                                wait_on_receipt=True, version=1.0)
         conn.set_listener('workflow_manager', self)
         conn.start()
         conn.connect()

@@ -3,7 +3,7 @@
 """
 import stomp
 from state_utilities import logged_action
-from workflow.settings import *
+from settings import *
 
 class StateAction(object):
     """
@@ -28,7 +28,6 @@ class StateAction(object):
         conn = stomp.Connection(host_and_ports=brokers, 
                         user=icat_user, passcode=icat_passcode, 
                         wait_on_receipt=True)
-#                        wait_on_receipt=True, version=1.0)
         conn.set_listener('workflow_manager', self)
         conn.start()
         conn.connect()

@@ -15,7 +15,6 @@ def send(destination, message):
     conn = stomp.Connection(host_and_ports=brokers, 
                     user=icat_user, passcode=icat_passcode, 
                     wait_on_receipt=True)
-#                    wait_on_receipt=True, version=1.0)
     conn.start()
     conn.connect()
     conn.send(destination=destination, message=message)

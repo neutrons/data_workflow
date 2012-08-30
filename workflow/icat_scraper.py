@@ -4,7 +4,7 @@ import sys
 import os
 import stomp
 import json
-from workflow.settings import *
+from settings import *
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "database.settings")
@@ -20,7 +20,6 @@ def send(destination, message):
     conn = stomp.Connection(host_and_ports=brokers, 
                     user=icat_user, passcode=icat_passcode, 
                     wait_on_receipt=True)
-#                    wait_on_receipt=True, version=1.0)
 
     conn.start()
     conn.connect()
