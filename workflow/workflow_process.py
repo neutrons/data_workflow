@@ -37,18 +37,18 @@ class WorkflowProcess(object):
                 # Run is not cataloged
                 if r.cataloged is False and r.catalog_started is False:
                     StateAction().send(destination='/queue/CATALOG.DATA_READY',
-                                       message=message)
+                                       message=message, persistent='true')
             
                 # Run hasn't been reduced
                 if r.reduction_needed is True and r.reduced is False and \
                     r.reduction_started is False:
                     StateAction().send(destination='/queue/REDUCTION.DATA_READY',
-                                       message=message)                    
+                                       message=message, persistent='true')                    
                 
                 # Reduced data hasn't been cataloged
                 if r.reduction_needed is True and r.reduced is True and \
                     r.reduction_cataloged is False and \
                     r.reduction_catalog_started is False:
                     StateAction().send(destination='/queue/REDUCTION_CATALOG.DATA_READY',
-                                       message=message)                    
+                                       message=message, persistent='true')                    
                     

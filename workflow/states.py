@@ -19,7 +19,7 @@ class StateAction(object):
         """
         pass
     
-    def send(self, destination, message):
+    def send(self, destination, message, persistent='true'):
         """
             Send a message to a queue
             @param destination: name of the queue
@@ -31,7 +31,7 @@ class StateAction(object):
         conn.set_listener('workflow_manager', self)
         conn.start()
         conn.connect()
-        conn.send(destination=destination, message=message)
+        conn.send(destination=destination, message=message, persistent=persistent)
         conn.disconnect()
 
 
@@ -39,12 +39,12 @@ class Postprocess_data_ready(StateAction):
     @logged_action
     def __call__(self, headers, message):
         # Tell workers for start processing
-        self.send(destination='/queue/CATALOG.DATA_READY', message=message)
-        self.send(destination='/queue/REDUCTION.DATA_READY', message=message)
+        self.send(destination='/queue/CATALOG.DATA_READY', message=message, persistent='true')
+        self.send(destination='/queue/REDUCTION.DATA_READY', message=message, persistent='true')
         
         
 class Reduction_complete(StateAction):
     @logged_action
     def __call__(self, headers, message):
         # Tell workers to catalog the output
-        self.send(destination='/queue/REDUCTION_CATALOG.DATA_READY', message=message)
+        self.send(destination='/queue/REDUCTION_CATALOG.DATA_READY', message=message, persistent='true')

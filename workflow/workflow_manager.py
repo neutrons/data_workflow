@@ -70,7 +70,7 @@ class WorkflowManager(stomp.ConnectionListener):
         conn.start()
         conn.connect()
         for q in self._queues:
-            conn.subscribe(destination=q, ack='auto')
+            conn.subscribe(destination=q, ack='auto', persistent='true')
         self._connection = conn
         self._connected = True
         logging.info("Connected to %s:%d\n" % conn.get_host_and_port())
