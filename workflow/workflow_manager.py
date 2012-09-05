@@ -50,7 +50,8 @@ class WorkflowManager(stomp.ConnectionListener):
         try:
             action(headers, message)
         except:
-            logging.error(sys.exc_info())
+            type, value, tb = sys.exc_info()
+            logging.error("%s: %s" % (type, value))
         
     def on_disconnected(self):
         self._connected = False

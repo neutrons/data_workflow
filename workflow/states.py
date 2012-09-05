@@ -3,7 +3,7 @@
 """
 import stomp
 from state_utilities import logged_action
-from settings import *
+from settings import brokers, icat_user, icat_passcode
 
 class StateAction(object):
     """

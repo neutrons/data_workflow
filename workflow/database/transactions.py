@@ -7,6 +7,7 @@ import json
 import logging
 import traceback
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "database.settings")
+from django.db import transaction
 
 # The report database module must be on the python path for Django to find it 
 sys.path.append(os.path.dirname(__file__))
@@ -14,6 +15,7 @@ sys.path.append(os.path.dirname(__file__))
 # Import your models for use in your script
 from database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary, IPTS, Instrument
 
+@transaction.commit_on_success
 def add_status_entry(headers, data):
     """
         Populate the reporting database with the contents
@@ -47,49 +49,48 @@ def add_status_entry(headers, data):
     # Process the data
     data_dict = json.loads(data)
     
+    # Look for instrument
+    instrument = data_dict["instrument"].lower()
+    try:
+        instrument_id = Instrument.objects.get(name=instrument)
+    except Instrument.DoesNotExist:
+        instrument_id = Instrument(name=instrument)
+        instrument_id.save()
+
+    # Look for IPTS ID
+    ipts = data_dict["ipts"]
+    try:
+        ipts_id = IPTS.objects.get(expt_name=ipts)
+    except IPTS.DoesNotExist:
+        ipts_id = IPTS(expt_name=ipts)
+        ipts_id.save()
+            
+    # Add instrument to IPTS if not already in there
+    try:
+        if IPTS.objects.filter(id=ipts_id.id, instruments__in=[instrument_id]).count()==0:
+            ipts_id.instruments.add(instrument_id)
+            ipts_id.save()
+    except:
+        traceback.print_exc()
+        logging(sys.exc_value)
+
     # Check whether we already have an entry for this run
     run_number = data_dict["run_number"]
-    run_ids = DataRun.objects.filter(run_number=run_number)
-    
-    if len(run_ids)>0:
-        run_id = run_ids[0]
-    else:
-        logging.info("Creating entry for run %d" % run_number)
-        
-        # Look for instrument
-        instrument = data_dict["instrument"].lower()
-        instrument_ids = Instrument.objects.filter(name=instrument)
-        if len(instrument_ids)>0:
-            instrument_id = instrument_ids[0]
-        else:
-            instrument_id = Instrument(name=instrument)
-            instrument_id.save()
-
-        # Look for IPTS ID
-        ipts = data_dict["ipts"]
-        ipts_ids = IPTS.objects.filter(expt_name=ipts)
-        if len(ipts_ids)>0:
-            ipts_id = ipts_ids[0]
-        else:
-            ipts_id = IPTS(expt_name=ipts)
-            ipts_id.save()
-            
-        # Add instrument to IPTS if not already in there
-        try:
-            if IPTS.objects.filter(id=ipts_id.id, instruments__in=[instrument_id]).count()==0:
-                ipts_id.instruments.add(instrument_id)
-                ipts_id.save()
-        except:
-            traceback.print_exc()
-            logging(sys.exc_value)
-        
+    try:
+        run_id = DataRun.objects.get(run_number=run_number, instrument_id=instrument_id)
+    except DataRun.DoesNotExist:
+        logging.info("Creating entry for run %s-%d" % (instrument, run_number))
         run_id = DataRun(run_number=run_number,
                          instrument_id=instrument_id,
                          ipts_id=ipts_id,
                          file=data_dict["data_file"])
         run_id.save()
-        
-        # Add a workflow summary for this new run
+    
+    
+    # Add a workflow summary for this new run
+    try:
+        summary_id = WorkflowSummary.objects.get(run_id=run_id)
+    except WorkflowSummary.DoesNotExist:
         summary_id = WorkflowSummary(run_id=run_id)
         summary_id.save()
     

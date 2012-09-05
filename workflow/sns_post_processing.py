@@ -1,5 +1,5 @@
 from workflow_manager import WorkflowManager
-from settings import *
+from settings import brokers, icat_user, icat_passcode
 
 # List of queues to listen to. Each queue must have a
 # corresponding class in states.py
