@@ -3,6 +3,7 @@
 """
 import time
 import stomp
+import sys
 from workflow.settings import brokers, icat_user, icat_passcode
 
 class Listener(stomp.ConnectionListener):
@@ -66,6 +67,7 @@ class Listener(stomp.ConnectionListener):
                 print "\nStopping"
                 _listen = False
             except:
+                print sys.exc_value
                 print "\nReconnecting..."
                 time.sleep(3.0)
             finally:
