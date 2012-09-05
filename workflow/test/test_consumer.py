@@ -3,7 +3,7 @@
 """
 import time
 import stomp
-from workflow.settings import *
+from workflow.settings import brokers, icat_user, icat_passcode
 
 class Listener(stomp.ConnectionListener):
     def __init__(self, ):

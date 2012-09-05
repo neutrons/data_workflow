@@ -3,7 +3,7 @@
 """
 import stomp
 import json
-from workflow.settings import *
+from workflow.settings import brokers, icat_user, icat_passcode
 
 
 def send(destination, message, persistent='true'):
