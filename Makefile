@@ -13,7 +13,8 @@ check:
 	########################################################################
 	# Check dependencies
 	@python -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
-	@python -c "import MySQLdb" || echo "\nERROR: MySQLdb is not installed: https://sourceforge.net/projects/mysql-python\n"
+	@python -c "import MySQLdb" || echo "\nWARNING: MySQLdb is not installed: https://sourceforge.net/projects/mysql-python\n"
+	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
 	@python -c "import stomp" || echo "\nERROR: somtp.py is not installed: http://code.google.com/p/stomppy\n"
 
 workflow: check

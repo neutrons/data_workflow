@@ -7,7 +7,8 @@ SNS data workflow manager and reporting app
 
 	Dependencies: stomp (http://code.google.com/p/stomppy/)
 	              django (https://www.djangoproject.com/)
-	              MySQLdb (https://sourceforge.net/projects/mysql-python/)
+	              MySQLdb (https://sourceforge.net/projects/mysql-python/) if using MySQL
+	              psycopg2 (http://initd.org/psycopg/) if using PostgreSQL
 
 - Workflow: Data workflow manager based on ActiveMQ.
 
@@ -26,7 +27,7 @@ SNS data workflow manager and reporting app
 	database used by the workflow manager.
 
 	Apache installation:
-	- Make sure djando, stomp and MySQLdb are properly installed
+	- Make sure djando, stomp and MySQLdb (or psycopq2) are properly installed
 	- Make sure the DB information in /var/www/workflow/app/reporting_app/settings.py is correct
 	- Run make install, which will install the app in /var/www/workflow
 	- If you don't have mod_wsgi on your system, get it here: http://code.google.com/p/modwsgi
