@@ -3,6 +3,7 @@
 """
 from database.report.models import WorkflowSummary
 from states import StateAction
+import logging
 
 class WorkflowProcess(object):
     
@@ -32,16 +33,18 @@ class WorkflowProcess(object):
                 # The workflow for this run is still incomplete
                 # Generate a JSON description of the run, to be used
                 # when sending a message
-                message = r.json_encode()
+                message = r.run_id.json_encode()
                 
                 # Run is not cataloged
                 if r.cataloged is False and r.catalog_started is False:
+                    logging.warn("Cataloging incomplete for %s" % str(r))
                     StateAction().send(destination='/queue/CATALOG.DATA_READY',
                                        message=message, persistent='true')
             
                 # Run hasn't been reduced
                 if r.reduction_needed is True and r.reduced is False and \
                     r.reduction_started is False:
+                    logging.warn("Reduction incomplete for %s" % str(r))
                     StateAction().send(destination='/queue/REDUCTION.DATA_READY',
                                        message=message, persistent='true')                    
                 
@@ -49,6 +52,7 @@ class WorkflowProcess(object):
                 if r.reduction_needed is True and r.reduced is True and \
                     r.reduction_cataloged is False and \
                     r.reduction_catalog_started is False:
+                    logging.warn("Reduction cataloging incomplete for %s" % str(r))
                     StateAction().send(destination='/queue/REDUCTION_CATALOG.DATA_READY',
                                        message=message, persistent='true')                    
                     

@@ -4,6 +4,7 @@
 import stomp
 from state_utilities import logged_action
 from settings import brokers, icat_user, icat_passcode
+import logging
 
 class StateAction(object):
     """
@@ -32,7 +33,12 @@ class StateAction(object):
         conn.start()
         conn.connect()
         conn.send(destination=destination, message=message, persistent=persistent)
-        conn.disconnect()
+        # Sometimes the socket gets wiped out before we get a chance to complete
+        # disconnecting
+        try:
+            conn.disconnect()
+        except:
+            logging.info("Send socket already closed: skipping disconnection")
 
 
 class Postprocess_data_ready(StateAction):

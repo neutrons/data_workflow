@@ -15,5 +15,5 @@ queues = ['POSTPROCESS.DATA_READY',
           'POSTPROCESS.INFO',
           'POSTPROCESS.ERROR']
 
-mng = WorkflowManager(brokers, icat_user, icat_passcode, queues)
+mng = WorkflowManager(brokers, icat_user, icat_passcode, queues, False)
 mng.processing_loop()

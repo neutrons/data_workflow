@@ -77,7 +77,7 @@ class DataRun(models.Model):
         """
             Encode the object as a JSON dictionnary
         """
-        return json.dumps({"instrument": self.instrument_id,
+        return json.dumps({"instrument": self.instrument_id.name,
                            "ipts": str(self.ipts_id),
                            "run_number": self.run_number,
                            "data_file": self.file})

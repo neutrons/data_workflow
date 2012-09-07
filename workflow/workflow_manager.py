@@ -8,20 +8,39 @@ import states
 import stomp
 import sys
 import logging
-logging.getLogger().setLevel(logging.INFO)
 
+# Set log level
+logging.getLogger().setLevel(logging.INFO)
+# Create a log file handler
+fh = logging.FileHandler('workflow.log')
+fh.setLevel(logging.INFO)
+logging.getLogger().addHandler(fh)
+
+from workflow_process import WorkflowProcess
 
 class WorkflowManager(stomp.ConnectionListener):
 
-    def __init__(self, brokers, user, passcode, queues=[]):
+    def __init__(self, brokers, user, passcode, queues=[], workflow_check=False):
+        """
+            @param brokers: list of brokers we can connect to
+            @param user: activemq user
+            @param passcode: passcode for activemq user
+            @param queues: list of queues to listen to
+            @param workflow_check: if True, the workflow will be checked at a given interval
+        """
         self._brokers = brokers
         self._user = user
         self._passcode = passcode
         self._queues = queues
         ## Delay between loops
         self._delay = 5.0
+        ## Delay between workflow check [in seconds]
+        self._workflow_check_delay = 60.0*60.0*24.0
+        self._workflow_check_start = time.time()
+        self._workflow_check = workflow_check
         self._connection = None
         self._connected = False
+        
     def on_message(self, headers, message):
         """
             Process a message. 
@@ -55,6 +74,13 @@ class WorkflowManager(stomp.ConnectionListener):
         
     def on_disconnected(self):
         self._connected = False
+        
+    def verify_workflow(self):
+        if self._workflow_check:
+            try:
+                WorkflowProcess().verify_workflow()
+            except:
+                logging.error("Workflow verification failed: %s" % sys.exc_value)
         
     def connect(self):
         """
@@ -92,14 +118,18 @@ class WorkflowManager(stomp.ConnectionListener):
         self.connect()
         while(self._connected):
             time.sleep(waiting_period)
-            #from workflow_process import WorkflowProcess
-            #wk = WorkflowProcess()
-            #wk.verify_workflow()
+            
+            # Check for workflow completion
+            if time.time()-self._workflow_check_start>self._workflow_check_delay:
+                self.verify_workflow()
+                self._workflow_check_start = time.time()
     
     def processing_loop(self):
         """
             Process events as they happen
         """
+        # Check workflow completion
+        self.verify_workflow()
         listen = True 
         while(listen):
             try:

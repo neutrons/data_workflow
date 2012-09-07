@@ -22,7 +22,12 @@ class Listener(stomp.ConnectionListener):
         conn.start()
         conn.connect()
         conn.send(destination=destination, message=message, persistent=persistent)
-        conn.disconnect()
+        # Sometimes the socket gets wiped out before we get a chance to complete
+        # disconnecting
+        try:
+            conn.disconnect()
+        except:
+            logging.info("Send socket already closed: skipping disconnection")
         print "  -> %s" % destination
         
     def on_message(self, headers, message):
