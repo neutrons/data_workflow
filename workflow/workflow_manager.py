@@ -68,6 +68,7 @@ class WorkflowManager(stomp.ConnectionListener):
         # Execute the appropriate action
         try:
             action(headers, message)
+            self._connection.ack(headers);
         except:
             type, value, tb = sys.exc_info()
             logging.error("%s: %s" % (type, value))
@@ -97,7 +98,7 @@ class WorkflowManager(stomp.ConnectionListener):
         conn.start()
         conn.connect()
         for q in self._queues:
-            conn.subscribe(destination=q, ack='auto', persistent='true')
+            conn.subscribe(destination=q, ack='client', persistent='true')
         self._connection = conn
         self._connected = True
         logging.info("Connected to %s:%d\n" % conn.get_host_and_port())

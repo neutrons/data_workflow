@@ -3,7 +3,8 @@
 """
 import stomp
 import json
-from workflow.settings import brokers, icat_user, icat_passcode
+# set PYTHONPATH to workflow directory
+from settings import brokers, icat_user, icat_passcode
 
 
 def send(destination, message, persistent='true'):
@@ -23,7 +24,7 @@ def send(destination, message, persistent='true'):
     
 data_dict = {"instrument": "HYSA",
              "ipts": "IPTS-%d" % 5678,
-             "run_number": 1242,
+             "run_number": 1243,
              "data_file": 'optional'}
 
 data = json.dumps(data_dict)

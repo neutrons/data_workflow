@@ -4,81 +4,14 @@
 import time
 import stomp
 import sys
-from workflow.settings import brokers, icat_user, icat_passcode
+# set PYTHONPATH to workflow directory
+from settings import brokers, icat_user, icat_passcode 
+from consumer import Consumer
 
-class Listener(stomp.ConnectionListener):
-    def __init__(self, ):
-        self.connected = False
-
-    def on_receipt(self, headers, body):
-        print "RECEIPT: %s" % headers
-        
-    def send(self, destination, message, persistent='true'):
-        conn = stomp.Connection(host_and_ports=brokers, 
-                        user="icat", passcode="icat", 
-                        wait_on_receipt=True)
-        conn.set_listener('worker_bee', self)
-        conn.clientId = "worker_bee"
-        conn.start()
-        conn.connect()
-        conn.send(destination=destination, message=message, persistent=persistent)
-        # Sometimes the socket gets wiped out before we get a chance to complete
-        # disconnecting
-        try:
-            conn.disconnect()
-        except:
-            logging.info("Send socket already closed: skipping disconnection")
-        print "  -> %s" % destination
-        
-    def on_message(self, headers, message):
-        print "<--- %s: %s" % (headers["destination"], message)
-        destination = headers["destination"] 
-        if destination=='/queue/REDUCTION.DATA_READY':
-            self.send('/queue/REDUCTION.STARTED', message, persistent='true')
-            self.send('/queue/REDUCTION.COMPLETE', message, persistent='true')
-        elif destination=='/queue/CATALOG.DATA_READY':
-            self.send('/queue/CATALOG.STARTED', message, persistent='true')
-            self.send('/queue/CATALOG.COMPLETE', message, persistent='true')
-        elif destination=='/queue/REDUCTION_CATALOG.DATA_READY':
-            self.send('/queue/REDUCTION_CATALOG.STARTED', message, persistent='true')
-            self.send('/queue/REDUCTION_CATALOG.COMPLETE', message, persistent='true')
-        
-    def on_disconnected(self):
-        self.connected = False
-        
-    def subscribe(self):
-        conn = stomp.Connection(host_and_ports=brokers, 
-                                user="icat", passcode="icat", 
-                                wait_on_receipt=True)
-        conn.set_listener('worker_bee', self)
-        conn.start()
-        conn.connect(wait=True)
-        conn.subscribe(destination='/queue/CATALOG.DATA_READY', ack='auto', persistent='true')
-        conn.subscribe(destination='/queue/REDUCTION.DATA_READY', ack='auto', persistent='true')
-        conn.subscribe(destination='/queue/REDUCTION_CATALOG.DATA_READY', ack='auto', persistent='true')
-        print "Connected to %s:%d\n" % conn.get_host_and_port()
-        self.connected = True
-        return conn
-        
-    def listen(self):
-        _listen = True
-        conn = None
-        while(_listen):
-            try:
-                conn = self.subscribe()
-                while(self.connected):
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                print "\nStopping"
-                _listen = False
-            except:
-                print sys.exc_value
-                print "\nReconnecting..."
-                time.sleep(3.0)
-            finally:
-                _listen = False
-                if conn is not None and conn.is_connected():
-                    conn.disconnect()
-
-Listener().listen()
-
+queues = ['CATALOG.DATA_READY',
+          'REDUCTION.DATA_READY',
+          'REDUCTION_CATALOG.DATA_READY',
+          'LIVEDATA.UPDATE']
+print brokers
+c = Consumer(brokers, icat_user, icat_passcode, queues)
+c.processing_loop()
