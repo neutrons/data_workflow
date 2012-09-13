@@ -3,6 +3,7 @@
 """
 import stomp
 import json
+import time
 # set PYTHONPATH to workflow directory
 from settings import brokers, icat_user, icat_passcode
 
@@ -21,15 +22,14 @@ def send(destination, message, persistent='true'):
     conn.send(destination=destination, message=message, persistent=persistent)
     conn.disconnect()
     
-    
-data_dict = {"instrument": "HYSA",
+for i in range(1234,1235):    
+    data_dict = {"instrument": "HYSA",
              "ipts": "IPTS-%d" % 5678,
-             "run_number": 1243,
+             "run_number": i,
              "data_file": 'optional'}
 
-data = json.dumps(data_dict)
-
-send('LIVEDATA.UPDATE', data, persistent='true')
-#send('CATALOG.DATA_READY', data)
-send('POSTPROCESS.DATA_READY', data, persistent='true')
-
+    data = json.dumps(data_dict)
+    send('LIVEDATA.UPDATE', data, persistent='true')
+    #send('CATALOG.DATA_READY', data)
+    send('POSTPROCESS.DATA_READY', data, persistent='true')
+    time.sleep(0.1)
