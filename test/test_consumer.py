@@ -4,8 +4,7 @@
 import time
 import stomp
 import sys
-# set PYTHONPATH to workflow directory
-from settings import brokers, icat_user, icat_passcode 
+from workflow.settings import brokers, icat_user, icat_passcode 
 from consumer import Consumer
 
 queues = ['CATALOG.DATA_READY',

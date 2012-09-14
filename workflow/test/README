@@ -1,4 +1,0 @@
-Notes:
-
-1. Set your python path to the workflow directory to run these scripts.  Otherwise the settings will fail
-   Example: export PYTHONPATH=`pwd`  (from the workflow directory above this one)

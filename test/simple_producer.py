@@ -4,9 +4,7 @@
 import stomp
 import json
 import time
-# set PYTHONPATH to workflow directory
-from settings import brokers, icat_user, icat_passcode
-
+from workflow.settings import brokers, icat_user, icat_passcode
 
 def send(destination, message, persistent='true'):
     """

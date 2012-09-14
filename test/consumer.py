@@ -2,7 +2,6 @@
     Dummy client to simulate the worker nodes
 """
 import time
-#import states
 import stomp
 import sys
 import logging
