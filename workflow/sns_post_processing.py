@@ -71,7 +71,9 @@ if __name__ == "__main__":
     
     daemon = WorkflowDaemon('/tmp/workflow.pid',
                             stdout=stdout_file,
-                            stderr=stderr_file)
+                            stderr=stderr_file,
+                            check_frequency=namespace.check_frequency,
+                            workflow_recovery=namespace.recover)
     
     if namespace.command == 'start':
         daemon.start()
