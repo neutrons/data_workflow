@@ -211,10 +211,17 @@ class WorkflowSummary(models.Model):
         self.save()
 
          
-class Errors(models.Model):
+class Error(models.Model):
     """
         Details of a particular error event
     """   
     run_status_id = models.ForeignKey(RunStatus)
     description = models.CharField(max_length=200, null=True)
             
+
+class Information(models.Model):
+    """
+        Extra information associated with a status update
+    """
+    run_status_id = models.ForeignKey(RunStatus)
+    description = models.CharField(max_length=200, null=True)

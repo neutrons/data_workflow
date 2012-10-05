@@ -20,7 +20,8 @@ from workflow_process import WorkflowProcess
 
 class WorkflowManager(stomp.ConnectionListener):
 
-    def __init__(self, brokers, user, passcode, queues=[], workflow_check=False):
+    def __init__(self, brokers, user, passcode, queues=[], workflow_check=False,
+                 check_frequency=24, workflow_recovery=False):
         """
             @param brokers: list of brokers we can connect to
             @param user: activemq user
@@ -35,9 +36,10 @@ class WorkflowManager(stomp.ConnectionListener):
         ## Delay between loops
         self._delay = 5.0
         ## Delay between workflow check [in seconds]
-        self._workflow_check_delay = 60.0*60.0*24.0
+        self._workflow_check_delay = 60.0*60.0*check_frequency
         self._workflow_check_start = time.time()
         self._workflow_check = workflow_check
+        self._workflow_recovery = workflow_recovery
         self._connection = None
         self._connected = False
         
@@ -79,7 +81,7 @@ class WorkflowManager(stomp.ConnectionListener):
     def verify_workflow(self):
         if self._workflow_check:
             try:
-                WorkflowProcess().verify_workflow()
+                WorkflowProcess(recovery=self._workflow_recovery).verify_workflow()
             except:
                 logging.error("Workflow verification failed: %s" % sys.exc_value)
         

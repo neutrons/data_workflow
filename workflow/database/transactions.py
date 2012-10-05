@@ -13,7 +13,8 @@ from django.db import transaction
 sys.path.append(os.path.dirname(__file__))
 
 # Import your models for use in your script
-from database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary, IPTS, Instrument
+from database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
+from database.report.models import IPTS, Instrument, Error, Information
 
 @transaction.commit_on_success
 def add_status_entry(headers, data):
@@ -99,6 +100,24 @@ def add_status_entry(headers, data):
                            queue_id=status_id,
                            message_id=headers["message-id"])
     run_status.save()
+    
+    # Create an information entry as necessary
+    # Truncate to max length of DB character field
+    if "information" in data_dict:
+        data = data_dict["information"]
+        mesg = (data[:198] + '..') if len(data) > 200 else data
+        print mesg
+        info = Information(run_status_id=run_status,
+                           description=mesg)
+        info.save()
+    
+    # Create error entry as necessary
+    if "error" in data_dict:
+        data = data_dict["error"]
+        mesg = (data[:198] + '..') if len(data) > 200 else data
+        error = Error(run_status_id=run_status,
+                      description=mesg)
+        error.save()
     
     # Update the workflow summary
     summary_id = WorkflowSummary.objects.get_summary(run_id)
