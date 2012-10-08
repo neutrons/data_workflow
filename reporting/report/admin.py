@@ -13,11 +13,17 @@ class InformationAdmin(admin.ModelAdmin):
 
 class ErrorAdmin(admin.ModelAdmin):
     list_display = ('run_status_id', 'description')
+    
+class WorkflowSummaryAdmin(admin.ModelAdmin):
+    list_display = ('run_id', 'complete', 'catalog_started', 'cataloged',
+                    'reduction_needed', 'reduction_started', 'reduced', 
+                    'reduction_cataloged', 'reduction_catalog_started')
+    search_fields = ['run_id__run_number']
 
 admin.site.register(DataRun, DataRunAdmin)
 admin.site.register(StatusQueue)
 admin.site.register(RunStatus, RunStatusAdmin)
-admin.site.register(WorkflowSummary)
+admin.site.register(WorkflowSummary, WorkflowSummaryAdmin)
 admin.site.register(IPTS)
 admin.site.register(Instrument)
 admin.site.register(Information, InformationAdmin)

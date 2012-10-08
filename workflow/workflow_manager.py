@@ -11,9 +11,12 @@ import logging
 
 # Set log level
 logging.getLogger().setLevel(logging.INFO)
+# Formatter
+ft = logging.Formatter('%(asctime)-15s %(message)s')
 # Create a log file handler
 fh = logging.FileHandler('workflow.log')
 fh.setLevel(logging.INFO)
+fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
 
 from workflow_process import WorkflowProcess
@@ -28,6 +31,8 @@ class WorkflowManager(stomp.ConnectionListener):
             @param passcode: passcode for activemq user
             @param queues: list of queues to listen to
             @param workflow_check: if True, the workflow will be checked at a given interval
+            @param check_frequency: number of hours between workflow checks
+            @param workflow_recovery: if True, the manager will try to recover from workflow problems
         """
         self._brokers = brokers
         self._user = user

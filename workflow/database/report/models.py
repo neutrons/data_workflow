@@ -108,6 +108,16 @@ class RunStatusManager(models.Manager):
             return super(RunStatusManager, self).get_query_set().filter(run_id=run_id, queue_id=status_id)
         return []
 
+    def last_timestamp(self, run_id):
+        """
+            Returns the last timestamp for this run
+            @param run_id: DataRun object
+        """
+        timestamps = super(RunStatusManager, self).get_query_set().filter(run_id=run_id).order_by('-created_on')
+        if len(timestamps)>0:
+            return timestamps[0].created_on
+        return None
+    
 class RunStatus(models.Model):
     """
         Map ActiveMQ messages, which have a header like this:
@@ -180,6 +190,12 @@ class WorkflowSummary(models.Model):
         """
             Update status according the messages received
         """
+        # Check whether we have data
+        if len(RunStatus.objects.status(self.run_id, 'POSTPROCESS.DATA_READY'))==0:
+            self.complete = True
+            self.save()
+            return
+            
         # Look for cataloging status
         if len(RunStatus.objects.status(self.run_id, 'CATALOG.COMPLETE'))>0:
             self.cataloged = True

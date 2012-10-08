@@ -128,5 +128,6 @@ if __name__ == '__main__':
             
             data = json.dumps(data_dict)
             
-            send('POSTPROCESS.INFO', data)
+            send('CATALOG.COMPLETE', data)
+            send('REDUCTION.NOT_NEEDED', data)
     

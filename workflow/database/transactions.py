@@ -73,7 +73,7 @@ def add_status_entry(headers, data):
             ipts_id.save()
     except:
         traceback.print_exc()
-        logging(sys.exc_value)
+        logging.error(sys.exc_value)
 
     # Check whether we already have an entry for this run
     run_number = data_dict["run_number"]
@@ -106,7 +106,6 @@ def add_status_entry(headers, data):
     if "information" in data_dict:
         data = data_dict["information"]
         mesg = (data[:198] + '..') if len(data) > 200 else data
-        print mesg
         info = Information(run_status_id=run_status,
                            description=mesg)
         info.save()
