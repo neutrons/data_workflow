@@ -1,6 +1,6 @@
 // ****************************************************************************
 //
-/// @filename: AmqClient.h
+///  @filename: AmqClient.h
 ///
 ///  @author: D. Reitz
 ///
@@ -36,6 +36,8 @@ namespace Utils
 
 class AmqClient
 {
+
+protected:
    std::string m_brokerUri;
    std::string m_user;
    std::string m_pass;
@@ -51,9 +53,9 @@ public:
    AmqClient( const std::string& brokerUri, const std::string& user, const std::string& pass);
    ~AmqClient();
 
-   /// @brief sends the text message to the Queue by name
-   /// @return true if messsage was sent successfully
-   bool send(const std::string& queueName, const RunInfo& text);
+   /// @brief sends the run info message to the Queue by name
+   /// @return true if message was sent successfully
+   bool send(const std::string& queueName, const RunInfo& ri);
 
    /// @todo implement a receive if needed
 

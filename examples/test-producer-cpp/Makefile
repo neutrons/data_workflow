@@ -1,5 +1,5 @@
-INCS += `activemqcpp-config --includes`
-LIBS += `activemqcpp-config --libs`
+INCS += $(shell activemqcpp-config --includes)
+LIBS += $(shell activemqcpp-config --libs)
 SOURCES := $(shell ls *.cpp)
 
 OBJS = $(SOURCES:.cpp=.o)

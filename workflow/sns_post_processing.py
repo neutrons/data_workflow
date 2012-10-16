@@ -8,7 +8,9 @@ import argparse
 
 # List of queues to listen to. Each queue must have a
 # corresponding class in states.py
-queues = ['POSTPROCESS.DATA_READY',
+queues = ['TRANSLATION.STARTED',
+          'TRANSLATION.COMPLETE',
+          'POSTPROCESS.DATA_READY',
           'CATALOG.STARTED',
           'CATALOG.COMPLETE',
           'REDUCTION.STARTED',
