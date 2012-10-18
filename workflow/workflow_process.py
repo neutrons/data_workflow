@@ -10,14 +10,18 @@ import datetime
 
 class WorkflowProcess(object):
     
-    def __init__(self, connection=None, recovery=False):
+    def __init__(self, connection=None, recovery=False, allowed_lag=None):
         """
             @param recovery: if True, the system will try to recover from workflow problems
+            @param allowed_lag: minimum number of seconds since last activity needed before identifying a problem
         """
         self._connection = connection
         self._recovery = recovery
         # Amount of time allowed before we start worrying about workflow issues
-        self._allowed_lag = datetime.timedelta(days=1)
+        if allowed_lag is None:
+            self._allowed_lag = datetime.timedelta(days=1)
+        else:
+            self._allowed_lag = datetime.timedelta(seconds=allowed_lag)
         
     def has_status(self, status):
         """

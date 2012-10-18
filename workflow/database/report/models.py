@@ -10,6 +10,21 @@ class InstrumentManager(models.Manager):
         if len(instrument_ids) > 0:
             return instrument_ids[0]
         return None
+    
+    def sql_dump(self):
+        sql = ''
+        instrument_ids = super(InstrumentManager, self).get_query_set()
+        max_instr_id = 1
+        for item in instrument_ids:
+            max_instr_id = max(max_instr_id, item.id)
+            sql += 'INSERT INTO report_instrument('
+            sql += 'id, name) '
+            sql += 'VALUES (%d, ' % item.id
+            sql += '\'%s\');\n' % item.name
+
+        sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_instr_id
+
+        return sql
         
 
 class Instrument(models.Model):
@@ -41,7 +56,7 @@ class IPTS(models.Model):
         Table holding IPTS information
     """
     expt_name = models.CharField(max_length=20, unique=True)
-    instruments = models.ManyToManyField(Instrument)
+    instruments = models.ManyToManyField(Instrument, related_name='_ipts_instruments+')
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = IPTSManager()
     
@@ -241,3 +256,77 @@ class Information(models.Model):
     """
     run_status_id = models.ForeignKey(RunStatus)
     description = models.CharField(max_length=200, null=True)
+
+
+class TaskManager(models.Manager):
+    def sql_dump(self):
+        """
+            Get the object associated to an instrument name
+        """
+        task_ids = super(TaskManager, self).get_query_set()
+        sql = ''
+        max_task_id = 1
+        for item in task_ids:
+            max_task_id = max(max_task_id, item.id)
+            sql += 'INSERT INTO report_task('
+            sql += 'id, instrument_id_id, input_queue_id_id, task_class) '
+            sql += 'VALUES (%d, ' % item.id
+            sql += '%d, ' % item.instrument_id.id
+            sql += '%d, ' % item.input_queue_id.id
+            sql += '\'%s\');\n' % item.task_class
+
+            for q in item.task_queue_ids.all():
+                sql += 'INSERT INTO report_task_task_queue_ids('
+                sql += 'task_id, statusqueue_id) '
+                sql += 'VALUES (%d, ' % item.id
+                sql += '%d);\n' % q.id
+
+            for q in item.success_queue_ids.all():
+                sql += 'INSERT INTO report_task_success_queue_ids('
+                sql += 'task_id, statusqueue_id) '
+                sql += 'VALUES (%d, ' % item.id
+                sql += '%d);\n' % q.id
+                
+            sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_task_id
+
+        return sql
+
+class Task(models.Model):
+    """
+        Define a task
+    """
+    ## Instrument ID
+    instrument_id = models.ForeignKey(Instrument)
+    ## Message queue that starts this task
+    input_queue_id = models.ForeignKey(StatusQueue)
+    ## Python class to be instantiated and run
+    task_class = models.CharField(max_length=50, null=True)
+    ## Output messages to be sent
+    task_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_task_queue_ids+')
+    ## Expected success messages from tasks
+    # Map one-to-one with task queue IDs
+    success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+') 
+    objects = TaskManager()
+    
+    def task_queues(self):
+        queues = ""
+        for q in self.task_queue_ids.all():
+            queues += "%s; " % str(q)
+        return queues
+
+    def success_queues(self):
+        queues = ""
+        for q in self.success_queue_ids.all():
+            queues += "%s; " % str(q)
+        return queues
+
+    def json_encode(self):
+        """
+            Encode the object as a JSON dictionary
+        """
+        return json.dumps({"instrument": self.instrument_id.name,
+                           "input_queue": str(self.input_queue_id),
+                           "task_class": self.task_class,
+                           "task_queues": [str(q) for q in self.task_queue_ids.all()],
+                           "success_queues": [str(q) for q in self.success_queue_ids.all()]})
+        

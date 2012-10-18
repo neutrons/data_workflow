@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(__file__))
 
 # Import your models for use in your script
 from database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
-from database.report.models import IPTS, Instrument, Error, Information
+from database.report.models import IPTS, Instrument, Error, Information, Task
 
 @transaction.commit_on_success
 def add_status_entry(headers, data):
@@ -131,3 +131,62 @@ def add_workflow_status_entry(destination, message):
         @param message: JSON encoded data dictionary
     """
     pass
+
+def get_task(message_headers, message_data):
+    """
+        Find the DB entry for this queue
+        @param headers: message headers
+        @param message: JSON-encoded message content
+    """
+    if "destination" in message_headers:
+        destination = message_headers["destination"].replace('/queue/','')
+        status_ids = StatusQueue.objects.filter(name__startswith=destination)
+        if len(status_ids)>0:
+            status_id = status_ids[0]
+    else:
+        logging.error("transactions.get_task got badly formed message header")
+        return None
+
+    # Process the data
+    try:
+        data_dict = json.loads(message_data)
+    except:
+        logging.error("transactions.get_task expects JSON-encoded message: %s" % sys.exc_value)
+        return None
+
+    # Look for instrument
+    if "instrument" in data_dict:
+        instrument = data_dict["instrument"].lower()
+        try:
+            instrument_id = Instrument.objects.get(name=instrument)
+        except Instrument.DoesNotExist:
+            logging.error("transactions.get_task could not find instrument entry")
+            return None
+    else:
+        logging.error("transactions.get_task could not find instrument information")
+        return None
+        
+    task_ids = Task.objects.filter(instrument_id=instrument_id, input_queue_id=status_id)
+    if len(task_ids)==1:
+        return task_ids[0].json_encode()
+    elif len(task_ids)>1:
+        logging.error("Sanity check problem: %s has more than one action for %s queue" % (instrument, destination))
+    
+    return None
+    
+def sql_dump_tasks():
+    """
+        Dump the SQL necessary to insert the current task definitions
+    """
+    sql = ''
+    sql += Instrument.objects.sql_dump()
+    sql += '\n'
+    sql += Task.objects.sql_dump()
+    
+    fd = open('task.sql', 'w')
+    fd.write(sql)
+    fd.close()
+
+    print sql
+    
+    

@@ -24,8 +24,15 @@ from workflow_process import WorkflowProcess
 class WorkflowManager(stomp.ConnectionListener):
 
     def __init__(self, brokers, user, passcode, queues=[], workflow_check=False,
-                 check_frequency=24, workflow_recovery=False):
+                 check_frequency=24, workflow_recovery=False,
+                 flexible_tasks=False):
         """
+            Start a workflow manager. 
+            If flexible_tasks is True, the definition of the actions to be taken
+            in response to a given message will be defined in the DB in the Task table.
+            Otherwise, the hard-coded actions will be used and the tasks defined in 
+            the DB will be ignored.
+            
             @param brokers: list of brokers we can connect to
             @param user: activemq user
             @param passcode: passcode for activemq user
@@ -33,6 +40,7 @@ class WorkflowManager(stomp.ConnectionListener):
             @param workflow_check: if True, the workflow will be checked at a given interval
             @param check_frequency: number of hours between workflow checks
             @param workflow_recovery: if True, the manager will try to recover from workflow problems
+            @param flexible_tasks: if True, the workflow tasks will be defined by the DB
         """
         self._brokers = brokers
         self._user = user
@@ -47,6 +55,7 @@ class WorkflowManager(stomp.ConnectionListener):
         self._workflow_recovery = workflow_recovery
         self._connection = None
         self._connected = False
+        self._flexible_tasks = flexible_tasks
         
     def on_message(self, headers, message):
         """
@@ -63,14 +72,14 @@ class WorkflowManager(stomp.ConnectionListener):
         
         # Find a custom action for this message
         action = None
-        if hasattr(states, destination):
+        if not self._flexible_tasks and hasattr(states, destination):
             action_cls = getattr(states, destination)
             if action_cls is not None:
                 action = action_cls()
                 
         # If no custom action was found, use the default
         if action is None:
-            action = states.StateAction()
+            action = states.StateAction(use_db_task=self._flexible_tasks)
         
         # Execute the appropriate action
         try:
@@ -86,7 +95,8 @@ class WorkflowManager(stomp.ConnectionListener):
     def verify_workflow(self):
         if self._workflow_check:
             try:
-                WorkflowProcess(recovery=self._workflow_recovery).verify_workflow()
+                WorkflowProcess(recovery=self._workflow_recovery,
+                                allowed_lag=self._workflow_check_delay).verify_workflow()
             except:
                 logging.error("Workflow verification failed: %s" % sys.exc_value)
         

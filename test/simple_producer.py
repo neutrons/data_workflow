@@ -24,10 +24,13 @@ for i in range(1234,1235):
     data_dict = {"instrument": "HYSA",
              "ipts": "IPTS-%d" % 5678,
              "run_number": i,
-             "data_file": 'optional'}
+             "data_file": 'optional',
+             "information": 'some info',
+             "error": 'some error'}
 
     data = json.dumps(data_dict)
-    send('LIVEDATA.UPDATE', data, persistent='true')
+    #send('LIVEDATA.UPDATE', data, persistent='true')
     #send('CATALOG.DATA_READY', data)
+    #send('POSTPROCESS.INFO', data, persistent='true')
     send('POSTPROCESS.DATA_READY', data, persistent='true')
     time.sleep(0.1)
