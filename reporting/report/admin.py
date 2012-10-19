@@ -15,7 +15,7 @@ class ErrorAdmin(admin.ModelAdmin):
     list_display = ('run_status_id', 'description')
     
 class StatusQueueAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
+    list_display = ('id', 'name', 'is_workflow_input')
     
 class WorkflowSummaryAdmin(admin.ModelAdmin):
     list_display = ('run_id', 'complete', 'catalog_started', 'cataloged',

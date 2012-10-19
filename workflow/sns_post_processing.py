@@ -6,23 +6,6 @@ import sys
 import os
 import argparse
 
-# List of queues to listen to. Each queue must have a
-# corresponding class in states.py
-queues = ['TRANSLATION.STARTED',
-          'TRANSLATION.COMPLETE',
-          'POSTPROCESS.DATA_READY',
-          'CATALOG.STARTED',
-          'CATALOG.COMPLETE',
-          'REDUCTION.STARTED',
-          'REDUCTION.DISABLED',
-          'REDUCTION.COMPLETE',
-          'REDUCTION.NOT_NEEDED',
-          'REDUCTION_CATALOG.STARTED',
-          'REDUCTION_CATALOG.COMPLETE',
-          'POSTPROCESS.INFO',
-          'POSTPROCESS.ERROR',
-          'POSTPROCESS.CHECK']
-
 class WorkflowDaemon(Daemon):
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null',
                  check_frequency=None, workflow_recovery=False, flexible_tasks=False):
@@ -51,7 +34,7 @@ class WorkflowDaemon(Daemon):
             check_frequency = self._check_frequency
             workflow_check = True
             
-        mng = WorkflowManager(brokers, icat_user, icat_passcode, queues, 
+        mng = WorkflowManager(brokers, icat_user, icat_passcode,
                               workflow_check=workflow_check,
                               check_frequency=check_frequency,
                               workflow_recovery=self._workflow_recovery,

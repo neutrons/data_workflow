@@ -103,6 +103,7 @@ class StatusQueue(models.Model):
         used as status
     """
     name = models.CharField(max_length=100, unique=True)
+    is_workflow_input = models.BooleanField(default=False)
     
     def __unicode__(self):
         return self.name

@@ -20,10 +20,11 @@ fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
 
 from workflow_process import WorkflowProcess
+from database.transactions import get_message_queues
 
 class WorkflowManager(stomp.ConnectionListener):
 
-    def __init__(self, brokers, user, passcode, queues=[], workflow_check=False,
+    def __init__(self, brokers, user, passcode, queues=None, workflow_check=False,
                  check_frequency=24, workflow_recovery=False,
                  flexible_tasks=False):
         """
@@ -45,7 +46,6 @@ class WorkflowManager(stomp.ConnectionListener):
         self._brokers = brokers
         self._user = user
         self._passcode = passcode
-        self._queues = queues
         ## Delay between loops
         self._delay = 5.0
         ## Delay between workflow check [in seconds]
@@ -56,6 +56,10 @@ class WorkflowManager(stomp.ConnectionListener):
         self._connection = None
         self._connected = False
         self._flexible_tasks = flexible_tasks
+        
+        self._queues = queues
+        if self._queues is None:
+            self._queues = get_message_queues(True)
         
     def on_message(self, headers, message):
         """

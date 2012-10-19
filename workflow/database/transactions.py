@@ -174,13 +174,16 @@ def get_task(message_headers, message_data):
     
     return None
     
-def get_message_queues():
+def get_message_queues(only_workflow_inputs=True):
     """
         Get the list of message queues from the DB
+        @param only_workflow_inputs: if True, only the queues that the workflow manager listens to will be returned
     """
-    queue_ids = StatusQueue.objects.all()
+    if only_workflow_inputs:
+        queue_ids = StatusQueue.objects.filter(is_workflow_input=True)
+    else:
+        queue_ids = StatusQueue.objects.all()
     return [str(q) for q in queue_ids]
-    
     
 def _get_queue_ids(queue_list):
     queue_ids = []
