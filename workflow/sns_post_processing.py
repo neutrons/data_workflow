@@ -96,10 +96,10 @@ if __name__ == "__main__":
     parser_task.add_argument('-c', metavar='task class', default='',
                              help='name of the class to be instantiated and executed',
                              dest='task_class')
-    parser_task.add_argument('-t', metavar='task queues', required=True, nargs='+',
+    parser_task.add_argument('-t', metavar='task queues', nargs='+',
                              help='list of task message queues',
                              dest='task_queues')
-    parser_task.add_argument('-s', metavar='success queues', required=True, nargs='+',
+    parser_task.add_argument('-s', metavar='success queues', nargs='+',
                              help='list of task success message queues',
                              dest='success_queues')
     

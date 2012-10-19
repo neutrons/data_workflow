@@ -287,7 +287,7 @@ class TaskManager(models.Manager):
                 sql += 'VALUES (%d, ' % item.id
                 sql += '%d);\n' % q.id
                 
-            sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_task_id
+        sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_task_id
 
         return sql
 

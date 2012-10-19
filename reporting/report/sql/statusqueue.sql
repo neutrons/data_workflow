@@ -33,6 +33,8 @@ SELECT pg_catalog.setval('report_instrument_id_seq', 2, true);
 --
 -- Task definitions
 --
+INSERT INTO report_task(id, instrument_id_id, input_queue_id_id, task_class) VALUES (1, 2, 17, 'workflow_process.WorkflowProcess');
+
 INSERT INTO report_task(id, instrument_id_id, input_queue_id_id, task_class) VALUES (2, 2, 1, ' ');
 INSERT INTO report_task_task_queue_ids(task_id, statusqueue_id) VALUES (2, 4);
 INSERT INTO report_task_task_queue_ids(task_id, statusqueue_id) VALUES (2, 7);
