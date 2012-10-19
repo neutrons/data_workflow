@@ -65,26 +65,17 @@ class WorkflowManager(stomp.ConnectionListener):
                   destination': '/queue/POSTPROCESS.DATA_READY', 
                   'persistent': 'true', 'priority': '5', 
                   'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
+
+            @param headers: message headers
+            @param message: JSON-encoded message content
         """
-        destination = headers["destination"].replace('/queue/','')
-        destination = destination.replace('.', '_')
-        destination = destination.capitalize()
-        
-        # Find a custom action for this message
-        action = None
-        if not self._flexible_tasks and hasattr(states, destination):
-            action_cls = getattr(states, destination)
-            if action_cls is not None:
-                action = action_cls()
-                
-        # If no custom action was found, use the default
-        if action is None:
-            action = states.StateAction(use_db_task=self._flexible_tasks)
+        # Acknowledge message
+        # self._connection.ack(headers)
         
         # Execute the appropriate action
         try:
+            action = states.StateAction(use_db_task=self._flexible_tasks)
             action(headers, message)
-            #self._connection.ack(headers);
         except:
             type, value, tb = sys.exc_info()
             logging.error("%s: %s" % (type, value))

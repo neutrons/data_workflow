@@ -23,13 +23,9 @@ class WorkflowProcess(object):
         else:
             self._allowed_lag = datetime.timedelta(seconds=allowed_lag)
         
-    def has_status(self, status):
-        """
-            Checks that a particular status message type
-            exists for this run
-        """
-        pass
-        
+    def __call__(self, *args, **kwargs):
+        return self.verify_workflow()
+    
     def verify_workflow(self):
         """
             Walk through the data runs and make sure they have

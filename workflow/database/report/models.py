@@ -22,7 +22,7 @@ class InstrumentManager(models.Manager):
             sql += 'VALUES (%d, ' % item.id
             sql += '\'%s\');\n' % item.name
 
-        sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_instr_id
+        sql += "SELECT pg_catalog.setval('report_instrument_id_seq', %d, true);\n" % max_instr_id
 
         return sql
         

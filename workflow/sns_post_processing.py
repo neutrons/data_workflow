@@ -20,7 +20,8 @@ queues = ['TRANSLATION.STARTED',
           'REDUCTION_CATALOG.STARTED',
           'REDUCTION_CATALOG.COMPLETE',
           'POSTPROCESS.INFO',
-          'POSTPROCESS.ERROR']
+          'POSTPROCESS.ERROR',
+          'POSTPROCESS.CHECK']
 
 class WorkflowDaemon(Daemon):
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null',

@@ -174,6 +174,13 @@ def get_task(message_headers, message_data):
     
     return None
     
+def get_message_queues():
+    """
+        Get the list of message queues from the DB
+    """
+    queue_ids = StatusQueue.objects.all()
+    return [str(q) for q in queue_ids]
+    
 def sql_dump_tasks():
     """
         Dump the SQL necessary to insert the current task definitions
