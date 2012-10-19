@@ -181,6 +181,88 @@ def get_message_queues():
     queue_ids = StatusQueue.objects.all()
     return [str(q) for q in queue_ids]
     
+    
+def _get_queue_ids(queue_list):
+    queue_ids = []
+    if type(queue_list)==list:
+        for q in queue_list:
+            q = str(q).strip().upper()
+            # Find queue in DB
+            try:
+                q_id = StatusQueue.objects.get(name=q)
+                queue_ids.append(q_id)
+            except StatusQueue.DoesNotExist:
+                logging.error("transactions.add_task could not find task queue %s" % q)
+                return None
+    elif queue_list is None:
+        return []
+    else:
+        logging.error("transactions.add_task expects a list of queue names")
+        return None
+    return queue_ids
+    
+def add_task(instrument, input_queue, task_class='', task_queues=None, success_queues=None):
+    """
+    """
+    # Find instrument
+    try:
+        instrument_id = Instrument.objects.get(name=instrument)
+    except Instrument.DoesNotExist:
+        logging.error("transactions.add_task could not find instrument entry")
+        return
+    
+    # Find input queue
+    try:
+        input_id = StatusQueue.objects.get(name=input_queue.upper())
+    except StatusQueue.DoesNotExist:
+        logging.error("transactions.add_task could not find input queue")
+        return
+    
+    # Find task queues
+    if type(task_queues)==str:
+        task_queues = [task_queues]
+    task_queue_ids = _get_queue_ids(task_queues)
+    if task_queue_ids is None:
+        logging.error("transactions.add_task could not process task queues")
+        return
+    
+    # Find success queues
+    if type(success_queues)==str:
+        success_queues = [success_queues]
+    success_queue_ids = _get_queue_ids(success_queues)
+    if success_queue_ids is None:
+        logging.error("transactions.add_task could not process success queues")
+        return
+    
+    # Sanity check
+    if len(task_queue_ids) != len(success_queue_ids):
+        logging.error("transactions.add_task expects the same number of tasks and success queues")
+        return
+    
+    # Find whether it already exists
+    try:
+        task_id = Task.objects.get(instrument_id=instrument_id,
+                                   input_queue_id=input_id)
+    except Task.DoesNotExist:
+        task_id = None
+    
+    if task_id is not None:
+        task_id.task_class=str(task_class)
+    else:
+        task_id = Task(instrument_id=instrument_id,
+                       input_queue_id=input_id,
+                       task_class=str(task_class))
+        task_id.save()
+        
+    task_id.task_queue_ids.clear()
+    for q in task_queue_ids:
+        task_id.task_queue_ids.add(q)
+        
+    task_id.success_queue_ids.clear()
+    for q in success_queue_ids:
+        task_id.success_queue_ids.add(q)
+    task_id.save()
+    
 def sql_dump_tasks():
     """
         Dump the SQL necessary to insert the current task definitions

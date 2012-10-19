@@ -59,27 +59,52 @@ class WorkflowDaemon(Daemon):
         mng.processing_loop()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='SNS data workflow manager')
+    # Start/restart options
+    start_parser = argparse.ArgumentParser(add_help=False)
     
     # Location of the output directory, where we put the output.log and error.log files
-    parser.add_argument('-o', metavar='directory',
+    start_parser.add_argument('-o', metavar='directory',
                         help='location of the output directory',
                         dest='output_dir')
-    
-    parser.add_argument('command', choices=['start', 'stop', 'restart', 'dump'])
-    
+
     # Workflow verification and recovery options
-    parser.add_argument('-f', metavar='hours',
+    start_parser.add_argument('-f', metavar='hours',
                         help='number of hours between workflow checks',
                         type=int, dest='check_frequency')
     
-    parser.add_argument('-r', help='try to recover from workflow problems',
+    start_parser.add_argument('-r', help='try to recover from workflow problems',
                         action='store_true', dest='recover')
     
-    parser.add_argument('--flexible_tasks', help='read task definitions from DB',
+    start_parser.add_argument('--flexible_tasks', help='read task definitions from DB',
                         action='store_true', dest='flexible_tasks')
     
-    namespace =  parser.parse_args()
+
+    parser = argparse.ArgumentParser(description='SNS data workflow manager')
+    subparsers = parser.add_subparsers(dest='command', help='available sub-commands')
+        
+    subparsers.add_parser('start', help='Start daemon [-h for help]', parents=[start_parser])
+    subparsers.add_parser('restart', help='Restart daemon [-h for help]', parents=[start_parser])
+    subparsers.add_parser('stop', help='Stop daemon')
+    subparsers.add_parser('dump', help='Dump task SQL')
+    parser_task = subparsers.add_parser('add_task', help='Add task definition [-h for help]')
+    parser_task.add_argument('-i', metavar='instrument', required=True,
+                             help='name of the instrument to add the task for',
+                             dest='instrument')
+    parser_task.add_argument('-q', metavar='input queue', required=True,
+                             help='name of the input queue that triggers the task',
+                             dest='input_queue')
+    parser_task.add_argument('-c', metavar='task class', default='',
+                             help='name of the class to be instantiated and executed',
+                             dest='task_class')
+    parser_task.add_argument('-t', metavar='task queues', required=True, nargs='+',
+                             help='list of task message queues',
+                             dest='task_queues')
+    parser_task.add_argument('-s', metavar='success queues', required=True, nargs='+',
+                             help='list of task success message queues',
+                             dest='success_queues')
+    
+    namespace = parser.parse_args()
+    #print namespace
     
     # If we just need to dump the workflow tables,
     # do it and stop here
@@ -87,23 +112,40 @@ if __name__ == "__main__":
         from database import transactions
         transactions.sql_dump_tasks()
         sys.exit(0)
+    elif namespace.command == 'add_task':
+        from database import transactions
+        transactions.add_task(instrument=namespace.instrument, 
+                              input_queue=namespace.input_queue,
+                              task_class=namespace.task_class,
+                              task_queues=namespace.task_queues,
+                              success_queues=namespace.success_queues)
+        sys.exit(0)
         
-    print namespace
-
     stdout_file = None
     stderr_file = None
-    if namespace.output_dir is not None:
-        if not os.path.isdir(namespace.output_dir):
-            os.makedirs(namespace.output_dir)
-        stdout_file = os.path.join(namespace.output_dir, 'output.log')
-        stderr_file = os.path.join(namespace.output_dir, 'error.log')
+    check_frequency = None
+    recover = False
+    flexible_tasks = False
+    
+    if namespace.command in ['start', 'restart']:
+        if namespace.output_dir is not None:
+            if not os.path.isdir(namespace.output_dir):
+                os.makedirs(namespace.output_dir)
+            stdout_file = os.path.join(namespace.output_dir, 'output.log')
+            stderr_file = os.path.join(namespace.output_dir, 'error.log')
+        if namespace.check_frequency is not None:
+            check_frequency = namespace.check_frequency
+        if namespace.recover is not None:
+            recover = namespace.recover
+        if namespace.flexible_tasks is not None:
+            flexible_tasks = namespace.flexible_tasks
     
     daemon = WorkflowDaemon('/tmp/workflow.pid',
                             stdout=stdout_file,
                             stderr=stderr_file,
-                            check_frequency=namespace.check_frequency,
-                            workflow_recovery=namespace.recover,
-                            flexible_tasks=namespace.flexible_tasks)
+                            check_frequency=check_frequency,
+                            workflow_recovery=recover,
+                            flexible_tasks=flexible_tasks)
     
     if namespace.command == 'start':
         daemon.start()
