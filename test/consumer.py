@@ -16,11 +16,6 @@ class Consumer(stomp.ConnectionListener):
         self._user = user
         self._passcode = passcode
         self._queues = queues
-        ## Delay between loops
-        self._delay = 5.0
-        self._connection = None
-        self._connected = False
-
 
     def on_receipt(self, headers, body):
         print "RECEIPT: %s" % headers
@@ -91,9 +86,6 @@ class Consumer(stomp.ConnectionListener):
         self.connect()
         while(self._connected):
             time.sleep(waiting_period)
-            #from workflow_process import WorkflowProcess
-            #wk = WorkflowProcess()
-            #wk.verify_workflow()
 
     def processing_loop(self):
         _listen = True
