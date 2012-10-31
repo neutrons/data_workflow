@@ -4,28 +4,34 @@
 {% block banner %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
 
 {% block summary %}
-  	{{ instrument }} run {{ run_object.run_number }}<br>
-  	Title: {{ icat_info.title|default:"unknown" }}<br>
-  	Last known location: {{ run_object.file }}
-  	
+      {{ instrument }} run {{ run_object.run_number }}<br>
+      Title: {{ icat_info.title|default:"unknown" }}<br>
+      Last known location: {{ run_object.file }}
 {% endblock %}
 
 {% block content %}
-  	<div id="details">
-  	<table cellspacing="0" class="message_table">
-  	<thead>
-  	<tr>
-  		<th>Time</th> <th>Message</th>
-  	</tr>
-  	</thead>
-  	<tbody>
-   	{% for item in status %}
-	   	<tr>
-	   	<td>{{ item.created_on }}</td><td>{{ item.queue_id.name }}</td>
-	   	</tr>
-   	{% endfor %}
-   	</tbody>
-   	</table>
-   	</div>
+      <div id="details">
+      <table cellspacing="0" class="message_table">
+      <thead>
+      <tr>
+      {% for item in status_header %}
+        <th {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
+      {% endfor %}
+      </tr>
+      </thead>
+      <tbody>
+        {% for item in status %}
+        <tr>
+            <td>{{ item.created_on }}</td><td>{{ item.queue_id.name }}</td>
+            {% if item.last_error %} 
+            <td class="error">{{ item.last_error.description }}</td>
+            {% else %}
+            <td>{{ item.last_info.description }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+      </div>
 
 {% endblock %}

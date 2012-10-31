@@ -1,0 +1,143 @@
+
+/* TABLES */
+.message_table {
+	min-width:500px;
+	font-size: 14px;
+}
+
+.data_table {
+	width:700px;
+	border-collapse: collapse;
+    border-color: #ccc;
+}
+.delete_icon {
+	background: white; border: 0px; padding:0px; padding-top:5px; padding-left:3px;
+	width:15px;
+}
+
+.data_table td {
+	border-bottom: 1px solid #eee;
+}
+.data_table td:last-child{
+	border-bottom: 0px;
+}
+
+
+td, th {
+    font-size: 11px;
+    line-height: 13px;
+    vertical-align: top;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    
+}
+
+td.error {
+	color: #9d301d;
+}
+
+th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+thead th,
+tfoot td {
+    /* color: #666; */
+    padding: 2px 5px;
+    font-size: 10px;
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+tfoot td {
+    border-bottom: none;
+    border-top: 1px solid #ddd;
+}
+
+thead th:first-child,
+tfoot td:first-child {
+    border-left: none !important;
+}
+
+thead th.optional {
+    font-weight: normal !important;
+}
+
+fieldset table {
+    border-right: 1px solid #eee;
+}
+
+tr.row-label td {
+    font-size: 9px;
+    padding-top: 2px;
+    padding-bottom: 0;
+    border-bottom: none;
+    color: #666;
+    margin-top: -1px;
+}
+
+tr.alt {
+    background: #f6f6f6;
+}
+
+.even {
+    /* background: #EDF3FE; */
+    background: #E0ECFF;
+}
+
+.odd {
+    background: white;
+}
+
+/* SORTABLE TABLES */
+
+thead th a:link, thead th a:visited {
+	color: #5B4729;
+    display: block;
+}
+
+table thead th.sorted {
+    background-position: bottom left !important;
+}
+
+table thead th.sorted a {
+    padding-right: 13px;
+}
+
+table thead th.ascending a {
+    background: url(/static/arrow-down.gif) right .4em no-repeat;
+}
+
+table thead th.descending a {
+    background: url(/static/arrow-up.gif) right .4em no-repeat;
+}
+
+/* ORDERABLE TABLES */
+
+table.orderable tbody tr td:hover {
+    cursor: move;
+}
+
+table.orderable tbody tr td:first-child {
+    padding-left: 14px;
+    background-repeat: repeat-y;
+}
+
+table.orderable-initalized .order-cell, body>tr>td.order-cell {
+    display: none;
+}
+
+.emptytable {
+	width:500px;
+	margin:0 auto;
+	margin-top:10px;
+	border:solid 1px #eee;
+	background:#EDF3FE;
+	padding:10px;
+	font-size: 12px;
+
+}

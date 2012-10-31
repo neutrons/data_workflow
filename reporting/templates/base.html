@@ -8,51 +8,54 @@
 <title>{% block title %}Data Processing Report{% endblock %}</title>
 
 <link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="/static/tables.css" type="text/css" media="screen" title="no title" charset="utf-8">
 {% block header %}{% endblock %}
 </head>
  
 <body>
-	{% block bodytop %}
-	{% endblock %}
-	<p>
-    	<div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
+    {% block bodytop %}
+    {% endblock %}
+    <p>
+        <div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
     </p>
 
-	<div class="breadcrumbs">
-	{% block breadcrumb %}
-		{% if breadcrumbs %}
-			{{ breadcrumbs|safe }}
-	  	{% else %}
-	  		<a href="/">home</a>
-	  	{% endif %}
-	{% endblock %}
-	</div>
+    <div class="breadcrumbs">
+    {% block breadcrumb %}
+    {% if breadcrumbs %}
+        {{ breadcrumbs|safe }}
+    {% else %}
+        <a href="/">home</a>
+    {% endif %}
+    {% endblock %}
+    </div>
 
-	{% block summary %}{% endblock %}
-	
-  	<div class="box">
-  		{% block content %}{% endblock %}
+    <div class="summary">
+    {% block summary %}{% endblock %}
+    </div>
+    
+    <div class="box">
+    {% block content %}{% endblock %}
     </div>
 
 <footer>    
     <div class="ornlFooter">
-         <div style="margin:0 auto; width:800px;">
-             <div class="logos" style="float:left;">
-                 <a id="FooterUTBLogoLink" title="UT-Battelle" href="//ut-battelle.org" target="_blank" style="display:inline-block;height:44px;width:150px;"><img title="UT-Battelle" src="/static/utb_logo.png" alt="UT-Battelle" /></a>
-           </div>
-             <div class="links" style="float:left;">
-                 <ul>
-                     <li><a id="FooterSecurityLink" title="Security Notice" href="//www.ornl.gov/ornlhome/disclaimers.shtml" target="_blank">Security Notice</a><span>·</span></li>
-                     <li><a id="FooterInternalLink" title="Internal Users" href="//www.ornl.gov/ornlhome/remote.shtml" target="_blank">Internal Users</a><span>·</span></li>
-                     <li><a id="FooterDOELink" title="DOE - Oak Ridge" href="//www.oakridge.doe.gov/external/" target="_blank">DOE - Oak Ridge</a><span>·</span></li>
-                     <li><a id="FooterUTBLink" title="UT-Battelle" href="//ut-battelle.org" target="_blank">UT-Battelle</a><span>·</span></li>
-                     <li><a href="https://user.ornl.gov">User Portal</a></li>
-                 </ul>
-             </div>
-             <div class="logos" style="float:left;">
-                 <a id="FooterScienceLogoLink" title="Department of Energy , Office of Science" href="//science.energy.gov/" target="_blank" style="display:inline-block;height:56px;width:173px;"><img title="Department of Energy , Office of Science" src="/static/doe_os_logo.png" alt="Department of Energy , Office of Science" /></a>
-             </div>
-         </div>
+        <div style="margin:0 auto; width:800px;">
+            <div class="logos" style="float:left;">
+                <a id="FooterUTBLogoLink" title="UT-Battelle" href="//ut-battelle.org" target="_blank" style="display:inline-block;height:44px;width:150px;"><img title="UT-Battelle" src="/static/utb_logo.png" alt="UT-Battelle" /></a>
+            </div>
+            <div class="links" style="float:left;">
+                <ul>
+                    <li><a id="FooterSecurityLink" title="Security Notice" href="//www.ornl.gov/ornlhome/disclaimers.shtml" target="_blank">Security Notice</a><span>·</span></li>
+                    <li><a id="FooterInternalLink" title="Internal Users" href="//www.ornl.gov/ornlhome/remote.shtml" target="_blank">Internal Users</a><span>·</span></li>
+                    <li><a id="FooterDOELink" title="DOE - Oak Ridge" href="//www.oakridge.doe.gov/external/" target="_blank">DOE - Oak Ridge</a><span>·</span></li>
+                    <li><a id="FooterUTBLink" title="UT-Battelle" href="//ut-battelle.org" target="_blank">UT-Battelle</a><span>·</span></li>
+                    <li><a href="https://user.ornl.gov">User Portal</a></li>
+                </ul>
+            </div>
+            <div class="logos" style="float:left;">
+                <a id="FooterScienceLogoLink" title="Department of Energy , Office of Science" href="//science.energy.gov/" target="_blank" style="display:inline-block;height:56px;width:173px;"><img title="Department of Energy , Office of Science" src="/static/doe_os_logo.png" alt="Department of Energy , Office of Science" /></a>
+            </div>
+        </div>
     </div>        
 </footer>
 

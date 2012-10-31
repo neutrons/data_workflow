@@ -155,6 +155,23 @@ class RunStatus(models.Model):
     def __unicode__(self):
         return "%s: %s" % (str(self.run_id), str(self.queue_id))
     
+    def last_info(self):
+        """
+            Return the last available information object for this status
+        """
+        info_list = Information.objects.filter(run_status_id=self)
+        if len(info_list)>0:
+            return info_list[0]
+        return None
+    
+    def last_error(self):
+        """
+            Return the last available error object for this status
+        """
+        error_list = Error.objects.filter(run_status_id=self)
+        if len(error_list)>0:
+            return error_list[0]
+        return None
     
 class WorkflowSummaryManager(models.Manager):
     

@@ -95,7 +95,6 @@ class StateAction(object):
 
 
 class Postprocess_data_ready(StateAction):
-    @logged_action
     def __call__(self, headers, message):
         """
             Called to process a message
@@ -108,7 +107,6 @@ class Postprocess_data_ready(StateAction):
         
         
 class Reduction_complete(StateAction):
-    @logged_action
     def __call__(self, headers, message):
         """
             Called to process a message
