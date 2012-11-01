@@ -1,12 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
+{% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
 {% block banner %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
 
 {% block summary %}
       {{ instrument }} run {{ run_object.run_number }}<br>
       Title: {{ icat_info.title|default:"unknown" }}<br>
-      Last known location: {{ run_object.file }}
+      Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
+      Created on: {{ icat_info.createTime|default:"unknown" }}<br>
+      Data files: 
+      <ul>
+      {%if icat_info.data_files %}
+          {% for item in icat_info.data_files %}
+              <li>{{ item|default:"unknown" }}</li>
+          {% endfor %}
+      {% else %}
+          {{ run_object.file|default:"unknown" }}
+      {% endif %}
+      </ul>
+      Reduced files: 
+      <ul>
+      {%if icat_info.reduced_files %}
+          {% for item in icat_info.reduced_files %}
+              <li>{{ item|default:"unknown" }}</li>
+          {% endfor %}
+      {% endif %}
+      </ul>
+      
 {% endblock %}
 
 {% block content %}

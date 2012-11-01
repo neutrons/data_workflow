@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
-from icat_server_communication import get_run_info, get_event_nexus_file
+from icat_server_communication import get_run_info
 
 import view_util
 
@@ -37,7 +37,6 @@ def detail(request, instrument, run_id):
         run_object = run_object[0]
 
     icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
-    #file_path = get_event_nexus_file(instrument, run_id)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('report.views.summary'),
