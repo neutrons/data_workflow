@@ -56,6 +56,10 @@ class StateAction(object):
             for item in task_def['task_queues']:
                 self.send(destination='/queue/%s'%item, message=message, persistent='true')
         
+                headers = {'destination': destination, 
+                          'message-id': ''}
+                transactions.add_status_entry(headers, message)
+        
     @logged_action
     def __call__(self, headers, message):
         """
@@ -86,6 +90,11 @@ class StateAction(object):
         conn.start()
         conn.connect()
         conn.send(destination=destination, message=message, persistent=persistent)
+        
+        headers = {'destination': destination, 
+                  'message-id': ''}
+        transactions.add_status_entry(headers, message)
+        
         # Sometimes the socket gets wiped out before we get a chance to complete
         # disconnecting
         try:

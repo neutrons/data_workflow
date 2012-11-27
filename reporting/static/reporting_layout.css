@@ -112,6 +112,8 @@ a:visited {color:#0077cc; text-decoration:none;}  /* visited link */
 a:hover {color:#0077cc; text-decoration:underline;}  /* mouse over link */
 a:active {color:#0077cc; text-decoration:none;}  /* selected link */
 
+img {border: 0;}
+
 #content {
 	margin-left:0 auto;
 	margin-right:0 auto;
