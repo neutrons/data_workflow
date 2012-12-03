@@ -1,7 +1,6 @@
 import httplib
 import xml.dom.minidom
 import logging
-log = logging.getLogger(__name__)
 import sys
 import datetime
 
@@ -44,7 +43,7 @@ def get_run_info(instrument, ipts, run_number):
                             tz_str = timestr[tz_location:]
                             run_info['createTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
                     except:
-                        log.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
+                        logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
                     
     except:
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
@@ -70,6 +69,6 @@ def get_run_info(instrument, ipts, run_number):
         run_info['data_files'] = data_paths
         run_info['reduced_files'] = reduced_paths
     except:
-        log.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
+        logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
         
     return run_info
