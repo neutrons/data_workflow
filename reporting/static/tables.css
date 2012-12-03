@@ -86,12 +86,11 @@ tr.alt {
 }
 
 .even {
-    /* background: #EDF3FE; */
-    background: #E0ECFF;
+    background: #f5ede3;
 }
 
 .odd {
-    background: white;
+    background: none;
 }
 
 /* SORTABLE TABLES */

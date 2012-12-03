@@ -41,7 +41,7 @@
       </thead>
       <tbody>
         {% for item in status %}
-        <tr>
+        <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
             <td>{{ item.created_on }}</td><td>{{ item.queue_id.name }}</td>
             {% if item.last_error %} 
             <td class="error">{{ item.last_error.description }}</td>

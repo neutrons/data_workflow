@@ -23,7 +23,7 @@ List of {{ instrument }} experiments:<br>
       </thead>
       <tbody>
        {% for item in ipts %}
-           <tr>
+           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
            <td><a href='{{ base_ipts_url }}{{ item.expt_name }}/'>{{ item.expt_name|upper }}</a></td>
            <td>{{ item.number_of_runs }}</td>
            <td>{{ item.created_on }}</td>
