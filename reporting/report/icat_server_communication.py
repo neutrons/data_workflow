@@ -1,6 +1,7 @@
 import httplib
 import xml.dom.minidom
 import logging
+log = logging.getLogger(__name__)
 import sys
 import datetime
 
@@ -18,9 +19,8 @@ def get_run_info(instrument, ipts, run_number):
     try:
         conn = httplib.HTTPConnection('icat.sns.gov', 
                                       8080, timeout=0.5)
-        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/%s' % (instrument.upper(),
-                                                                      ipts,
-                                                                      run_number))
+        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/meta' % (instrument.upper(),
+                                                                      ipts.upper()))
         r = conn.getresponse()
         dom = xml.dom.minidom.parseString(r.read())
         metadata = dom.getElementsByTagName('metadata')
@@ -44,7 +44,7 @@ def get_run_info(instrument, ipts, run_number):
                             tz_str = timestr[tz_location:]
                             run_info['createTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
                     except:
-                        pass
+                        log.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
                     
     except:
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
@@ -70,6 +70,6 @@ def get_run_info(instrument, ipts, run_number):
         run_info['data_files'] = data_paths
         run_info['reduced_files'] = reduced_paths
     except:
-        logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
+        log.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
         
     return run_info
