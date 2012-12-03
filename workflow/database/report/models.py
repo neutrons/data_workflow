@@ -87,6 +87,9 @@ class DataRun(models.Model):
 
     def __unicode__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)
+    
+    def last_error(self):
+        return RunStatus.objects.get_last_error(self)
 
     def json_encode(self):
         """
@@ -134,6 +137,13 @@ class RunStatusManager(models.Manager):
             return timestamps[0].created_on
         return None
     
+    def get_last_error(self, run_id):
+        errors = super(RunStatusManager, self).get_query_set().filter(run_id=run_id).order_by('-created_on')
+        for item in errors:
+            if item.has_errors():
+                return item.last_error()
+        return None
+    
 class RunStatus(models.Model):
     """
         Map ActiveMQ messages, which have a header like this:
@@ -172,6 +182,9 @@ class RunStatus(models.Model):
         if len(error_list)>0:
             return error_list[0]
         return None
+    
+    def has_errors(self):
+        return Error.objects.filter(run_status_id=self).count()>0
     
 class WorkflowSummaryManager(models.Manager):
     

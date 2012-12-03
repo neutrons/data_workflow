@@ -63,9 +63,17 @@ def instrument_summary(request, instrument):
     # Get list of IPTS
     ipts, ipts_header = view_util.ExperimentSorter(request)(instrument_id)    
     
-    # Get base URL
-    base_url = reverse('report.views.ipts_summary',args=[instrument,'0000'])
-    base_url = base_url.replace('/0000','')
+    # Get base IPTS URL
+    base_ipts_url = reverse('report.views.ipts_summary',args=[instrument,'0000'])
+    base_ipts_url = base_ipts_url.replace('/0000','')
+    
+    # Get base Run URL
+    base_run_url = reverse('report.views.detail',args=[instrument,'0000'])
+    base_run_url = base_run_url.replace('/0000','')
+    
+    # Get last experiment and last run
+    last_expt_id = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()[0]
+    last_run_id = DataRun.objects.filter(ipts_id=last_expt_id).order_by('created_on').reverse()[0]
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('report.views.summary'),
@@ -75,8 +83,11 @@ def instrument_summary(request, instrument):
     return render_to_response('report/instrument.html', {'instrument':instrument.upper(),
                                                          'ipts':ipts,
                                                          'ipts_header':ipts_header,
-                                                         'base_ipts_url':base_url,
+                                                         'base_ipts_url':base_ipts_url,
+                                                         'base_run_url':base_run_url,
                                                          'breadcrumbs':breadcrumbs,
+                                                         'last_expt': last_expt_id,
+                                                         'last_run': last_run_id,
                                                          })
 
 @confirm_instrument

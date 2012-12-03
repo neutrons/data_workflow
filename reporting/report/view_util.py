@@ -12,7 +12,7 @@ class DataSorter(object):
     # Sort direction information
     KEY_ASC     = 'asc'
     KEY_DESC    = 'desc'
-    DEFAULT_DIR = KEY_ASC
+    DEFAULT_DIR = KEY_DESC
     DIR_CHOICES = [KEY_ASC, KEY_DESC]
     
     # Sort item
@@ -146,6 +146,7 @@ class RunSorter(DataSorter):
         header = []
         header.append(self._create_header_dict("Run number", self.KEY_NAME))
         header.append(self._create_header_dict("Created on", self.KEY_MOD))
+        header.append(self._create_header_dict("Last known error", None))
         
         return data, header
     
