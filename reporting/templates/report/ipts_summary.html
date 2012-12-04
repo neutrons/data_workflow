@@ -22,7 +22,7 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
           <td><a href='{{ base_run_url }}{{ item.run_number }}/'>{{ item.run_number }}</a></td>
           <td>{{ item.created_on }}</td>
           {% if item.last_error %} 
-          <td class="error">{{ item.last_error.description }}</td>
+          <td class="error">{{ item.last_error }}</td>
           {% else %}
           <td></td>
           {% endif %}

@@ -89,7 +89,10 @@ class DataRun(models.Model):
         return "%s_%d" % (self.instrument_id, self.run_number)
     
     def last_error(self):
-        return RunStatus.objects.get_last_error(self)
+        errors = Error.objects.filter(run_status_id__run_id=self)#.order_by('-run_status_id__created_on')
+        if len(errors)>0:
+            return errors[len(errors)-1].description
+        return None
 
     def json_encode(self):
         """
