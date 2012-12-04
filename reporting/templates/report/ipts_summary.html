@@ -4,8 +4,12 @@
 
 {% block banner %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
 
-{% block content %}
+{% block summary %}
+      Title: {{ icat_info.title|default:"unknown" }}<br>
+      Created on: {{ icat_info.createTime|default:"unknown" }}<br>      
+{% endblock %}
 
+{% block content %}
 List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       <div id="details">
       <table cellspacing="0" class="message_table">

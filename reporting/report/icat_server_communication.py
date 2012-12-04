@@ -11,7 +11,7 @@ def get_text_from_xml(nodelist):
             rc.append(node.data)
     return ''.join(rc)
 
-def get_run_info(instrument, ipts, run_number):
+def get_ipts_info(instrument, ipts):
     run_info = {}
     
     # Get basic run info
@@ -47,7 +47,12 @@ def get_run_info(instrument, ipts, run_number):
                     
     except:
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
-        
+    return run_info
+    
+def get_run_info(instrument, ipts, run_number):
+    # Get basic experiment info
+    run_info = get_ipts_info(instrument, ipts)
+    
     # Get file location
     try:
         conn = httplib.HTTPConnection('icat.sns.gov', 

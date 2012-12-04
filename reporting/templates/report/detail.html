@@ -5,9 +5,9 @@
 
 {% block summary %}
       {{ instrument }} run {{ run_object.run_number }}<br>
-      Title: {{ icat_info.title|default:"unknown" }}<br>
       Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
-      Created on: {{ icat_info.createTime|default:"unknown" }}<br>
+      Experiment title: {{ icat_info.title|default:"unknown" }}<br>
+      EXperiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
       Data files: 
       <ul>
       {%if icat_info.data_files %}

@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
-from icat_server_communication import get_run_info
+from icat_server_communication import get_run_info, get_ipts_info
 
 import view_util
 
@@ -98,6 +98,8 @@ def ipts_summary(request, instrument, ipts):
         raise Http404
     ipts_id = ipts_ids[0]
         
+    icat_info = get_ipts_info(instrument, ipts)
+        
     # Get base URL
     base_url = reverse('report.views.detail',args=[instrument,'0000'])
     base_url = base_url.replace('/0000','')
@@ -116,4 +118,5 @@ def ipts_summary(request, instrument, ipts):
                                                            'run_list_header':run_list_header,
                                                            'base_run_url':base_url,
                                                            'breadcrumbs':breadcrumbs,
+                                                           'icat_info':icat_info,
                                                            })
