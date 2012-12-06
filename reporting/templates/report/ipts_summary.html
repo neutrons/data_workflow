@@ -35,4 +35,9 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       </tbody>
       </table>
       </div>
+      <br>
+      {% if not all_shown %}
+      {{ number_shown }} of {{ number_of_runs }} runs shown - <a href='{{ ipts_url }}?show=all'>show all runs</a>
+      {% endif %}
+
 {% endblock %}

@@ -134,13 +134,14 @@ class RunSorter(DataSorter):
     ITEM_CHOICES = [KEY_MOD, KEY_NAME]
     COLUMN_DICT = {KEY_MOD: 'created_on',
                    KEY_NAME: 'run_number'}
+    N_RECENT = 20
             
-    def __call__(self, ipts_id):
+    def __call__(self, ipts_id, show_all=False):
         """
             Returns the data and header to populate a data grid
         """
         # Query the database
-        data = self._retrieve_data(ipts_id)
+        data = self._retrieve_data(ipts_id, show_all=show_all)
             
         # Create the header dictionary    
         header = []
@@ -150,13 +151,15 @@ class RunSorter(DataSorter):
         
         return data, header
     
-    def _retrieve_data(self, ipts_id): 
+    def _retrieve_data(self, ipts_id, show_all=False): 
         # Query the database
         if self.sort_dir==self.KEY_DESC:
-            return DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item).reverse()
+            runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item).reverse()
         else:
-            return DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item)
-
+            runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item)
+        if not show_all and len(runs)>self.N_RECENT:
+            return runs[:self.N_RECENT]
+        return runs
 
 class ActivitySorter(DataSorter):
     # Sort item

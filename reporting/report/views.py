@@ -97,14 +97,19 @@ def ipts_summary(request, instrument, ipts):
     if len(ipts_ids)==0:
         raise Http404
     ipts_id = ipts_ids[0]
-        
+    
+    filter = request.GET.get('show', 'recent').lower()
+    show_all = filter=='all'
+    number_of_runs = ipts_id.number_of_runs()
+    
     icat_info = get_ipts_info(instrument, ipts)
         
     # Get base URL
     base_url = reverse('report.views.detail',args=[instrument,'0000'])
     base_url = base_url.replace('/0000','')
+    ipts_url = reverse('report.views.ipts_summary',args=[instrument,ipts])
     
-    run_list, run_list_header = view_util.RunSorter(request)(ipts_id)
+    run_list, run_list_header = view_util.RunSorter(request)(ipts_id, show_all=show_all)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
@@ -119,4 +124,8 @@ def ipts_summary(request, instrument, ipts):
                                                            'base_run_url':base_url,
                                                            'breadcrumbs':breadcrumbs,
                                                            'icat_info':icat_info,
+                                                           'all_shown':show_all,
+                                                           'number_shown':len(run_list),
+                                                           'number_of_runs':number_of_runs,
+                                                           'ipts_url':ipts_url,
                                                            })
