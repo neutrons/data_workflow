@@ -48,8 +48,8 @@ class DataSorter(object):
         self.sort_item = self.COLUMN_DICT[self.sort_key]
         
         # Store sorting parameters in session
-        request.session[self.SORT_DIRECTION_QUERY_STRING] = self.sort_dir
-        request.session[self.SORT_ITEM_QUERY_STRING] = self.sort_item
+        #request.session[self.SORT_DIRECTION_QUERY_STRING] = self.sort_dir
+        #request.session[self.SORT_ITEM_QUERY_STRING] = self.sort_item
         
         ## User ID
         self.user = request.user
