@@ -29,12 +29,12 @@ class DataSorter(object):
             @param request: get the sorting information from the HTTP request
         """
         # Get the default from the user session
-        default_dir = request.session.get(self.SORT_DIRECTION_QUERY_STRING, default=self.DEFAULT_DIR)
-        default_item = request.session.get(self.SORT_ITEM_QUERY_STRING, default=self.DEFAULT_ITEM)
+        #default_dir = request.session.get(self.SORT_DIRECTION_QUERY_STRING, default=self.DEFAULT_DIR)
+        #default_item = request.session.get(self.SORT_ITEM_QUERY_STRING, default=self.DEFAULT_ITEM)
         
         # Get the sorting options from the query parameters
-        self.sort_dir = request.GET.get(self.SORT_DIRECTION_QUERY_STRING, default_dir)
-        self.sort_key = request.GET.get(self.SORT_ITEM_QUERY_STRING, default_item)
+        self.sort_dir = request.GET.get(self.SORT_DIRECTION_QUERY_STRING, self.DEFAULT_DIR)
+        self.sort_key = request.GET.get(self.SORT_ITEM_QUERY_STRING, self.DEFAULT_ITEM)
         
         # Clean up sort direction
         self.sort_dir = self.sort_dir.lower().strip()
