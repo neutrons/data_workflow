@@ -10,10 +10,29 @@
 <link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
 <link rel="stylesheet" href="/static/tables.css" type="text/css" media="screen" title="no title" charset="utf-8">
 <link rel="icon" type="image/png" href="/static/favicon.ico" />
+
+<link rel="stylesheet" href="/static/thirdparty/jquery-ui.css" />
+<script src="/static/thirdparty/jquery-1.8.3.js"></script>
+<script src="/static/thirdparty/jquery-ui.js"></script>
+
 {% block header %}{% endblock %}
+<script type="text/javascript">
+    function user_alert() {
+        $(".user_alert").show("slide", {direction:'right'}, 500 );
+        $(".user_alert").click(function(){$(this).fadeOut("fast");});
+    };
+    function new_alert(msg) {
+    	document.getElementById('alert_message').innerHTML = msg;
+    }
+</script>
 </head>
  
 <body>
+<script id="source" language="javascript" type="text/javascript">
+	{% if user_alert %}
+    $(document).ready(user_alert);
+    {% endif %}
+</script>
     {% block bodytop %}
     {% endblock %}
     <p>
@@ -31,6 +50,19 @@
     </div>
 
     <div class="summary">
+    
+    <div class='user_alert'>
+    {% if user_alert %}
+        <div id="alert_message">
+        {% for item in user_alert %}
+            {{ item|safe }} {% if not forloop.last %}<br><br>{% endif %}
+        {% endfor %}
+        </div>
+        {% else %}
+    <div id="alert_message"></div>
+    {% endif %}
+    </div> 
+    
     {% block summary %}{% endblock %}
     </div>
     
