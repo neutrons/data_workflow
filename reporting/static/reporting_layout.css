@@ -161,8 +161,12 @@ img {border: 0;}
 }
 .user_alert #alert_message {
 	padding: 5px;
+	text-align: center;
 }
 
+.user_alert #click_me {
+	font-size: 8px;
+}
 /*
  **************************************
  * Footer
@@ -203,6 +207,11 @@ img {border: 0;}
 {
 	padding: 0px 8px 0px 8px;
 }
+
+.ornlFooter a:link {color:#006633; text-decoration:none;}      /* unvisited link */
+.ornlFooter a:visited {color:#006633; text-decoration:none;}  /* visited link */
+.ornlFooter a:hover {color:#006633; text-decoration:underline;}  /* mouse over link */
+.ornlFooter a:active {color:#006633; text-decoration:none;}  /* selected link */
 
 .ornlFooter .links ul li a:link, .page .footer .links ul li a:visited
 {

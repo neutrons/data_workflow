@@ -4,6 +4,7 @@
 import stomp
 import json
 import time
+import sys
 from workflow.settings import brokers, icat_user, icat_passcode
 
 def send(destination, message, persistent='true'):
@@ -20,7 +21,7 @@ def send(destination, message, persistent='true'):
     conn.send(destination=destination, message=message, persistent=persistent)
     conn.disconnect()
     
-for i in range(1234,1235):    
+def send_msg(i):   
     data_dict = {"instrument": "HYSA",
              "ipts": "IPTS-%d" % 5678,
              "run_number": i,
@@ -34,3 +35,10 @@ for i in range(1234,1235):
     #send('POSTPROCESS.INFO', data, persistent='true')
     send('POSTPROCESS.DATA_READY', data, persistent='true')
     time.sleep(0.1)
+    
+runid = 1234
+if len(sys.argv)>1:
+    runid = int(sys.argv[1])
+send_msg(runid)
+    
+

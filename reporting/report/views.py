@@ -1,6 +1,7 @@
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.utils import simplejson
 
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
 from icat_server_communication import get_run_info, get_ipts_info
@@ -108,6 +109,13 @@ def ipts_summary(request, instrument, ipts):
     base_url = reverse('report.views.detail',args=[instrument,'0000'])
     base_url = base_url.replace('/0000','')
     ipts_url = reverse('report.views.ipts_summary',args=[instrument,ipts])
+    update_url = reverse('report.views.get_update',args=[instrument])
+
+    # Get the latest run and experiment so we can determine later
+    # whether the user should refresh the page
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    last_expt_id = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()[0]
+    last_run_id = DataRun.objects.filter(ipts_id=last_expt_id).order_by('created_on').reverse()[0]
     
     run_list, run_list_header = view_util.RunSorter(request)(ipts_id, show_all=show_all)
     
@@ -128,4 +136,28 @@ def ipts_summary(request, instrument, ipts):
                                                            'number_shown':len(run_list),
                                                            'number_of_runs':number_of_runs,
                                                            'ipts_url':ipts_url,
+                                                           'update_url':update_url,
+                                                           'last_run':last_run_id,
+                                                           'last_expt':last_expt_id,
                                                            })
+    
+@confirm_instrument
+def get_update(request, instrument):
+    """
+         Ajax call to get updates behind the scenes
+    """ 
+    since = request.GET.get('since', '0')
+    
+    # Get the latest run and check whether new runs have happened since
+    # the specified run number
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    last_expt_id = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()[0]
+    last_run_id = DataRun.objects.filter(ipts_id=last_expt_id).order_by('created_on').reverse()[0]
+    
+    refresh_needed = '1' if int(since)<last_run_id.run_number else '0'
+            
+    data_dict = {"last_run": last_run_id.run_number,
+                 "refresh_needed": refresh_needed,
+                 }
+
+    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")

@@ -17,7 +17,7 @@
 
 {% block header %}{% endblock %}
 <script type="text/javascript">
-    function user_alert() {
+    function show_alert() {
         $(".user_alert").show("slide", {direction:'right'}, 500 );
         $(".user_alert").click(function(){$(this).fadeOut("fast");});
     };
@@ -30,7 +30,7 @@
 <body>
 <script id="source" language="javascript" type="text/javascript">
 	{% if user_alert %}
-    $(document).ready(user_alert);
+    $(document).ready(show_alert);
     {% endif %}
 </script>
     {% block bodytop %}

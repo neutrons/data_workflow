@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 
 {% block title %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
+{% block header %}
+<script>
+    function show_local_alert() {
+        $(".user_alert").show("slide", {direction:'right'}, 500 );
+        $(".user_alert").click(function(){window.location.href = '{{ ipts_url }}'});
+        //$(".user_alert").click(function(){$(this).fadeOut("fast");});
+    };
+
+    function poll(){
+        $.ajax({ url: "{{ update_url }}?since={{ last_run.run_number }}", success: function(data){
+        	if (data.refresh_needed.localeCompare('1')==0){
+    			new_alert("Run "+data.last_run+" is available<br><div id='click_me'>- click to refresh -</div>");
+    			show_local_alert();
+    		}
+    	}, dataType: "json", timeout: 30000 });
+	};
+</script>   
+{% endblock %}
 
 {% block banner %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
 
@@ -9,6 +27,12 @@
       Created on: {{ icat_info.createTime|default:"unknown" }}<br>      
 {% endblock %}
 
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 30000);
+</script>
+{% endblock %}
+    
 {% block content %}
 List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       <div id="details">
