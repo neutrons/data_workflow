@@ -20,6 +20,9 @@ def confirm_instrument(view):
     return validated_view   
 
 def summary(request):
+    """
+        List of available instruments
+    """
     instruments = Instrument.objects.all().order_by('name')
     # Get base URL
     base_url = reverse('report.views.instrument_summary',args=['aaaa'])
@@ -31,19 +34,23 @@ def summary(request):
                                                              'base_instrument_url':base_url})
 
 @confirm_instrument
-def detail(request, instrument, run_id):
-
-    run_object = DataRun.objects.filter(run_number=run_id)
+def detail(request, instrument, run_number):
+    """
+        Run details
+        @param instrument: instrument name
+        @param run_number: run number, as string
+    """
+    run_object = DataRun.objects.filter(run_number=run_number)
     if len(run_object)>0:
         run_object = run_object[0]
 
-    icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
+    icat_info = get_run_info(instrument, str(run_object.ipts_id), run_number)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('report.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),  
-            run_id          
+            run_number          
             ) 
     
     # Find status entries
@@ -57,7 +64,10 @@ def detail(request, instrument, run_id):
                                                     })
 
 def instrument_summary(request, instrument):
-    
+    """
+        Instrument summary page
+        @param instrument: instrument name
+    """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
@@ -73,8 +83,8 @@ def instrument_summary(request, instrument):
     base_run_url = base_run_url.replace('/0000','')
     
     # Get last experiment and last run
-    last_expt_id = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()[0]
-    last_run_id = DataRun.objects.filter(ipts_id=last_expt_id).order_by('created_on').reverse()[0]
+    last_expt_id = view_util.get_last_ipts(instrument_id)
+    last_run_id = view_util.get_last_run(instrument_id, last_expt_id)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('report.views.summary'),
@@ -93,7 +103,11 @@ def instrument_summary(request, instrument):
 
 @confirm_instrument
 def ipts_summary(request, instrument, ipts):
-    
+    """
+        Experiment summary giving the list of runs
+        @param instrument: instrument name
+        @param ipts: experiment name
+    """
     ipts_ids = IPTS.objects.filter(expt_name=ipts)
     if len(ipts_ids)==0:
         raise Http404
@@ -109,13 +123,13 @@ def ipts_summary(request, instrument, ipts):
     base_url = reverse('report.views.detail',args=[instrument,'0000'])
     base_url = base_url.replace('/0000','')
     ipts_url = reverse('report.views.ipts_summary',args=[instrument,ipts])
-    update_url = reverse('report.views.get_update',args=[instrument])
+    update_url = reverse('report.views.get_update',args=[instrument,ipts])
 
     # Get the latest run and experiment so we can determine later
     # whether the user should refresh the page
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    last_expt_id = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()[0]
-    last_run_id = DataRun.objects.filter(ipts_id=last_expt_id).order_by('created_on').reverse()[0]
+    last_expt_id = view_util.get_last_ipts(instrument_id)
+    last_run_id = view_util.get_last_run(instrument_id, last_expt_id)
     
     run_list, run_list_header = view_util.RunSorter(request)(ipts_id, show_all=show_all)
     
@@ -142,22 +156,28 @@ def ipts_summary(request, instrument, ipts):
                                                            })
     
 @confirm_instrument
-def get_update(request, instrument):
+def get_update(request, instrument, ipts):
     """
          Ajax call to get updates behind the scenes
+         @param instrument: instrument name
+         @param ipts: experiment name
     """ 
     since = request.GET.get('since', '0')
     
     # Get the latest run and check whether new runs have happened since
     # the specified run number
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    last_expt_id = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()[0]
-    last_run_id = DataRun.objects.filter(ipts_id=last_expt_id).order_by('created_on').reverse()[0]
-    
-    refresh_needed = '1' if int(since)<last_run_id.run_number else '0'
-            
-    data_dict = {"last_run": last_run_id.run_number,
-                 "refresh_needed": refresh_needed,
-                 }
+    ipts_ids = IPTS.objects.filter(expt_name=ipts)
+    if len(ipts_ids)==0:
+        raise Http404
+    last_expt_id = ipts_ids[0]
+    last_run_id = view_util.get_last_run(instrument_id, last_expt_id)
+    if last_run_id is None:
+        data_dict = {"refresh_needed": '0'}
+    else:
+        refresh_needed = '1' if int(since)<last_run_id.run_number else '0'         
+        data_dict = {"last_run": last_run_id.run_number,
+                     "refresh_needed": refresh_needed,
+                     }
 
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")

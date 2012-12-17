@@ -1,5 +1,33 @@
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
 
+def get_last_ipts(instrument_id):
+    """
+        Get the last experiment object for a given instrument.
+        Returns None if nothing was found.
+        @param instrument_id: Instrument object 
+    """
+    ipts_query = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()
+    if len(ipts_query)>0:
+        return ipts_query[0]
+    return None
+
+def get_last_run(instrument_id, ipts_id):
+    """
+        Get the last run for a given instrument and experiment.
+        Returns None if nothing was found.
+        @param instrument_id: Instrument object
+        @param ipts_id: IPTS object
+    """
+    # Sanity check
+    if ipts_id is None:
+        return None
+    
+    last_run_query = DataRun.objects.filter(instrument_id=instrument_id,
+                                            ipts_id=ipts_id).order_by('created_on').reverse()
+    if len(last_run_query)>0:
+        return last_run_query[0]
+    return None
+    
 class DataSorter(object):
     """
         Sorter object to organize data in a sorted grid

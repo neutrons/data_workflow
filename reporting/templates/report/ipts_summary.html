@@ -6,7 +6,6 @@
     function show_local_alert() {
         $(".user_alert").show("slide", {direction:'right'}, 500 );
         $(".user_alert").click(function(){window.location.href = '{{ ipts_url }}'});
-        //$(".user_alert").click(function(){$(this).fadeOut("fast");});
     };
 
     function poll(){
@@ -29,7 +28,7 @@
 
 {% block bodytop %}
 <script id="source" language="javascript" type="text/javascript">
-    setInterval(poll, 30000);
+    setInterval(poll, 10000);
 </script>
 {% endblock %}
     

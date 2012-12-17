@@ -5,8 +5,13 @@
 {% block banner %}{{ instrument }} Data Processing Report {% endblock %}
 
 {% block summary %}
+{% if last_run %}
 Last run: <a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a> 
 from <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% elif last_expt %}
+Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% endif %}
+
 {% endblock %}
 
 {% block content %}
