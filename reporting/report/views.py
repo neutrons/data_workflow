@@ -34,23 +34,23 @@ def summary(request):
                                                              'base_instrument_url':base_url})
 
 @confirm_instrument
-def detail(request, instrument, run_number):
+def detail(request, instrument, run_id):
     """
         Run details
         @param instrument: instrument name
-        @param run_number: run number, as string
+        @param run_id: run number, as string
     """
-    run_object = DataRun.objects.filter(run_number=run_number)
-    if len(run_object)>0:
-        run_object = run_object[0]
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
 
-    icat_info = get_run_info(instrument, str(run_object.ipts_id), run_number)
+    icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('report.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),  
-            run_number          
+            run_id          
             ) 
     
     # Find status entries
@@ -108,10 +108,10 @@ def ipts_summary(request, instrument, ipts):
         @param instrument: instrument name
         @param ipts: experiment name
     """
-    ipts_ids = IPTS.objects.filter(expt_name=ipts)
-    if len(ipts_ids)==0:
-        raise Http404
-    ipts_id = ipts_ids[0]
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    # Get experiment
+    ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
     
     filter = request.GET.get('show', 'recent').lower()
     show_all = filter=='all'
@@ -167,11 +167,8 @@ def get_update(request, instrument, ipts):
     # Get the latest run and check whether new runs have happened since
     # the specified run number
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    ipts_ids = IPTS.objects.filter(expt_name=ipts)
-    if len(ipts_ids)==0:
-        raise Http404
-    last_expt_id = ipts_ids[0]
-    last_run_id = view_util.get_last_run(instrument_id, last_expt_id)
+    ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
+    last_run_id = view_util.get_last_run(instrument_id, ipts_id)
     if last_run_id is None:
         data_dict = {"refresh_needed": '0'}
     else:
