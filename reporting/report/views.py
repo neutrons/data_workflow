@@ -128,8 +128,10 @@ def ipts_summary(request, instrument, ipts):
     # Get the latest run and experiment so we can determine later
     # whether the user should refresh the page
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    # The following is the last experiment overall
     last_expt_id = view_util.get_last_ipts(instrument_id)
-    last_run_id = view_util.get_last_run(instrument_id, last_expt_id)
+    # The following is the last run for this experiment
+    last_run_id = view_util.get_last_run(instrument_id, ipts_id)
     
     run_list, run_list_header = view_util.RunSorter(request)(ipts_id, show_all=show_all)
     
@@ -169,7 +171,7 @@ def get_update(request, instrument, ipts):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
     last_run_id = view_util.get_last_run(instrument_id, ipts_id)
-    if last_run_id is None:
+    if last_run_id is None or since=='':
         data_dict = {"refresh_needed": '0'}
     else:
         refresh_needed = '1' if int(since)<last_run_id.run_number else '0'         
