@@ -1,16 +1,68 @@
 {% extends "base.html" %}
 
-{% block title %}{{ instrument|upper }} Live Monitor {% endblock %}
-{% block banner %}{{ instrument|upper }} Live Monitor {% endblock %}
+{% block title %}{{ instrument }} Error Report {% endblock %}
+{% block header %}
+<script>
+    function show_local_alert() {
+        $(".user_alert").show("slide", {direction:'right'}, 500 );
+        $(".user_alert").click(function(){window.location.href = '{{ error_url }}'});
+    };
+
+    function poll(){
+        $.ajax({ url: "{{ update_url }}?since={{ last_error.id }}", success: function(data){
+            if (data.refresh_needed.localeCompare('1')==0){
+                new_alert("Run "+data.last_run+" has errors<br><div id='click_me'>- click to refresh -</div>");
+                show_local_alert();
+            }
+        }, dataType: "json", timeout: 30000 });
+    };
+</script>   
+{% endblock %}
+
+{% block banner %}{{ instrument }} Error Report {% endblock %}
 
 {% block summary %}
-  	Current run <b>{{ run_object.run_number|default:"unknown" }}</b><br>
-  	Title: {{ icat_info.title|default:"unknown" }}<br>
-  	
+{% if last_run %}
+Last run: <a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a> 
+from <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a>
+created on {{ last_run.created_on }}<br>
+{% elif last_expt %}
+Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% endif %}
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 1000);
+</script>
 {% endblock %}
 
 {% block content %}
-  	<div id="details">
+List of {{ instrument }} errors {% if instrument_url %}(view <a href='{{ instrument_url }}'>experiments</a>){% endif %}<br>
+      <div id="details">
+      <table cellspacing="0" class="message_table">
+      <thead>
+      <tr>
+        {% for item in error_header %}
+            <th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
+        {% endfor %}
+      </tr>
+      </thead>
+      <tbody>
+      {% for item in error_list %}
+          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+          <td><a href='{{ base_ipts_url }}{{ item.run_status_id.run_id.ipts_id.expt_name }}/'>{{ item.run_status_id.run_id.ipts_id.expt_name }}</a></td>
+          <td><a href='{{ base_run_url }}{{ item.run_status_id.run_id.run_number }}/'>{{ item.run_status_id.run_id.run_number }}</a></td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.run_status_id.created_on }}</td>
+          </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+      </div>
+      <br>
+      {% if not all_shown %}
+      {{ number_shown }} of {{ number_of_errors }} errors shown - <a href='{{ ipts_url }}?show=all'>show all errors</a>
+      {% endif %}
 
-   	</div>
 {% endblock %}

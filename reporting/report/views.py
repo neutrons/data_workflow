@@ -83,13 +83,22 @@ def instrument_summary(request, instrument):
     base_run_url = base_run_url.replace('/0000','')
     
     # Get last experiment and last run
-    last_expt_id = view_util.get_last_ipts(instrument_id)
-    last_run_id = view_util.get_last_run(instrument_id, last_expt_id)
+    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    if last_run_id is None:
+        last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
+    else:
+        last_expt_id = last_run_id.ipts_id
     
+    # Instrument error URL
+    try:
+        error_url = reverse('monitor.views.live_instrument',args=[instrument])
+    except:
+        error_url = None
+
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('report.views.summary'),
                                                          instrument.lower()
-            ) 
+                                                         ) 
 
     return render_to_response('report/instrument.html', {'instrument':instrument.upper(),
                                                          'ipts':ipts,
@@ -99,6 +108,7 @@ def instrument_summary(request, instrument):
                                                          'breadcrumbs':breadcrumbs,
                                                          'last_expt': last_expt_id,
                                                          'last_run': last_run_id,
+                                                         'error_url': error_url,
                                                          })
 
 @confirm_instrument
@@ -115,6 +125,10 @@ def ipts_summary(request, instrument, ipts):
     
     filter = request.GET.get('show', 'recent').lower()
     show_all = filter=='all'
+    try:
+        n_max = int(filter)
+    except:
+        n_max = 20
     number_of_runs = ipts_id.number_of_runs()
     
     icat_info = get_ipts_info(instrument, ipts)
@@ -129,11 +143,13 @@ def ipts_summary(request, instrument, ipts):
     # whether the user should refresh the page
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     # The following is the last experiment overall
-    last_expt_id = view_util.get_last_ipts(instrument_id)
+    last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
     # The following is the last run for this experiment
-    last_run_id = view_util.get_last_run(instrument_id, ipts_id)
+    last_run_id = DataRun.objects.get_last_run(instrument_id, ipts_id)
     
-    run_list, run_list_header = view_util.RunSorter(request)(ipts_id, show_all=show_all)
+    run_list, run_list_header = view_util.RunSorter(request)(ipts_id, 
+                                                             show_all=show_all,
+                                                             n_shown=n_max)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
@@ -170,7 +186,7 @@ def get_update(request, instrument, ipts):
     # the specified run number
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
-    last_run_id = view_util.get_last_run(instrument_id, ipts_id)
+    last_run_id = DataRun.objects.get_last_run(instrument_id, ipts_id)
     if last_run_id is None or since=='':
         data_dict = {"refresh_needed": '0'}
     else:

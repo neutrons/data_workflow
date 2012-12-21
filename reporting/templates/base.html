@@ -39,18 +39,6 @@
         <div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
     </p>
 
-    <div class="breadcrumbs">
-    {% block breadcrumb %}
-    {% if breadcrumbs %}
-        {{ breadcrumbs|safe }}
-    {% else %}
-        <a href="/">home</a>
-    {% endif %}
-    {% endblock %}
-    </div>
-
-    <div class="summary">
-    
     <div class='user_alert'>
     {% if user_alert %}
         <div id="alert_message">
@@ -62,7 +50,18 @@
     <div id="alert_message"></div>
     {% endif %}
     </div> 
-    
+
+    <div class="breadcrumbs">
+    {% block breadcrumb %}
+    {% if breadcrumbs %}
+        {{ breadcrumbs|safe }}
+    {% else %}
+        <a href="/">home</a>
+    {% endif %}
+    {% endblock %}
+    </div>
+
+    <div class="summary">    
     {% block summary %}{% endblock %}
     </div>
     

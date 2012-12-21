@@ -4,7 +4,6 @@
 {% block banner %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
 
 {% block summary %}
-      {{ instrument }} run {{ run_object.run_number }}<br>
       Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
       Experiment title: {{ icat_info.title|default:"unknown" }}<br>
       EXperiment created on: {{ icat_info.createTime|default:"unknown" }}<br>

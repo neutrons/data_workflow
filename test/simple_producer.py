@@ -53,13 +53,15 @@ if __name__ == "__main__":
     parser.add_argument('-r', metavar='runid', type=int, help='Run number (int)', dest='runid')
     parser.add_argument('-i', metavar='ipts', type=int, help='IPTS number (int)', dest='ipts')
     parser.add_argument('-q', metavar='queue', help='ActiveMQ queue name', dest='queue')
+    parser.add_argument('-e', metavar='err', help='Error mesage', dest='err')
     namespace = parser.parse_args()
     
     ipts = 5678 if namespace.ipts is None else namespace.ipts
     runid = 1234 if namespace.runid is None else namespace.runid
     queue = 'POSTPROCESS.DATA_READY' if namespace.queue is None else namespace.queue
+    err = namespace.err
     
     print "Sending %s for IPTS-%g, run %g" % (queue, ipts, runid)
-    send_msg(runid, ipts, queue=queue)
+    send_msg(runid, ipts, queue=queue, error=err)
     
 

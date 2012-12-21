@@ -1,33 +1,5 @@
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
 
-def get_last_ipts(instrument_id):
-    """
-        Get the last experiment object for a given instrument.
-        Returns None if nothing was found.
-        @param instrument_id: Instrument object 
-    """
-    ipts_query = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()
-    if len(ipts_query)>0:
-        return ipts_query[0]
-    return None
-
-def get_last_run(instrument_id, ipts_id):
-    """
-        Get the last run for a given instrument and experiment.
-        Returns None if nothing was found.
-        @param instrument_id: Instrument object
-        @param ipts_id: IPTS object
-    """
-    # Sanity check
-    if ipts_id is None:
-        return None
-    
-    last_run_query = DataRun.objects.filter(instrument_id=instrument_id,
-                                            ipts_id=ipts_id).order_by('created_on').reverse()
-    if len(last_run_query)>0:
-        return last_run_query[0]
-    return None
-    
 class DataSorter(object):
     """
         Sorter object to organize data in a sorted grid
@@ -82,7 +54,7 @@ class DataSorter(object):
         ## User ID
         self.user = request.user
 
-    def _create_header_dict(self, long_name, url_name):
+    def _create_header_dict(self, long_name, url_name, min_width=None):
         """
             Creates column header, the following classes have to
             be define in the CSS style sheet
@@ -112,6 +84,9 @@ class DataSorter(object):
                     url = "?%s=%s&amp;%s=%s" % (self.SORT_DIRECTION_QUERY_STRING, 
                                                  self.KEY_DESC, self.SORT_ITEM_QUERY_STRING, url_name)
                 d['url'] = url
+                
+        if min_width is not None:
+            d['style'] = "min-width: %dpx;" % min_width
         return d
 
     def __call__(self, instrument_id=None): return NotImplemented
@@ -140,8 +115,8 @@ class ExperimentSorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Experiment", self.KEY_NAME))
-        header.append(self._create_header_dict("Number of runs", None))
+        header.append(self._create_header_dict("Experiment", self.KEY_NAME, min_width=90))
+        header.append(self._create_header_dict("Number of runs", None, min_width=90))
         header.append(self._create_header_dict("Created on", self.KEY_MOD))
         
         return data, header
@@ -164,16 +139,17 @@ class RunSorter(DataSorter):
                    KEY_NAME: 'run_number'}
     N_RECENT = 20
             
-    def __call__(self, ipts_id, show_all=False):
+    def __call__(self, ipts_id, show_all=False, n_shown=20):
         """
             Returns the data and header to populate a data grid
         """
+        self.N_RECENT = n_shown
         # Query the database
         data = self._retrieve_data(ipts_id, show_all=show_all)
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Run number", self.KEY_NAME))
+        header.append(self._create_header_dict("Run number", self.KEY_NAME, min_width=90))
         header.append(self._create_header_dict("Created on", self.KEY_MOD))
         header.append(self._create_header_dict("Last known error", None))
         

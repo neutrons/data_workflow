@@ -7,7 +7,8 @@
 {% block summary %}
 {% if last_run %}
 Last run: <a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a> 
-from <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+from <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a>
+created on {{ last_run.created_on }}<br>
 {% elif last_expt %}
 Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
 {% endif %}
@@ -15,14 +16,14 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% endblock %}
 
 {% block content %}
-List of {{ instrument }} experiments:<br>
+List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_url }}'>errors</a>){% endif %}<br>
 
       <div id="details">
       <table cellspacing="0" class="message_table">
       <thead>
       <tr>
         {% for item in ipts_header %}
-            <th {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
+            <th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
         {% endfor %}
       </tr>
       </thead>

@@ -48,9 +48,19 @@ class Instrument(models.Model):
 class IPTSManager(models.Manager):
     
     def ipts_for_instrument(self, instrument_id):
-        return super(IPTSManager, self).get_query_set().filter(instrument_id=instrument_id)
+        return super(IPTSManager, self).get_query_set().filter(instruments=instrument_id)
         
-        
+    def get_last_ipts(self, instrument_id):
+        """
+            Get the last experiment object for a given instrument.
+            Returns None if nothing was found.
+            @param instrument_id: Instrument object 
+        """
+        ipts_query = super(IPTSManager, self).get_query_set().filter(instruments=instrument_id).order_by('created_on').reverse()
+        if len(ipts_query)>0:
+            return ipts_query[0]
+        return None
+
 class IPTS(models.Model):
     """
         Table holding IPTS information
@@ -73,6 +83,23 @@ class IPTS(models.Model):
             return DataRun.objects.filter(ipts_id=self).distinct().count()
         return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id)
 
+class DataRunManager(models.Manager):
+    
+    def get_last_run(self, instrument_id, ipts_id=None):
+        """
+            Get the last run for a given instrument and experiment.
+            Returns None if nothing was found.
+            @param instrument_id: Instrument object
+            @param ipts_id: IPTS object
+        """
+        if ipts_id is None:
+            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id).order_by('created_on').reverse()
+        else:
+            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id,
+                                                                                ipts_id=ipts_id).order_by('created_on').reverse()
+        if len(last_run_query)>0:
+            return last_run_query[0]
+        return None
     
 class DataRun(models.Model):
     """
@@ -84,6 +111,7 @@ class DataRun(models.Model):
     instrument_id = models.ForeignKey(Instrument)
     file = models.CharField(max_length=128)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
+    objects = DataRunManager()
 
     def __unicode__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)

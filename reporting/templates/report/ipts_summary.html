@@ -39,7 +39,7 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       <thead>
       <tr>
       {% for item in run_list_header %}
-          <th {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
+          <th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
       {% endfor %}
       </tr>
       </thead>
