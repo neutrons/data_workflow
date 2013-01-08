@@ -3,6 +3,11 @@ import xml.dom.minidom
 import logging
 import sys
 import datetime
+try:
+    from workflow.database.settings import ICAT_DOMAIN, ICAT_PORT
+except:
+    ICAT_DOMAIN = 'icat.sns.gov'
+    ICAT_PORT = 2080
 
 def get_text_from_xml(nodelist):
     rc = []
@@ -16,8 +21,8 @@ def get_ipts_info(instrument, ipts):
     
     # Get basic run info
     try:
-        conn = httplib.HTTPConnection('icat.sns.gov', 
-                                      8080, timeout=0.5)
+        conn = httplib.HTTPConnection(ICAT_DOMAIN, 
+                                      ICAT_PORT, timeout=0.5)
         conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/meta' % (instrument.upper(),
                                                                       ipts.upper()))
         r = conn.getresponse()

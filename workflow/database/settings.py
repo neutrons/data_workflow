@@ -32,3 +32,10 @@ worker_user = "worker"
 worker_passcode = "worker"
 
 
+"""
+    ICAT server settings
+"""
+ICAT_DOMAIN = 'icat.sns.gov'
+ICAT_PORT = 2080
+
+
