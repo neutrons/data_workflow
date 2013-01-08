@@ -98,16 +98,13 @@
 
             http://activemq.apache.org/multicast-transport-reference.html
         -->
-        <networkConnectors>
-      		<networkConnector name="postprocessing" userName="icat" password="icat" uri="multicast://postprocessing"/>
-    	</networkConnectors>
 
         <!--
             The systemUsage controls the maximum amount of space the broker will
             use before slowing down producers. For more information, see:
             http://activemq.apache.org/producer-flow-control.html
         -->
-          <systemUsage>
+        <systemUsage>
             <systemUsage>
                 <memoryUsage>
                     <memoryUsage limit="64 mb"/>
@@ -128,8 +125,8 @@
             http://activemq.apache.org/configuring-transports.html
         -->
         <transportConnectors>
-            <transportConnector name="openwire" uri="tcp://0.0.0.0:61616" discoveryUri="multicast://postprocessing" enableStatusMonitor="true" updateClusterClients="true" rebalanceClusterClients="true" updateClusterClientsOnRemove="true"/>
-            <transportConnector name="stomp" uri="stomp://0.0.0.0:61613" discoveryUri="multicast://postprocessing" enableStatusMonitor="true" updateClusterClients="true" rebalanceClusterClients="true" updateClusterClientsOnRemove="true"/>
+            <transportConnector name="openwire" uri="tcp://0.0.0.0:61616"/>
+            <transportConnector name="stomp" uri="stomp://0.0.0.0:61613"/>
         </transportConnectors>
 
 		<plugins>
@@ -137,7 +134,9 @@
 				<users>
 					<authenticationUser username="system" password="manager" groups="users,admins"/>
 					<authenticationUser username="user" password="password" groups="users"/>
-					<authenticationUser username="icat" password="icat" groups="admins,users"/>
+					<authenticationUser username="icat" password="icat" groups="users"/>
+					<authenticationUser username="worker" password="worker" groups="workers"/>
+					<authenticationUser username="wkflowmgr" password="wkflowmgr" groups="wkflow,users"/>
 				</users>
 			</simpleAuthenticationPlugin>	
 			
@@ -147,6 +146,11 @@
 			  <authorizationMap>
 				<authorizationEntries>
 				  <authorizationEntry queue=">" read="users,admins" write="users,admins" admin="users,admins" />
+				  <authorizationEntry queue="REDUCTION.>"         read="wkflow,workers,users" write="wkflow,workers,users,admins" admin="admins" />
+				  <authorizationEntry queue="REDUCTION_CATALOG.>" read="wkflow,workers,users" write="wkflow,workers,users,admins" admin="admins" />
+				  <authorizationEntry queue="CATALOG.>"           read="wkflow,workers,users" write="wkflow,workers,users,admins" admin="admins" />
+				  <authorizationEntry queue="POSTPROCESS.>"       read="wkflow,users"         write="workers,users,admins"        admin="admins" />
+				  <authorizationEntry queue="WORKER.>"            read="workers"              write="wkflow,users,admins"         admin="admins" />
 				  <authorizationEntry topic=">" read="users,admins" write="users,admins" admin="users,admins" />
 				  <authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users" write="guests,users" admin="guests,users"/>
 				</authorizationEntries>              

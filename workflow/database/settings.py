@@ -22,13 +22,13 @@ INSTALLED_APPS = (
     ActiveMQ settings
 """
 # List of brokers
-brokers = [("mac83808.ornl.gov", 61613), 
-           ("mac83086.ornl.gov", 61613)]
-#brokers = [("heidelberg", 61613), 
-#            ("drembpro-vnet", 61613)] 
-#brokers = [("localhost", 61613)] 
+brokers = [("localhost", 61613)] 
 
 icat_user = "icat"
 icat_passcode = "icat"
+wkflow_user = "wkflowmgr"
+wkflow_passcode = "wkflowmgr"
+worker_user = "worker"
+worker_passcode = "worker"
 
 

@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 from workflow_manager import WorkflowManager
-from settings import brokers, icat_user, icat_passcode
+from settings import brokers
+
+# Backward compatibility protection
+import settings
+if hasattr(settings, 'wkflow_user') and hasattr(settings, 'wkflow_passcode'):
+    from settings import wkflow_user, wkflow_passcode    
+else:
+    from settings import icat_user as wkflow_user
+    from settings import icat_passcode as wkflow_passcode
+
 from daemon import Daemon
 import sys
 import os
@@ -34,7 +43,7 @@ class WorkflowDaemon(Daemon):
             check_frequency = self._check_frequency
             workflow_check = True
             
-        mng = WorkflowManager(brokers, icat_user, icat_passcode,
+        mng = WorkflowManager(brokers, wkflow_user, wkflow_passcode,
                               workflow_check=workflow_check,
                               check_frequency=check_frequency,
                               workflow_recovery=self._workflow_recovery,

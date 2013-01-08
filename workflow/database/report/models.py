@@ -104,7 +104,6 @@ class DataRunManager(models.Manager):
 class DataRun(models.Model):
     """
         TODO: run number should be unique for a given instrument
-        TODO: the instrument name should be part of the run data object
     """
     run_number = models.IntegerField()
     ipts_id = models.ForeignKey(IPTS)
