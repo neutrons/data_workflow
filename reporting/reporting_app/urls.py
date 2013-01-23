@@ -7,5 +7,6 @@ urlpatterns = patterns('',
     url(r'^$', include('report.urls')),
     url(r'^report/', include('report.urls')),
     url(r'^monitor/', include('monitor.urls')),
+    url(r'^users/', include('users.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )

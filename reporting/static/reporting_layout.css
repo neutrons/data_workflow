@@ -83,12 +83,12 @@ header {
 }
 
 .banner_title {
-	height:70px;
-	background-image:url('/static/sns_logo.png');
+	height:50px;
+	background-image:url('/static/sns_logo_111x75.png');
 	background-repeat:no-repeat;
 	text-align:left;
 	padding-left:180px;
-	padding-top:30px;
+	padding-top:25px;
 	font-size:24px;
 	color:#5B4729;
 	font-weight: bold;
@@ -147,6 +147,20 @@ img {border: 0;}
 	
 }
 
+.disclamer {
+	font-size:10px;
+	width:600px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+
+.user_info {
+	float:right;
+	margin-top:5px;	
+}
+
 .user_alert {
 	cursor: pointer;
 	float:right;
@@ -178,7 +192,7 @@ img {border: 0;}
 	margin: 18px auto;
 	padding: 6px 0px 6px 0px;
 	border-top: 1px solid #CDC0B0;
-	border-bottom: 1px solid #CDC0B0;
+	/* border-bottom: 1px solid #CDC0B0; */
 	font-size: 12px;
 	min-height: 60px;
 	text-align: center;

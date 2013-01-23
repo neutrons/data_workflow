@@ -10,7 +10,9 @@ from report.views import confirm_instrument
 from report.models import Instrument, IPTS, DataRun, Error
 
 import view_util
+import users.view_util
 
+@users.view_util.login_or_local_required
 @confirm_instrument
 def live_instrument(request, instrument):
     """
@@ -65,22 +67,24 @@ def live_instrument(request, instrument):
                                                          instrument.lower()
                                                          ) 
 
-    return render_to_response('monitor/live_instrument.html', {'instrument':instrument.upper(),
-                                                         'error_list':errors,
-                                                         'error_header':errors_header,
-                                                         'base_ipts_url':base_ipts_url,
-                                                         'base_run_url':base_run_url,
-                                                         'breadcrumbs':breadcrumbs,
-                                                         'last_expt': last_expt_id,
-                                                         'last_run': last_run_id,
-                                                         'all_shown':show_all,
-                                                         'number_shown':len(errors),
-                                                         'number_of_errors':number_of_errors,
-                                                         'instrument_url':instrument_url,
-                                                         'error_url':error_url,
-                                                         'update_url':update_url,
-                                                         'last_error':last_error,
-                                                         })
+    template_values = {'instrument':instrument.upper(),
+                       'error_list':errors,
+                       'error_header':errors_header,
+                       'base_ipts_url':base_ipts_url,
+                       'base_run_url':base_run_url,
+                       'breadcrumbs':breadcrumbs,
+                       'last_expt': last_expt_id,
+                       'last_run': last_run_id,
+                       'all_shown':show_all,
+                       'number_shown':len(errors),
+                       'number_of_errors':number_of_errors,
+                       'instrument_url':instrument_url,
+                       'error_url':error_url,
+                       'update_url':update_url,
+                       'last_error':last_error,
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('monitor/live_instrument.html', template_values)
     
 @confirm_instrument
 def get_update(request, instrument):

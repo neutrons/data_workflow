@@ -7,6 +7,7 @@ from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument
 from icat_server_communication import get_run_info, get_ipts_info
 
 import view_util
+import users.view_util
 
 def confirm_instrument(view):
     """
@@ -19,6 +20,7 @@ def confirm_instrument(view):
         
     return validated_view   
 
+@users.view_util.login_or_local_required
 def summary(request):
     """
         List of available instruments
@@ -29,10 +31,14 @@ def summary(request):
     base_url = base_url.replace('/aaaa','')
     breadcrumbs = "home"
 
-    return render_to_response('report/global_summary.html', {'instruments':instruments,
-                                                             'breadcrumbs':breadcrumbs,
-                                                             'base_instrument_url':base_url})
+    template_values = {'instruments':instruments,
+                       'breadcrumbs':breadcrumbs,
+                       'base_instrument_url':base_url}
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('report/global_summary.html',
+                              template_values)
 
+@users.view_util.login_or_local_required
 @confirm_instrument
 def detail(request, instrument, run_id):
     """
@@ -55,14 +61,18 @@ def detail(request, instrument, run_id):
     
     # Find status entries
     status_objects, status_header = view_util.ActivitySorter(request)(run_object)
-    return render_to_response('report/detail.html', {'instrument':instrument.upper(),
-                                                     'run_object':run_object,
-                                                     'status':status_objects,
-                                                     'status_header':status_header,
-                                                     'breadcrumbs':breadcrumbs,
-                                                     'icat_info':icat_info,
-                                                    })
+    
+    template_values = {'instrument':instrument.upper(),
+                       'run_object':run_object,
+                       'status':status_objects,
+                       'status_header':status_header,
+                       'breadcrumbs':breadcrumbs,
+                       'icat_info':icat_info,
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('report/detail.html', template_values)
 
+@users.view_util.login_or_local_required
 def instrument_summary(request, instrument):
     """
         Instrument summary page
@@ -100,17 +110,20 @@ def instrument_summary(request, instrument):
                                                          instrument.lower()
                                                          ) 
 
-    return render_to_response('report/instrument.html', {'instrument':instrument.upper(),
-                                                         'ipts':ipts,
-                                                         'ipts_header':ipts_header,
-                                                         'base_ipts_url':base_ipts_url,
-                                                         'base_run_url':base_run_url,
-                                                         'breadcrumbs':breadcrumbs,
-                                                         'last_expt': last_expt_id,
-                                                         'last_run': last_run_id,
-                                                         'error_url': error_url,
-                                                         })
+    template_values = {'instrument':instrument.upper(),
+                       'ipts':ipts,
+                       'ipts_header':ipts_header,
+                       'base_ipts_url':base_ipts_url,
+                       'base_run_url':base_run_url,
+                       'breadcrumbs':breadcrumbs,
+                       'last_expt': last_expt_id,
+                       'last_run': last_run_id,
+                       'error_url': error_url,
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('report/instrument.html', template_values)
 
+@users.view_util.login_or_local_required
 @confirm_instrument
 def ipts_summary(request, instrument, ipts):
     """
@@ -157,22 +170,25 @@ def ipts_summary(request, instrument, ipts):
             str(ipts_id).lower()
             ) 
 
-    return render_to_response('report/ipts_summary.html', {'instrument':instrument.upper(),
-                                                           'ipts_number':ipts,
-                                                           'run_list':run_list,
-                                                           'run_list_header':run_list_header,
-                                                           'base_run_url':base_url,
-                                                           'breadcrumbs':breadcrumbs,
-                                                           'icat_info':icat_info,
-                                                           'all_shown':show_all,
-                                                           'number_shown':len(run_list),
-                                                           'number_of_runs':number_of_runs,
-                                                           'ipts_url':ipts_url,
-                                                           'update_url':update_url,
-                                                           'last_run':last_run_id,
-                                                           'last_expt':last_expt_id,
-                                                           })
+    template_values = {'instrument':instrument.upper(),
+                       'ipts_number':ipts,
+                       'run_list':run_list,
+                       'run_list_header':run_list_header,
+                       'base_run_url':base_url,
+                       'breadcrumbs':breadcrumbs,
+                       'icat_info':icat_info,
+                       'all_shown':show_all,
+                       'number_shown':len(run_list),
+                       'number_of_runs':number_of_runs,
+                       'ipts_url':ipts_url,
+                       'update_url':update_url,
+                       'last_run':last_run_id,
+                       'last_expt':last_expt_id,
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('report/ipts_summary.html', template_values)
     
+@users.view_util.login_or_local_required
 @confirm_instrument
 def get_update(request, instrument, ipts):
     """

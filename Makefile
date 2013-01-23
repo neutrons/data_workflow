@@ -37,6 +37,7 @@ install: clean workflow
 	cp -R reporting/report $(prefix)/app
 	cp -R reporting/static $(prefix)/app
 	cp -R reporting/monitor $(prefix)/app
+	cp -R reporting/users $(prefix)/app
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app
 	
