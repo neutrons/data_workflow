@@ -117,10 +117,26 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    # 'django.contrib.admindocs',
+    'django.contrib.admindocs',
+    'django_auth_ldap',
     'report',
     'monitor',
+    'users',
 )
+
+AUTHENTICATION_BACKENDS = (
+                           'django_auth_ldap.backend.LDAPBackend',
+                           'django.contrib.auth.backends.ModelBackend',
+                           )
+
+AUTH_LDAP_SERVER_URI = "ldaps://ldap.example.com/"
+AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=Users,dc=sns,dc=ornl,dc=gov"
+
+ALLOW_GUESTS = True
+GRAVATAR_URL = "http://www.gravatar.com/avatar/"
+ALLOWED_DOMAIN = 'example.com'
+LOGIN_URL = '/workflow/users/login'
+LANDING_VIEW = 'report.views.summary'
 
 LOGGING = {
     'version': 1,
@@ -154,6 +170,10 @@ LOGGING = {
             'propagate': False,
         },
         'report': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django_auth_ldap': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
