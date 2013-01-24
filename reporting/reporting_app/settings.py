@@ -129,12 +129,12 @@ AUTHENTICATION_BACKENDS = (
                            'django.contrib.auth.backends.ModelBackend',
                            )
 
-AUTH_LDAP_SERVER_URI = "ldaps://ldap.example.com/"
-AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=Users,dc=sns,dc=ornl,dc=gov"
-
-ALLOW_GUESTS = True
-GRAVATAR_URL = "http://www.gravatar.com/avatar/"
-ALLOWED_DOMAIN = 'example.com'
+AUTH_LDAP_SERVER_URI = ""
+AUTH_LDAP_USER_DN_TEMPLATE = ""
+# Set to True to allow anonymous guests on the local network
+ALLOW_GUESTS = False
+# Set the following to the local domain name
+ALLOWED_DOMAIN = ''
 LOGIN_URL = '/workflow/users/login'
 LANDING_VIEW = 'report.views.summary'
 
@@ -179,3 +179,11 @@ LOGGING = {
         },
     }
 }
+
+# Import local settings if available
+try:
+    from local_settings import *
+except ImportError, e:
+    LOCAL_SETTINGS = False
+    pass
+   
