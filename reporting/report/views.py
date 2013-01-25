@@ -101,7 +101,7 @@ def instrument_summary(request, instrument):
     
     # Instrument error URL
     try:
-        error_url = reverse('monitor.views.live_instrument',args=[instrument])
+        error_url = reverse('monitor.views.live_errors',args=[instrument])
     except:
         error_url = None
 

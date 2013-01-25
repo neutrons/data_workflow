@@ -14,10 +14,9 @@ import users.view_util
 
 @users.view_util.login_or_local_required
 @confirm_instrument
-def live_instrument(request, instrument):
+def live_errors(request, instrument):
     """
-        TODO: need to display only last 20 (+ link to rest)
-        TODO: ajax call for updates
+        Display the list of latest errors
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -52,7 +51,7 @@ def live_instrument(request, instrument):
     
     # Instrument reporting URL
     instrument_url = reverse('report.views.instrument_summary',args=[instrument])
-    error_url = reverse('monitor.views.live_instrument',args=[instrument])
+    error_url = reverse('monitor.views.live_errors',args=[instrument])
     
     update_url = reverse('monitor.views.get_update',args=[instrument])
     
@@ -84,7 +83,7 @@ def live_instrument(request, instrument):
                        'last_error':last_error,
                        }
     template_values = users.view_util.fill_template_values(request, **template_values)
-    return render_to_response('monitor/live_instrument.html', template_values)
+    return render_to_response('monitor/live_errors.html', template_values)
     
 @confirm_instrument
 def get_update(request, instrument):
@@ -109,8 +108,20 @@ def get_update(request, instrument):
         data_dict = {"refresh_needed": '0'}
     else:
         refresh_needed = '1' if last_error_id.run_status_id.created_on<errors[0].run_status_id.created_on else '0'         
-        data_dict = {"last_run": errors[0].run_status_id.run_id.run_number,
-                     "refresh_needed": refresh_needed,
+        err_list = []
+        for e in errors:
+            if last_error_id.run_status_id.created_on<e.run_status_id.created_on:
+                err_dict = {"run": e.run_status_id.run_id.run_number,
+                            "ipts":e.run_status_id.run_id.ipts_id.expt_name,
+                            "description":e.description,
+                            "timestamp":str(e.run_status_id.created_on),
+                            "error_id":e.id,
+                            }
+                err_list.append(err_dict)
+        data_dict = {"refresh_needed": refresh_needed,
+                     "last_error_id": errors[0].id,
+                     "last_run": errors[0].run_status_id.run_id.run_number,
+                     "errors":err_list
                      }
 
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")

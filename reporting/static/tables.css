@@ -93,6 +93,10 @@ tr.alt {
     background: none;
 }
 
+.error {
+    background: pink;
+}
+
 /* SORTABLE TABLES */
 
 thead th a:link, thead th a:visited {

@@ -3,16 +3,28 @@
 {% block title %}{{ instrument }} Error Report {% endblock %}
 {% block header %}
 <script>
+	var last_error_id = '{{ last_error.id }}';
+
     function show_local_alert() {
         $(".user_alert").show("slide", {direction:'right'}, 500 );
         $(".user_alert").click(function(){window.location.href = '{{ error_url }}'});
     };
 
     function poll(){
-        $.ajax({ url: "{{ update_url }}?since={{ last_error.id }}", success: function(data){
+        $.ajax({ url: "{{ update_url }}?since="+last_error_id, success: function(data){
             if (data.refresh_needed.localeCompare('1')==0){
                 new_alert("Run "+data.last_run+" has errors<br><div id='click_me'>- click to refresh -</div>");
                 show_local_alert();
+              	for (var i=0;i<data.errors.length;i++)
+				{ 
+                var new_entry = "<tr class='error'>";
+                new_entry += "<td><a href='{{ base_ipts_url }}"+data.errors[i].ipts+"/'>"+data.errors[i].ipts+"</a></td>";
+                new_entry += "<td><a href='{{ base_run_url }}"+data.errors[i].run+"/'>"+data.errors[i].run+"</a></td>";
+                new_entry += "<td>"+data.errors[i].description+"</td><td>"+data.errors[i].timestamp+"</td>";
+                new_entry += "</tr>";
+                $('#error_table tbody').prepend(new_entry);
+                }
+                last_error_id = data.last_error_id;
             }
         }, dataType: "json", timeout: 30000 });
     };
@@ -40,7 +52,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% block content %}
 List of {{ instrument }} errors {% if instrument_url %}(view <a href='{{ instrument_url }}'>experiments</a>){% endif %}<br>
       <div id="details">
-      <table cellspacing="0" class="message_table">
+      <table cellspacing="0" class="message_table" id="error_table">
       <thead>
       <tr>
         {% for item in error_header %}
