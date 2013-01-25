@@ -25,8 +25,9 @@ clean:
 	rm -fR *.pyc
 	rm -fR build/
 	
-install: clean workflow
+install: clean workflow webapp
        
+webapp:
 	# Make sure the install directories exist
 	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
 	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
@@ -56,3 +57,4 @@ install: clean workflow
 .PHONY: check
 .PHONY: install
 .PHONY: workflow
+.PHONY: webapp
