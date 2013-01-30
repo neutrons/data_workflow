@@ -34,14 +34,31 @@ def login_or_local_required(fn):
         to see a view.
     """
     def request_processor(request, *args, **kws):
-        if not request.user.is_authenticated():
+        # Login URL
+        redirect_url = reverse('users.views.perform_login')
+        redirect_url  += '?next=%s' % request.path
+        
+        # If we allow guests in, just return the function
+        if settings.ALLOW_GUESTS:
+            return fn(request, *args, **kws)
+        
+        # If we don't allow guests but the user is authenticated, return the function
+        elif request.user.is_authenticated():
+            return fn(request, *args, **kws)
+        
+        # If we allow users on a domain, check the user's IP
+        elif len(settings.ALLOWED_DOMAIN)>0:
             ip_addr =  request.META['REMOTE_ADDR']
-            if not settings.ALLOW_GUESTS or \
-                not (socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN) \
-                     or socket.gethostbyaddr(ip_addr)[0] =='localhost'):
-                redirect_url = reverse('users.views.perform_login')
-                redirect_url  += '?next=%s' % request.path
-                return redirect(redirect_url)
-        return fn(request, *args, **kws)        
+
+            # If the user is on the allowed domain, return the function
+            if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
+                return fn(request, *args, **kws)
+            
+            # If we allow a certain domain and the user is on the server, return the function
+            elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
+                return fn(request, *args, **kws)
+
+        # If we made it here, we need to authenticate the user
+        return redirect(redirect_url)   
     return request_processor
 
