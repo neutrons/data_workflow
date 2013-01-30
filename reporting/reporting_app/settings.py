@@ -132,7 +132,7 @@ AUTHENTICATION_BACKENDS = (
 AUTH_LDAP_SERVER_URI = ""
 AUTH_LDAP_USER_DN_TEMPLATE = ""
 # Set to True to allow anonymous guests on the local network
-ALLOW_GUESTS = False
+ALLOW_GUESTS = True
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
 LOGIN_URL = '/workflow/users/login'
