@@ -12,19 +12,6 @@ Flot plugin for thresholding data. Controlled through the option
 or in a specific series
 
   $.plot($("#placeholder"), [{ data: [ ... ], threshold: { ... }}])
-  
-An array can be passed for multiple thresholding
-
-  threshold: [{
-    below: number1
-    color: color1
-  },{
-    below: number2
-    color: color2
-  }]
-
-These multiple threshold objects can be passed in any order since they
-are sorted by the processing function.
 
 The data points below "below" are drawn with the specified color. This
 makes it easy to mark points below 0, e.g. for budget data.
@@ -42,18 +29,22 @@ events.
     };
     
     function init(plot) {
-        function thresholdData(plot, s, datapoints, below, color) {
+        function thresholdData(plot, s, datapoints) {
+            if (!s.threshold)
+                return;
+            
             var ps = datapoints.pointsize, i, x, y, p, prevp,
                 thresholded = $.extend({}, s); // note: shallow copy
 
-            thresholded.datapoints = { points: [], pointsize: ps, format: datapoints.format };
+            thresholded.datapoints = { points: [], pointsize: ps };
             thresholded.label = null;
-            thresholded.color = color;
+            thresholded.color = s.threshold.color;
             thresholded.threshold = null;
             thresholded.originSeries = s;
             thresholded.data = [];
- 
-            var origpoints = datapoints.points,
+
+            var below = s.threshold.below,
+                origpoints = datapoints.points,
                 addCrossingPoints = s.lines.show;
 
             threspoints = [];
@@ -89,8 +80,6 @@ events.
 
                 p.push(x);
                 p.push(y);
-                for (m = 2; m < ps; ++m)
-                    p.push(origpoints[i + m]);
             }
 
             datapoints.points = newpoints;
@@ -102,31 +91,13 @@ events.
             // FIXME: there are probably some edge cases left in bars
         }
         
-        function processThresholds(plot, s, datapoints) {
-            if (!s.threshold)
-                return;
-            
-            if (s.threshold instanceof Array) {
-                s.threshold.sort(function(a, b) {
-                    return a.below - b.below;
-                });
-                
-                $(s.threshold).each(function(i, th) {
-                    thresholdData(plot, s, datapoints, th.below, th.color);
-                });
-            }
-            else {
-                thresholdData(plot, s, datapoints, s.threshold.below, s.threshold.color);
-            }
-        }
-        
-        plot.hooks.processDatapoints.push(processThresholds);
+        plot.hooks.processDatapoints.push(thresholdData);
     }
     
     $.plot.plugins.push({
         init: init,
         options: options,
         name: 'threshold',
-        version: '1.2'
+        version: '1.0'
     });
 })(jQuery);

@@ -347,20 +347,20 @@ More detail and specific examples can be found in the included HTML file.
 			
 			function drawPie()
 			{
-				var startAngle = Math.PI * options.series.pie.startAngle;
-				var radius;
-
+				startAngle = Math.PI*options.series.pie.startAngle;
+				
 				// set radius
-				if (options.series.pie.radius > 1)
-					radius = options.series.pie.radius;
-				else radius = maxRadius * options.series.pie.radius;
-
+				if (options.series.pie.radius>1)
+					var radius = options.series.pie.radius;
+				else
+					var radius = maxRadius * options.series.pie.radius;
+				
 				// center and rotate to starting position
 				ctx.save();
 				ctx.translate(centerLeft,centerTop);
 				ctx.scale(1, options.series.pie.tilt);
 				//ctx.rotate(startAngle); // start at top; -- This doesn't work properly in Opera
-
+				
 				// draw slices
 				ctx.save();
 				var currentAngle = startAngle;
@@ -370,31 +370,28 @@ More detail and specific examples can be found in the included HTML file.
 					drawSlice(slices[i].angle, slices[i].color, true);
 				}
 				ctx.restore();
-
+				
 				// draw slice outlines
-
-				if (options.series.pie.stroke.width > 0) {
-					ctx.save();
-					ctx.lineWidth = options.series.pie.stroke.width;
-					currentAngle = startAngle;
-					for (var i = 0; i < slices.length; ++i)
-						drawSlice(slices[i].angle, options.series.pie.stroke.color, false);
-					ctx.restore();
-				}
-
+				ctx.save();
+				ctx.lineWidth = options.series.pie.stroke.width;
+				currentAngle = startAngle;
+				for (var i = 0; i < slices.length; ++i)
+					drawSlice(slices[i].angle, options.series.pie.stroke.color, false);
+				ctx.restore();
+					
 				// draw donut hole
 				drawDonutHole(ctx);
-
+				
 				// draw labels
 				if (options.series.pie.label.show)
 					drawLabels();
-
+				
 				// restore to original state
 				ctx.restore();
-
+				
 				function drawSlice(angle, color, fill)
 				{	
-					if (angle <= 0 || isNaN(angle))
+					if (angle<=0)
 						return;
 				
 					if (fill)
@@ -685,8 +682,7 @@ More detail and specific examples can be found in the included HTML file.
 
 			function drawHighlight(series) 
 			{
-				if (series.angle <= 0 || isNaN(series.angle))
-					return;
+				if (series.angle < 0) return;
 				
 				//octx.fillStyle = parseColor(options.series.pie.highlight.color).scale(null, null, null, options.series.pie.highlight.opacity).toString();
 				octx.fillStyle = "rgba(255, 255, 255, "+options.series.pie.highlight.opacity+")"; // this is temporary until we have access to parseColor

@@ -4,7 +4,8 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.utils import simplejson
+from django.utils import simplejson, dateformat, timezone
+from django.conf import settings
 
 from report.views import confirm_instrument
 from report.models import Instrument, IPTS, DataRun, Error
@@ -61,6 +62,9 @@ def live_errors(request, instrument):
     except:
         last_error = None
     
+    run_rate = view_util.run_rate(instrument_id)
+    error_rate = view_util.error_rate(instrument_id)
+    
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('report.views.summary'),
                                                          instrument.lower()
@@ -81,6 +85,8 @@ def live_errors(request, instrument):
                        'error_url':error_url,
                        'update_url':update_url,
                        'last_error':last_error,
+                       'run_rate':str(run_rate),
+                       'error_rate':str(error_rate),
                        }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('monitor/live_errors.html', template_values)
@@ -96,32 +102,52 @@ def get_update(request, instrument):
     try:
         since = int(since)
     except:
-        data_dict = {"refresh_needed": '0'}
+        data_dict = {'refresh_needed': '0'}
         return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
     
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())    
     last_error_id = get_object_or_404(Error, id=since)
     
+    # Get last experiment and last run
+    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    if last_run_id is None:
+        last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
+    else:
+        last_expt_id = last_run_id.ipts_id
+
     errors = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('run_status_id__created_on').reverse()
     
-    if len(errors)==0:
-        data_dict = {"refresh_needed": '0'}
-    else:
+    run_rate = view_util.run_rate(instrument_id)
+    error_rate = view_util.error_rate(instrument_id)
+    
+    localtime = timezone.localtime(last_run_id.created_on)
+    df = dateformat.DateFormat(localtime)
+    
+    data_dict = {'refresh_needed': '0',
+                 'last_error_id':errors[0].id,
+                 'last_error_run':errors[0].run_status_id.run_id.run_number,
+                 'last_expt':last_expt_id.expt_name.upper(),
+                 'last_run':last_run_id.run_number,
+                 'last_run_time':df.format(settings.DATETIME_FORMAT),
+                 'run_rate':run_rate,
+                 'error_rate':error_rate,
+                 }
+    
+    if len(errors)>0:
         refresh_needed = '1' if last_error_id.run_status_id.created_on<errors[0].run_status_id.created_on else '0'         
         err_list = []
         for e in errors:
             if last_error_id.run_status_id.created_on<e.run_status_id.created_on:
-                err_dict = {"run": e.run_status_id.run_id.run_number,
+                localtime = timezone.localtime(e.run_status_id.created_on)
+                df = dateformat.DateFormat(localtime)
+                err_dict = {"run":e.run_status_id.run_id.run_number,
                             "ipts":e.run_status_id.run_id.ipts_id.expt_name,
                             "description":e.description,
-                            "timestamp":str(e.run_status_id.created_on),
+                            "timestamp":df.format(settings.DATETIME_FORMAT),
                             "error_id":e.id,
                             }
                 err_list.append(err_dict)
-        data_dict = {"refresh_needed": refresh_needed,
-                     "last_error_id": errors[0].id,
-                     "last_run": errors[0].run_status_id.run_id.run_number,
-                     "errors":err_list
-                     }
+        data_dict['refresh_needed'] = refresh_needed
+        data_dict['errors'] = err_list
 
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")

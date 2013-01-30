@@ -2,8 +2,14 @@
 
 {% block title %}{{ instrument }} Error Report {% endblock %}
 {% block header %}
+
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+
 <script>
 	var last_error_id = '{{ last_error.id }}';
+	var run_data = {{ run_rate|safe }};
+	var error_data = {{ error_rate|safe }};
 
     function show_local_alert() {
         $(".user_alert").show("slide", {direction:'right'}, 500 );
@@ -13,11 +19,11 @@
     function poll(){
         $.ajax({ url: "{{ update_url }}?since="+last_error_id, success: function(data){
             if (data.refresh_needed.localeCompare('1')==0){
-                new_alert("Run "+data.last_run+" has errors<br><div id='click_me'>- click to refresh -</div>");
-                show_local_alert();
+                new_alert("Run "+data.last_error_run+" has errors<br><div id='click_me'>- click to refresh -</div>");
+                //show_local_alert();
               	for (var i=0;i<data.errors.length;i++)
 				{ 
-                var new_entry = "<tr class='error'>";
+                var new_entry = "<tr class='error_row'>";
                 new_entry += "<td><a href='{{ base_ipts_url }}"+data.errors[i].ipts+"/'>"+data.errors[i].ipts+"</a></td>";
                 new_entry += "<td><a href='{{ base_run_url }}"+data.errors[i].run+"/'>"+data.errors[i].run+"</a></td>";
                 new_entry += "<td>"+data.errors[i].description+"</td><td>"+data.errors[i].timestamp+"</td>";
@@ -26,18 +32,61 @@
                 }
                 last_error_id = data.last_error_id;
             }
+            
+            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
+            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
+            $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
+            
+            run_data = data.run_rate;
+            error_data = data.error_rate;
+            
+            plot();
+
         }, dataType: "json", timeout: 30000 });
     };
+    
+    function plot(){
+    	var options = {
+    			xaxis: {
+    				show: true,
+    				ticks:[[1, "-24 hrs"], [25, "last hour"]] 	
+    			},
+    			yaxis: { minTickSize:1 },
+    			shadowSize: 0,
+    			bars: {
+    				show: true,
+    				lineWidth: 1
+    			},
+    			grid: { 
+    				color: "#5e5e5e",
+    				borderWidth: 1
+    			},
+    			legend: {
+    				show: true,
+    				position: 'nw'
+    			}
+    	};
+    	$.plot($("#runs_per_hour"), [ {label:"Number of runs [#/hr]", data:run_data} ], options);
+    	$.plot($("#errors_per_hour"), [ {label:"Number of errors [#/hr]",
+    										data:error_data,
+    										color:"#ED5B4B"} ], options);
+    }
 </script>   
 {% endblock %}
 
 {% block banner %}{{ instrument }} Error Report {% endblock %}
 
 {% block summary %}
+
+<dir id="summary_plots" style="height:110px;padding:0">
+<div id="runs_per_hour" style="float:left;width:400px;height:100px;position:relative"></div>
+<div id="errors_per_hour" style="float:right;width:400px;height:100px;position:relative"></div>
+</dir>
+
 {% if last_run %}
-Last run: <a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a> 
-from <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a>
-created on {{ last_run.created_on }}<br>
+Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
+from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
+created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
 {% elif last_expt %}
 Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
 {% endif %}
@@ -76,5 +125,7 @@ List of {{ instrument }} errors {% if instrument_url %}(view <a href='{{ instrum
       {% if not all_shown %}
       {{ number_shown }} of {{ number_of_errors }} errors shown - <a href='{{ ipts_url }}?show=all'>show all errors</a>
       {% endif %}
-
+<script id="source" language="javascript" type="text/javascript">
+    plot();
+</script>
 {% endblock %}

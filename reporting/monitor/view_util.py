@@ -1,5 +1,7 @@
 from report.view_util import DataSorter
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error
+import datetime
+from django.utils import timezone
 
 class ErrorSorter(DataSorter):
     """
@@ -37,3 +39,37 @@ class ErrorSorter(DataSorter):
             return Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by(self.sort_item)
 
        
+def run_rate(instrument_id, n_hours=24):
+    """
+        Returns the rate of new runs for the last n_hours hours.
+        @param instrument_id: Instrument model object
+        @param n_hours: number of hours to track
+    """
+    time = timezone.now()
+    runs=[]
+    running_sum = 0
+    for i in range(n_hours):
+        t_i = time-datetime.timedelta(hours=i+1)
+        n = DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=t_i).count()
+        n -= running_sum
+        running_sum += n
+        runs.append([n_hours-i,n])
+    return runs
+
+def error_rate(instrument_id, n_hours=24):
+    """
+        Returns the rate of errors for the last n_hours hours.
+        @param instrument_id: Instrument model object
+        @param n_hours: number of hours to track
+    """
+    time = timezone.now()
+    errors=[]
+    running_sum = 0
+    for i in range(n_hours):
+        t_i = time-datetime.timedelta(hours=i+1)
+        n = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id, run_status_id__created_on__gte=t_i).count()
+        n -= running_sum
+        running_sum += n
+        errors.append([n_hours-i,n])
+    return errors
+        
