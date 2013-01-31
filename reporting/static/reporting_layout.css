@@ -16,52 +16,26 @@
 	color: #5e5e5e;
 }
 
-/* Flot plots */
-.flotplot
-{	
-	padding-left: 50px;	
-	padding-bottom:25px;
+.summary_plots
+{
+	height:110px;
+	padding:0;
 }
 
-.flotplot #y_label {
-	display:block; 
-	text-align:right;
+.summary_plots #runs_per_hour
+{
+	float:left;
+	width:400px;
+	height:100px;
 	position:relative;
-	right:410px; top:420px;
-	
-	/* Safari */
-	-webkit-transform: rotate(-90deg);
-	
-	/* Firefox */
-	-moz-transform: rotate(-90deg);
-	
-	/* IE */
-	-ms-transform: rotate(-90deg);
-	
-	/* Opera */
-	-o-transform: rotate(-90deg);
-	
-	/* Internet Explorer */
-	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
-}
-.flotplot #x_label {
-	display:block; 
-	position:relative;
-	text-align:right;
-	right:210px;
 }
 
-.flotplot #linlog {
-	display:block; 
+.summary_plots #errors_per_hour
+{
+	float:right;
+	width:400px;
+	height:100px;
 	position:relative;
-	text-align:right;
-	right:210px;
-	top:20px;
-	font-size:12px;
-}
-
-#placeholder {
-	width:600px;height:400px;
 }
 
 #tooltip {

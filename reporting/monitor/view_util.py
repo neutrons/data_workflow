@@ -1,7 +1,8 @@
 from report.view_util import DataSorter
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error
 import datetime
-from django.utils import timezone
+from django.utils import dateformat, timezone
+from django.conf import settings
 
 class ErrorSorter(DataSorter):
     """
@@ -73,3 +74,33 @@ def error_rate(instrument_id, n_hours=24):
         errors.append([n_hours-i,n])
     return errors
         
+def get_current_status(instrument_id):
+    """
+        Get current status information such as the last
+        experiment/run for a given instrument
+        @param instrument_id: Instrument model object
+    """
+    # Get last experiment and last run
+    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    if last_run_id is None:
+        last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
+    else:
+        last_expt_id = last_run_id.ipts_id
+
+    r_rate = run_rate(instrument_id)
+    e_rate = error_rate(instrument_id)
+    
+    localtime = timezone.localtime(last_run_id.created_on)
+    df = dateformat.DateFormat(localtime)
+    
+    data_dict = {
+                 'last_expt_id':last_expt_id.id,
+                 'last_expt':last_expt_id.expt_name.upper(),
+                 'last_run_id':last_run_id.id,
+                 'last_run':last_run_id.run_number,
+                 'last_run_time':df.format(settings.DATETIME_FORMAT),
+                 'run_rate':r_rate,
+                 'error_rate':e_rate,
+                 }
+    return data_dict
+

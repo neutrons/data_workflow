@@ -94,7 +94,11 @@ tr.alt {
 }
 
 .error_row {
-    background: pink;
+    background: #f8bdb7;
+}
+
+.highlight_row {
+    background: #f8e7b3;
 }
 
 /* SORTABLE TABLES */

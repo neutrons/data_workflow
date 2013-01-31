@@ -2,28 +2,64 @@
 
 {% block title %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
 {% block header %}
-<script>
-    function show_local_alert() {
-        $(".user_alert").show("slide", {direction:'right'}, 500 );
-        $(".user_alert").click(function(){window.location.href = '{{ ipts_url }}'});
-    };
 
-    function poll(){
-        $.ajax({ url: "{{ update_url }}?since={{ last_run.run_number }}", success: function(data){
-        	if (data.refresh_needed.localeCompare('1')==0){
-    			new_alert("Run "+data.last_run+" is available<br><div id='click_me'>- click to refresh -</div>");
-    			show_local_alert();
-    		}
-    	}, dataType: "json", timeout: 30000 });
-	};
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+
+<script>
+var last_run_id = '{{ last_run.id }}';
+var run_data = {{ run_rate|safe }};
+var error_data = {{ error_rate|safe }};
+
+function poll(){
+    $.ajax({ url: "{{ update_url }}?since="+last_run_id, success: function(data){
+        if (data.refresh_needed.localeCompare('1')==0){
+          	for (var i=0;i<data.run_list.length;i++)
+			{ 
+            var new_entry = "<tr class='highlight_row'>";
+            new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
+            new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
+            new_entry += "<td>"+data.run_list[i].last_error+"</td>";
+            new_entry += "</tr>";
+            $('#run_table tbody').prepend(new_entry);
+            }
+          	last_run_id = data.last_run_id;
+        }
+        
+        $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
+        $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
+        $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
+        
+        run_data = data.run_rate;
+        error_data = data.error_rate;
+        plot_rates(run_data, error_data);
+
+    }, dataType: "json", timeout: 30000 });
+};    
+
 </script>   
 {% endblock %}
 
 {% block banner %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
 
 {% block summary %}
-      Title: {{ icat_info.title|default:"unknown" }}<br>
-      Created on: {{ icat_info.createTime|default:"unknown" }}<br>      
+
+<dir class="summary_plots">
+    <div id="runs_per_hour"></div>
+    <div id="errors_per_hour"></div>
+</dir>
+
+{% if last_run %}
+Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
+from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
+created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
+{% elif last_expt %}
+Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% endif %}
+<br>
+Title for {{ ipts_number|upper }}: {{ icat_info.title|default:"unknown" }}<br>
+IPTS date: {{ icat_info.createTime|default:"unknown" }}<br>      
 {% endblock %}
 
 {% block bodytop %}
@@ -35,7 +71,7 @@
 {% block content %}
 List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       <div id="details">
-      <table cellspacing="0" class="message_table">
+      <table cellspacing="0" class="message_table" id="run_table">
       <thead>
       <tr>
       {% for item in run_list_header %}
@@ -62,5 +98,7 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       {% if not all_shown %}
       {{ number_shown }} of {{ number_of_runs }} runs shown - <a href='{{ ipts_url }}?show=all'>show all runs</a>
       {% endif %}
-
+<script id="source" language="javascript" type="text/javascript">
+    plot_rates(run_data, error_data);
+</script>
 {% endblock %}
