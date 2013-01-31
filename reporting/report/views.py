@@ -159,7 +159,11 @@ def ipts_summary(request, instrument, ipts):
     number_of_runs = ipts_id.number_of_runs()
     
     icat_info = get_ipts_info(instrument, ipts)
-        
+
+    # Get base IPTS URL
+    base_ipts_url = reverse('report.views.ipts_summary',args=[instrument,'0000'])
+    base_ipts_url = base_ipts_url.replace('/0000','')
+
     # Get base URL
     base_url = reverse('report.views.detail',args=[instrument,'0000'])
     base_url = base_url.replace('/0000','')
@@ -195,6 +199,7 @@ def ipts_summary(request, instrument, ipts):
                        'run_list':run_list,
                        'run_list_header':run_list_header,
                        'base_run_url':base_url,
+                       'base_ipts_url':base_ipts_url,
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'all_shown':show_all,
