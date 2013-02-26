@@ -1,0 +1,10 @@
+@charset "UTF-8";
+/* CSS Document */
+
+.user_info {
+	visibility:hidden;
+}
+
+.user_alert {
+	visibility:hidden;
+}

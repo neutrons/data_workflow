@@ -5,10 +5,12 @@
 <![endif]-->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Data Processing Report{% endblock %}</title>
 
-<link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
-<link rel="stylesheet" href="/static/tables.css" type="text/css" media="screen" title="no title" charset="utf-8">
+<link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" title="no title" charset="utf-8">
+<link rel="stylesheet" href="/static/reporting_layout_print.css" type="text/css" media="print" title="no title" charset="utf-8">
+<link rel="stylesheet" href="/static/tables.css" type="text/css" title="no title" charset="utf-8">
 <link rel="icon" type="image/png" href="/static/favicon.ico" />
 
 <link rel="stylesheet" href="/static/thirdparty/jquery-ui.css" />
@@ -48,9 +50,8 @@
 	{% endif %}
 	</div>
     
-    <p>
-        <div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
-    </p>
+    <a class="banner_logo" href="http://http://neutrons.ornl.gov/" target="_blank"><img title="SNS" src="/static/sns_logo_111x75.png" alt="SNS" /></a>
+    <div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
 
     <div class='user_alert'>
     {% if user_alert %}
