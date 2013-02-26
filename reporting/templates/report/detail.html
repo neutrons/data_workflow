@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
-{% block banner %}{{ instrument }} Run {{ run_object.run_number }} Data Processing Report {% endblock %}
+{% block banner %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
 
 {% block summary %}
       Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
@@ -29,7 +29,6 @@
 {% endblock %}
 
 {% block content %}
-      <div id="details">
       <table cellspacing="0" class="message_table">
       <thead>
       <tr>
@@ -41,16 +40,16 @@
       <tbody>
         {% for item in status %}
         <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-            <td>{{ item.created_on }}</td><td>{{ item.queue_id.name }}</td>
+            <td>{{ item.queue_id.name }}</td>
             {% if item.last_error %} 
             <td class="error">{{ item.last_error.description }}</td>
             {% else %}
             <td>{{ item.last_info.description }}</td>
             {% endif %}
+            <td>{{ item.created_on }}</td>
         </tr>
         {% endfor %}
       </tbody>
       </table>
-      </div>
 
 {% endblock %}

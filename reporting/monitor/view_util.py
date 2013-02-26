@@ -25,8 +25,8 @@ class ErrorSorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Experiment", None, min_width=90))
-        header.append(self._create_header_dict("Run number", self.KEY_NAME, min_width=90))
+        header.append(self._create_header_dict("Experiment", None, min_width=80))
+        header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
         header.append(self._create_header_dict("Error", None))
         header.append(self._create_header_dict("Time", self.KEY_MOD))
         

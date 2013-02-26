@@ -115,8 +115,8 @@ class ExperimentSorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Experiment", self.KEY_NAME, min_width=90))
-        header.append(self._create_header_dict("Number of runs", None, min_width=90))
+        header.append(self._create_header_dict("Experiment", self.KEY_NAME, min_width=80))
+        header.append(self._create_header_dict("No. of runs", None, min_width=50))
         header.append(self._create_header_dict("Created on", self.KEY_MOD))
         
         return data, header
@@ -149,7 +149,7 @@ class RunSorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Run number", self.KEY_NAME, min_width=90))
+        header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
         header.append(self._create_header_dict("Created on", self.KEY_MOD))
         header.append(self._create_header_dict("Last known error", None))
         
@@ -183,9 +183,9 @@ class ActivitySorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Time", self.KEY_MOD))
         header.append(self._create_header_dict("Message", None))
         header.append(self._create_header_dict("Information", None))
+        header.append(self._create_header_dict("Time", self.KEY_MOD))
         
         return data, header
     

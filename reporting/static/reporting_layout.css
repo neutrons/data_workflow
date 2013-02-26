@@ -18,16 +18,16 @@
 
 .summary_plots
 {
-	height:110px;
+	height:160px;
 	padding:0;
 }
 
 .summary_plots #runs_per_hour
 {
-	float:left;
-	width:400px;
-	height:100px;
-	position:relative;
+	/* float:left; */
+	width: 500px;
+	height:150px;
+	/* position:relative; */
 }
 
 .summary_plots #errors_per_hour
@@ -36,13 +36,6 @@
 	width:400px;
 	height:100px;
 	position:relative;
-}
-
-#tooltip {
-    border: 1px solid #CDC0B0;
-    padding: 2px;
-    background-color: #eeeeee;
-	opacity: 1.0;
 }
 
 html {
@@ -60,8 +53,9 @@ header {
 	height:50px;
 	background-image:url('/static/sns_logo_111x75.png');
 	background-repeat:no-repeat;
-	text-align:left;
-	padding-left:180px;
+	background-position:left top;
+	text-align:center;
+	padding-left:100px;
 	padding-top:25px;
 	font-size:24px;
 	color:#5B4729;
@@ -70,10 +64,12 @@ header {
 
 body {
 	margin: 0 auto;
+	padding: 10px 10px 10px 10px;
 	text-align:left;
 	font-family: "Lucida Grande", Verdana, Arial, sans-serif;
 	font-size:12px;
-	width: 850px;
+	max-width:550px;
+	min-width:550px;
     color:#5B4729;
 }
 
@@ -101,7 +97,9 @@ img {border: 0;}
 	padding-bottom:10px;
 	padding-top:10px;
 	padding-left:10px;
-    width: 838px;
+	padding-right:10px;
+    max-width:520px;
+	min-width:520px;
 	color:#5B4729;
 	
     border: 1px solid #cdc0b0;
@@ -113,17 +111,10 @@ img {border: 0;}
 	margin-bottom: 10px;
 }
 
-#details {
-	padding-left:25px;
-	padding-top:5px;
-	color:#5B4729;
-	font-size:12px;
-	
-}
-
 .disclamer {
 	font-size:10px;
-	width:600px;
+	max-width:600px;
+	min-width:400px;
 	margin-left:auto;
 	margin-right:auto;
 	margin-top:20px;
@@ -170,7 +161,8 @@ img {border: 0;}
 	font-size: 12px;
 	min-height: 60px;
 	text-align: center;
-	width: 850px;
+	max-width:850px;
+	min-width:400px;
 }
 
 .ornlFooter .links
@@ -212,10 +204,4 @@ img {border: 0;}
 {
 	text-decoration: underline;
 	color: #006633;
-}
-
-.ornlFooter .logos
-{
-	margin: 0 auto;
-	width: 20%;
 }

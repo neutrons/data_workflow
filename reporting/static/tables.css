@@ -1,37 +1,19 @@
-
-/* TABLES */
+@charset "UTF-8";
+/* CSS FOR TABLES */
 .message_table {
-	min-width:500px;
-	font-size: 14px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:10px;
+	font-size:11px;
 }
-
-.data_table {
-	width:700px;
-	border-collapse: collapse;
-    border-color: #ccc;
-}
-.delete_icon {
-	background: white; border: 0px; padding:0px; padding-top:5px; padding-left:3px;
-	width:15px;
-}
-
-.data_table td {
-	border-bottom: 1px solid #eee;
-}
-.data_table td:last-child{
-	border-bottom: 0px;
-}
-
 
 td, th {
-    font-size: 11px;
     line-height: 13px;
     vertical-align: top;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 2px;
+    padding-right: 2px;
     padding-top: 2px;
     padding-bottom: 2px;
-    
 }
 
 td.error {
@@ -39,17 +21,15 @@ td.error {
 }
 
 th {
-	min-width: 170px;
+	min-width: 150px;
+	max-width: 150px;
     text-align: left;
-    font-size: 11px;
     font-weight: bold;
 }
 
 thead th,
 tfoot td {
-    /* color: #666; */
-    padding: 2px 5px;
-    font-size: 10px;
+    padding: 2px 2px;
     border-left: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
 }
@@ -73,7 +53,6 @@ fieldset table {
 }
 
 tr.row-label td {
-    font-size: 9px;
     padding-top: 2px;
     padding-bottom: 0;
     border-bottom: none;
@@ -113,7 +92,7 @@ table thead th.sorted {
 }
 
 table thead th.sorted a {
-    padding-right: 13px;
+    padding-right: 0px;
 }
 
 table thead th.ascending a {
@@ -137,15 +116,4 @@ table.orderable tbody tr td:first-child {
 
 table.orderable-initalized .order-cell, body>tr>td.order-cell {
     display: none;
-}
-
-.emptytable {
-	width:500px;
-	margin:0 auto;
-	margin-top:10px;
-	border:solid 1px #eee;
-	background:#EDF3FE;
-	padding:10px;
-	font-size: 12px;
-
 }

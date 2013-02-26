@@ -92,6 +92,7 @@ def live_errors(request, instrument):
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('monitor/live_errors.html', template_values)
     
+@users.view_util.login_or_local_required
 @confirm_instrument
 def get_update(request, instrument):
     """

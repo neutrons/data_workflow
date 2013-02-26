@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
+{% block title %}{{ instrument }} {{ ipts_number|upper }} {% endblock %}
 {% block header %}
 
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
@@ -33,7 +33,7 @@ function poll(){
         
         run_data = data.run_rate;
         error_data = data.error_rate;
-        plot_rates(run_data, error_data);
+        plot_combined_rates(run_data, error_data);
 
     }, dataType: "json", timeout: 30000 });
 };    
@@ -41,13 +41,12 @@ function poll(){
 </script>   
 {% endblock %}
 
-{% block banner %}{{ instrument }} {{ ipts_number|upper }} Data Processing Report {% endblock %}
+{% block banner %}{{ instrument }} {{ ipts_number|upper }} {% endblock %}
 
 {% block summary %}
 
 <dir class="summary_plots">
     <div id="runs_per_hour"></div>
-    <div id="errors_per_hour"></div>
 </dir>
 
 {% if last_run %}
@@ -70,7 +69,7 @@ IPTS date: {{ icat_info.createTime|default:"unknown" }}<br>
     
 {% block content %}
 List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
-      <div id="details">
+
       <table cellspacing="0" class="message_table" id="run_table">
       <thead>
       <tr>
@@ -93,12 +92,13 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
       {% endfor %}
       </tbody>
       </table>
-      </div>
+
       <br>
       {% if not all_shown %}
       {{ number_shown }} of {{ number_of_runs }} runs shown - <a href='{{ ipts_url }}?show=all'>show all runs</a>
       {% endif %}
+      
 <script id="source" language="javascript" type="text/javascript">
-    plot_rates(run_data, error_data);
+	plot_combined_rates(run_data, error_data);
 </script>
 {% endblock %}

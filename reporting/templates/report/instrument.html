@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ instrument }} Data Processing Report {% endblock %}
+{% block title %}{{ instrument }} Experiments {% endblock %}
 
 {% block header %}
 
@@ -34,20 +34,19 @@
             
             run_data = data.run_rate;
             error_data = data.error_rate;
-            plot_rates(run_data, error_data);
+            plot_combined_rates(run_data, error_data);
 
         }, dataType: "json", timeout: 30000 });
     };    
 </script>   
 {% endblock %}
 
-{% block banner %}{{ instrument }} Data Processing Report {% endblock %}
+{% block banner %}{{ instrument }} Experiments {% endblock %}
 
 {% block summary %}
 
 <dir class="summary_plots">
     <div id="runs_per_hour"></div>
-    <div id="errors_per_hour"></div>
 </dir>
 
 {% if last_run %}
@@ -68,7 +67,6 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% block content %}
 List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_url }}'>errors</a>){% endif %}<br>
 
-      <div id="details">
       <table cellspacing="0" class="message_table" id="expt_table">
       <thead>
       <tr>
@@ -87,8 +85,8 @@ List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_u
        {% endfor %}
        </tbody>
        </table>
-       </div>
+       
 <script id="source" language="javascript" type="text/javascript">
-    plot_rates(run_data, error_data);
+	plot_combined_rates(run_data, error_data);
 </script>
 {% endblock %}
