@@ -24,7 +24,8 @@ def send(destination, message, persistent='true'):
     
 def send_msg(runid=1234, ipts=5678, 
              queue='POSTPROCESS.DATA_READY',
-             info=None, error=None):
+             info=None, error=None,
+             data_file='', instrument="HYSA"):
     """
         Send simple ActiveMQ message
         @param runid: run number (int)
@@ -32,11 +33,13 @@ def send_msg(runid=1234, ipts=5678,
         @param queue: ActiveMQ queue to send message to
         @param info: optional information message
         @param error: optional error message
+        @param data_file: data file path to be sent in message
+        @param instrument: instrument name
     """
-    data_dict = {"instrument": "HYSA",
-             "ipts": "IPTS-%d" % ipts,
-             "run_number": runid,
-             "data_file": 'optional'}
+    data_dict = {"instrument": instrument,
+                 "ipts": "IPTS-%d" % ipts,
+                 "run_number": runid,
+                 "data_file": data_file}
     
     # Add info/error as needed
     if info is not None:
@@ -54,14 +57,18 @@ if __name__ == "__main__":
     parser.add_argument('-i', metavar='ipts', type=int, help='IPTS number (int)', dest='ipts')
     parser.add_argument('-q', metavar='queue', help='ActiveMQ queue name', dest='queue')
     parser.add_argument('-e', metavar='err', help='Error mesage', dest='err')
+    parser.add_argument('-d', metavar='file', help='data file path', dest='file')
+    parser.add_argument('-b', metavar='instrument', help='instrument name', dest='instrument')
     namespace = parser.parse_args()
     
     ipts = 5678 if namespace.ipts is None else namespace.ipts
     runid = 1234 if namespace.runid is None else namespace.runid
     queue = 'POSTPROCESS.DATA_READY' if namespace.queue is None else namespace.queue
+    file = '' if namespace.file is None else namespace.file
+    instrument = 'HYSA' if namespace.instrument is None else namespace.instrument
     err = namespace.err
     
     print "Sending %s for IPTS-%g, run %g" % (queue, ipts, runid)
-    send_msg(runid, ipts, queue=queue, error=err)
+    send_msg(runid, ipts, queue=queue, error=err, data_file=file, instrument=instrument)
     
 
