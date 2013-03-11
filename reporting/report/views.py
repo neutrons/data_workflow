@@ -254,6 +254,8 @@ def get_experiment_update(request, instrument, ipts):
                             "last_error":"",
                             "run_id":str(r.id),
                             }
+                if r.last_error() is not None:
+                    expt_dict["last_error"] = r.last_error()
                 update_list.append(expt_dict)
         data_dict['run_list'] = update_list
 

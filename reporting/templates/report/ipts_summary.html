@@ -11,18 +11,29 @@
 var last_run_id = '{{ last_run.id }}';
 var run_data = {{ run_rate|safe }};
 var error_data = {{ error_rate|safe }};
+var num_shown = {{ number_shown }};
+var num_total = {{ number_of_runs }};
 
 function poll(){
     $.ajax({ url: "{{ update_url }}?since="+last_run_id, success: function(data){
         if (data.refresh_needed.localeCompare('1')==0){
           	for (var i=0;i<data.run_list.length;i++)
 			{ 
-            var new_entry = "<tr class='highlight_row'>";
-            new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
-            new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
-            new_entry += "<td>"+data.run_list[i].last_error+"</td>";
-            new_entry += "</tr>";
-            $('#run_table tbody').prepend(new_entry);
+                var new_entry = "";
+                if (data.run_list[i].last_error.length==0){
+                	new_entry += "<tr class='highlight_row'>";
+                } else {
+                	new_entry += "<tr class='error_row'>";
+                }
+                new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
+                new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
+                new_entry += "<td>"+data.run_list[i].last_error+"</td>";
+                new_entry += "</tr>";
+                $('#run_table tbody').prepend(new_entry);
+                num_shown += 1;
+                num_total += 1;
+                //The following would keep the number of rows constant
+                //if ($('#run_table tr').length > num_shown+1){ $('#run_table tr:last').remove();}
             }
           	last_run_id = data.last_run_id;
         }
@@ -30,6 +41,8 @@ function poll(){
         $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
         $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
         $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
+        $('#info_number_shown').replaceWith("<span id='info_number_shown'>"+num_shown+"</span>");
+        $('#info_number_total').replaceWith("<span id='info_number_total'>"+num_total+"</span>");        
         
         run_data = data.run_rate;
         error_data = data.error_rate;
@@ -95,7 +108,7 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
 
       <br>
       {% if not all_shown %}
-      {{ number_shown }} of {{ number_of_runs }} runs shown - <a href='{{ ipts_url }}?show=all'>show all runs</a>
+      <span id='info_number_shown'>{{ number_shown }}</span> of <span id='info_number_total'>{{ number_of_runs }}</span> runs shown - <a href='{{ ipts_url }}?show=all'>show all runs</a>
       {% endif %}
       
 <script id="source" language="javascript" type="text/javascript">
