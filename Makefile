@@ -35,9 +35,10 @@ webapp:
 	
 	# Install application code
 	cp reporting/manage.py $(prefix)/app
+	cp -R dasmon_listener $(prefix)/app
 	cp -R reporting/report $(prefix)/app
+	cp -R reporting/dasmon $(prefix)/app
 	cp -R reporting/static $(prefix)/app
-	cp -R reporting/monitor $(prefix)/app
 	cp -R reporting/users $(prefix)/app
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app

@@ -1,8 +1,6 @@
 Data Workflow Manager
 ---------------------
 
-WARNING: This software is still a feasibility prototype.
-
 SNS data workflow manager and reporting app
 
 	Dependencies: stomp (http://code.google.com/p/stomppy/)

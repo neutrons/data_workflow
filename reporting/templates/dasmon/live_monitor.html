@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} DAS Monitor {% endblock %}
+{% block header %}
+
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+
+<script>
+	var last_error_id = '{{ last_error.id }}';
+	var run_data = {{ run_rate|safe }};
+	var error_data = {{ error_rate|safe }};
+
+    function poll(){
+        $.ajax({ url: "{{ update_url }}", success: function(data){
+
+              	for (var i=0;i<data.variables.length;i++)
+				{ 
+                    $('#'+data.variables[i].key).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
+                    $('#'+data.variables[i].key+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
+
+                }
+                last_error_id = data.last_error_id;
+            
+            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
+            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
+            $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
+            
+            run_data = data.run_rate;
+            error_data = data.error_rate;
+            plot_combined_rates(run_data, error_data);
+
+        }, dataType: "json", timeout: 30000 });
+        
+    };    
+</script>   
+{% endblock %}
+
+{% block banner %}{{ instrument }} DAS Monitor {% endblock %}
+
+{% block summary %}
+
+<dir class="summary_plots">
+    <div id="runs_per_hour"></div>
+</dir>
+
+{% if last_run %}
+Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
+from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
+created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
+{% elif last_expt %}
+Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% endif %}
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 1000);
+</script>
+{% endblock %}
+
+{% block content %}
+      <table cellspacing="0" class="message_table" id="error_table">
+      <thead>
+      <tr>
+          <th> Key </th> <th> Value </th> <th> Last Updated </th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for item in key_value_pairs %}
+          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+          <td>{{ item.key_id }}</td>
+          <td><span id="{{ item.key_id }}">{{ item.value }}</span></td>
+          <td><span id="{{ item.key_id }}_timestamp">{{ item.timestamp }}</span></td>
+          </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+      <br>
+
+<script id="source" language="javascript" type="text/javascript">
+	plot_combined_rates(run_data, error_data);
+</script>
+{% endblock %}

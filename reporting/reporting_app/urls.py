@@ -8,7 +8,7 @@ admin.site.login = login_required(admin.site.login)
 urlpatterns = patterns('',
     url(r'^$', include('report.urls')),
     url(r'^report/', include('report.urls')),
-    url(r'^monitor/', include('monitor.urls')),
+    url(r'^dasmon/', include('dasmon.urls')),
     url(r'^users/', include('users.urls')),
     url(r'^database/', include(admin.site.urls)),
 )

@@ -120,8 +120,8 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django_auth_ldap',
     'report',
-    'monitor',
     'users',
+    'dasmon',
 )
 
 AUTHENTICATION_BACKENDS = (
