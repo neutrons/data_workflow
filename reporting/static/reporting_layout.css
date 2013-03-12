@@ -16,6 +16,17 @@
 	color: #5e5e5e;
 }
 
+.dashboard_highlight
+{
+	font-size:18px;	
+}
+
+.dashboard_highlight .dashboard_normal
+{
+	font-size:12px;	
+}
+
+
 .summary_plots
 {
 	height:160px;

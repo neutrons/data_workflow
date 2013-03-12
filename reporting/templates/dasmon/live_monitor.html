@@ -45,13 +45,24 @@
     <div id="runs_per_hour"></div>
 </dir>
 
+<div class='dashboard_highlight'>
+<span class='dashboard_normal'>PROPOSAL:</span> <span class='dashboard_highlight' id="{{ proposal_id }}">{{ proposal_id }}</span>
+<span class='dashboard_normal'>RUN:</span> <span class='dashboard_highlight' id="run_number">{{ run_number }}</span>
+<span class='dashboard_normal'>STATUS:</span> <span class='dashboard_highlight' id="recording_status">{{ recording_status }}</span><br>
+<span class='dashboard_normal'>COUNT RATE:</span> <span class='dashboard_highlight' id="count_rate">{{ count_rate }}</span>
+
+</div>
+
+<p>
 {% if last_run %}
-Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
+Last translated run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
 from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
 created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
 {% elif last_expt %}
 Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
 {% endif %}
+</p>
+
 {% endblock %}
 
 {% block bodytop %}
