@@ -45,9 +45,9 @@
 
 {% block summary %}
 
-<dir class="summary_plots">
+<div class="summary_plots">
     <div id="runs_per_hour"></div>
-</dir>
+</div>
 
 {% if last_run %}
 Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>

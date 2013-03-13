@@ -110,5 +110,6 @@ def get_update(request, instrument):
                         }
     data_dict['variables'].append(recording_status)
     
+    data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
 
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")

@@ -33,6 +33,12 @@
 	padding:0;
 }
 
+.live_plots
+{
+    box-sizing: border-box;
+    color: #666666;
+}
+
 .summary_plots #runs_per_hour
 {
 	/* float:left; */
