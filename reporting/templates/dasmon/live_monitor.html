@@ -6,7 +6,6 @@
 
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
-<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.resize.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 
 <script>
@@ -24,6 +23,9 @@
         $.ajax({ url: "{{ update_url }}?vars="+query_str, success: function(data) {
             for (var i=0; i<data.variables.length; i++)
             { 
+                if (data.variables[i].key=='count_rate')
+                	$('#count_rate_top').replaceWith("<span id='count_rate_top'>"+data.variables[i].value+"</span>");
+                
                 $('#'+data.variables[i].key).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
                 $('#'+data.variables[i].key+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
             }
@@ -86,13 +88,13 @@
     <div id="runs_per_hour"></div>
 </div>
 
-<div class='dashboard_highlight'>
+<p class='dashboard_highlight'>
+<span class='dashboard_highlight' id="run_title">{{ run_title }}</span><br>
 <span class='dashboard_normal'>Proposal:</span> <span class='dashboard_highlight' id="{{ proposal_id }}">{{ proposal_id }}</span>
 <span class='dashboard_normal'>Run:</span> <span class='dashboard_highlight' id="run_number">{{ run_number }}</span><br>
 <span class='dashboard_normal'>Status:</span> <span class='dashboard_highlight' id="recording_status">{{ recording_status }}</span>
-<span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate">{{ count_rate }}</span>
-
-</div>
+<span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate_top">{{ count_rate }}</span>
+</p>
 
 <p>
 {% if last_run %}

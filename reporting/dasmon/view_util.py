@@ -57,6 +57,7 @@ def get_run_status(**template_args):
     _find_and_fill("run_number")
     _find_and_fill("count_rate")
     _find_and_fill("proposal_id")
+    _find_and_fill("run_title")
     
     # Are we recording or not?
     template_args["recording_status"] = is_running(instrument_id)

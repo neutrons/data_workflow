@@ -28,6 +28,13 @@ function plot_monitor(monitor_data, element_id, label_text){
 	var options = {
 			xaxis: {
 				show: true,
+				tickFormatter: function (val, axis) { 
+					if (val==0) {
+						return "now";
+					} else {
+						return val;
+					}
+				},
 			},
 			yaxis: { 
 				minTickSize:1,

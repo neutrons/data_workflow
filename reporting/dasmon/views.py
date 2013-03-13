@@ -6,6 +6,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
+from django.views.decorators.cache import cache_page
 
 from report.views import confirm_instrument
 from report.models import Instrument
@@ -69,6 +70,7 @@ def live_monitor(request, instrument):
     
 @users.view_util.login_or_local_required
 @confirm_instrument
+@cache_page(5)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
