@@ -1,20 +1,47 @@
 from report.models import Instrument
-from dasmon.models import Parameter, StatusVariable
+from dasmon.models import Parameter, StatusVariable, StatusCache
 from django.shortcuts import get_object_or_404
 import logging
 import sys
 
+def get_latest(instrument_id, key_id):
+    """
+        Returns the latest entry for a given key on a given instrument
+        @param instrument_id: Instrument object
+        @param key_id: Parameter object
+    """
+    # First get it from the cache
+    try:
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id,
+                                                key_id=key_id).latest('timestamp')
+    except:
+        # If that didn't work, get it from the table of values
+        last_value = StatusVariable.objects.filter(instrument_id=instrument_id,
+                                                   key_id=key_id).latest('timestamp')
+        
+        # Put the latest value in the cache so we don't have to go through this again
+        cached = StatusCache(instrument_id=last_value.instrument_id,
+                             key_id=last_value.key_id,
+                             value=last_value.value,
+                             timestamp=last_value.timestamp)
+        cached.save()
+        
+    return last_value
+
+    
 def is_running(instrument_id):
+    """
+        Returns a string with the running status for a
+        given instrument
+        @param instrument_id: Instrument object
+    """
     try:
         key_id = Parameter.objects.get(name="recording")
-        last_value = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                   key_id=key_id).latest('timestamp')
+        last_value = get_latest(instrument_id, key_id)
         is_recording = last_value.value.lower()=="true"
 
-        
         key_id = Parameter.objects.get(name="paused")
-        last_value = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                   key_id=key_id).latest('timestamp')
+        last_value = get_latest(instrument_id, key_id)
         is_paused = last_value.value.lower()=="true"
             
         if is_recording:
@@ -31,13 +58,14 @@ def is_running(instrument_id):
     
     
 def get_run_status(**template_args):
-    
+    """
+        Fill a template dictionary with run information
+    """
     def _find_and_fill(dasmon_name):
         _value = "Unknown"
         try:
             key_id = Parameter.objects.get(name=dasmon_name)
-            last_value = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                       key_id=key_id).latest('timestamp')
+            last_value = get_latest(instrument_id, key_id)
             _value = last_value.value
         except:
             pass
@@ -64,7 +92,10 @@ def get_run_status(**template_args):
 
     return template_args
 
-def get_live_variables(request, instrument_id):    
+def get_live_variables(request, instrument_id):  
+    """
+        Create a data dictionary with requested live data
+    """  
     # Get variable update request
     live_vars = request.GET.get('vars', '')
     if len(live_vars)>0:

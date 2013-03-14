@@ -10,11 +10,13 @@ from django.views.decorators.cache import cache_page
 
 from report.views import confirm_instrument
 from report.models import Instrument
-from dasmon.models import Parameter, StatusVariable
+from dasmon.models import Parameter, StatusVariable, StatusCache
 
 import view_util
 import report.view_util
 import users.view_util
+import logging
+import sys
 
 def _get_status_variables(instrument, filter=True):
     """
@@ -28,16 +30,16 @@ def _get_status_variables(instrument, filter=True):
     for k in keys:
         if k.monitored is True or filter is False:
             try:
-                last_value = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                              key_id=k).latest('timestamp')
+                last_value = view_util.get_latest(instrument_id, k)
                 key_value_pairs.append(last_value)
             except:
                 # Could not process key-value pair: skip
-                pass
+                logging.warning(sys.exc_value)
     return key_value_pairs
 
 @users.view_util.login_or_local_required
 @confirm_instrument
+@cache_page(5)
 def live_monitor(request, instrument):
     """
         Display the list of latest errors

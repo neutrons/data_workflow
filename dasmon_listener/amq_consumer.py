@@ -15,7 +15,7 @@ from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 sys.path.append(INSTALLATION_DIR)
 
-from dasmon.models import StatusVariable, Parameter
+from dasmon.models import StatusVariable, Parameter, StatusCache
 from report.models import Instrument
 
 class Listener(stomp.ConnectionListener):
@@ -58,6 +58,20 @@ class Listener(stomp.ConnectionListener):
                                           key_id=key_id,
                                           value=data_dict[key])
             status_entry.save()
+            
+            # Update the latest value
+            try:
+                last_value = StatusCache.objects.get(instrument_id=instrument_id,
+                                                     key_id=key_id)
+                last_value.value = value = status_entry.value
+                last_value.timestamp = status_entry.timestamp
+                last_value.save()
+            except:
+                last_value = StatusCache(instrument_id=instrument_id,
+                                         key_id=key_id,
+                                         value=status_entry.value,
+                                         timestamp=status_entry.timestamp)
+                last_value.save()
         
 
 class Client(object):

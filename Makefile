@@ -53,6 +53,9 @@ webapp:
 	# created on the server already
 	cd $(prefix)/app; python manage.py syncdb
 	
+	# Prepare web monitor cache: RUN THIS ONCE BY HAND
+	#cd $(prefix)/app; python manage.py createcachetable webcache
+	
 	@echo "\n\nReady to go: run apachectl restart\n"
 	
 .PHONY: check
