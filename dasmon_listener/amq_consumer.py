@@ -61,8 +61,8 @@ class Listener(stomp.ConnectionListener):
             
             # Update the latest value
             try:
-                last_value = StatusCache.objects.get(instrument_id=instrument_id,
-                                                     key_id=key_id)
+                last_value = StatusCache.objects.filter(instrument_id=instrument_id,
+                                                     key_id=key_id).latest('timestamp')
                 last_value.value = value = status_entry.value
                 last_value.timestamp = status_entry.timestamp
                 last_value.save()
