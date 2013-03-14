@@ -10,7 +10,12 @@ import sys
 import datetime
 from django.utils import timezone
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+if os.path.isfile("settings.py"):
+    logging.warning("Using local settings.py file")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+else:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
+    
 from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 sys.path.append(INSTALLATION_DIR)

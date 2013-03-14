@@ -36,8 +36,7 @@ class DasMonListenerDaemon(Daemon):
         c.set_listener(Listener(self.instrument))
         c.listen_and_wait(0.1)
 
-
-if __name__ == "__main__": 
+def run():
     parser = argparse.ArgumentParser(description='DASMON listener')
     subparsers = parser.add_subparsers(dest='command', help='available sub-commands')
     subparsers.add_parser('start', help='Start daemon [-h for help]')
@@ -61,4 +60,6 @@ if __name__ == "__main__":
         daemon.restart()
 
     sys.exit(0)
-
+    
+if __name__ == "__main__": 
+    run()

@@ -68,6 +68,10 @@ def live_monitor(request, instrument):
     template_values = view_util.get_run_status(**template_values)
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
+    
+    # The DAS monitor link is filled out by report.view_util but we don't need it here
+    template_values['dasmon_url'] = None
+    
     return render_to_response('dasmon/live_monitor.html', template_values)
     
 @users.view_util.login_or_local_required

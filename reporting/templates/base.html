@@ -72,6 +72,9 @@
     {% else %}
         <a href="/">home</a>
     {% endif %}
+    {% if dasmon_url %}
+        <span style="float:right"><a href="{{ dasmon_url|safe }}">DAS monitor</a></span>
+    {% endif %}
     {% endblock %}
     </div>
 

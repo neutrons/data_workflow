@@ -28,6 +28,9 @@ clean:
 install: clean workflow webapp
        
 webapp:
+	# Install DASMON listener
+	python setup_dasmon_listener.py install
+
 	# Make sure the install directories exist
 	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
 	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
