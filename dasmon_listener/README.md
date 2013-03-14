@@ -8,8 +8,8 @@ ActiveMQ client that listens to DASMON messages and logs them into a database.
 - stomp.py (version 3.3.1 or higher) should be installed to enable ActiveMQ communication ([http://code.google.com/p/stomppy/](http://code.google.com/p/stomppy/))
 
 ## Installation and configuration
-- The `dasmon_listener` will be installed in `/var/www/workflow/app/dasmon_listener`.
-- It should be configured by creating a file `/var/www/workflow/app/dasmon_listener/local_settings.py`
+- The `dasmon_listener` will be installed as a python module.
+- It should be configured by creating a file `dasmon_listener/local_settings.py`
 that contains the ActiveMQ credentials, the topics to listent to, and the instrument short name:
 
 	brokers = [("localhost", 61613)]
@@ -26,3 +26,5 @@ that contains the ActiveMQ credentials, the topics to listent to, and the instru
 	
 The `PURGE_TIMEOUT` parameter is the number of days after which key-value pairs will be removed
 from the database.
+- The `dasmon_listener/local_settings.py` file should be put in the source directory BEFORE
+executing `make install`.
