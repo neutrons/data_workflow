@@ -39,7 +39,7 @@ function plot_monitor(monitor_data, element_id, label_text){
 			yaxis: { 
 				minTickSize:1,
 				tickFormatter: function (val, axis) { 
-					if (val>10000 || val<0.0001) {
+					if (val>10000 || (val<0.0001&&val>0)) {
 						return val.toExponential(); 
 					} else {
 						return val;

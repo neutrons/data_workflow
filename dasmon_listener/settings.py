@@ -18,9 +18,10 @@ INSTALLED_APPS = (
     ActiveMQ settings
 """
 # List of brokers
-brokers  = [("localhost", 61613)] 
-amq_user = "icat"
-amq_pwd  = "icat"
+from workflow.database.settings import brokers
+from workflow.database.settings import icat_user as amq_user
+from workflow.database.settings import icat_passcode as amq_pwd
+
 queues = ["/topic/ADARA.APP.DASMON.0",
           "/topic/ADARA.STATUS.DASMON.0",
           "/topic/ADARA.SIGNAL.DASMON.0"]
