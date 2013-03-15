@@ -2,6 +2,14 @@ from report.models import DataRun, StatusQueue, RunStatus, WorkflowSummary, IPTS
 from report.models import Information, Error, Task
 from django.contrib import admin
 
+def reduction_not_needed(modeladmin, request, queryset):
+    queryset.update(reduction_needed=False)
+reduction_not_needed.short_description = "Mark selected runs as not needing reduction"
+
+def reduction_needed(modeladmin, request, queryset):
+    queryset.update(reduction_needed=True)
+reduction_needed.short_description = "Mark selected runs needing reduction"
+
 class DataRunAdmin(admin.ModelAdmin):
     list_display = ('run_number', 'instrument_id', 'ipts_id', 'file')
 
@@ -22,6 +30,7 @@ class WorkflowSummaryAdmin(admin.ModelAdmin):
                     'reduction_needed', 'reduction_started', 'reduced', 
                     'reduction_cataloged', 'reduction_catalog_started')
     search_fields = ['run_id__run_number']
+    actions = [reduction_not_needed, reduction_needed]
         
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('instrument_id', 'input_queue_id', 'task_class',
