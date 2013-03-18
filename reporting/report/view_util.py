@@ -1,9 +1,11 @@
-from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error
+from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson, dateformat, timezone
 import datetime
 from django.conf import settings
+import logging
+import sys
 
 def fill_template_values(request, **template_args):
     """
@@ -344,3 +346,64 @@ def get_current_status(instrument_id):
                  }
     return data_dict
 
+def get_post_processing_status(red_timeout=1, yellow_timeout=10):
+    """
+        Get the health status of post-processing services
+        @param red_timeout: number of hours before declaring a process dead
+        @param yellow_timeout: number of seconds before declaring a process slow
+    """
+    status_dict = {}
+    delta_short = datetime.timedelta(seconds=yellow_timeout)
+    delta_long = datetime.timedelta(hours=red_timeout)
+ 
+    try:
+        # Get latest DATA_READY message
+        postprocess_data_id = StatusQueue.objects.get(name='POSTPROCESS.DATA_READY')
+        catalog_data_id = StatusQueue.objects.get(name='CATALOG.DATA_READY')
+        catalog_start_id = StatusQueue.objects.get(name='CATALOG.STARTED')
+        latest_run = RunStatus.objects.filter(queue_id=postprocess_data_id).latest('created_on')
+        
+        # If we didn't get a CATALOG.DATA_READY message within a few seconds, 
+        # the workflow manager has a problem
+        try:
+            latest_catalog_data = RunStatus.objects.filter(queue_id=catalog_data_id,
+                                                           run_id=latest_run.run_id).latest('created_on')
+            time_catalog_data = latest_catalog_data.created_on
+        except:
+            time_catalog_data = timezone.now()
+            
+        
+        if time_catalog_data-latest_run.created_on>delta_long:
+            status_dict["workflow"]=2
+        elif time_catalog_data-latest_run.created_on>delta_short:
+            status_dict["workflow"]=1
+        else:
+            status_dict["workflow"]=0        
+            
+        # If we didn't get a CATALOG.STARTED message within a few seconds, 
+        # the cataloging agent has a problem
+        try:
+            latest_catalog_start = RunStatus.objects.filter(queue_id=catalog_start_id,
+                                                            run_id=latest_run.run_id).latest('created_on')
+            time_catalog_start = latest_catalog_start.created_on
+        except:
+            time_catalog_start = timezone.now()
+                
+        if time_catalog_start-latest_run.created_on>delta_long:
+            status_dict["catalog"]=2
+        elif time_catalog_start-latest_run.created_on>delta_short:
+            status_dict["catalog"]=1
+        else:
+            status_dict["catalog"]=0
+        status_dict['reduction'] = status_dict['catalog']
+    except:
+        logging.error("Could not determine post-processing status")
+        logging.error(sys.exc_value)
+        
+        
+    
+    return status_dict
+    
+    
+    
+    

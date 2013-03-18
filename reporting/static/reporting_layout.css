@@ -1,6 +1,39 @@
 @charset "UTF-8";
 /* CSS Document */
 
+.status_box {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-right: 5px;
+    border-top: 1px solid #CDC0B0;
+    border-bottom: 1px solid #CDC0B0;
+}
+
+.status_box .status_0 {
+    margin:5px;
+    padding:2px;
+    background-color: #5BC15B;
+    border: 1px solid silver;
+}
+.status_box .status_1 {
+    margin:5px;
+    padding:2px;
+    background-color: #f8e7b3;
+    border: 1px solid silver;
+}
+.status_box .status_2 {
+    margin:5px;
+    padding:2px;
+    background-color: #f8bdb7;
+    border: 1px solid silver;
+}
+.status_box .status_ {
+    margin:5px;
+    padding:2px;
+    background-color: silver;
+    border: 1px solid silver;
+}
+
 .summary {
 	padding-left: 5px;	
 }

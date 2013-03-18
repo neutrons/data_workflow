@@ -96,6 +96,14 @@
 <span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate_top">{{ count_rate }}</span>
 </p>
 
+<div class='status_box'>
+Systems: 
+<span class='status_{{ das_status.dasmon }} '>DASMON</span>
+<span class='status_{{ das_status.workflow }} '>Workflow</span>
+<span class='status_{{ das_status.catalog }}'>Cataloging</span>
+<span class='status_{{ das_status.reduction }}'>Reduction</span>
+</div>
+
 <p>
 {% if last_run %}
 Last translated run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>

@@ -1,6 +1,8 @@
 from report.models import Instrument
 from dasmon.models import Parameter, StatusVariable, StatusCache
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+import datetime
 import logging
 import sys
 
@@ -121,3 +123,20 @@ def get_live_variables(request, instrument_id):
             # Could not find data for this key
             logging.warning("Could not process %s: %s" % (key, sys.exc_value))
     return data_dict
+
+def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
+    """
+        Get the health status of DASMON server
+        @param red_timeout: number of hours before declaring a process dead
+        @param yellow_timeout: number of seconds before declaring a process slow
+    """
+    delta_short = datetime.timedelta(seconds=yellow_timeout)
+    delta_long = datetime.timedelta(hours=red_timeout)
+    
+    last_value = StatusCache.objects.filter(instrument_id=instrument_id).latest('timestamp')
+        
+    if timezone.now()-last_value.timestamp>delta_long:
+        return 2
+    elif timezone.now()-last_value.timestamp>delta_short:
+        return 1
+    return 0

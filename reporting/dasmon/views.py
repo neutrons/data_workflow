@@ -58,12 +58,17 @@ def live_monitor(request, instrument):
             reverse('report.views.instrument_summary',args=[instrument]), instrument, "DAS monitor"
             ) 
 
+    das_status = report.view_util.get_post_processing_status()
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    das_status['dasmon'] = view_util.get_dasmon_status(instrument_id)
+    
     template_values = {'instrument':instrument.upper(),
                        'breadcrumbs':breadcrumbs,
                        'instrument_url':instrument_url,
                        'error_url':error_url,
                        'update_url':update_url,
                        'key_value_pairs':key_value_pairs,
+                       'das_status':das_status,
                        }
     template_values = view_util.get_run_status(**template_values)
     template_values = report.view_util.fill_template_values(request, **template_values)
