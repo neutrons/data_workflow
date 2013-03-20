@@ -1,10 +1,12 @@
 from report.models import Instrument
 from dasmon.models import Parameter, StatusVariable, StatusCache
 from django.shortcuts import get_object_or_404
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 import datetime
 import logging
 import sys
+import report.view_util
 
 def get_latest(instrument_id, key_id):
     """
@@ -91,6 +93,20 @@ def get_run_status(**template_args):
     
     # Are we recording or not?
     template_args["recording_status"] = is_running(instrument_id)
+
+    # Get the system health status
+    das_status = report.view_util.get_post_processing_status()
+    das_status['dasmon'] = get_dasmon_status(instrument_id)
+    template_args['das_status'] = das_status
+
+    # The DAS monitor link is filled out by report.view_util but we don't need it here
+    template_args['dasmon_url'] = None
+
+    # DASMON Breadcrumbs
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
+            reverse('report.views.instrument_summary',args=[instr]), instr, "DAS monitor"
+            ) 
+    template_args["breadcrumbs"] = breadcrumbs
 
     return template_args
 

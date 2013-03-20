@@ -9,7 +9,6 @@
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 
 <script>
-    var last_error_id = '{{ last_error.id }}';
     var run_data = {{ run_rate|safe }};
     var error_data = {{ error_rate|safe }};
     var plotted_vars = [];
@@ -29,7 +28,6 @@
                 $('#'+data.variables[i].key).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
                 $('#'+data.variables[i].key+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
             }
-            last_error_id = data.last_error_id;
             
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
             $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
@@ -121,6 +119,16 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% endif %}
 </p>
 
+{% endblock %}
+
+{% block right_side_links %}
+<span style="float:right">monitoring: 
+{% if live_runs_url %}
+<b>live parameters</b> | <a href="{{ live_runs_url }}">live runs</a>
+{% elif live_monitor_url %}
+<a href="{{ live_monitor_url }}">live parameters</a> | <b>live runs</b>
+{% endif %}
+</span>
 {% endblock %}
 
 {% block bodytop %}

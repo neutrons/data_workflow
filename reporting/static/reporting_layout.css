@@ -43,6 +43,14 @@
     background-color: silver;
 }
 
+.green {
+    color: #54AA59;
+}
+
+.red {
+    color: #9d301d;
+}
+
 .summary {
 	padding-left: 5px;	
 }
