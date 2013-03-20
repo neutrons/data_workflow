@@ -99,6 +99,7 @@
 <span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate_top">{{ count_rate }}</span>
 </p>
 
+<div class='status_bar'>
 <div class='status_box'>
 <ul>
 <li class='status_text'>Systems:</li>
@@ -107,6 +108,7 @@
 <li class='status_{{ das_status.catalog }}' id='catalog_status'>Cataloging</li>
 <li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
 </ul>
+</div>
 </div>
 
 <p>
@@ -133,7 +135,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 
 {% block bodytop %}
 <script id="source" language="javascript" type="text/javascript">
-    setInterval(poll, 1000);
+    setInterval(poll, 5000);
 </script>
 {% endblock %}
 
