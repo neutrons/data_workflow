@@ -10,21 +10,24 @@
     var complete_since_run_id = '{{ first_run_id }}';
     var run_data = {{ run_rate|safe }};
     var error_data = {{ error_rate|safe }};
+    jQuery.fn.exists = function(){return this.length>0;}
 
     function poll() {
         $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&complete_since="+complete_since_run_id, success: function(data){
             if (data.refresh_needed.localeCompare('1')==0){
                 for (var i=0;i<data.run_list.length;i++)
                 { 
-                    var new_entry = "";
-                    new_entry += "<tr class='highlight_row'>";
-                    new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
-                    new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
-                    new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'>"+data.run_list[i].last_error+"</span></td>";
-                    new_entry += "</tr>";
-                    $('#run_table tbody').prepend(new_entry);
-                    //The following would keep the number of rows constant
-                    //if ($('#run_table tr').length > num_shown+1){ $('#run_table tr:last').remove();}
+                	if (!$('#run_id_'+data.run_list[i].run_id).exists()) {
+                        var new_entry = "";
+                        new_entry += "<tr class='highlight_row'>";
+                        new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
+                        new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
+                        new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'>"+data.run_list[i].last_error+"</span></td>";
+                        new_entry += "</tr>";
+                        $('#run_table tbody').prepend(new_entry);
+                        //The following would keep the number of rows constant
+                        //if ($('#run_table tr').length > num_shown+1){ $('#run_table tr:last').remove();}
+                	}
                 }
                 last_run_id = data.last_run_id;
             }

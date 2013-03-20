@@ -146,6 +146,7 @@ def live_runs(request, instrument):
     
 @users.view_util.login_or_local_required
 @confirm_instrument
+@cache_page(5)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
