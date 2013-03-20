@@ -37,6 +37,37 @@ def _get_status_variables(instrument, filter=True):
                 logging.warning(sys.exc_value)
     return key_value_pairs
 
+
+@users.view_util.login_or_local_required
+@cache_page(5)
+def summary(request):
+    """
+        List of available instruments
+    """
+    instruments = Instrument.objects.all().order_by('name')
+    
+    # Get the system health status
+    postprocess_status = report.view_util.get_post_processing_status()
+    
+    instrument_list = []
+    for i in instruments:
+        dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
+        das_status = view_util.get_dasmon_status(i)
+        instrument_list.append({'name': i.name,
+                                'url': dasmon_url,
+                                'dasmon_status': das_status
+                                })
+  
+    breadcrumbs = "home"
+    template_values = {'instruments':instrument_list,
+                       'breadcrumbs':breadcrumbs,
+                       'postprocess_status':postprocess_status
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('dasmon/global_summary.html',
+                              template_values)
+
+
 @users.view_util.login_or_local_required
 @confirm_instrument
 @cache_page(5)
@@ -115,7 +146,6 @@ def live_runs(request, instrument):
     
 @users.view_util.login_or_local_required
 @confirm_instrument
-@cache_page(5)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
