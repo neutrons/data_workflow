@@ -149,7 +149,11 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
-    last_value = StatusCache.objects.filter(instrument_id=instrument_id).latest('timestamp')
+    try:
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id).latest('timestamp')
+    except:
+        logging.error("No cached status for instrument %s" % instrument_id.name)
+        return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
         return 2
