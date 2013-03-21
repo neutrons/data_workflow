@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 # import code for encoding urls and generating md5 hashes
 import hashlib
 import socket
+import logging
 from reporting_app import settings
 
 def fill_template_values(request, **template_args):
@@ -39,11 +40,11 @@ def login_or_local_required(fn):
         redirect_url  += '?next=%s' % request.path
         
         # If we allow guests in, just return the function
-        if settings.ALLOW_GUESTS:
-            return fn(request, *args, **kws)
+        #if settings.ALLOW_GUESTS:
+        #    return fn(request, *args, **kws)
         
         # If we don't allow guests but the user is authenticated, return the function
-        elif request.user.is_authenticated():
+        if request.user.is_authenticated():
             return fn(request, *args, **kws)
         
         # If we allow users on a domain, check the user's IP
@@ -52,10 +53,12 @@ def login_or_local_required(fn):
 
             # If the user is on the allowed domain, return the function
             if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
+                logging.warning("Allowing user on %s" % socket.gethostbyaddr(ip_addr)[0])
                 return fn(request, *args, **kws)
             
             # If we allow a certain domain and the user is on the server, return the function
             elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
+                logging.warning("Allowing localhost user")
                 return fn(request, *args, **kws)
 
         # If we made it here, we need to authenticate the user
