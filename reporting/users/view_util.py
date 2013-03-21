@@ -53,12 +53,10 @@ def login_or_local_required(fn):
 
             # If the user is on the allowed domain, return the function
             if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
-                logging.warning("Allowing user on %s" % socket.gethostbyaddr(ip_addr)[0])
                 return fn(request, *args, **kws)
             
             # If we allow a certain domain and the user is on the server, return the function
             elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
-                logging.warning("Allowing localhost user")
                 return fn(request, *args, **kws)
 
         # If we made it here, we need to authenticate the user
