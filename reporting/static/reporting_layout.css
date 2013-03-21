@@ -1,12 +1,41 @@
 @charset "UTF-8";
 /* CSS Document */
+.tooltip{display:inline;position:relative}
+.tooltip:hover{text-decoration:none}
+.tooltip:hover:after{
+   background:#e6e6e6;
+   border-radius:5px;
+   bottom:18px;
+   content:attr(tooltip);
+   display:block;
+   left:50%;
+   padding:5px 15px;
+   position:absolute;
+   white-space:nowrap;
+   z-index:98;
+}
+.tooltip:hover:before{
+    border:solid;
+    border-color:#e6e6e6 transparent;
+    border-width:6px 6px 0 6px;
+    bottom:12px;
+    content:"";
+    display:block;
+    left:75%;
+    position:absolute;
+    z-index:99;
+}
 
-.status_box {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    margin-right: 5px;
+.status_bar {
     border-top: 1px solid #CDC0B0;
     border-bottom: 1px solid #CDC0B0;
+    padding-top: 15px;
+    padding-bottom: 5px;
+    margin-right: 5px;
+}
+
+.status_box td {
+    padding-top: 8px;
 }
 
 .status_box ul {
@@ -20,7 +49,7 @@
     display: inline;
     padding: 2px;
     margin: 5px;
-    margin-right: 0px;
+    margin-left: 0px;
     border: 1px solid silver;
 }
 

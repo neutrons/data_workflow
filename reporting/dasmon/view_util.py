@@ -103,7 +103,7 @@ def get_run_status(**template_args):
     template_args['dasmon_url'] = None
 
     # DASMON Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
             reverse('report.views.instrument_summary',args=[instr]), instr, "DAS monitor"
             ) 
     template_args["breadcrumbs"] = breadcrumbs

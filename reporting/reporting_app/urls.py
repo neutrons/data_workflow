@@ -6,7 +6,7 @@ admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
 
 urlpatterns = patterns('',
-    url(r'^$', include('report.urls')),
+    url(r'^$', include('dasmon.urls')),
     url(r'^report/', include('report.urls')),
     url(r'^dasmon/', include('dasmon.urls')),
     url(r'^users/', include('users.urls')),

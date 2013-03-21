@@ -54,7 +54,7 @@ def detail(request, instrument, run_id):
     icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('report.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('dasmon.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),  
             run_id          
@@ -95,7 +95,7 @@ def instrument_summary(request, instrument):
     last_expt_created = IPTS.objects.get_last_ipts(instrument_id)
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('report.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
                                                          instrument.lower()
                                                          ) 
 
@@ -147,7 +147,7 @@ def ipts_summary(request, instrument, ipts):
                                                              n_shown=n_max)
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             str(ipts_id).lower()
             ) 
@@ -203,7 +203,7 @@ def live_errors(request, instrument):
         last_error = None
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('report.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument, "errors"
             )
 

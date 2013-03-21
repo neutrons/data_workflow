@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %} Instrument Status {% endblock %}
+
+{% block banner %} Instrument Status {% endblock %}
+
+{% block summary %}
+
+List of instruments:<br>
+  	<table cellspacing="0" class="message_table">
+  	<thead>
+  	<tr>
+  		<th style="min-width:100px">Instrument</th> <th>Status</th>
+  	</tr>
+  	</thead>
+  	<tbody class='status_box'>
+   	{% for item in instruments %}
+	   	<tr>
+	   	<td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
+	   	<td>
+            <ul>
+                <li class='status_{{ item.dasmon_status }}' id='dasmon_status'>DASMON</li> 
+                <li class='status_{{ postprocess_status.workflow }}' id='workflow_status'>Workflow</li>
+                <li class='status_{{ postprocess_status.catalog }}' id='catalog_status'>Cataloging</li>
+                <li class='status_{{ postprocess_status.reduction }}' id='reduction_status'>Reduction</li>
+            </ul>
+        </td>
+	   	</tr>
+   	{% endfor %}
+   	</tbody>
+   	</table>
+{% endblock %}
+{% block nocontent %}{% endblock %}
