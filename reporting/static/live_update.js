@@ -2,7 +2,8 @@ function plot_combined_rates(run_data, error_data){
 	var options = {
 			xaxis: {
 				show: true,
-				ticks:[[1, "-24 hrs"], [25, "last hour"]] 	
+				min: -24,
+				ticks:[[-24, "-24 hrs"], [1, "last hour"]] 	
 			},
 			yaxis: { minTickSize:1 },
 			shadowSize: 0,

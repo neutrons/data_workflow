@@ -25,7 +25,7 @@
                 new_entry += "</tr>";
                 $('#expt_table tbody').prepend(new_entry);
                 }
-                last_expt_id = data.last_ipts_id;
+                last_expt_id = data.last_expt_id;
             }
             
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");

@@ -237,6 +237,7 @@ def get_experiment_update(request, instrument, ipts):
         since = int(since)
         since_run_id = get_object_or_404(DataRun, id=since)
     except:
+        since = 0
         refresh_needed = '0'
         since_run_id = None
     
@@ -247,24 +248,23 @@ def get_experiment_update(request, instrument, ipts):
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)    
-    run_list = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id).order_by('created_on').reverse()
+    run_list = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id, id__gt=since).order_by('created_on').reverse()
 
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
         refresh_needed = '1' if since_run_id.created_on<run_list[0].created_on else '0'         
         update_list = []
         for r in run_list:
-            if since_run_id.created_on < r.created_on:
-                localtime = timezone.localtime(r.created_on)
-                df = dateformat.DateFormat(localtime)
-                expt_dict = {"run":r.run_number,
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
-                            "last_error":"",
-                            "run_id":str(r.id),
-                            }
-                if r.last_error() is not None:
-                    expt_dict["last_error"] = r.last_error()
-                update_list.append(expt_dict)
+            localtime = timezone.localtime(r.created_on)
+            df = dateformat.DateFormat(localtime)
+            expt_dict = {"run":r.run_number,
+                        "timestamp":df.format(settings.DATETIME_FORMAT),
+                        "last_error":"",
+                        "run_id":str(r.id),
+                        }
+            if r.last_error() is not None:
+                expt_dict["last_error"] = r.last_error()
+            update_list.append(expt_dict)
         data_dict['run_list'] = update_list
 
     data_dict['refresh_needed'] = refresh_needed
@@ -285,6 +285,7 @@ def get_instrument_update(request, instrument):
         since = int(since)
         since_expt_id = get_object_or_404(IPTS, id=since)
     except:
+        since = 0
         refresh_needed = '0'
         since_expt_id = None
     
@@ -293,22 +294,21 @@ def get_instrument_update(request, instrument):
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
-    expt_list = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()
+    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by('created_on').reverse()
 
     if since_expt_id is not None and len(expt_list)>0:
         data_dict['last_expt_id'] = expt_list[0].id
         refresh_needed = '1' if since_expt_id.created_on<expt_list[0].created_on else '0'         
         update_list = []
         for e in expt_list:
-            if since_expt_id.created_on < e.created_on:
-                localtime = timezone.localtime(e.created_on)
-                df = dateformat.DateFormat(localtime)
-                expt_dict = {"ipts":e.expt_name.upper(),
-                            "n_runs":e.number_of_runs(),
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
-                            "ipts_id":e.id,
-                            }
-                update_list.append(expt_dict)
+            localtime = timezone.localtime(e.created_on)
+            df = dateformat.DateFormat(localtime)
+            expt_dict = {"ipts":e.expt_name.upper(),
+                        "n_runs":e.number_of_runs(),
+                        "timestamp":df.format(settings.DATETIME_FORMAT),
+                        "ipts_id":e.id,
+                        }
+            update_list.append(expt_dict)
         data_dict['expt_list'] = update_list
 
     data_dict['refresh_needed'] = refresh_needed

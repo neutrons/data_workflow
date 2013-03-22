@@ -6,6 +6,7 @@ import datetime
 from django.conf import settings
 import logging
 import sys
+from django.db import connection
 
 def fill_template_values(request, **template_args):
     """
@@ -288,16 +289,30 @@ def run_rate(instrument_id, n_hours=24):
         @param instrument_id: Instrument model object
         @param n_hours: number of hours to track
     """
-    time = timezone.now()
-    runs=[]
-    running_sum = 0
-    for i in range(n_hours):
-        t_i = time-datetime.timedelta(hours=i+1)
-        n = DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=t_i).count()
-        n -= running_sum
-        running_sum += n
-        runs.append([n_hours-i,n])
-    return runs
+    # Try calling the stored procedure (faster)
+    try:
+        cursor = connection.cursor()
+        cursor.callproc("run_rate", (instrument_id.id,))
+        msg = cursor.fetchone()[0]
+        cursor.execute('FETCH ALL IN "%s"' % msg)
+        rows = cursor.fetchall()
+        cursor.close()
+        return [ [int(r[0]), int(r[1])] for r in rows ]
+    except:
+        connection.close()
+        logging.error(sys.exc_value)
+        
+        # Do it by hand (slow)
+        time = timezone.now()
+        runs=[]
+        running_sum = 0
+        for i in range(n_hours):
+            t_i = time-datetime.timedelta(hours=i+1)
+            n = DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=t_i).count()
+            n -= running_sum
+            running_sum += n
+            runs.append([-i,n])
+        return runs
 
 def error_rate(instrument_id, n_hours=24):
     """
@@ -305,16 +320,30 @@ def error_rate(instrument_id, n_hours=24):
         @param instrument_id: Instrument model object
         @param n_hours: number of hours to track
     """
-    time = timezone.now()
-    errors=[]
-    running_sum = 0
-    for i in range(n_hours):
-        t_i = time-datetime.timedelta(hours=i+1)
-        n = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id, run_status_id__created_on__gte=t_i).count()
-        n -= running_sum
-        running_sum += n
-        errors.append([n_hours-i,n])
-    return errors
+    # Try calling the stored procedure (faster)
+    try:
+        cursor = connection.cursor()
+        cursor.callproc("error_rate", (instrument_id.id,))
+        msg = cursor.fetchone()[0]
+        cursor.execute('FETCH ALL IN "%s"' % msg)
+        rows = cursor.fetchall()
+        cursor.close()
+        return [ [int(r[0]), int(r[1])] for r in rows ]
+    except:
+        connection.close()
+        logging.error(sys.exc_value)
+        
+        # Do it by hand (slow)
+        time = timezone.now()
+        errors=[]
+        running_sum = 0
+        for i in range(n_hours):
+            t_i = time-datetime.timedelta(hours=i+1)
+            n = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id, run_status_id__created_on__gte=t_i).count()
+            n -= running_sum
+            running_sum += n
+            errors.append([-i,n])
+        return errors
         
 def get_current_status(instrument_id):
     """
