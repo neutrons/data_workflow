@@ -9,6 +9,7 @@
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 
 <script>
+    var last_run_id = '{{ last_run.id }}';
     var run_data = {{ run_rate|safe }};
     var error_data = {{ error_rate|safe }};
     var plotted_vars = [];
@@ -19,7 +20,7 @@
         for (var i=0;i<plotted_vars.length; i++) {
             if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
         }
-        $.ajax({ url: "{{ update_url }}?vars="+query_str, success: function(data) {
+        $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&vars="+query_str, success: function(data) {
             for (var i=0; i<data.variables.length; i++)
             { 
                 if (data.variables[i].key=='count_rate')
