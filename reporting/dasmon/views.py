@@ -190,6 +190,8 @@ def get_live_runs_update(request, instrument_id):
          @param request: HTTP request so we can get the 'since' parameter
          @param instrument_id: Instrument model object
     """ 
+    if not request.GET.has_key('since') or not request.GET.has_key('complete_since'):
+        return {}
     data_dict = {}
     
     # Get the last run ID that the client knows about
@@ -199,6 +201,7 @@ def get_live_runs_update(request, instrument_id):
         since = int(since)
         since_run_id = get_object_or_404(DataRun, id=since)
     except:
+        since = 0
         refresh_needed = '0'
         since_run_id = None
         
@@ -208,6 +211,9 @@ def get_live_runs_update(request, instrument_id):
         complete_since = int(complete_since)
     except:
         complete_since = 0
+        
+    if complete_since == 0:
+        return {}
         
     # Get last experiment and last run
     run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
