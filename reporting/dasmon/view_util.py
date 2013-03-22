@@ -82,9 +82,6 @@ def get_run_status(**template_args):
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instr)
     
-    # Get all available parameters
-    keys = Parameter.objects.all().order_by('name')
-    
     # Look information to pull out
     _find_and_fill("run_number")
     _find_and_fill("count_rate")
@@ -129,8 +126,7 @@ def get_live_variables(request, instrument_id):
             data_list = []
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                   key_id=key_id).order_by('timestamp').reverse()
-            values = values[:120]
+                                                   key_id=key_id).order_by('timestamp').reverse()[:120]
             for v in values:
                 delta_t = values[0].timestamp-v.timestamp
                 data_list.append([-delta_t.seconds, v.value])

@@ -148,6 +148,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
       </thead>
       <tbody>
       {% for item in key_value_pairs %}
+      {% if item.key_id.monitored %}  
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           {% if item.value|is_number %}
           <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key_id }}');"> {{ item.key_id }} </a></td>
@@ -157,6 +158,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
           <td><span id="{{ item.key_id }}">{{ item.value }}</span></td>
           <td><span id="{{ item.key_id }}_timestamp">{{ item.timestamp }}</span></td>
           </tr>
+      {% endif %}
       {% endfor %}
       </tbody>
       </table>

@@ -18,26 +18,6 @@ import users.view_util
 import logging
 import sys
 
-def _get_status_variables(instrument, filter=True):
-    """
-        @param instrument: instrument name
-    """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    
-    keys = Parameter.objects.all().order_by('name')
-    key_value_pairs = []
-    for k in keys:
-        if k.monitored is True or filter is False:
-            try:
-                last_value = view_util.get_latest(instrument_id, k)
-                key_value_pairs.append(last_value)
-            except:
-                # Could not process key-value pair: skip
-                logging.warning(sys.exc_value)
-    return key_value_pairs
-
-
 @users.view_util.login_or_local_required
 @cache_page(5)
 def summary(request):
@@ -79,9 +59,12 @@ def live_monitor(request, instrument):
     # Update URL
     update_url = reverse('dasmon.views.get_update',args=[instrument])
     
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    key_value_pairs = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
+
     template_values = {'instrument':instrument.upper(),
                        'update_url':update_url,
-                       'key_value_pairs':_get_status_variables(instrument),
+                       'key_value_pairs':key_value_pairs,
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
@@ -106,9 +89,7 @@ def live_runs(request, instrument):
     update_url = reverse('dasmon.views.get_update',args=[instrument])
 
     # Get the latest runs
-    runs = DataRun.objects.filter(instrument_id=instrument_id)                               
-    count = runs.count()
-    runs = runs[count-20:count]
+    runs = DataRun.objects.filter(instrument_id=instrument_id).order_by("id").reverse()[:20]
     run_list = []
     for r in runs:
         status = 'unknown'
@@ -154,8 +135,7 @@ def get_update(request, instrument):
     """ 
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    key_value_pairs = _get_status_variables(instrument, False)
+    key_value_pairs = StatusCache.objects.filter(instrument_id=instrument_id)
     
     # Get last experiment and last run
     data_dict = report.view_util.get_current_status(instrument_id)  
