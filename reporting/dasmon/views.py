@@ -102,10 +102,10 @@ def live_runs(request, instrument):
         except:
             # No entry for this run
             pass
-        run_list.insert(0, {'run_number':r.run_number,
-                            'created_on':r.created_on,
-                            'last_error':status,
-                            'id':r.id})
+        run_list.append({'run_number':r.run_number,
+                         'created_on':r.created_on,
+                         'last_error':status,
+                         'id':r.id})
     
     run_list_header = [{'name': 'Run', 'style':"min-width: 50px"},
                        {'name': 'Created on'},
