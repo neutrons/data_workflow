@@ -3,6 +3,7 @@ function plot_combined_rates(run_data, error_data){
 			xaxis: {
 				show: true,
 				min: -24,
+				max: 1,
 				ticks:[[-24, "-24 hrs"], [1, "last hour"]] 	
 			},
 			yaxis: { minTickSize:1 },
