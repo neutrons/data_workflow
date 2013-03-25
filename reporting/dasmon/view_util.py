@@ -1,9 +1,10 @@
-from report.models import Instrument
+from report.models import Instrument, DataRun, WorkflowSummary, RunStatus, StatusQueue
 from dasmon.models import Parameter, StatusVariable, StatusCache
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
-from django.utils import timezone
+from django.utils import dateformat, timezone
 import datetime
+from django.conf import settings
 import logging
 import sys
 import report.view_util
@@ -156,3 +157,97 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     elif timezone.now()-last_value.timestamp>delta_short:
         return 1
     return 0
+
+def get_completeness_status(instrument_id):
+    try:
+        # Check for completeness of the three runs before the last run.
+        # We don't use the last one because we may still be working on it.
+        postprocess_data_id = StatusQueue.objects.get(name='POSTPROCESS.DATA_READY')
+        latest_runs = RunStatus.objects.filter(queue_id=postprocess_data_id).order_by('created_on').reverse()
+        s = WorkflowSummary.objects.get(run_id=latest_runs[1].run_id)
+        if s.complete is False:
+            return 2, "ERROR"
+        else:
+            s1 = WorkflowSummary.objects.get(run_id=latest_runs[2].run_id)
+            s2 = WorkflowSummary.objects.get(run_id=latest_runs[3].run_id)
+            if s1.complete is False or s2.complete is False:
+                return 1, "warning"
+            else:
+                return 0, "ok"
+    except:
+        logging.error("Output data completeness status")
+        logging.error(sys.exc_value)
+        return None, "unknown"
+
+def get_live_runs_update(request, instrument_id):
+    """
+         Get updated information about the latest runs
+         @param request: HTTP request so we can get the 'since' parameter
+         @param instrument_id: Instrument model object
+    """ 
+    if not request.GET.has_key('since') or not request.GET.has_key('complete_since'):
+        return {}
+    data_dict = {}
+    
+    # Get the last run ID that the client knows about
+    since = request.GET.get('since', '0')
+    refresh_needed = '1'
+    try:
+        since = int(since)
+        since_run_id = get_object_or_404(DataRun, id=since)
+    except:
+        since = 0
+        refresh_needed = '0'
+        since_run_id = None
+        
+    # Get the earliest run that the client knows about
+    complete_since = request.GET.get('complete_since', since)
+    try:
+        complete_since = int(complete_since)
+    except:
+        complete_since = 0
+        
+    if complete_since == 0:
+        return {}
+        
+    # Get last experiment and last run
+    run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
+
+    status_list = []
+    if since_run_id is not None and len(run_list)>0:
+        data_dict['last_run_id'] = run_list[0].id
+        refresh_needed = '1' if since_run_id.created_on<run_list[0].created_on else '0'         
+        update_list = []
+        for r in run_list:
+            status = 'unknown'
+            try:
+                s = WorkflowSummary.objects.get(run_id=r)
+                if s.complete is True:
+                    status = "<span class='green'>complete</span>"
+                else:
+                    status = "<span class='red'>incomplete</span>"
+            except:
+                # No entry for this run
+                pass
+            
+            run_dict = {"key": "run_id_%s" % str(r.id),
+                        "value": status,
+                        }
+            status_list.append(run_dict)
+            
+            if since_run_id.created_on < r.created_on:
+                localtime = timezone.localtime(r.created_on)
+                df = dateformat.DateFormat(localtime)
+                expt_dict = {"run":r.run_number,
+                            "timestamp":df.format(settings.DATETIME_FORMAT),
+                            "last_error":status,
+                            "run_id":str(r.id),
+                            }
+                update_list.append(expt_dict)
+        data_dict['run_list'] = update_list
+
+    data_dict['refresh_needed'] = refresh_needed
+    data_dict['status_list'] = status_list
+    return data_dict
+
+

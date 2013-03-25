@@ -36,6 +36,7 @@
 
 .status_box td {
     padding-top: 8px;
+    line-height: 180%;
 }
 
 .status_box ul {
@@ -45,7 +46,6 @@
 }
 
 .status_box li {
-    line-height: 180%;
     display: inline;
     padding: 2px;
     margin: 5px;
@@ -70,6 +70,25 @@
 }
 .status_box .status_ {
     background-color: silver;
+}
+
+.status_box .status_text_0 {
+    font-weight: bold;
+    color: #54AA59;
+}
+
+.status_box .status_text_1 {
+    font-weight: bold;
+    color: #fdd800;
+}
+
+.status_box .status_text_2 {
+    font-weight: bold;
+    color: #9d301d;
+}
+
+.status_box .status_text_ {
+    
 }
 
 .green {

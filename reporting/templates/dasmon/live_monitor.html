@@ -36,7 +36,7 @@
             
             $('#dasmon_status').replaceWith("<li class='status_"+data.das_status.dasmon+"' id='dasmon_status'>DASMON</li>");
             $('#workflow_status').replaceWith("<li class='status_"+data.das_status.workflow+"' id='workflow_status'>Workflow</li>");
-            $('#catalog_status').replaceWith("<li class='status_"+data.das_status.catalog+"' id='catalog_status'>Cataloging</li>");
+            $('#catalog_status').replaceWith("<li class='status_"+data.das_status.catalog+"' id='catalog_status'>Catalog</li>");
             $('#reduction_status').replaceWith("<li class='status_"+data.das_status.reduction+"' id='reduction_status'>Reduction</li>");
             
             run_data = data.run_rate;
@@ -106,7 +106,7 @@
 <li class='status_text'>Systems:</li>
 <li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
 <li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
-<li class='status_{{ das_status.catalog }}' id='catalog_status'>Cataloging</li>
+<li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
 <li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
 </ul>
 </div>

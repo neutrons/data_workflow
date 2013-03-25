@@ -375,7 +375,7 @@ def get_current_status(instrument_id):
                  }
     return data_dict
 
-def get_post_processing_status(red_timeout=1, yellow_timeout=10):
+def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
     """
         Get the health status of post-processing services
         @param red_timeout: number of hours before declaring a process dead
@@ -390,6 +390,7 @@ def get_post_processing_status(red_timeout=1, yellow_timeout=10):
         postprocess_data_id = StatusQueue.objects.get(name='POSTPROCESS.DATA_READY')
         catalog_data_id = StatusQueue.objects.get(name='CATALOG.DATA_READY')
         catalog_start_id = StatusQueue.objects.get(name='CATALOG.STARTED')
+        reduction_start_id = StatusQueue.objects.get(name='REDUCTION.STARTED')
         latest_run = RunStatus.objects.filter(queue_id=postprocess_data_id).latest('created_on')
         
         # If we didn't get a CATALOG.DATA_READY message within a few seconds, 
@@ -424,12 +425,25 @@ def get_post_processing_status(red_timeout=1, yellow_timeout=10):
             status_dict["catalog"]=1
         else:
             status_dict["catalog"]=0
-        status_dict['reduction'] = status_dict['catalog']
+
+        # If we didn't get a REDUCTION.STARTED message within a few seconds, 
+        # the cataloging agent has a problem
+        try:
+            latest_reduction_start = RunStatus.objects.filter(queue_id=reduction_start_id,
+                                                            run_id=latest_run.run_id).latest('created_on')
+            time_reduction_start = latest_reduction_start.created_on
+        except:
+            time_reduction_start = timezone.now()
+                
+        if time_reduction_start-latest_run.created_on>delta_long:
+            status_dict["reduction"]=2
+        elif time_reduction_start-latest_run.created_on>delta_short:
+            status_dict["reduction"]=1
+        else:
+            status_dict["reduction"]=0               
     except:
         logging.error("Could not determine post-processing status")
         logging.error(sys.exc_value)
-        
-        
     
     return status_dict
     

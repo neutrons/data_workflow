@@ -33,15 +33,20 @@ def summary(request):
     for i in instruments:
         dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
         das_status = view_util.get_dasmon_status(i)
+        completeness, message = view_util.get_completeness_status(i)
         instrument_list.append({'name': i.name,
                                 'url': dasmon_url,
-                                'dasmon_status': das_status
+                                'dasmon_status': das_status,
+                                'completeness': completeness,
+                                'completeness_msg': message
                                 })
   
     breadcrumbs = "home"
+    update_url = reverse('dasmon.views.summary_update')
     template_values = {'instruments':instrument_list,
                        'breadcrumbs':breadcrumbs,
-                       'postprocess_status':postprocess_status
+                       'postprocess_status':postprocess_status,
+                       'update_url':update_url
                        }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('dasmon/global_summary.html',
@@ -177,80 +182,35 @@ def get_update(request, instrument):
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     
     # Recent run info
-    run_dict = get_live_runs_update(request, instrument_id)
+    run_dict = view_util.get_live_runs_update(request, instrument_id)
     for k in run_dict:
         data_dict[k] = run_dict[k]
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 
-def get_live_runs_update(request, instrument_id):
+@users.view_util.login_or_local_required
+@cache_page(5)
+def summary_update(request):
     """
-         Get updated information about the latest runs
-         @param request: HTTP request so we can get the 'since' parameter
-         @param instrument_id: Instrument model object
-    """ 
-    if not request.GET.has_key('since') or not request.GET.has_key('complete_since'):
-        return {}
-    data_dict = {}
+         Response to AJAX call to get updated health info for all instruments
+    """
+    # Get the system health status
+    postprocess_status = report.view_util.get_post_processing_status()
     
-    # Get the last run ID that the client knows about
-    since = request.GET.get('since', '0')
-    refresh_needed = '1'
-    try:
-        since = int(since)
-        since_run_id = get_object_or_404(DataRun, id=since)
-    except:
-        since = 0
-        refresh_needed = '0'
-        since_run_id = None
-        
-    # Get the earliest run that the client knows about
-    complete_since = request.GET.get('complete_since', since)
-    try:
-        complete_since = int(complete_since)
-    except:
-        complete_since = 0
-        
-    if complete_since == 0:
-        return {}
-        
-    # Get last experiment and last run
-    run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
+    instrument_list = []
+    for i in Instrument.objects.all().order_by('name'):
+        das_status = view_util.get_dasmon_status(i)
+        completeness, message = view_util.get_completeness_status(i)
+        instrument_list.append({'name': i.name, 
+                                'dasmon_status': das_status,
+                                'completeness': completeness,
+                                'completeness_msg': message
+                                })
+  
+    data_dict = {'instruments':instrument_list,
+                 'postprocess_status':postprocess_status
+                 }
+    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
-    status_list = []
-    if since_run_id is not None and len(run_list)>0:
-        data_dict['last_run_id'] = run_list[0].id
-        refresh_needed = '1' if since_run_id.created_on<run_list[0].created_on else '0'         
-        update_list = []
-        for r in run_list:
-            status = 'unknown'
-            try:
-                s = WorkflowSummary.objects.get(run_id=r)
-                if s.complete is True:
-                    status = "<span class='green'>complete</span>"
-                else:
-                    status = "<span class='red'>incomplete</span>"
-            except:
-                # No entry for this run
-                pass
-            
-            run_dict = {"key": "run_id_%s" % str(r.id),
-                        "value": status,
-                        }
-            status_list.append(run_dict)
-            
-            if since_run_id.created_on < r.created_on:
-                localtime = timezone.localtime(r.created_on)
-                df = dateformat.DateFormat(localtime)
-                expt_dict = {"run":r.run_number,
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
-                            "last_error":status,
-                            "run_id":str(r.id),
-                            }
-                update_list.append(expt_dict)
-        data_dict['run_list'] = update_list
 
-    data_dict['refresh_needed'] = refresh_needed
-    data_dict['status_list'] = status_list
-    return data_dict
