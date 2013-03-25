@@ -127,7 +127,7 @@ def get_live_variables(request, instrument_id):
             data_list = []
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                   key_id=key_id).order_by('timestamp').reverse()[:120]
+                                                   key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()[:120]
             for v in values:
                 delta_t = values[0].timestamp-v.timestamp
                 data_list.append([-delta_t.seconds, v.value])

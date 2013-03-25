@@ -249,11 +249,11 @@ def get_experiment_update(request, instrument, ipts):
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)    
     run_list = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id, id__gt=since).order_by('created_on').reverse()
-
+    
+    update_list = []
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
         refresh_needed = '1' if since_run_id.created_on<run_list[0].created_on else '0'         
-        update_list = []
         for r in run_list:
             localtime = timezone.localtime(r.created_on)
             df = dateformat.DateFormat(localtime)
@@ -265,8 +265,7 @@ def get_experiment_update(request, instrument, ipts):
             if r.last_error() is not None:
                 expt_dict["last_error"] = r.last_error()
             update_list.append(expt_dict)
-        data_dict['run_list'] = update_list
-
+    data_dict['run_list'] = update_list
     data_dict['refresh_needed'] = refresh_needed
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
@@ -338,11 +337,10 @@ def get_error_update(request, instrument):
     data_dict = view_util.get_current_status(instrument_id)    
     errors = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('run_status_id__created_on').reverse()
     
-    
+    err_list = []
     if last_error_id is not None and len(errors)>0:
         data_dict['last_error_id'] = errors[0].id
         refresh_needed = '1' if last_error_id.run_status_id.created_on<errors[0].run_status_id.created_on else '0'         
-        err_list = []
         for e in errors:
             if last_error_id.run_status_id.created_on<e.run_status_id.created_on:
                 localtime = timezone.localtime(e.run_status_id.created_on)
@@ -354,8 +352,7 @@ def get_error_update(request, instrument):
                             "error_id":e.id,
                             }
                 err_list.append(err_dict)    
-        data_dict['errors'] = err_list
-    
+    data_dict['errors'] = err_list
     data_dict['refresh_needed'] = refresh_needed
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")

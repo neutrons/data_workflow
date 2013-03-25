@@ -98,6 +98,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 ROOT_URLCONF = 'reporting_app.urls'
@@ -122,6 +123,7 @@ INSTALLED_APPS = (
     'report',
     'users',
     'dasmon',
+    #'debug_toolbar',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -172,6 +174,10 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
+        'dasmon': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
         'django_auth_ldap': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -185,6 +191,12 @@ CACHES = {
         'LOCATION': 'webcache',
     }
 }
+
+# QUERY TUNING - SAFE FOR POSTGRESQL 
+# If the tables IDs are always incrementing, use 'id' below
+# otherwise use 'timestamp'
+DASMON_SQL_SORT = 'id'
+#DASMON_SQL_SORT = 'timestamp'
 
 # Import local settings if available
 try:
