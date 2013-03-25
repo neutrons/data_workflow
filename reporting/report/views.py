@@ -296,10 +296,10 @@ def get_instrument_update(request, instrument):
     data_dict = view_util.get_current_status(instrument_id)
     expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by('created_on').reverse()
 
+    update_list = []
     if since_expt_id is not None and len(expt_list)>0:
         data_dict['last_expt_id'] = expt_list[0].id
-        refresh_needed = '1' if since_expt_id.created_on<expt_list[0].created_on else '0'         
-        update_list = []
+        refresh_needed = '1' if since_expt_id.created_on<expt_list[0].created_on else '0'
         for e in expt_list:
             localtime = timezone.localtime(e.created_on)
             df = dateformat.DateFormat(localtime)
@@ -309,8 +309,7 @@ def get_instrument_update(request, instrument):
                         "ipts_id":e.id,
                         }
             update_list.append(expt_dict)
-        data_dict['expt_list'] = update_list
-
+    data_dict['expt_list'] = update_list
     data_dict['refresh_needed'] = refresh_needed
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
