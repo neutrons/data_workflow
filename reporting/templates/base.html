@@ -39,14 +39,17 @@
     {% endblock %}
     
  	<div class="user_info">
- 		{% if gravatar_url %}
+ 	{% if gravatar_url %}
 		<img src="{{ gravatar_url|safe }}&s=16" height="16" width="16" alt="{{ user.username}}">
-		{% endif %}
+	{% endif %}
 		{{ user.username }} |
+    {% if help_url %}
+        <a href="{{ help_url }}">help</a> |
+    {% endif %}
 	{% if user.is_authenticated %}
-		<a href="{{ logout_url }}"> logout </a>
+		<a href="{{ logout_url }}">logout</a>
 	{% else %}
-		<a href="{{ login_url }}"> login </a>
+		<a href="{{ login_url }}">login</a>
 	{% endif %}
 	</div>
     

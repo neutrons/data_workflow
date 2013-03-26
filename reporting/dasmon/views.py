@@ -130,6 +130,26 @@ def live_runs(request, instrument):
     
     return render_to_response('dasmon/live_runs.html', template_values)
     
+    
+@users.view_util.login_or_local_required
+def help(request):
+    
+    global_status_url = reverse('dasmon.views.summary',args=[])
+    hysa_live_monitor_url = reverse('dasmon.views.live_monitor', args=['hysa'])
+    hysa_live_runs_url = reverse('dasmon.views.live_runs', args=['hysa'])
+
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; help" % global_status_url
+    
+    template_values = {'global_status_url': global_status_url,
+                       'hysa_live_monitor_url': hysa_live_monitor_url,
+                       'hysa_live_runs_url': hysa_live_runs_url,
+                       'breadcrumbs': breadcrumbs,
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    
+    return render_to_response('dasmon/help.html', template_values)
+
+    
 @users.view_util.login_or_local_required
 @confirm_instrument
 @cache_page(5)

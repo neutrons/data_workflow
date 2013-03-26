@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %} Web Monitor Help {% endblock %}
+
+{% block banner %} Web Monitor Help {% endblock %}    
+
+{% block summary %}
+The Web Monitor allows you to verify the health of the data aquisition and post-processing.
+
+<h2><a href="#global_status" name="global_status">Global Status Page</a></h2>
+<p>
+The <a href='{{ global_status_url }}'>global status page</a> shows a list of all the instruments monitored by this system.
+For each instrument, it shows a color-coded status for sub-systems.
+</p>
+
+    <table cellspacing="0" class="message_table">
+    <thead>
+    <tr>
+        <th style="min-width:100px">Instrument</th> <th>System status</th> <th>Processing completion</th>
+    </tr>
+    </thead>
+    <tbody class='status_box'>
+        <tr>
+        <td>HYSA</td>
+        <td>
+            <ul>
+                <li class='status_0'>DASMON</li> 
+                <li class='status_0'>Workflow</li>
+                <li class='status_0'>Catalog</li>
+                <li class='status_0'>Reduction</li>
+            </ul>
+        </td>
+        <td class='status_text_0'>ok</td>
+        </tr>
+    </tbody>
+    </table>
+
+<p>
+The colored boxes indicate whether a system is alive and communicating correctly. 
+If a system has a communication latency of more than 10 seconds, its condition will
+go to yellow. A system is considered dead if it goes 15 minutes without communication.
+The color for a dead system is red.
+</p>
+
+<h3>What to do when a process is no longer green</h3>
+<ul>
+   <li>If a system is yellow, watch it to see if it goes red. This is usually not a reason to call for support.</li>
+   <li>If a system is red, call for support.</li>
+   <li>Remember that a green system doesn't mean that there are no errors being produced. It only means that the
+   system is alive.</li>
+</ul>
+
+<p>
+The <i>Processing completion</i> column indicates whether the last three runs have completed processing
+successfully. The condition will be red if the run before last has not completed. If it has completed
+successfully but either of the two runs that preceded it did not, the condition will go to yellow.
+A yellow condition indicates that the processing is currently healthy but it has recently failed.
+</p>
+
+<h3>What to do when the <i>Processing completion</i> is no longer green</h3>
+<ul>
+    <li>Watch the live run summary to see whether the problem disappears within a couple of runs. 
+    If not, send an email for support. Do not call for support for this error outside of business hours.</li>
+    <li>Check the error messages.</li>
+    <li><b>REDUCTION RuntimeError: The proton charge is zero</b> is not an error condition that should be reported unless it persist for several runs.</li>
+    <li>A yellow condition is not a reason to call for support unless the live run summary page shows that there
+    has been multiple errors within the last 24 hours.</li>
+</ul>
+<br>
+
+
+<h2><a href="#dasmon_live" name="dasmon_live">DAS Monitor Page</a> </h2>
+<p>
+The <a href='{{ hysa_live_monitor_url }}'>DAS monitor</a> shows the current status of the acquisition.
+In addition to the system health information described above, it also shows the current run number and title, 
+as well as the state of the acquisition (stopped, recording, or paused).
+
+The table shows the process variables that are emitted by the monitoring system. Some variable names have
+a link associated with them. Click on that link to see a plot of that variable's value over time.
+
+The plot at the top of the page shows the number of <i>translated</i> runs and number of errors per hour created within 
+the past 24 hours. Errors are shown in red on the plot.
+<p>
+
+<h3>What to do when there are errors on the plot</h3>
+<ul>
+    <li>The page shows the current IPTS number. Click on that link to go to the list of runs for that experiment.
+    Runs with errors are clearly identified. Clicking on the link for those runs will give you more information.</li>
+    <li>Sporadic errors are part of normal operation and might be due to a variety of factors. Contact support if
+    there are as many errors as there are runs.</li>
+</ul>
+
+<h3>What to do when there hasn't been a translated run in a while</h3>
+<ul>
+    <li>Only worry if the beam is ON.</li>
+    <li>Only worry if you the instrument has been <b>Recording</b> within the period in question.</li>
+    <li>If the current status is <b>Recording</b>, ask the users or the instrument scientist whether 
+    they are set up to take long runs.</li> 
+    <li>If the run number identified on the page as the "<i>last translated run</i>" is significantly different
+    than the current run (displayed in larger font below the plot), call for support.</li>
+</ul>
+<br>
+
+
+<h2><a href="#dasmon_runs" name="dasmon_runs">DAS Monitor Page: Live Runs</a> </h2>
+<p>
+A link at the top right of the DAS monitor page allows you
+to switch back and forth between seeing the <a href='{{ hysa_live_monitor_url }}'>live process variables</a> 
+or the <a href='{{ hysa_live_runs_url }}'>live run list</a>. The last column of the run list shows
+whether a particular run has successfully gone through of the data processing. For a given run, the completion
+can either be <span class='green'><b>complete</b></span> or <span class='red'><b>incomplete</b></span>.
+</p>
+
+<h3>What to do if runs are incomplete</h3>
+<ul>
+    <li>It's normal for the latest run to be incomplete for a little while.</li>
+    <li>Clicking on the link for an incomplete run will give you more information.</li>
+    <li>Run can occasionally be incomplete. This is usually do to failing auto-reduction. 
+    Persistent reduction errors should be checked with the instrument scientist first.</li>
+    <li><b>REDUCTION RuntimeError: The proton charge is zero</b> is not an error condition that should be reported unless it persist for several runs.</li>
+</ul>
+
+{% endblock %}
+
+
+
+
+
+
+{% block nocontent %}{% endblock %}

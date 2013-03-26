@@ -105,6 +105,8 @@ def get_run_status(**template_args):
             reverse('report.views.instrument_summary',args=[instr]), instr, "DAS monitor"
             ) 
     template_args["breadcrumbs"] = breadcrumbs
+    
+    template_args["help_url"] = reverse('dasmon.views.help')
 
     return template_args
 
@@ -159,18 +161,36 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     return 0
 
 def get_completeness_status(instrument_id):
+    """
+        Check that the latest runs have successfully completed post-processing
+        @param instrument_id: Instrument object
+    """
     try:
         # Check for completeness of the three runs before the last run.
         # We don't use the last one because we may still be working on it.
         postprocess_data_id = StatusQueue.objects.get(name='POSTPROCESS.DATA_READY')
         latest_runs = RunStatus.objects.filter(queue_id=postprocess_data_id).order_by('created_on').reverse()
-        s = WorkflowSummary.objects.get(run_id=latest_runs[1].run_id)
-        if s.complete is False:
+        
+        s0 = WorkflowSummary.objects.get(run_id=latest_runs[0].run_id)
+        s1 = WorkflowSummary.objects.get(run_id=latest_runs[1].run_id)
+        s2 = WorkflowSummary.objects.get(run_id=latest_runs[2].run_id)
+        s3 = WorkflowSummary.objects.get(run_id=latest_runs[3].run_id)
+        # If the latest is complete, use it to determine the status        
+        if s0.complete:
+            status0 = s0.complete
+            status1 = s1.complete
+            status2 = s2.complete
+        # If the latest is incomplete, it might still be processing, skip it
+        else:
+            status0 = s1.complete
+            status1 = s2.complete
+            status2 = s3.complete
+        
+        # Determine status
+        if status0 is False:
             return 2, "ERROR"
         else:
-            s1 = WorkflowSummary.objects.get(run_id=latest_runs[2].run_id)
-            s2 = WorkflowSummary.objects.get(run_id=latest_runs[3].run_id)
-            if s1.complete is False or s2.complete is False:
+            if status1 is False or status2 is False:
                 return 1, "warning"
             else:
                 return 0, "ok"
