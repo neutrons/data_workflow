@@ -50,7 +50,7 @@ function plot_monitor(monitor_data, element_id, label_text){
 			},
 			shadowSize: 0,
 			bars: {
-				show: true,
+				show: false,
 				lineWidth: 1
 			},
 			grid: { 

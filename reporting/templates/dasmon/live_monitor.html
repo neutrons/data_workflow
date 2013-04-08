@@ -62,12 +62,13 @@
             var plot_content = "<div id='"+element_id+"_dialog' title='"+element_id+"'>";
             plot_content    += "  <div class='live_plots'>";
             plot_content    += "    <div style='height:150px' id='"+element_id+"_plot'><span class='waiting'>Working... this will take a second or two.</span></div>";
-            plot_content    += "    <span style='float:right'>time elapsed [sec]</span><br>";
+            plot_content    += "    <span style='float:right'>time elapsed [minutes]</span><br>";
             plot_content    += "  </div>";
             plot_content    += "</div>";
             $('#dialog_placeholder').append(plot_content);
             $( "#"+element_id+"_dialog" ).dialog({
             	width: 400,
+            	height: 220,
             	resizable: false,
             	closeOnEscape: true,
                 close: function( event, ui ) 

@@ -54,7 +54,8 @@ class StateAction(object):
                 logging.error("Task [%s] failed: %s" % (headers["destination"], sys.exc_value))
         if 'task_queues' in task_def:
             for item in task_def['task_queues']:
-                self.send(destination='/queue/%s'%item, message=message, persistent='true')
+                destination = '/queue/%s' % item
+                self.send(destination=destination, message=message, persistent='true')
         
                 headers = {'destination': destination, 
                           'message-id': ''}

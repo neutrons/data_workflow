@@ -122,6 +122,7 @@ def get_live_variables(request, instrument_id):
         return []
     
     data_dict = []
+    two_hours = timezone.now()-datetime.timedelta(hours=2)
     for key in live_keys:
         key = key.strip()
         if len(key)==0: continue
@@ -129,10 +130,11 @@ def get_live_variables(request, instrument_id):
             data_list = []
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                   key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()[:120]
+                                                   key_id=key_id,
+                                                   timestamp__gte=two_hours).order_by(settings.DASMON_SQL_SORT).reverse()
             for v in values:
                 delta_t = values[0].timestamp-v.timestamp
-                data_list.append([-delta_t.seconds, v.value])
+                data_list.append([-delta_t.seconds/60.0, v.value])
             data_dict.append([key,data_list])
         except:
             # Could not find data for this key
