@@ -293,7 +293,7 @@ def get_instrument_update(request, instrument):
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
-    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by('created_on').reverse()
+    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by('created_on')
 
     update_list = []
     if since_expt_id is not None and len(expt_list)>0:
@@ -335,7 +335,7 @@ def get_error_update(request, instrument):
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)    
-    errors = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('run_status_id__created_on').reverse()
+    errors = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('run_status_id__created_on')
     
     err_list = []
     if last_error_id is not None and len(errors)>0:
