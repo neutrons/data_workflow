@@ -119,6 +119,8 @@ def ipts_summary(request, instrument, ipts):
         @param instrument: instrument name
         @param ipts: experiment name
     """
+    # Protect against lower-case requests
+    ipts = ipts.upper()
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     # Get experiment
@@ -231,6 +233,9 @@ def get_experiment_update(request, instrument, ipts):
          @param instrument: instrument name
          @param ipts: experiment name
     """ 
+    # Protect against lower-case requests
+    ipts = ipts.upper()
+
     since = request.GET.get('since', '0')
     refresh_needed = '1'
     try:
