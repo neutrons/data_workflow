@@ -237,13 +237,11 @@ def get_experiment_update(request, instrument, ipts):
     ipts = ipts.upper()
 
     since = request.GET.get('since', '0')
-    refresh_needed = '1'
     try:
         since = int(since)
         since_run_id = get_object_or_404(DataRun, id=since)
     except:
         since = 0
-        refresh_needed = '0'
         since_run_id = None
     
     # Get instrument
@@ -258,20 +256,20 @@ def get_experiment_update(request, instrument, ipts):
     update_list = []
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
-        refresh_needed = '1' if since_run_id.created_on<run_list[0].created_on else '0'         
         for r in run_list:
-            localtime = timezone.localtime(r.created_on)
-            df = dateformat.DateFormat(localtime)
-            expt_dict = {"run":r.run_number,
-                        "timestamp":df.format(settings.DATETIME_FORMAT),
-                        "last_error":"",
-                        "run_id":str(r.id),
-                        }
-            if r.last_error() is not None:
-                expt_dict["last_error"] = r.last_error()
-            update_list.append(expt_dict)
+            if since_run_id.created_on < r.created_on:
+                localtime = timezone.localtime(r.created_on)
+                df = dateformat.DateFormat(localtime)
+                expt_dict = {"run":r.run_number,
+                            "timestamp":df.format(settings.DATETIME_FORMAT),
+                            "last_error":"",
+                            "run_id":str(r.id),
+                            }
+                if r.last_error() is not None:
+                    expt_dict["last_error"] = r.last_error()
+                update_list.append(expt_dict)
     data_dict['run_list'] = update_list
-    data_dict['refresh_needed'] = refresh_needed
+    data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
