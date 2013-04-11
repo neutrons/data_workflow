@@ -13,6 +13,7 @@ SETUP_ARGS = dict(
     long_description=open('dasmon_listener/README.md').read(),
     platforms=['POSIX'],
     options={'clean': {'all': 1}},
+    zip_safe = False,
     entry_points = {
                     'console_scripts':[
                                        "dasmon_listener = dasmon_listener.listener_daemon:run",

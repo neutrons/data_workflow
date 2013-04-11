@@ -284,13 +284,11 @@ def get_instrument_update(request, instrument):
          @param instrument: instrument name
     """ 
     since = request.GET.get('since', '0')
-    refresh_needed = '1'
     try:
         since = int(since)
         since_expt_id = get_object_or_404(IPTS, id=since)
     except:
         since = 0
-        refresh_needed = '0'
         since_expt_id = None
     
     # Get the instrument
@@ -303,18 +301,18 @@ def get_instrument_update(request, instrument):
     update_list = []
     if since_expt_id is not None and len(expt_list)>0:
         data_dict['last_expt_id'] = expt_list[0].id
-        refresh_needed = '1' if since_expt_id.created_on<expt_list[0].created_on else '0'
         for e in expt_list:
-            localtime = timezone.localtime(e.created_on)
-            df = dateformat.DateFormat(localtime)
-            expt_dict = {"ipts":e.expt_name.upper(),
-                        "n_runs":e.number_of_runs(),
-                        "timestamp":df.format(settings.DATETIME_FORMAT),
-                        "ipts_id":e.id,
-                        }
-            update_list.append(expt_dict)
+            if since_expt_id.created_on < e.created_on:
+                localtime = timezone.localtime(e.created_on)
+                df = dateformat.DateFormat(localtime)
+                expt_dict = {"ipts":e.expt_name.upper(),
+                            "n_runs":e.number_of_runs(),
+                            "timestamp":df.format(settings.DATETIME_FORMAT),
+                            "ipts_id":e.id,
+                            }
+                update_list.append(expt_dict)
     data_dict['expt_list'] = update_list
-    data_dict['refresh_needed'] = refresh_needed
+    data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 

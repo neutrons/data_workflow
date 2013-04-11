@@ -22,6 +22,8 @@ workflow: check
 	python setup.py install
 
 clean:
+	python setup.py clean
+	python setup_dasmon_listener.py clean
 	rm -fR *.pyc
 	rm -fR build/
 	
@@ -29,6 +31,7 @@ install: clean workflow webapp
        
 webapp:
 	# Install DASMON listener
+	python setup_dasmon_listener.py clean
 	python setup_dasmon_listener.py install
 
 	# Make sure the install directories exist
