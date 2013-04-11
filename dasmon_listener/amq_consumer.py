@@ -54,30 +54,55 @@ class Listener(stomp.ConnectionListener):
             instrument_id.save()
             
         for key in data_dict:
-            try:
-                key_id = Parameter.objects.get(name=key)
-            except:
-                key_id = Parameter(name=key)
-                key_id.save()
-            status_entry = StatusVariable(instrument_id=instrument_id,
-                                          key_id=key_id,
-                                          value=data_dict[key])
-            status_entry.save()
+            # If we find a dictionary, process its entries
+            if type(data_dict[key])==dict:
+                # The key is now an entry type and the entry itself
+                # should be another dictionary for instances of that type
+                for item in data_dict[key]:
+                    if type(data_dict[key][item])==dict:
+                        identifier = None
+                        counts = None
+                        if "id" in data_dict[key][item]:
+                            identifier = data_dict[key][item]["id"]
+                        if "counts" in data_dict[key][item]:
+                            counts = data_dict[key][item]["counts"]
+                        if identifier is not None and counts is not None:
+                            parameter_name = "%s_count_%s" % (item, identifier)
+                            store_and_cache(instrument_id, parameter_name, counts)
+            else:
+                store_and_cache(instrument_id, key, data_dict[key])                
             
-            # Update the latest value
-            try:
-                last_value = StatusCache.objects.filter(instrument_id=instrument_id,
-                                                     key_id=key_id).latest('timestamp')
-                last_value.value = value = status_entry.value
-                last_value.timestamp = status_entry.timestamp
-                last_value.save()
-            except:
-                last_value = StatusCache(instrument_id=instrument_id,
-                                         key_id=key_id,
-                                         value=status_entry.value,
-                                         timestamp=status_entry.timestamp)
-                last_value.save()
-        
+def store_and_cache(instrument_id, key, value):
+    """
+        Store and cache a DASMON parameter
+        @param instrument_id: Instrument object
+        @param key: key string
+        @param value: value for the given key
+    """
+    try:
+        key_id = Parameter.objects.get(name=key)
+    except:
+        key_id = Parameter(name=key)
+        key_id.save()
+    status_entry = StatusVariable(instrument_id=instrument_id,
+                                  key_id=key_id,
+                                  value=value)
+    status_entry.save()
+    
+    # Update the latest value
+    try:
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id,
+                                             key_id=key_id).latest('timestamp')
+        last_value.value = value = status_entry.value
+        last_value.timestamp = status_entry.timestamp
+        last_value.save()
+    except:
+        last_value = StatusCache(instrument_id=instrument_id,
+                                 key_id=key_id,
+                                 value=status_entry.value,
+                                 timestamp=status_entry.timestamp)
+        last_value.save()
+    
 
 class Client(object):
     """
