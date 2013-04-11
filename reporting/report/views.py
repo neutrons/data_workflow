@@ -248,7 +248,7 @@ def get_experiment_update(request, instrument, ipts):
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)    
-    run_list = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id, id__gt=since).order_by('created_on').reverse()
+    run_list = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id, id__gt=since).order_by('created_on')
     
     update_list = []
     if since_run_id is not None and len(run_list)>0:

@@ -60,7 +60,7 @@ def add_status_entry(headers, data):
         instrument_id.save()
 
     # Look for IPTS ID
-    ipts = data_dict["ipts"]
+    ipts = data_dict["ipts"].upper()
     try:
         ipts_id = IPTS.objects.get(expt_name=ipts)
     except IPTS.DoesNotExist:
