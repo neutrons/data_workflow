@@ -11,10 +11,13 @@ def reduction_needed(modeladmin, request, queryset):
 reduction_needed.short_description = "Mark selected runs needing reduction"
 
 class DataRunAdmin(admin.ModelAdmin):
-    list_display = ('run_number', 'instrument_id', 'ipts_id', 'file')
+    list_display = ('run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')
+
+class IPTSAdmin(admin.ModelAdmin):
+    list_display = ('expt_name', 'created_on')
 
 class RunStatusAdmin(admin.ModelAdmin):
-    list_display = ('run_id', 'queue_id')
+    list_display = ('run_id', 'queue_id', 'message_id', 'created_on')
 
 class InformationAdmin(admin.ModelAdmin):
     list_display = ('run_status_id', 'description')
@@ -41,7 +44,7 @@ admin.site.register(DataRun, DataRunAdmin)
 admin.site.register(StatusQueue, StatusQueueAdmin)
 admin.site.register(RunStatus, RunStatusAdmin)
 admin.site.register(WorkflowSummary, WorkflowSummaryAdmin)
-admin.site.register(IPTS)
+admin.site.register(IPTS, IPTSAdmin)
 admin.site.register(Instrument)
 admin.site.register(Information, InformationAdmin)
 admin.site.register(Error, ErrorAdmin)
