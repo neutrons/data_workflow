@@ -1,0 +1,144 @@
+"""
+    ActiveMQ workflow manager client
+"""
+import time
+import stomp
+import logging
+import sys
+
+from database.transactions import get_message_queues
+from workflow_process import WorkflowProcess
+        
+class Client(object):
+    """
+        ActiveMQ client
+        Holds the connection to a broker
+    """
+    
+    def __init__(self, brokers, user, passcode, 
+                 queues=None, 
+                 workflow_check=False,
+                 check_frequency=24, 
+                 workflow_recovery=False,
+                 flexible_tasks=False,
+                 consumer_name="amq_consumer"):
+        """ 
+            @param brokers: list of brokers we can connect to
+            @param user: activemq user
+            @param passcode: passcode for activemq user
+            @param queues: list of queues to listen to
+            @param workflow_check: if True, the workflow will be checked at a given interval
+            @param check_frequency: number of hours between workflow checks
+            @param workflow_recovery: if True, the manager will try to recover from workflow problems
+            @param flexible_tasks: if True, the workflow tasks will be defined by the DB
+            @param consumer_name: name of the AMQ listener
+        """
+        # Connection parameters
+        self._brokers = brokers
+        self._user = user
+        self._passcode = passcode
+        self._connection = None
+        self._connected = False        
+        self._consumer_name = consumer_name
+        self._queues = queues
+        if self._queues is None:
+            self._queues = get_message_queues(True)
+
+        ## Delay between workflow check [in seconds]
+        self._workflow_check_delay = 60.0*60.0*check_frequency
+        self._workflow_check_start = time.time()
+        self._workflow_check = workflow_check
+        self._workflow_recovery = workflow_recovery
+        self._flexible_tasks = flexible_tasks
+
+        ## Listener used for dealing with incoming messages
+        self._listener = None
+        
+        startup_msg = "Starting Workflow Manager client %s\n" % self._consumer_name
+        startup_msg += "  User: %s\n" % self._user
+        startup_msg += "  DB task definition allowed? %s\n" % str(self._flexible_tasks)
+        startup_msg += "  Workflow check enabled? %s\n" % str(self._workflow_check)
+        if self._workflow_check:
+            startup_msg += "  Time between checks: %s seconds\n" % str(self._workflow_check_delay)
+            startup_msg += "  Recovery enabled?    %s\n" % str(self._workflow_recovery)
+            if self._workflow_recovery:
+                startup_msg += "  Delay since last activity before attempting recovery: %s seconds\n" % str(self._workflow_check_delay)
+        logging.info(startup_msg)
+
+        
+    def set_listener(self, listener):
+        """
+            Set the listener object that will process each
+            incoming message.
+            @param listener: listener object
+        """
+        self._listener = listener
+        
+    def get_connection(self, consumer_name=None):
+        """
+            Establish and return a connection to ActiveMQ
+            @param consumer_name: name to give the new connection
+        """
+        if consumer_name is None:
+            consumer_name = self._consumer_name
+        logging.info("[%s] Attempting to connect to ActiveMQ broker" % consumer_name)
+        conn = stomp.Connection(host_and_ports=self._brokers, 
+                                user=self._user,
+                                passcode=self._passcode, 
+                                wait_on_receipt=True)
+        conn.set_listener(consumer_name, self._listener)
+        conn.start()
+        conn.connect()        
+        return conn
+            
+    def connect(self):
+        """
+            Connect to a broker
+        """
+        if self._connection is None or not self._connection.is_connected():
+            self._disconnect()
+            self._connection = self.get_connection()
+        
+        logging.info("[%s] Subscribing to %s" % (self._consumer_name,
+                                                 str(self._queues)))
+        for q in self._queues:
+            self._connection.subscribe(destination=q, ack='auto', persistent='true')
+        self._connected = True
+    
+    def _disconnect(self):
+        """
+            Clean disconnect
+        """
+        if self._connection is not None and self._connection.is_connected():
+            self._connection.disconnect()
+        self._connection = None
+        
+    def verify_workflow(self):
+        """
+            Verify that the workflow has completed for all the runs and
+            recover if it hasn't
+        """
+        if self._workflow_check:
+            try:
+                WorkflowProcess(connection=self._connection,
+                                recovery=self._workflow_recovery,
+                                allowed_lag=self._workflow_check_delay).verify_workflow()
+            except:
+                logging.error("Workflow verification failed: %s" % sys.exc_value)
+
+    def listen_and_wait(self, waiting_period=1.0):
+        """
+            Listen for the next message from the brokers.
+            This method will simply return once the connection is
+            terminated.
+            @param waiting_period: sleep time between connection to a broker
+        """
+        self.connect()
+        self.verify_workflow()
+        while(self._connected):
+            time.sleep(waiting_period)
+            
+            # Check for workflow completion
+            if time.time()-self._workflow_check_start>self._workflow_check_delay:
+                self.verify_workflow()
+                self._workflow_check_start = time.time()

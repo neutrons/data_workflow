@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from workflow_manager import WorkflowManager
+from amq_client import Client
+from amq_listener import Listener
 from settings import brokers
 
 # Backward compatibility protection
@@ -10,10 +11,26 @@ else:
     from settings import icat_user as wkflow_user
     from settings import icat_passcode as wkflow_passcode
 
+from settings import LOGGING_LEVEL
 from daemon import Daemon
+from database import transactions
+
 import sys
 import os
 import argparse
+import logging
+
+# Set log level
+logging.getLogger().setLevel(LOGGING_LEVEL)
+# Formatter
+ft = logging.Formatter('%(levelname)s:%(asctime)-15s %(message)s')
+# Create a log file handler
+fh = logging.FileHandler('workflow.log')
+fh.setLevel(LOGGING_LEVEL)
+fh.setFormatter(ft)
+logging.getLogger().addHandler(fh)
+
+from multiprocessing import Process
 
 class WorkflowDaemon(Daemon):
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null',
@@ -32,7 +49,7 @@ class WorkflowDaemon(Daemon):
         self._check_frequency = check_frequency
         self._workflow_recovery = workflow_recovery
         self._flexible_tasks = flexible_tasks
-        
+            
     def run(self):
         """
             Run the workflow manager daemon
@@ -42,15 +59,34 @@ class WorkflowDaemon(Daemon):
         if self._check_frequency is not None:
             check_frequency = self._check_frequency
             workflow_check = True
-            
-        mng = WorkflowManager(brokers, wkflow_user, wkflow_passcode,
-                              workflow_check=workflow_check,
-                              check_frequency=check_frequency,
-                              workflow_recovery=self._workflow_recovery,
-                              flexible_tasks=self._flexible_tasks)
-        mng.processing_loop()
 
-if __name__ == "__main__":
+        c = Client(brokers, wkflow_user, wkflow_passcode, 
+                   workflow_check=workflow_check,
+                   check_frequency=check_frequency,
+                   workflow_recovery=self._workflow_recovery,
+                   flexible_tasks=self._flexible_tasks,
+                   consumer_name="workflow_manager_%s" % self.pidfile)
+
+        listener = Listener(use_db_tasks=self._flexible_tasks)
+        listener.set_amq_user(brokers, wkflow_user, wkflow_passcode)
+        c.set_listener(listener)
+        c.listen_and_wait(0.1)
+
+def run_daemon(pid_file, stdout_file, stderr_file, check_frequency, recover, flexible_tasks, command):
+    daemon = WorkflowDaemon(pid_file,
+                            stdout=stdout_file,
+                            stderr=stderr_file,
+                            check_frequency=check_frequency,
+                            workflow_recovery=recover,
+                            flexible_tasks=flexible_tasks)    
+    if command == 'start':
+        daemon.start()
+    elif command == 'stop':
+        daemon.stop()
+    elif command == 'restart':
+        daemon.restart()
+
+def run():
     # Start/restart options
     start_parser = argparse.ArgumentParser(add_help=False)
     
@@ -96,16 +132,13 @@ if __name__ == "__main__":
                              dest='success_queues')
     
     namespace = parser.parse_args()
-    #print namespace
     
     # If we just need to dump the workflow tables,
     # do it and stop here
-    if namespace.command == 'dump':
-        from database import transactions
+    if namespace.command == 'dump':        
         transactions.sql_dump_tasks()
         sys.exit(0)
     elif namespace.command == 'add_task':
-        from database import transactions
         transactions.add_task(instrument=namespace.instrument, 
                               input_queue=namespace.input_queue,
                               task_class=namespace.task_class,
@@ -132,18 +165,25 @@ if __name__ == "__main__":
         if namespace.flexible_tasks is not None:
             flexible_tasks = namespace.flexible_tasks
     
-    daemon = WorkflowDaemon('/tmp/workflow.pid',
-                            stdout=stdout_file,
-                            stderr=stderr_file,
-                            check_frequency=check_frequency,
-                            workflow_recovery=recover,
-                            flexible_tasks=flexible_tasks)
-    
-    if namespace.command == 'start':
-        daemon.start()
-    elif namespace.command == 'stop':
-        daemon.stop()
-    elif namespace.command == 'restart':
-        daemon.restart()
+    #TODO: allow multiple listening processes
+    number_of_processes = 1
+    if number_of_processes == 1:
+        run_daemon('/tmp/workflow.pid', stdout_file, stderr_file,
+                                        check_frequency,
+                                        recover,
+                                        flexible_tasks,
+                                        namespace.command)
+    else:
+        for i in range(number_of_processes):
+            p = Process(target=run_daemon, args=('/tmp/workflow%d.pid' % i, stdout_file, stderr_file,
+                                                 check_frequency,
+                                                 recover,
+                                                 flexible_tasks,
+                                                 namespace.command))
+            p.start()
+            p.join()
 
     sys.exit(0)
+
+if __name__ == "__main__":
+    run()

@@ -123,6 +123,7 @@ INSTALLED_APPS = (
     'report',
     'users',
     'dasmon',
+    'pvmon',
     #'debug_toolbar',
 )
 

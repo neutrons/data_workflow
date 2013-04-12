@@ -1,7 +1,6 @@
 import logging
 from database import transactions
 import json
-import sys
 
 def decode_message(message):
     """

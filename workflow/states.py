@@ -1,9 +1,12 @@
 """
     Action classes to be called when receiving specific messages.
+    
+    To add an action for a specific queue, add a StateAction class
+    with the name of the queue in lower-case, replacing periods with underscores.
 """
-import stomp
 from state_utilities import logged_action
-from settings import brokers, icat_user, icat_passcode
+from settings import POSTPROCESS_ERROR, CATALOG_DATA_READY
+from settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
 from database import transactions
 import json
 import logging
@@ -13,12 +16,15 @@ class StateAction(object):
     """
         Base class for processing messages
     """
-    def __init__(self, use_db_task=False):
+    _send_connection = None
+    def __init__(self, connection=None, use_db_task=False):
         """
             Initialization
+            @param connection: AMQ connection to use to send messages
             @param use_db_task: if True, a task definition will be looked for in the DB when executing the action
         """
         self._user_db_task = use_db_task
+        self._send_connection = connection
 
     def _call_default_task(self, headers, message):
         """
@@ -34,7 +40,7 @@ class StateAction(object):
         # Find a custom action for this message
         if destination in globals():
             action_cls = globals()[destination]
-            action_cls()(headers, message)
+            action_cls(connection=self._send_connection)(headers, message)
             
     def _call_db_task(self, task_data, headers, message):
         """
@@ -49,7 +55,7 @@ class StateAction(object):
                 module = '.'.join(toks[:len(toks)-1])
                 cls = toks[len(toks)-1]
                 exec "from %s import %s as action_cls" % (module, cls)
-                action_cls()(headers, message)
+                action_cls(connection=self._send_connection)(headers, message)
             except:
                 logging.error("Task [%s] failed: %s" % (headers["destination"], sys.exc_value))
         if 'task_queues' in task_def:
@@ -84,27 +90,29 @@ class StateAction(object):
             @param destination: name of the queue
             @param message: message content
         """
-        conn = stomp.Connection(host_and_ports=brokers, 
-                        user=icat_user, passcode=icat_passcode, 
-                        wait_on_receipt=True)
-        conn.set_listener('workflow_manager', self)
-        conn.start()
-        conn.connect()
-        conn.send(destination=destination, message=message, persistent=persistent)
+        logging.debug("Send: %s" % destination)
+        if self._send_connection is not None:
+            self._send_connection.send(destination=destination, 
+                                       message=message, 
+                                       persistent=persistent)
         
-        headers = {'destination': destination, 
-                  'message-id': ''}
-        transactions.add_status_entry(headers, message)
-        
-        # Sometimes the socket gets wiped out before we get a chance to complete
-        # disconnecting
-        try:
-            conn.disconnect()
-        except:
-            logging.info("Send socket already closed: skipping disconnection")
+            headers = {'destination': destination, 
+                       'message-id': ''}
+            transactions.add_status_entry(headers, message)
+        else:
+            logging.error("No AMQ connection to send to %s" % destination)
+            headers = {'destination': '/queue/%s' % POSTPROCESS_ERROR, 
+                       'message-id': ''}
+            data_dict = json.loads(message)
+            data_dict['error'] = "No AMQ connection: Could not send to %s" % destination
+            message = json.dumps(data_dict)
+            transactions.add_status_entry(headers, message)
 
 
 class Postprocess_data_ready(StateAction):
+    """
+        Default action for POSTPROCESS.DATA_READY messages
+    """
     def __call__(self, headers, message):
         """
             Called to process a message
@@ -112,11 +120,14 @@ class Postprocess_data_ready(StateAction):
             @param message: JSON-encoded message content
         """
         # Tell workers for start processing
-        self.send(destination='/queue/CATALOG.DATA_READY', message=message, persistent='true')
-        self.send(destination='/queue/REDUCTION.DATA_READY', message=message, persistent='true')
+        self.send(destination='/queue/%s' % CATALOG_DATA_READY, message=message, persistent='true')
+        self.send(destination='/queue/%s' % REDUCTION_DATA_READY, message=message, persistent='true')
         
         
 class Reduction_complete(StateAction):
+    """
+        Default action for REDUCTION.COMPLETE messages
+    """
     def __call__(self, headers, message):
         """
             Called to process a message
@@ -124,4 +135,4 @@ class Reduction_complete(StateAction):
             @param message: JSON-encoded message content
         """
         # Tell workers to catalog the output
-        self.send(destination='/queue/REDUCTION_CATALOG.DATA_READY', message=message, persistent='true')
+        self.send(destination='/queue/%s' % REDUCTION_CATALOG_DATA_READY, message=message, persistent='true')

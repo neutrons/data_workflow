@@ -5,6 +5,7 @@
 """
 import sys, os, time, atexit
 from signal import SIGTERM 
+import logging
 
 class Daemon(object):
     """
@@ -30,7 +31,7 @@ class Daemon(object):
                 # exit first parent
                 sys.exit(0) 
         except OSError, e: 
-            sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+            logging.error("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
     
         # decouple from parent environment
@@ -45,7 +46,7 @@ class Daemon(object):
                 # exit from second parent
                 sys.exit(0) 
         except OSError, e: 
-            sys.stderr.write("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+            logging.error("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1) 
     
         # redirect standard file descriptors
@@ -63,6 +64,7 @@ class Daemon(object):
         atexit.register(self.delpid)
         pid = str(os.getpid())
         file(self.pidfile,'w+').write("%s\n" % pid)
+        logging.info("Started daemon with PID %s" % str(pid))
     
     def delpid(self):
         os.remove(self.pidfile)
@@ -81,7 +83,7 @@ class Daemon(object):
     
         if pid:
             message = "pidfile %s already exist. Daemon already running?\n"
-            sys.stderr.write(message % self.pidfile)
+            logging.warning(message % self.pidfile)
             sys.exit(1)
         
         # Start the daemon
@@ -102,8 +104,10 @@ class Daemon(object):
     
         if not pid:
             message = "pidfile %s does not exist. Daemon not running?\n"
-            sys.stderr.write(message % self.pidfile)
+            logging.error(message % self.pidfile)
             return # not an error in a restart
+
+        logging.info("Stopping daemon with PID %s" % str(pid))
 
         # Try killing the daemon process    
         try:
@@ -116,7 +120,7 @@ class Daemon(object):
                 if os.path.exists(self.pidfile):
                     os.remove(self.pidfile)
             else:
-                print str(err)
+                logging.error(str(err))
                 sys.exit(1)
 
     def restart(self):

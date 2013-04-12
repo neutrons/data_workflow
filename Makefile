@@ -44,6 +44,7 @@ webapp:
 	#cp -R dasmon_listener $(prefix)/app
 	cp -R reporting/report $(prefix)/app
 	cp -R reporting/dasmon $(prefix)/app
+	cp -R reporting/pvmon $(prefix)/app
 	cp -R reporting/static $(prefix)/app
 	cp -R reporting/users $(prefix)/app
 	cp -R reporting/templates $(prefix)/app

@@ -1,6 +1,7 @@
 """
     Actual process that each data run must go through.
 """
+from database import transactions
 from database.report.models import WorkflowSummary, RunStatus
 from django.utils.timezone import utc
 from states import StateAction
@@ -8,14 +9,18 @@ import json
 import logging
 import datetime
 
-class WorkflowProcess(object):
+from settings import POSTPROCESS_INFO, CATALOG_DATA_READY
+from settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
+
+class WorkflowProcess(StateAction):
     
-    def __init__(self, connection=None, recovery=False, allowed_lag=None):
+    def __init__(self, connection=None, recovery=True, allowed_lag=3600):
         """
+            @param connection: AMQ connection
             @param recovery: if True, the system will try to recover from workflow problems
             @param allowed_lag: minimum number of seconds since last activity needed before identifying a problem
         """
-        self._connection = connection
+        super(WorkflowProcess, self).__init__(connection=connection)
         self._recovery = recovery
         # Amount of time allowed before we start worrying about workflow issues
         if allowed_lag is None:
@@ -36,6 +41,10 @@ class WorkflowProcess(object):
         run_list = WorkflowSummary.objects.incomplete()
         logging.info(" - list generated")
         
+        # Dummy header for information logging
+        logging_headers = {'destination': '/queue/%s' % POSTPROCESS_INFO, 
+                           'message-id': ''}
+        
         for r in run_list:            
             r.update()
             # Identify a problem only if the last message received is more
@@ -54,10 +63,10 @@ class WorkflowProcess(object):
                     data_dict["information"] = "Cataloging incomplete for %s" % str(r)
                     logging.warn(data_dict["information"])
                     message = json.dumps(data_dict)
-                    StateAction().send(destination='/queue/POSTPROCESS.INFO',
-                                       message=message, persistent='true')
+                    # Log this information
+                    transactions.add_status_entry(logging_headers, message)
                     if self._recovery:
-                        StateAction().send(destination='/queue/CATALOG.DATA_READY',
+                        self.send(destination='/queue/%s' % CATALOG_DATA_READY,
                                            message=message, persistent='true')
             
                 # Run hasn't been reduced
@@ -65,10 +74,10 @@ class WorkflowProcess(object):
                     data_dict["information"] = "Reduction incomplete for %s" % str(r)
                     logging.warn(data_dict["information"])
                     message = json.dumps(data_dict)
-                    StateAction().send(destination='/queue/POSTPROCESS.INFO',
-                                       message=message, persistent='true')
+                    # Log this information
+                    transactions.add_status_entry(logging_headers, message)
                     if self._recovery:
-                        StateAction().send(destination='/queue/REDUCTION.DATA_READY',
+                        self.send(destination='/queue/%s' % REDUCTION_DATA_READY,
                                            message=message, persistent='true')                    
                 
                 # Reduced data hasn't been cataloged
@@ -77,9 +86,9 @@ class WorkflowProcess(object):
                     data_dict["information"] = "Reduction cataloging incomplete for %s" % str(r)
                     logging.warn(data_dict["information"])
                     message = json.dumps(data_dict)
-                    StateAction().send(destination='/queue/POSTPROCESS.INFO',
-                                       message=message, persistent='true')
+                    # Log this information
+                    transactions.add_status_entry(logging_headers, message)
                     if self._recovery:
-                        StateAction().send(destination='/queue/REDUCTION_CATALOG.DATA_READY',
+                        self.send(destination='/queue/%s' % REDUCTION_CATALOG_DATA_READY,
                                            message=message, persistent='true')                    
         logging.info(" - verification completed")
