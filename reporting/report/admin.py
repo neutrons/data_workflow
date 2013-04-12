@@ -11,12 +11,14 @@ def reduction_needed(modeladmin, request, queryset):
 reduction_needed.short_description = "Mark selected runs needing reduction"
 
 class DataRunAdmin(admin.ModelAdmin):
+    list_filter = ('instrument_id', 'ipts_id')
     list_display = ('run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')
 
 class IPTSAdmin(admin.ModelAdmin):
     list_display = ('expt_name', 'created_on')
 
 class RunStatusAdmin(admin.ModelAdmin):
+    list_filter = ('run_id__instrument_id', 'queue_id')
     list_display = ('run_id', 'queue_id', 'message_id', 'created_on')
 
 class InformationAdmin(admin.ModelAdmin):
@@ -29,6 +31,9 @@ class StatusQueueAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'is_workflow_input')
     
 class WorkflowSummaryAdmin(admin.ModelAdmin):
+    list_filter = ('run_id__instrument_id', 'complete', 'catalog_started', 'cataloged',
+                    'reduction_needed', 'reduction_started', 'reduced', 
+                    'reduction_cataloged', 'reduction_catalog_started')
     list_display = ('run_id', 'complete', 'catalog_started', 'cataloged',
                     'reduction_needed', 'reduction_started', 'reduced', 
                     'reduction_cataloged', 'reduction_catalog_started')
@@ -36,6 +41,7 @@ class WorkflowSummaryAdmin(admin.ModelAdmin):
     actions = [reduction_not_needed, reduction_needed]
         
 class TaskAdmin(admin.ModelAdmin):
+    list_filter = ('instrument_id', 'input_queue_id')
     list_display = ('instrument_id', 'input_queue_id', 'task_class',
                     'task_queues', 'success_queues')
     search_fields = ['instrument_id__name']
