@@ -33,7 +33,6 @@ def get_latest(instrument_id, key_id):
         
     return last_value
 
-    
 def is_running(instrument_id):
     """
         Returns a string with the running status for a
@@ -59,8 +58,6 @@ def is_running(instrument_id):
     except:
         pass
     return "Unknown"
-
-    
     
 def get_run_status(**template_args):
     """
@@ -131,7 +128,14 @@ def get_live_variables(request, instrument_id):
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
                                                    key_id=key_id,
-                                                   timestamp__gte=two_hours).order_by(settings.DASMON_SQL_SORT).reverse()
+                                                   timestamp__gte=two_hours)
+            # If you don't have any values for the past 2 hours, just show
+            # the latest values up to 20
+            if len(values)==0:
+                values = StatusVariable.objects.filter(instrument_id=instrument_id,
+                                                       key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()
+                if len(values)>20:
+                    values = values[:20]
             for v in values:
                 delta_t = values[0].timestamp-v.timestamp
                 data_list.append([-delta_t.seconds/60.0, v.value])

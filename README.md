@@ -20,7 +20,7 @@ SNS data workflow manager and reporting app
 	
 	Use `test/test_consumer.py` to simulate the worker nodes.
 
-- Reporting: Reporting application for the workflow manager.
+- Web monitor: Reporting application for the workflow manager.
 	The reporting app is built using django. It connects to the reporting
 	database used by the workflow manager.
 
@@ -38,6 +38,10 @@ SNS data workflow manager and reporting app
 	make sure you have a sym link in /usr/lib pointing to /usr/local/mysql/lib
 	(http://stackoverflow.com/questions/6383310/python-mysqldb-library-not-loaded-libmysqlclient-18-dylib)
 	
+- DASMON listener: DB logging daemon.
+    The DASMON listener watches for DASMON message sent to ActiveMQ and logs them.
+	See the `dasmon_listener/README.md` file for more details.
+
 - PostgreSQL optimization:
 	If using PostgreSQL, you can install the stored procedure in `reporting/report/sql/stored_procs.sql`.
 	Those will speed up the run rate and error rate queries. No change needs to be made
