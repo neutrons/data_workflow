@@ -128,7 +128,7 @@ def get_live_variables(request, instrument_id):
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
                                                    key_id=key_id,
-                                                   timestamp__gte=two_hours)
+                                                   timestamp__gte=two_hours).order_by(settings.DASMON_SQL_SORT).reverse()
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values)==0:
