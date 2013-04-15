@@ -119,7 +119,8 @@ def get_live_variables(request, instrument_id):
         return []
     
     data_dict = []
-    two_hours = timezone.now()-datetime.timedelta(hours=2)
+    now = timezone.now()
+    two_hours = now-datetime.timedelta(hours=2)
     for key in live_keys:
         key = key.strip()
         if len(key)==0: continue
@@ -128,7 +129,7 @@ def get_live_variables(request, instrument_id):
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
                                                    key_id=key_id,
-                                                   timestamp__gte=two_hours).order_by(settings.DASMON_SQL_SORT).reverse()
+                                                   timestamp__gte=two_hours)
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values)==0:
@@ -137,7 +138,7 @@ def get_live_variables(request, instrument_id):
                 if len(values)>20:
                     values = values[:20]
             for v in values:
-                delta_t = values[0].timestamp-v.timestamp
+                delta_t = now-v.timestamp
                 data_list.append([-delta_t.seconds/60.0, v.value])
             data_dict.append([key,data_list])
         except:
