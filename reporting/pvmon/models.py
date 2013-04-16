@@ -23,3 +23,13 @@ class PV(models.Model):
     status = models.IntegerField()
     update_time = models.IntegerField()
     
+
+class PVCache(models.Model):
+    """
+        Table holding the latest values
+    """
+    instrument = models.ForeignKey(Instrument, null=True)
+    name = models.ForeignKey(PVName)
+    value = models.FloatField()
+    status = models.IntegerField()
+    update_time = models.IntegerField()

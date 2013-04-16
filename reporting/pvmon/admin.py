@@ -1,4 +1,4 @@
-from pvmon.models import PVName, PV
+from pvmon.models import PVName, PV, PVCache
 from django.contrib import admin
 import datetime
     
@@ -15,5 +15,6 @@ class PVNameAdmin(admin.ModelAdmin):
     
 admin.site.register(PVName, PVNameAdmin)
 admin.site.register(PV, PVAdmin)
+admin.site.register(PVCache, PVAdmin)
 
 
