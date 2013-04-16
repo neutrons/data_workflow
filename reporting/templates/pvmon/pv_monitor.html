@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %} PV Monitor {% endblock %}
+
+{% block banner %} PV Monitor {% endblock %}    
+
+{% block header %}
+
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+
+<script>
+    var last_run_id = '{{ last_run.id }}';
+    var run_data = {{ run_rate|safe }};
+    var error_data = {{ error_rate|safe }};
+    var plotted_vars = [];
+    var plotted_data = [];
+
+    function poll() {
+        query_str = "";
+        for (var i=0;i<plotted_vars.length; i++) {
+            if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
+        }
+        $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&vars="+query_str, success: function(data) {
+            for (var i=0; i<data.variables.length; i++)
+            { 
+                if (data.variables[i].key=='count_rate')
+                    $('#count_rate_top').replaceWith("<span id='count_rate_top'>"+data.variables[i].value+"</span>");
+                
+                $('#'+data.variables[i].key).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
+                $('#'+data.variables[i].key+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
+            }
+            
+            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
+            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
+            $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
+            
+            $('#dasmon_status').replaceWith("<li class='status_"+data.das_status.dasmon+"' id='dasmon_status'>DASMON</li>");
+            $('#workflow_status').replaceWith("<li class='status_"+data.das_status.workflow+"' id='workflow_status'>Workflow</li>");
+            $('#catalog_status').replaceWith("<li class='status_"+data.das_status.catalog+"' id='catalog_status'>Catalog</li>");
+            $('#reduction_status').replaceWith("<li class='status_"+data.das_status.reduction+"' id='reduction_status'>Reduction</li>");
+            
+            run_data = data.run_rate;
+            error_data = data.error_rate;
+            plotted_data = data.live_plot_data;
+            plot_combined_rates(run_data, error_data);
+            
+            for (var i=0; i<plotted_vars.length; i++) {
+                for (var j=0; j<plotted_data.length; j++) {
+                    if (plotted_data[j][0]==plotted_vars[i][0]) {
+                        plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_plot", plotted_vars[i][0]);
+                    }
+                }
+            }
+
+        }, dataType: "json", timeout: 30000 });
+    };
+    
+    function pop_monitor_plot(element_id)
+    {
+        if (!$("#"+element_id+"_dialog").length)
+        {
+            var plot_content = "<div id='"+element_id+"_dialog' title='"+element_id+"'>";
+            plot_content    += "  <div class='live_plots'>";
+            plot_content    += "    <div style='height:150px' id='"+element_id+"_plot'><span class='waiting'>Working... this will take a second or two.</span></div>";
+            plot_content    += "    <span style='float:right'>time elapsed [minutes]</span><br>";
+            plot_content    += "  </div>";
+            plot_content    += "</div>";
+            $('#dialog_placeholder').append(plot_content);
+            $( "#"+element_id+"_dialog" ).dialog({
+                width: 400,
+                height: 220,
+                resizable: false,
+                closeOnEscape: true,
+                close: function( event, ui ) 
+                { 
+                    $( "#"+element_id+"_dialog" ).remove(); 
+                    for (var i = 0; i < plotted_vars.length; i++) {
+                        if (plotted_vars[i][0]==element_id) plotted_vars[i][1]="0";
+                    };
+                }
+            });
+            plotted_vars.push([element_id, "1"]);
+        }
+    }
+</script> 
+{% endblock %}
+
+{% block summary %}
+
+<div class="summary_plots">
+    <div id="runs_per_hour"></div>
+</div>
+
+<p class='dashboard_highlight'>
+<span class='dashboard_highlight' id="run_title">{{ run_title }}</span><br>
+<span class='dashboard_normal'>Proposal:</span> <span class='dashboard_highlight' id="{{ proposal_id }}">{{ proposal_id }}</span>
+<span class='dashboard_normal'>Run:</span> <span class='dashboard_highlight' id="run_number">{{ run_number }}</span><br>
+<span class='dashboard_normal'>Status:</span> <span class='dashboard_highlight' id="recording_status">{{ recording_status }}</span>
+<span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate_top">{{ count_rate }}</span>
+</p>
+
+<div class='status_bar'>
+<div class='status_box'>
+<ul>
+<li class='status_text'>Systems:</li>
+<li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
+<li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
+<li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
+<li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
+</ul>
+</div>
+</div>
+
+<p>
+{% if last_run %}
+Last translated run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
+from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
+created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
+{% elif last_expt %}
+Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% endif %}
+</p>
+
+{% endblock %}
+
+{% block right_side_links %}
+<span style="float:right">monitoring: 
+{% if live_runs_url %}
+<b>live parameters</b> | <a href="{{ live_runs_url }}">live runs</a>
+{% elif live_monitor_url %}
+<a href="{{ live_monitor_url }}">live parameters</a> | <b>live runs</b>
+{% endif %}
+</span>
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 5000);
+</script>
+{% endblock %}
+
+{% block content %}
+      <table cellspacing="0" class="message_table" id="error_table">
+      <thead>
+      <tr>
+          <th> Key </th> <th> Value </th> <th> Last Updated </th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for item in key_value_pairs %}
+          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}');"> {{ item.key }} </a></td>
+          <td><span id="{{ item.key }}">{{ item.value }}</span></td>
+          <td><span id="{{ item.key }}_timestamp">{{ item.timestamp }}</span></td>
+          </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+      <br>
+
+<div id="dialog_placeholder"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+    plot_combined_rates(run_data, error_data);
+</script>
+{% endblock%}
