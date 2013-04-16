@@ -172,16 +172,25 @@ def get_completeness_status(instrument_id):
         Check that the latest runs have successfully completed post-processing
         @param instrument_id: Instrument object
     """
+    STATUS_OK = (0, "OK")
+    STATUS_WARNING = (1, "Warning")
+    STATUS_ERROR = (2, "Error")
+    STATUS_UNKNOWN = (None, "Unknown")
+
     try:
         # Check for completeness of the three runs before the last run.
         # We don't use the last one because we may still be working on it.
-        postprocess_data_id = StatusQueue.objects.get(name='POSTPROCESS.DATA_READY')
-        latest_runs = RunStatus.objects.filter(queue_id=postprocess_data_id).order_by('created_on').reverse()
+        latest_runs = DataRun.objects.filter(instrument_id=instrument_id)
+
+        # We need at least 4 runs for a meaningful status        
+        if len(latest_runs)<4:    
+            return STATUS_UNKNOWN
         
-        s0 = WorkflowSummary.objects.get(run_id=latest_runs[0].run_id)
-        s1 = WorkflowSummary.objects.get(run_id=latest_runs[1].run_id)
-        s2 = WorkflowSummary.objects.get(run_id=latest_runs[2].run_id)
-        s3 = WorkflowSummary.objects.get(run_id=latest_runs[3].run_id)
+        latest_runs = latest_runs.order_by("created_on").reverse()
+        s0 = WorkflowSummary.objects.get(run_id=latest_runs[0])
+        s1 = WorkflowSummary.objects.get(run_id=latest_runs[1])
+        s2 = WorkflowSummary.objects.get(run_id=latest_runs[2])
+        s3 = WorkflowSummary.objects.get(run_id=latest_runs[3])
         # If the latest is complete, use it to determine the status        
         if s0.complete:
             status0 = s0.complete
@@ -195,16 +204,16 @@ def get_completeness_status(instrument_id):
         
         # Determine status
         if status0 is False:
-            return 2, "ERROR"
+            return STATUS_ERROR
         else:
             if status1 is False or status2 is False:
-                return 1, "warning"
+                return STATUS_WARNING
             else:
-                return 0, "ok"
+                return STATUS_OK
     except:
         logging.error("Output data completeness status")
         logging.error(sys.exc_value)
-        return None, "unknown"
+        return STATUS_UNKNOWN
 
 def get_live_runs_update(request, instrument_id):
     """

@@ -94,7 +94,10 @@ def live_runs(request, instrument):
     update_url = reverse('dasmon.views.get_update',args=[instrument])
 
     # Get the latest runs
-    runs = DataRun.objects.filter(instrument_id=instrument_id).order_by("id").reverse()[:20]
+    runs = DataRun.objects.filter(instrument_id=instrument_id)
+    if len(runs)>0:
+        nmax = min(20, len(runs))
+        runs = runs.order_by("id").reverse()[:nmax]
     run_list = []
     for r in runs:
         status = 'unknown'

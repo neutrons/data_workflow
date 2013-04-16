@@ -19,7 +19,7 @@
                 $('#'+data.instruments[i].name+'_catalog_status').replaceWith("<li class='status_"+data.postprocess_status.catalog+"' id='"+data.instruments[i].name+"_catalog_status'>Catalog</li>");
                 $('#'+data.instruments[i].name+'_reduction_status').replaceWith("<li class='status_"+data.postprocess_status.reduction+"' id='"+data.instruments[i].name+"_reduction_status'>Reduction</li>");
 
-                content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>Data reduced</td>";
+                content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
                 $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
             }
 
@@ -57,7 +57,7 @@ List of instruments:<br>
         </td>
         <td> 
             <ul>
-                <li class='status_{{ item.completeness }}' id='{{ item.name }}_completeness'>Data reduced</li>
+                <li class='status_{{ item.completeness }}' id='{{ item.name }}_completeness'>{{ item.completeness_msg }}</li>
             </ul>
         </td>
 	   	</tr>
