@@ -64,6 +64,11 @@
 </script>   
 {% endblock %}
 
+{% block right_side_links %}
+    <span style="float:right">monitoring: 
+    <a href="{{ live_monitor_url }}">live parameters</a> | <b>live runs</b></span>
+{% endblock %}
+
 {% block content %}
       <table cellspacing="0" class="message_table" id="run_table">
       <thead>

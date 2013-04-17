@@ -70,6 +70,12 @@ def detail(request, instrument, run_id):
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        }
+
+    live_monitor_url = reverse('dasmon.views.live_monitor',args=[instrument])
+    template_values['live_monitor_url'] = live_monitor_url
+    live_runs_url = reverse('dasmon.views.live_runs',args=[instrument])
+    template_values['live_runs_url'] = live_runs_url
+    
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/detail.html', template_values)
 

@@ -61,7 +61,7 @@ def get_run_info(instrument, ipts, run_number):
     # Get file location
     try:
         conn = httplib.HTTPConnection('icat.sns.gov', 
-                                      8080, timeout=0.5)
+                                      8080, timeout=1.0)
         url = '/icat-rest-ws/datafile/SNS/%s/%s' % (instrument.upper(), run_number)
         conn.request('GET', url)
         r = conn.getresponse()

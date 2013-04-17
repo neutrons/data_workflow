@@ -47,8 +47,10 @@ def fill_template_values(request, **template_args):
     template_args['run_rate'] = str(r_rate)
     template_args['error_rate'] = str(e_rate)
                                                   
-    dasmon_url = reverse('dasmon.views.live_monitor',args=[instr])
-    template_args['dasmon_url'] = dasmon_url
+    live_monitor_url = reverse('dasmon.views.live_monitor',args=[instr])
+    template_args['live_monitor_url'] = live_monitor_url
+    live_runs_url = reverse('dasmon.views.live_runs',args=[instr])
+    template_args['live_runs_url'] = live_runs_url
 
     return template_args
 

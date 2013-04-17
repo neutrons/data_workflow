@@ -126,13 +126,8 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% endblock %}
 
 {% block right_side_links %}
-<span style="float:right">monitoring: 
-{% if live_runs_url %}
-<b>live parameters</b> | <a href="{{ live_runs_url }}">live runs</a>
-{% elif live_monitor_url %}
-<a href="{{ live_monitor_url }}">live parameters</a> | <b>live runs</b>
-{% endif %}
-</span>
+    <span style="float:right">monitoring: 
+    <b>live parameters</b> | <a href="{{ live_runs_url }}">live runs</a></span>
 {% endblock %}
 
 {% block bodytop %}

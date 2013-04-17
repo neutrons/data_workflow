@@ -76,7 +76,11 @@
         <a href="/">home</a>
     {% endif %}
     {% block right_side_links %}
-    {% if dasmon_url %}
+    {% if live_monitor_url and live_runs_url %}
+        <span style="float:right">monitoring: 
+        <a href="{{ live_monitor_url }}">live parameters</a> | <a href="{{ live_runs_url }}">live runs</a>
+        </span>
+    {% elif dasmon_url %}
         <span style="float:right"><a href="{{ dasmon_url|safe }}">DAS monitor</a></span>
     {% endif %}
     {% endblock %}
