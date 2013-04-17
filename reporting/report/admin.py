@@ -15,20 +15,30 @@ class DataRunAdmin(admin.ModelAdmin):
     list_display = ('run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')
 
 class IPTSAdmin(admin.ModelAdmin):
-    list_display = ('expt_name', 'created_on')
+    list_display = ('expt_name', 'created_on', 'show_instruments')
+    search_fields = ['instruments__name']
+    
+    def show_instruments(self, ipts):
+        instruments = [str(i) for i in ipts.instruments.all()]
+        return ', '.join(instruments)
+    show_instruments.short_description = "Instruments"
 
 class RunStatusAdmin(admin.ModelAdmin):
     list_filter = ('run_id__instrument_id', 'queue_id')
-    list_display = ('run_id', 'queue_id', 'message_id', 'created_on')
+    list_display = ('id', 'run_id', 'queue_id', 'created_on')
+    search_fields = ['run_id__run_number']
 
 class InformationAdmin(admin.ModelAdmin):
-    list_display = ('run_status_id', 'description')
-
+    list_display = ('id', 'run_status_id', 'description')
+    search_fields = ['description']
+    
 class ErrorAdmin(admin.ModelAdmin):
-    list_display = ('run_status_id', 'description')
+    list_display = ('id', 'run_status_id', 'description')
+    search_fields = ['description']
     
 class StatusQueueAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'is_workflow_input')
+    list_filter = ('is_workflow_input',)
     
 class WorkflowSummaryAdmin(admin.ModelAdmin):
     list_filter = ('run_id__instrument_id', 'complete', 'catalog_started', 'cataloged',
@@ -42,9 +52,9 @@ class WorkflowSummaryAdmin(admin.ModelAdmin):
         
 class TaskAdmin(admin.ModelAdmin):
     list_filter = ('instrument_id', 'input_queue_id')
-    list_display = ('instrument_id', 'input_queue_id', 'task_class',
+    list_display = ('id', 'instrument_id', 'input_queue_id', 'task_class',
                     'task_queues', 'success_queues')
-    search_fields = ['instrument_id__name']
+    search_fields = ['instrument_id__name', 'input_queue_id__name']
     
 admin.site.register(DataRun, DataRunAdmin)
 admin.site.register(StatusQueue, StatusQueueAdmin)
