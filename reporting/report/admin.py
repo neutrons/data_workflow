@@ -12,7 +12,7 @@ reduction_needed.short_description = "Mark selected runs needing reduction"
 
 class DataRunAdmin(admin.ModelAdmin):
     list_filter = ('instrument_id', 'ipts_id')
-    list_display = ('run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')
+    list_display = ('id', 'run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')
 
 class IPTSAdmin(admin.ModelAdmin):
     list_display = ('expt_name', 'created_on', 'show_instruments')

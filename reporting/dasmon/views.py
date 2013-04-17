@@ -123,7 +123,7 @@ def live_runs(request, instrument):
                        'update_url':update_url,
                        'run_list':run_list,
                        'run_list_header':run_list_header,
-                       'first_run_id':runs[0].id
+                       'first_run_id':runs[len(runs)-1].id
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
