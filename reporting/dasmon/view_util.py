@@ -120,7 +120,7 @@ def get_live_variables(request, instrument_id):
     
     data_dict = []
     now = timezone.now()
-    two_hours = now-datetime.timedelta(hours=2)
+    two_hours = now-datetime.timedelta(seconds=settings.DASMON_PLOT_TIME_RANGE)
     for key in live_keys:
         key = key.strip()
         if len(key)==0: continue
@@ -135,11 +135,13 @@ def get_live_variables(request, instrument_id):
             if len(values)==0:
                 values = StatusVariable.objects.filter(instrument_id=instrument_id,
                                                        key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()
-                if len(values)>20:
-                    values = values[:20]
+                if len(values)>settings.DASMON_NUMBER_OF_OLD_PTS:
+                    values = values[:settings.DASMON_NUMBER_OF_OLD_PTS]
+                    for i in values:
+                        logging.error("%s %s" % (i.timestamp, i.value))
             for v in values:
                 delta_t = now-v.timestamp
-                data_list.append([-delta_t.seconds/60.0, v.value])
+                data_list.append([-delta_t.total_seconds()/60.0, v.value])
             data_dict.append([key,data_list])
         except:
             # Could not find data for this key

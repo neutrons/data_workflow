@@ -22,7 +22,7 @@ def get_live_variables(request, instrument_id):
     
     data_dict = []
     now = time.time()
-    two_hours = now-2*60*60
+    two_hours = now-settings.PVMON_PLOT_TIME_RANGE
     for key in live_keys:
         key = key.strip()
         if len(key)==0: continue
@@ -37,8 +37,8 @@ def get_live_variables(request, instrument_id):
             if len(values)<2:
                 values = PV.objects.filter(instrument_id=instrument_id,
                                            name=key_id).order_by('update_time').reverse()
-                if len(values)>20:
-                    values = values[:20]
+                if len(values)>settings.PVMON_NUMBER_OF_OLD_PTS:
+                    values = values[:settings.PVMON_NUMBER_OF_OLD_PTS]
             for v in values:
                 delta_t = now-v.update_time
                 data_list.append([-delta_t/60.0, v.value])

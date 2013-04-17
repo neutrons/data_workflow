@@ -199,6 +199,16 @@ CACHES = {
 DASMON_SQL_SORT = 'id'
 #DASMON_SQL_SORT = 'timestamp'
 
+# REPORTING SETTINGS
+## Amount of time displayed when plotting a live PV [seconds]
+PVMON_PLOT_TIME_RANGE = 2*60*60
+## Max number of old PV points to show when there were no points in defined time range
+PVMON_NUMBER_OF_OLD_PTS = 20
+## Amount of time displayed when plotting a live PV
+DASMON_PLOT_TIME_RANGE = 2*60*60
+## Max number of old PV points to show when there were no points in defined time range
+DASMON_NUMBER_OF_OLD_PTS = 20
+
 # Import local settings if available
 try:
     from local_settings import *
