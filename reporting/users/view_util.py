@@ -7,6 +7,8 @@ import socket
 import logging
 from reporting_app import settings
 
+from users.models import PageView
+
 def fill_template_values(request, **template_args):
     """
         Fill the template argument items needed to populate
@@ -63,3 +65,21 @@ def login_or_local_required(fn):
         return redirect(redirect_url)   
     return request_processor
 
+def monitor(fn):
+    """
+        Function decorator to monitor page usage
+    """
+    def request_processor(request, *args, **kws):
+        if settings.MONITOR_ON:
+            user = None
+            if request.user.is_authenticated():
+                user = request.user
+                
+            visit = PageView(user=user,
+                             view="%s.%s" % (fn.__module__, fn.__name__),
+                             ip=request.META['REMOTE_ADDR'],
+                             path=request.path_info)
+            visit.save()
+        return fn(request, *args, **kws)
+    
+    return request_processor

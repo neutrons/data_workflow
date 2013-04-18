@@ -8,7 +8,6 @@ from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 
-from report.views import confirm_instrument
 from report.models import Instrument
 from pvmon.models import PV, PVName, PVCache
 
@@ -20,6 +19,7 @@ import datetime
 
 @users.view_util.login_or_local_required
 @cache_page(5)
+@users.view_util.monitor
 def pv_monitor(request, instrument):
     """
         Display the list of latest PV values

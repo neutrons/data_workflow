@@ -10,17 +10,6 @@ from icat_server_communication import get_run_info, get_ipts_info
 import view_util
 import users.view_util
 
-def confirm_instrument(view):
-    """
-        Decorator to verify that the instrument parameter is valid
-    """
-    def validated_view(request, instrument, *args, **kws):
-        # Verify that the requested data exists 
-        get_object_or_404(Instrument, name=instrument.lower())
-        return view(request, instrument, *args, **kws)
-        
-    return validated_view   
-
 @users.view_util.login_or_local_required
 def summary(request):
     """
@@ -40,7 +29,7 @@ def summary(request):
                               template_values)
 
 @users.view_util.login_or_local_required
-@confirm_instrument
+@users.view_util.monitor
 def detail(request, instrument, run_id):
     """
         Run details
@@ -80,6 +69,7 @@ def detail(request, instrument, run_id):
     return render_to_response('report/detail.html', template_values)
 
 @users.view_util.login_or_local_required
+@users.view_util.monitor
 def instrument_summary(request, instrument):
     """
         Instrument summary page
@@ -118,7 +108,7 @@ def instrument_summary(request, instrument):
     return render_to_response('report/instrument.html', template_values)
 
 @users.view_util.login_or_local_required
-@confirm_instrument
+@users.view_util.monitor
 def ipts_summary(request, instrument, ipts):
     """
         Experiment summary giving the list of runs
@@ -177,7 +167,7 @@ def ipts_summary(request, instrument, ipts):
     return render_to_response('report/ipts_summary.html', template_values)
     
 @users.view_util.login_or_local_required
-@confirm_instrument
+@users.view_util.monitor
 def live_errors(request, instrument):
     """
         Display the list of latest errors
@@ -232,7 +222,6 @@ def live_errors(request, instrument):
     return render_to_response('report/live_errors.html', template_values)
     
 @users.view_util.login_or_local_required
-@confirm_instrument
 def get_experiment_update(request, instrument, ipts):
     """
          Ajax call to get updates behind the scenes
@@ -281,7 +270,6 @@ def get_experiment_update(request, instrument, ipts):
 
 
 @users.view_util.login_or_local_required
-@confirm_instrument
 def get_instrument_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -322,7 +310,6 @@ def get_instrument_update(request, instrument):
 
   
 @users.view_util.login_or_local_required
-@confirm_instrument
 def get_error_update(request, instrument):
     """
          Ajax call to get updates behind the scenes

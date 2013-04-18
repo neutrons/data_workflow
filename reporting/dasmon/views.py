@@ -8,7 +8,6 @@ from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 
-from report.views import confirm_instrument
 from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache
 
@@ -20,6 +19,7 @@ import sys
 
 @users.view_util.login_or_local_required
 @cache_page(5)
+@users.view_util.monitor
 def summary(request):
     """
         List of available instruments
@@ -54,17 +54,18 @@ def summary(request):
 
 
 @users.view_util.login_or_local_required
-@confirm_instrument
 @cache_page(5)
+@users.view_util.monitor
 def live_monitor(request, instrument):
     """
         Display the list of latest errors
         @param instrument: instrument name
     """
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
     # Update URL
     update_url = reverse('dasmon.views.get_update',args=[instrument])
     
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     key_value_pairs = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
 
     template_values = {'instrument':instrument.upper(),
@@ -80,8 +81,8 @@ def live_monitor(request, instrument):
     return render_to_response('dasmon/live_monitor.html', template_values)
     
 @users.view_util.login_or_local_required
-@confirm_instrument
 @cache_page(5)
+@users.view_util.monitor
 def live_runs(request, instrument):
     """
         Display the list of latest errors
@@ -135,6 +136,7 @@ def live_runs(request, instrument):
     
     
 @users.view_util.login_or_local_required
+@users.view_util.monitor
 def help(request):
     
     global_status_url = reverse('dasmon.views.summary',args=[])
@@ -154,7 +156,6 @@ def help(request):
 
     
 @users.view_util.login_or_local_required
-@confirm_instrument
 @cache_page(5)
 def get_update(request, instrument):
     """

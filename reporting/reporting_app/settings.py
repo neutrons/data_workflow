@@ -209,6 +209,9 @@ DASMON_PLOT_TIME_RANGE = 2*60*60
 ## Max number of old PV points to show when there were no points in defined time range
 DASMON_NUMBER_OF_OLD_PTS = 20
 
+# MONITORING OPTION
+MONITOR_ON = True
+
 # Import local settings if available
 try:
     from local_settings import *
