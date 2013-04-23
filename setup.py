@@ -1,5 +1,6 @@
-from distutils.core import setup
+from setuptools import setup
 import workflow
+import subprocess
 
 SETUP_ARGS = dict(
     name="workflow",
@@ -12,10 +13,13 @@ SETUP_ARGS = dict(
     long_description=open('README.md').read(),
     platforms=['POSIX'],
     options={'clean': {'all': 1}},
+    zip_safe = False,
+    entry_points = {'console_scripts':["workflowmgr = workflow.sns_post_processing:run",]},
     packages=["workflow", "workflow.database", "workflow.database.report"],
         classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
         'Operating System :: POSIX',
         'Operating System :: MacOS :: MacOS X',
@@ -29,4 +33,17 @@ SETUP_ARGS = dict(
 )
 
 if __name__ == '__main__':
+    # Get the git commit information so we can store the exact version
+    try:
+        git_version = subprocess.check_output(["git", "describe", "--abbrev=100"])
+    except:
+        # Could not get git commit information, just install using 
+        # the main version number
+        git_version = workflow.__version__
+        
+    fd = open("workflow/git_version.py", 'w')
+    fd.write("# Git revision information\n")
+    fd.write("__git_version__ = \"%s\"\n" % git_version)
+    fd.close()
+
     setup(**SETUP_ARGS)
