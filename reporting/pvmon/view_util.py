@@ -31,7 +31,7 @@ def get_live_variables(request, instrument_id):
             key_id = PVName.objects.get(name=key)
             values = PV.objects.filter(instrument_id=instrument_id,
                                        name=key_id,
-                                       update_time__gte=two_hours)
+                                       update_time__gte=two_hours).order_by('update_time').reverse()
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values)<2:
