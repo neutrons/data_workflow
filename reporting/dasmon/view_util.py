@@ -9,6 +9,36 @@ import logging
 import sys
 import report.view_util
 
+
+def get_cached_variables(instrument_id, monitored_only=False):
+    """
+        Get cached parameter values for a given instrument
+        @param instrument_id: Instrument object
+        @param monitored_only: if True, only monitored parameters are returned
+    """
+    parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
+    
+    key_value_pairs = []
+    for kvp in parameter_values:
+        if kvp.key_id.monitored or monitored_only is False:
+            localtime = timezone.localtime(kvp.timestamp)
+            df = dateformat.DateFormat(localtime)
+            
+            # Check whether we have a number
+            try:
+                float_value = float(kvp.value)
+                string_value = '%g' % float_value
+            except:
+                string_value = kvp.value
+            
+            variable_dict = {"key": str(kvp.key_id),
+                             "value": string_value,
+                             "timestamp": df.format(settings.DATETIME_FORMAT),
+                             }
+            key_value_pairs.append(variable_dict)    
+
+    return key_value_pairs
+
 def get_latest(instrument_id, key_id):
     """
         Returns the latest entry for a given key on a given instrument

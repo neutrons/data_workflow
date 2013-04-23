@@ -65,12 +65,10 @@ def live_monitor(request, instrument):
 
     # Update URL
     update_url = reverse('dasmon.views.get_update',args=[instrument])
-    
-    key_value_pairs = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
 
-    template_values = {'instrument':instrument.upper(),
-                       'update_url':update_url,
-                       'key_value_pairs':key_value_pairs,
+    template_values = {'instrument': instrument.upper(),
+                       'update_url': update_url,
+                       'key_value_pairs': view_util.get_cached_variables(instrument_id, monitored_only=True),
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
@@ -167,28 +165,9 @@ def get_update(request, instrument):
     key_value_pairs = StatusCache.objects.filter(instrument_id=instrument_id)
     
     # Get last experiment and last run
-    data_dict = report.view_util.get_current_status(instrument_id)  
-    data_dict['variables'] = []
-    if len(key_value_pairs)>0:
-        variable_list = []
-        for kvp in key_value_pairs:
-            localtime = timezone.localtime(kvp.timestamp)
-            df = dateformat.DateFormat(localtime)
-            
-            # Check whether we have a number
-            try:
-                float_value = float(kvp.value)
-                string_value = '%g' % float_value
-            except:
-                string_value = kvp.value
-            
-            variable_dict = {"key": str(kvp.key_id),
-                             "value": string_value,
-                             "timestamp": df.format(settings.DATETIME_FORMAT),
-                             }
-            variable_list.append(variable_dict)    
-        data_dict['variables'] = variable_list
-    
+    data_dict = report.view_util.get_current_status(instrument_id)      
+    data_dict['variables'] = view_util.get_cached_variables(instrument_id, monitored_only=False)
+
     localtime = timezone.now()
     df = dateformat.DateFormat(localtime)
     recording_status = {"key": "recording_status",

@@ -21,7 +21,7 @@ from settings import PURGE_TIMEOUT
 sys.path.append(INSTALLATION_DIR)
 
 from dasmon.models import StatusVariable, Parameter, StatusCache
-from pvmon.models import PV
+from pvmon.models import PV, PVCache
 from report.models import Instrument
 
 class Listener(stomp.ConnectionListener):
@@ -203,9 +203,11 @@ class Client(object):
             delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
             cutoff = timezone.now()-delta_time
             StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
+            StatusCache.objects.filter(timestamp__lte=cutoff).delete()
             
             # Remove old PVMON entries
             PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
+            PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
             
             time.sleep(waiting_period)
             
