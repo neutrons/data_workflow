@@ -8,6 +8,7 @@ import sys
 
 from database.transactions import get_message_queues
 from workflow_process import WorkflowProcess
+from . import __version__ as version        
         
 class Client(object):
     """
@@ -55,6 +56,7 @@ class Client(object):
         self._listener = None
         
         startup_msg = "Starting Workflow Manager client %s\n" % self._consumer_name
+        startup_msg += "  Version: %s\n" % version
         startup_msg += "  User: %s\n" % self._user
         startup_msg += "  DB task definition allowed? %s\n" % str(self._flexible_tasks)
         startup_msg += "  Workflow check enabled? %s\n" % str(self._workflow_check)
