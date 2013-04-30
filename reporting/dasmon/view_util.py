@@ -167,8 +167,6 @@ def get_live_variables(request, instrument_id):
                                                        key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()
                 if len(values)>settings.DASMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.DASMON_NUMBER_OF_OLD_PTS]
-                    for i in values:
-                        logging.error("%s %s" % (i.timestamp, i.value))
             for v in values:
                 delta_t = now-v.timestamp
                 data_list.append([-delta_t.total_seconds()/60.0, v.value])
@@ -259,13 +257,11 @@ def get_live_runs_update(request, instrument_id):
     
     # Get the last run ID that the client knows about
     since = request.GET.get('since', '0')
-    refresh_needed = '1'
     try:
         since = int(since)
         since_run_id = get_object_or_404(DataRun, id=since)
     except:
         since = 0
-        refresh_needed = '0'
         since_run_id = None
         
     # Get the earliest run that the client knows about
@@ -274,7 +270,8 @@ def get_live_runs_update(request, instrument_id):
         complete_since = int(complete_since)
     except:
         complete_since = 0
-        
+
+    # Protection against obviously invalid input        
     if complete_since == 0:
         return {}
         
@@ -282,10 +279,9 @@ def get_live_runs_update(request, instrument_id):
     run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
 
     status_list = []
+    update_list = []
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
-        refresh_needed = '1' if since_run_id.created_on<run_list[0].created_on else '0'         
-        update_list = []
         for r in run_list:
             status = 'unknown'
             try:
@@ -312,9 +308,8 @@ def get_live_runs_update(request, instrument_id):
                             "run_id":str(r.id),
                             }
                 update_list.append(expt_dict)
-        data_dict['run_list'] = update_list
-
-    data_dict['refresh_needed'] = refresh_needed
+    data_dict['run_list'] = update_list
+    data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'
     data_dict['status_list'] = status_list
     return data_dict
 

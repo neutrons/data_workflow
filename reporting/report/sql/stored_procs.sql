@@ -19,7 +19,7 @@ BEGIN
       INNER JOIN report_datarun
       ON report_runstatus.run_id_id=report_datarun.id
       WHERE
-        (report_datarun.instrument_id_id = 2 AND 
+        (report_datarun.instrument_id_id = instrument_id AND 
         report_runstatus.created_on >= LOCALTIMESTAMP-INTERVAL '1 DAY')
     ) m ON t.id = m.id
     GROUP BY timestamp;
