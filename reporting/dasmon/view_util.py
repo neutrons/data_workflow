@@ -51,8 +51,12 @@ def get_latest(instrument_id, key_id):
                                                 key_id=key_id).latest('timestamp')
     except:
         # If that didn't work, get it from the table of values
-        last_value = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                   key_id=key_id).latest('timestamp')
+        values = StatusVariable.objects.filter(instrument_id=instrument_id,
+                                                   key_id=key_id)
+        # If we don't have any entry yet, just return Non
+        if len(values)==0:
+            return None
+        last_value = values.latest('timestamp')
         
         # Put the latest value in the cache so we don't have to go through this again
         cached = StatusCache(instrument_id=last_value.instrument_id,
@@ -70,13 +74,22 @@ def is_running(instrument_id):
         @param instrument_id: Instrument object
     """
     try:
+        is_recording = False
         key_id = Parameter.objects.get(name="recording")
         last_value = get_latest(instrument_id, key_id)
-        is_recording = last_value.value.lower()=="true"
+        if last_value is not None:
+            is_recording = last_value.value.lower()=="true"
 
-        key_id = Parameter.objects.get(name="paused")
-        last_value = get_latest(instrument_id, key_id)
-        is_paused = last_value.value.lower()=="true"
+        is_paused = False
+        try:
+            key_id = Parameter.objects.get(name="paused")
+            last_value = get_latest(instrument_id, key_id)
+            if last_value is not None:
+                is_paused = last_value.value.lower()=="true"
+        except Parameter.DoesNotExist:
+            # If we have no pause parameter, it's because the
+            # system hasn't paused yet. Treat this as a false.
+            pass
             
         if is_recording:
             if is_paused:
@@ -86,7 +99,7 @@ def is_running(instrument_id):
         else:
             return "Stopped"
     except:
-        pass
+        logging.error("Could not determine running condition: %s" % sys.exc_value)
     return "Unknown"
     
 def get_run_status(**template_args):
