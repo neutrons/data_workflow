@@ -124,7 +124,6 @@ class Client(object):
         self._user = user
         self._passcode = passcode
         self._connection = None
-        self._connected = False        
         self._queues = queues
         self._consumer_name = consumer_name
         self._listener = None
@@ -170,7 +169,6 @@ class Client(object):
                                                  str(self._queues)))
         for q in self._queues:
             self._connection.subscribe(destination=q, ack='auto', persistent='true')
-        self._connected = True
     
     def _disconnect(self):
         """
@@ -188,7 +186,6 @@ class Client(object):
         if self._connection is not None:
             self._connection.stop()
         self._connection = None
-        self._connected = False
         
     def listen_and_wait(self, waiting_period=1.0):
         """
@@ -197,19 +194,24 @@ class Client(object):
             terminated.
             @param waiting_period: sleep time between connection to a broker
         """
-        self.connect()
-        while(self._connected):
-            # Remove old entries
-            delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
-            cutoff = timezone.now()-delta_time
-            StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
-            StatusCache.objects.filter(timestamp__lte=cutoff).delete()
-            
-            # Remove old PVMON entries
-            PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-            PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-            
-            time.sleep(waiting_period)
+        while(True):
+            try:
+                if self._connection is None or self._connection.is_connected() is False:
+                    self.connect()
+                # Remove old entries
+                delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
+                cutoff = timezone.now()-delta_time
+                StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
+                StatusCache.objects.filter(timestamp__lte=cutoff).delete()
+                
+                # Remove old PVMON entries
+                PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
+                PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
+                
+                time.sleep(waiting_period)
+            except:
+                logging.error("Problem connecting to AMQ broker")
+                time.sleep(5.0)
             
     def send(self, destination, message, persistent='true'):
         """

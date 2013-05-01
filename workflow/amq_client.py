@@ -39,7 +39,6 @@ class Client(object):
         self._user = user
         self._passcode = passcode
         self._connection = None
-        self._connected = False        
         self._consumer_name = consumer_name
         self._queues = queues
         if self._queues is None:
@@ -105,7 +104,6 @@ class Client(object):
                                                  str(self._queues)))
         for q in self._queues:
             self._connection.subscribe(destination=q, ack='auto', persistent='true')
-        self._connected = True
     
     def _disconnect(self):
         """
@@ -135,12 +133,24 @@ class Client(object):
             terminated.
             @param waiting_period: sleep time between connection to a broker
         """
-        self.connect()
-        self.verify_workflow()
-        while(self._connected):
-            time.sleep(waiting_period)
+        try:
+            self.connect()
+            self.verify_workflow()
+        except:
+            logging.error("Problem starting AMQ client: %s" % sys.exc_value)
             
-            # Check for workflow completion
-            if time.time()-self._workflow_check_start>self._workflow_check_delay:
-                self.verify_workflow()
-                self._workflow_check_start = time.time()
+        while(True):
+            try:
+                if self._connection is None or self._connection.is_connected() is False:
+                    self.connect()
+                    
+                time.sleep(waiting_period)
+                
+                # Check for workflow completion
+                if time.time()-self._workflow_check_start>self._workflow_check_delay:
+                    self.verify_workflow()
+                    self._workflow_check_start = time.time()
+            except:
+                logging.error("Problem connecting to AMQ broker")
+                time.sleep(5.0)
+                
