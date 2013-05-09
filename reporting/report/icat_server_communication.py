@@ -48,7 +48,7 @@ def get_ipts_info(instrument, ipts):
                             tz_str = timestr[tz_location:]
                             run_info['createTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
                     except:
-                        logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
+                        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
                     
     except:
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
