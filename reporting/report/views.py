@@ -88,7 +88,10 @@ def instrument_summary(request, instrument):
     update_url = reverse('report.views.get_instrument_update',args=[instrument])
     
     # Get the last IPTS created so that we can properly do the live update
-    last_expt_created = IPTS.objects.filter(instruments=instrument_id).latest('id')
+    if IPTS.objects.filter(instruments=instrument_id).count()>0:
+        last_expt_created = IPTS.objects.filter(instruments=instrument_id).latest('id')
+    else:
+        last_expt_created = None
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),

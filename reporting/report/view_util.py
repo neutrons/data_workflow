@@ -362,19 +362,22 @@ def get_current_status(instrument_id):
 
     r_rate = run_rate(instrument_id)
     e_rate = error_rate(instrument_id)
-    
-    localtime = timezone.localtime(last_run_id.created_on)
-    df = dateformat.DateFormat(localtime)
-    
     data_dict = {
-                 'last_expt_id':last_expt_id.id,
-                 'last_expt':last_expt_id.expt_name.upper(),
-                 'last_run_id':last_run_id.id,
-                 'last_run':last_run_id.run_number,
-                 'last_run_time':df.format(settings.DATETIME_FORMAT),
                  'run_rate':r_rate,
                  'error_rate':e_rate,
                  }
+    
+    if last_run_id is not None:
+        localtime = timezone.localtime(last_run_id.created_on)
+        df = dateformat.DateFormat(localtime)
+        data_dict['last_run_id']=last_run_id.id
+        data_dict['last_run']=last_run_id.run_number
+        data_dict['last_run_time']=df.format(settings.DATETIME_FORMAT)
+    
+    if last_expt_id is not None:
+        data_dict['last_expt_id']=last_expt_id.id
+        data_dict['last_expt']=last_expt_id.expt_name.upper()
+
     return data_dict
 
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):

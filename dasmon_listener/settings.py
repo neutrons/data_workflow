@@ -25,11 +25,14 @@ from workflow.database.settings import icat_passcode as amq_pwd
 queues = ["/topic/ADARA.APP.DASMON.0",
           "/topic/ADARA.STATUS.DASMON.0",
           "/topic/ADARA.SIGNAL.DASMON.0"]
-instrument_shortname = 'hysa'
 
 INSTALLATION_DIR = "/var/www/workflow/app"
 
 PURGE_TIMEOUT = 7
+
+LEGACY_PREFIX = "ADARA"
+LEGACY_INSTRUMENT = "hysa"
+TOPIC_PREFIX = "SNS"
 
 # Import local settings if available
 try:

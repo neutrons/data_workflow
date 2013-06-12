@@ -18,6 +18,8 @@ else:
     
 from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
+from settings import TOPIC_PREFIX
+from settings import LEGACY_PREFIX, LEGACY_INSTRUMENT
 sys.path.append(INSTALLATION_DIR)
 
 from dasmon.models import StatusVariable, Parameter, StatusCache
@@ -32,9 +34,6 @@ class Listener(stomp.ConnectionListener):
         the on_message() method to process incoming
         messages.
     """
-    def __init__(self, instrument):
-        self._instrument = instrument
-        
     def on_message(self, headers, message):
         """
             Process a message.
@@ -42,16 +41,34 @@ class Listener(stomp.ConnectionListener):
             @param message: JSON-encoded message content
         """
         destination = headers["destination"]
+        instrument = None
+        try:
+            logging.info("Recv: %s (%s)" % (destination, TOPIC_PREFIX))
+            toks = destination.upper().split('.')
+            logging.info(str(toks))
+            if len(toks)>1:
+                if toks[0]=="/TOPIC/%s" % TOPIC_PREFIX:  
+                    instrument = toks[1].lower()
+                elif toks[0]=="/TOPIC/%s" % LEGACY_PREFIX:
+                    instrument = LEGACY_INSTRUMENT.lower()
+            if instrument is None:
+                logging.error("Could not extract instrument name from %s" % destination)
+                return
+        except:
+            logging.error("Could not extract instrument name from %s" % destination)
+            logging.error(str(sys.exc_value))
+            return
+            
         try:
             data_dict = json.loads(message)
         except:
-            logging.error("Could not decode message from %s" % headers["destination"])
+            logging.error("Could not decode message from %s" % destination)
             return
            
         try:
-            instrument_id = Instrument.objects.get(name=self._instrument)
+            instrument_id = Instrument.objects.get(name=instrument)
         except Instrument.DoesNotExist:
-            instrument_id = Instrument(name=self._instrument)
+            instrument_id = Instrument(name=instrument)
             instrument_id.save()
             
         for key in data_dict:

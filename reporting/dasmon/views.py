@@ -97,6 +97,10 @@ def live_runs(request, instrument):
     if len(runs)>0:
         nmax = min(20, len(runs))
         runs = runs.order_by("id").reverse()[:nmax]
+        first_run = runs[len(runs)-1].id
+    else:
+        first_run = 0
+        
     run_list = []
     for r in runs:
         status = 'unknown'
@@ -122,7 +126,7 @@ def live_runs(request, instrument):
                        'update_url':update_url,
                        'run_list':run_list,
                        'run_list_header':run_list_header,
-                       'first_run_id':runs[len(runs)-1].id
+                       'first_run_id':first_run
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)

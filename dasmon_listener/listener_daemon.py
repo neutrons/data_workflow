@@ -23,17 +23,16 @@ from settings import brokers
 from settings import amq_user
 from settings import amq_pwd
 from settings import queues
-from settings import instrument_shortname
 
 class DasMonListenerDaemon(Daemon):
-    instrument = ''
+    
     def run(self):
         """
             Run the dasmon listener daemon
         """
         c = Client(brokers, amq_user, amq_pwd, 
                    queues, "dasmon_listener")
-        c.set_listener(Listener(self.instrument))
+        c.set_listener(Listener())
         c.listen_and_wait(0.1)
 
 def run():
@@ -49,9 +48,6 @@ def run():
                                   stdout=None,
                                   stderr=None)
         
-    # Make sure we store the info with the right instrument
-    daemon.instrument = instrument_shortname
-   
     if namespace.command == 'start':
         daemon.start()
     elif namespace.command == 'stop':
