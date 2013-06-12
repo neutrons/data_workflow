@@ -43,9 +43,7 @@ class Listener(stomp.ConnectionListener):
         destination = headers["destination"]
         instrument = None
         try:
-            logging.info("Recv: %s (%s)" % (destination, TOPIC_PREFIX))
             toks = destination.upper().split('.')
-            logging.info(str(toks))
             if len(toks)>1:
                 if toks[0]=="/TOPIC/%s" % TOPIC_PREFIX:  
                     instrument = toks[1].lower()
