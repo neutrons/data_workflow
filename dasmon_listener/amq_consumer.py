@@ -69,24 +69,34 @@ class Listener(stomp.ConnectionListener):
             instrument_id = Instrument(name=instrument)
             instrument_id.save()
             
-        for key in data_dict:
-            # If we find a dictionary, process its entries
-            if type(data_dict[key])==dict:
-                # The key is now an entry type and the entry itself
-                # should be another dictionary for instances of that type
-                for item in data_dict[key]:
-                    if type(data_dict[key][item])==dict:
-                        identifier = None
-                        counts = None
-                        if "id" in data_dict[key][item]:
-                            identifier = data_dict[key][item]["id"]
-                        if "counts" in data_dict[key][item]:
-                            counts = data_dict[key][item]["counts"]
-                        if identifier is not None and counts is not None:
-                            parameter_name = "%s_count_%s" % (item, identifier)
-                            store_and_cache(instrument_id, parameter_name, counts)
-            else:
-                store_and_cache(instrument_id, key, data_dict[key])                
+        # If we get a STATUS message, store it as such
+        if "STATUS" in destination:
+            if "src_name" in data_dict and "status" in data_dict:
+                key = "system.%s" % data_dict["src_name"].lower()
+                if key.endswith(".0"):
+                    key = key[:len(key)-2]
+                store_and_cache(instrument_id, key, data_dict["status"])
+
+        # For signal messages, store each entry
+        elif "SIGNAL" in destination:      
+            for key in data_dict:
+                # If we find a dictionary, process its entries
+                if type(data_dict[key])==dict:
+                    # The key is now an entry type and the entry itself
+                    # should be another dictionary for instances of that type
+                    for item in data_dict[key]:
+                        if type(data_dict[key][item])==dict:
+                            identifier = None
+                            counts = None
+                            if "id" in data_dict[key][item]:
+                                identifier = data_dict[key][item]["id"]
+                            if "counts" in data_dict[key][item]:
+                                counts = data_dict[key][item]["counts"]
+                            if identifier is not None and counts is not None:
+                                parameter_name = "%s_count_%s" % (item, identifier)
+                                store_and_cache(instrument_id, parameter_name, counts)
+                else:
+                    store_and_cache(instrument_id, key, data_dict[key])
             
 def store_and_cache(instrument_id, key, value):
     """
