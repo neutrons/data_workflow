@@ -72,7 +72,7 @@ class Listener(stomp.ConnectionListener):
         # If we get a STATUS message, store it as such
         if "STATUS" in destination:
             if "src_name" in data_dict and "status" in data_dict:
-                key = "system.%s" % data_dict["src_name"].lower()
+                key = "system_%s" % data_dict["src_name"].lower()
                 if key.endswith(".0"):
                     key = key[:len(key)-2]
                 store_and_cache(instrument_id, key, data_dict["status"])
