@@ -273,7 +273,7 @@ def get_completeness_status(instrument_id):
         if len(latest_runs)==0:    
             return STATUS_UNKNOWN
         if len(latest_runs)<4:
-            if WorkflowSummary.objects.get(run_id=latest_runs[0]) is True:
+            if WorkflowSummary.objects.get(run_id=latest_runs[0]).complete is True:
                 return STATUS_OK
             else:
                 return STATUS_WARNING
