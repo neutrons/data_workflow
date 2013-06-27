@@ -270,8 +270,13 @@ def get_completeness_status(instrument_id):
         latest_runs = DataRun.objects.filter(instrument_id=instrument_id)
 
         # We need at least 4 runs for a meaningful status        
-        if len(latest_runs)<4:    
+        if len(latest_runs)==0:    
             return STATUS_UNKNOWN
+        if len(latest_runs)<4:
+            if WorkflowSummary.objects.get(run_id=latest_runs[0]) is True:
+                return STATUS_OK
+            else:
+                return STATUS_WARNING
         
         latest_runs = latest_runs.order_by("created_on").reverse()
         s0 = WorkflowSummary.objects.get(run_id=latest_runs[0])
