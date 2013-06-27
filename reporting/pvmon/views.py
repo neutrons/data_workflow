@@ -37,6 +37,7 @@ def pv_monitor(request, instrument):
     template_values = dasmon.view_util.get_run_status(**template_values)
     
     template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
+    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
     
     return render_to_response('pvmon/pv_monitor.html', template_values)
 
@@ -70,6 +71,7 @@ def get_update(request, instrument):
     das_status = report.view_util.get_post_processing_status()
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     das_status['dasmon'] = dasmon.view_util.get_dasmon_status(instrument_id)
+    das_status['pvstreamer'] = dasmon.view_util.get_pvstreamer_status(instrument_id)
     data_dict['das_status'] = das_status
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     

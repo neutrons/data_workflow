@@ -77,7 +77,7 @@ def live_monitor(request, instrument):
     template_values = view_util.get_run_status(**template_values)
     
     template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
-    #template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
+    template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     
     return render_to_response('dasmon/live_monitor.html', template_values)
     
@@ -136,7 +136,7 @@ def live_runs(request, instrument):
     template_values = view_util.get_run_status(**template_values)
     
     template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
-    #template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
+    template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     
     return render_to_response('dasmon/live_runs.html', template_values)
     
