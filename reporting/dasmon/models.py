@@ -25,3 +25,21 @@ class StatusCache(models.Model):
     key_id        = models.ForeignKey(Parameter)
     value         = models.CharField(max_length=128)
     timestamp     = models.DateTimeField('timestamp')
+
+class ActiveInstrumentManager(models.Manager):
+    
+    def is_alive(self, instrument_id):
+        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        if len(instrument_list)>0:
+            return instrument_list[0].is_alive
+        else:
+            return True
+    
+class ActiveInstrument(models.Model):
+    """
+        Table containing the list of instruments that are expecting to
+        have their DAS turned ON
+    """
+    instrument_id = models.ForeignKey(Instrument, unique=True)
+    is_alive = models.BooleanField(default=True)
+    objects = ActiveInstrumentManager()

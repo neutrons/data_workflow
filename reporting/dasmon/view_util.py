@@ -1,5 +1,5 @@
 from report.models import Instrument, DataRun, WorkflowSummary, RunStatus, StatusQueue
-from dasmon.models import Parameter, StatusVariable, StatusCache
+from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
@@ -199,6 +199,9 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
+    if not ActiveInstrument.objects.is_alive(instrument_id):
+        return -1
+    
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
@@ -229,6 +232,9 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
+    if not ActiveInstrument.objects.is_alive(instrument_id):
+        return -1
+    
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
@@ -255,6 +261,9 @@ def get_completeness_status(instrument_id):
     STATUS_ERROR = (2, "Error")
     STATUS_UNKNOWN = (None, "Unknown")
 
+    if not ActiveInstrument.objects.is_alive(instrument_id):
+        return (-1, "OK")
+    
     try:
         # Check for completeness of the three runs before the last run.
         # We don't use the last one because we may still be working on it.
