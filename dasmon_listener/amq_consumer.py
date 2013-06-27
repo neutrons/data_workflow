@@ -78,7 +78,7 @@ class Listener(stomp.ConnectionListener):
                 store_and_cache(instrument_id, key, data_dict["status"])
 
         # For signal messages, store each entry
-        elif "SIGNAL" in destination:      
+        else:      
             for key in data_dict:
                 # If we find a dictionary, process its entries
                 if type(data_dict[key])==dict:
