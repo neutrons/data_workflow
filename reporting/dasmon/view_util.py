@@ -135,6 +135,7 @@ def get_run_status(**template_args):
     # Get the system health status
     das_status = report.view_util.get_post_processing_status()
     das_status['dasmon'] = get_dasmon_status(instrument_id)
+    das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
     template_args['das_status'] = das_status
 
     # The DAS monitor link is filled out by report.view_util but we don't need it here
@@ -142,7 +143,7 @@ def get_run_status(**template_args):
 
     # DASMON Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
-            reverse('report.views.instrument_summary',args=[instr]), instr, "DAS monitor"
+            reverse('report.views.instrument_summary',args=[instr]), instr, "monitor"
             ) 
     template_args["breadcrumbs"] = breadcrumbs
     
@@ -189,6 +190,36 @@ def get_live_variables(request, instrument_id):
             logging.warning("Could not process %s: %s" % (key, sys.exc_value))
     return data_dict
 
+def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
+    """
+        Get the health status of PVStreamer
+        @param red_timeout: number of hours before declaring a process dead
+        @param yellow_timeout: number of seconds before declaring a process slow
+    """
+    delta_short = datetime.timedelta(seconds=yellow_timeout)
+    delta_long = datetime.timedelta(hours=red_timeout)
+    
+    try:
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
+        # Check the status value
+        #    STATUS_OK = 0
+        #    STATUS_FAULT = 1 
+        #    STATUS_UNRESPONSIVE = 2
+        #    STATUS_INACTIVE = 3
+        if int(last_value.value)>0:
+            logging.error("PVStreamer status = %s" % last_value.value)
+            return 2
+    except:
+        logging.error("No cached status for PVStreamer on instrument %s" % instrument_id.name)
+        return 2
+        
+    if timezone.now()-last_value.timestamp>delta_long:
+        return 2
+    elif timezone.now()-last_value.timestamp>delta_short:
+        return 1
+    return 0
+    
 def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     """
         Get the health status of DASMON server
@@ -199,9 +230,13 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_long = datetime.timedelta(hours=red_timeout)
     
     try:
-        last_value = StatusCache.objects.filter(instrument_id=instrument_id).latest('timestamp')
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
+        if int(last_value.value)>0:
+            logging.error("DASMON status = %s" % last_value.value)
+            return 2
     except:
-        logging.error("No cached status for instrument %s" % instrument_id.name)
+        logging.error("No cached status for DASMON on instrument %s" % instrument_id.name)
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
@@ -264,32 +299,29 @@ def get_live_runs_update(request, instrument_id):
          @param request: HTTP request so we can get the 'since' parameter
          @param instrument_id: Instrument model object
     """ 
-    if not request.GET.has_key('since') or not request.GET.has_key('complete_since'):
-        return {}
     data_dict = {}
     
     # Get the last run ID that the client knows about
-    since = request.GET.get('since', '0')
-    try:
-        since = int(since)
-        since_run_id = get_object_or_404(DataRun, id=since)
-    except:
-        since = 0
-        since_run_id = None
-        
-    # Get the earliest run that the client knows about
-    complete_since = request.GET.get('complete_since', since)
-    try:
-        complete_since = int(complete_since)
-    except:
-        complete_since = 0
+    since_run_id = None
+    run_list = []
 
-    # Protection against obviously invalid input        
-    if complete_since == 0:
-        return {}
+    if request.GET.has_key('since') and request.GET.has_key('complete_since'):
+        since = request.GET.get('since', '0')
+        try:
+            since = int(since)
+            since_run_id = get_object_or_404(DataRun, id=since)
+        except:
+            since = 0
         
-    # Get last experiment and last run
-    run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
+        # Get the earliest run that the client knows about
+        complete_since = request.GET.get('complete_since', since)
+        try:
+            complete_since = int(complete_since)
+            # Get last experiment and last run
+            run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
+        except:
+            # Invalid value for complete_since
+            pass
 
     status_list = []
     update_list = []

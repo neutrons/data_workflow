@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load dasmon_tags %}
 
-{% block title %}{{ instrument }} DAS Monitor {% endblock %}
+{% block title %}{{ instrument }} Monitor {% endblock %}
 {% block header %}
 
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
@@ -21,23 +21,11 @@
             if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
         }
         $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&vars="+query_str, success: function(data) {
-            for (var i=0; i<data.variables.length; i++)
-            { 
-                if (data.variables[i].key=='count_rate')
-                	$('#count_rate_top').replaceWith("<span id='count_rate_top'>"+data.variables[i].value+"</span>");
-                
-                $('#'+data.variables[i].key).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
-                $('#'+data.variables[i].key+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
-            }
-            
+
+        	update_from_ajax_data(data);
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
             $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
             $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
-            
-            $('#dasmon_status').replaceWith("<li class='status_"+data.das_status.dasmon+"' id='dasmon_status'>DASMON</li>");
-            $('#workflow_status').replaceWith("<li class='status_"+data.das_status.workflow+"' id='workflow_status'>Workflow</li>");
-            $('#catalog_status').replaceWith("<li class='status_"+data.das_status.catalog+"' id='catalog_status'>Catalog</li>");
-            $('#reduction_status').replaceWith("<li class='status_"+data.das_status.reduction+"' id='reduction_status'>Reduction</li>");
             
             run_data = data.run_rate;
             error_data = data.error_rate;
@@ -85,7 +73,7 @@
 </script>   
 {% endblock %}
 
-{% block banner %}{{ instrument }} DAS Monitor {% endblock %}
+{% block banner %}{{ instrument }} Monitor {% endblock %}
 
 {% block summary %}
 
@@ -106,6 +94,7 @@
 <ul>
 <li class='status_text'>Systems:</li>
 <li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
+<li class='status_{{ das_status.pvstreamer }}' id='pvstreamer_status'>PVStreamer</li>
 <li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
 <li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
 <li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
@@ -126,8 +115,8 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% endblock %}
 
 {% block right_side_links %}
-    <span style="float:right">monitoring: 
-    <b>live parameters</b> | <a href="{{ live_runs_url }}">live runs</a></span>
+    <span style="float:right">live monitoring: 
+    <b>status</b> | <a href="{{ live_runs_url }}">runs</a></span>
 {% endblock %}
 
 {% block bodytop %}

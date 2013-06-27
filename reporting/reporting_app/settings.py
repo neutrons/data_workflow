@@ -212,6 +212,9 @@ DASMON_NUMBER_OF_OLD_PTS = 20
 # MONITORING OPTION
 MONITOR_ON = True
 
+## Prefix for status parameter names for monitored sub-systems
+SYSTEM_STATUS_PREFIX = 'system_'
+
 # Import local settings if available
 try:
     from local_settings import *

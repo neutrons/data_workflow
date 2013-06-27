@@ -33,10 +33,12 @@ def summary(request):
     for i in instruments:
         dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
         das_status = view_util.get_dasmon_status(i)
+        pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)
         instrument_list.append({'name': i.name,
                                 'url': dasmon_url,
                                 'dasmon_status': das_status,
+                                'pvstreamer_status': pvstreamer_status,
                                 'completeness': completeness,
                                 'completeness_msg': message
                                 })
@@ -75,6 +77,7 @@ def live_monitor(request, instrument):
     template_values = view_util.get_run_status(**template_values)
     
     template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
+    #template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     
     return render_to_response('dasmon/live_monitor.html', template_values)
     
@@ -133,6 +136,7 @@ def live_runs(request, instrument):
     template_values = view_util.get_run_status(**template_values)
     
     template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
+    #template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     
     return render_to_response('dasmon/live_runs.html', template_values)
     
@@ -184,6 +188,7 @@ def get_update(request, instrument):
     das_status = report.view_util.get_post_processing_status()
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     das_status['dasmon'] = view_util.get_dasmon_status(instrument_id)
+    das_status['pvstreamer'] = view_util.get_pvstreamer_status(instrument_id)
     data_dict['das_status'] = das_status
     
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
@@ -208,9 +213,11 @@ def summary_update(request):
     instrument_list = []
     for i in Instrument.objects.all().order_by('name'):
         das_status = view_util.get_dasmon_status(i)
+        pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)
         instrument_list.append({'name': i.name, 
                                 'dasmon_status': das_status,
+                                'pvstreamer_status': pvstreamer_status,
                                 'completeness': completeness,
                                 'completeness_msg': message
                                 })
