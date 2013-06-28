@@ -81,7 +81,7 @@ class IPTS(models.Model):
         """
         if instrument_id is None:
             return DataRun.objects.filter(ipts_id=self).distinct().count()
-        return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id)
+        return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id).distinct().count()
 
 class DataRunManager(models.Manager):
     

@@ -131,7 +131,7 @@ def ipts_summary(request, instrument, ipts):
         n_max = int(filter)
     except:
         n_max = 20
-    number_of_runs = ipts_id.number_of_runs()
+    number_of_runs = ipts_id.number_of_runs(instrument_id)
     
     icat_info = get_ipts_info(instrument, ipts)
 
@@ -145,7 +145,8 @@ def ipts_summary(request, instrument, ipts):
     
     run_list, run_list_header = view_util.RunSorter(request)(ipts_id, 
                                                              show_all=show_all,
-                                                             n_shown=n_max)
+                                                             n_shown=n_max,
+                                                             instrument_id=instrument_id)
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),

@@ -193,13 +193,13 @@ class RunSorter(DataSorter):
                    KEY_NAME: 'run_number'}
     N_RECENT = 20
             
-    def __call__(self, ipts_id, show_all=False, n_shown=20):
+    def __call__(self, ipts_id, show_all=False, n_shown=20, instrument_id=None):
         """
             Returns the data and header to populate a data grid
         """
         self.N_RECENT = n_shown
         # Query the database
-        data = self._retrieve_data(ipts_id, show_all=show_all)
+        data = self._retrieve_data(ipts_id, show_all=show_all, instrument_id=instrument_id)
             
         # Create the header dictionary    
         header = []
@@ -209,12 +209,18 @@ class RunSorter(DataSorter):
         
         return data, header
     
-    def _retrieve_data(self, ipts_id, show_all=False): 
+    def _retrieve_data(self, ipts_id, show_all=False, instrument_id=None): 
         # Query the database
         if self.sort_dir==self.KEY_DESC:
-            runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item).reverse()
+            if instrument_id is None:
+                runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item).reverse()
+            else:
+                runs = DataRun.objects.filter(ipts_id=ipts_id, instrument_id=instrument_id).order_by(self.sort_item).reverse()
         else:
-            runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item)
+            if instrument_id is None:
+                runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item)
+            else:
+                runs = DataRun.objects.filter(ipts_id=ipts_id, instrument_id=instrument_id).order_by(self.sort_item)
         if not show_all and len(runs)>self.N_RECENT:
             return runs[:self.N_RECENT]
         return runs
