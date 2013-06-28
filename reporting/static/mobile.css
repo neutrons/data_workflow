@@ -1,0 +1,9 @@
+.status_box li {
+    font-size:75%;
+    display: inline;
+    padding: 2px;
+    margin: 5px;
+    margin-left: 0px;
+    border: 1px solid silver;
+    line-height:200%;
+}  

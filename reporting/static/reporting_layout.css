@@ -51,6 +51,7 @@
     margin: 5px;
     margin-left: 0px;
     border: 1px solid silver;
+    line-height:200%;
 }
 
 .status_box .status_text {

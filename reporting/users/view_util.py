@@ -29,6 +29,10 @@ def fill_template_values(request, **template_args):
     redirect_url = reverse('users.views.perform_login')
     redirect_url  += '?next=%s' % request.path
     template_args['login_url'] = redirect_url
+    
+    # Determine whether the user is using a mobile device
+    template_args['is_mobile'] = hasattr(request, 'mobile') and request.mobile
+
     return template_args
 
 def login_or_local_required(fn):

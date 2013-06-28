@@ -9,11 +9,15 @@
 
 td, th {
     line-height: 13px;
-    vertical-align: bottom;
+    vertical-align: middle;
     padding-left: 2px;
     padding-right: 2px;
     padding-top: 2px;
     padding-bottom: 2px;
+}
+
+th {
+    vertical-align: bottom;
 }
 
 td.error {
