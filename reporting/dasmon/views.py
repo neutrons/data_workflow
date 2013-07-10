@@ -9,7 +9,7 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 
 from report.models import Instrument, DataRun, WorkflowSummary
-from dasmon.models import Parameter, StatusVariable, StatusCache
+from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
 
 import view_util
 import report.view_util
@@ -31,6 +31,8 @@ def summary(request):
     
     instrument_list = []
     for i in instruments:
+        if not ActiveInstrument.objects.is_alive(i):
+            continue
         dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
         das_status = view_util.get_dasmon_status(i)
         pvstreamer_status = view_util.get_pvstreamer_status(i)
