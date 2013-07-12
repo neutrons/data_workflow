@@ -8,6 +8,7 @@ import datetime
 from django.conf import settings
 import logging
 import sys
+import time
 import report.view_util
 
 
