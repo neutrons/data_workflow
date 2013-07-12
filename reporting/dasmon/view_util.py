@@ -420,9 +420,11 @@ def dasmon_diagnostics(instrument_id, timeout=10):
     
     # Recent PVs, which come from DASMON straight to the DB
     last_pv_time = 0
+    last_pv_timestamp = 0
     try:
         latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
         last_pv_time = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
+        last_pv_timestamp = latest.update_time
     except:
         # No data available, keep defaults
         pass
@@ -444,7 +446,7 @@ def dasmon_diagnostics(instrument_id, timeout=10):
     dasmon_listener_warning = False
     
     # Recent PVs
-    if last_pv_time==0 or timezone.now()-last_pv_time>delay_time:
+    if last_pv_timestamp==0 or time.time()-last_pv_timestamp>timeout:
         slow_pvs = True
         dasmon_conditions.append("No PV updates in the past %s seconds" % str(timeout))
     
