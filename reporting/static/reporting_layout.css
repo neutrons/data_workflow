@@ -26,6 +26,26 @@
     z-index:99;
 }
 
+.diagnostics a:link {
+    color:#5B4729;
+    text-decoration:none;
+}
+
+.diagnostics a:visited {
+    color:#5B4729;
+    text-decoration:none;
+}
+
+.diagnostics a:hover {
+    color:#5B4729;
+    text-decoration:none;
+}
+
+.diagnostics a:active {
+    color:#5B4729;
+    text-decoration:none;
+}
+
 .status_bar {
     border-top: 1px solid #CDC0B0;
     border-bottom: 1px solid #CDC0B0;

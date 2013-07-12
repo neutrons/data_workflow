@@ -91,6 +91,8 @@
 
 <div class='status_bar'>
 <div class='status_box'>
+<div class='diagnostics'>
+<a href='{{ live_monitor_url|safe }}diagnostics/'>
 <ul>
 <li class='status_text'>Systems:</li>
 <li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
@@ -99,6 +101,8 @@
 <li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
 <li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
 </ul>
+</a>
+</div>
 </div>
 </div>
 

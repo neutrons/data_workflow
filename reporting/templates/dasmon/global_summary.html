@@ -42,7 +42,8 @@ List of instruments:<br>
    	{% for item in instruments %}
 	   	<tr>
 	   	<td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
-	   	<td>
+	   	<td class='diagnostics'>
+            <a href='{{ item.url|safe }}diagnostics/'>
             <ul>
                 <li class='status_{{ item.dasmon_status }}' id='{{ item.name }}_dasmon_status'>DASMON</li> 
                 <li class='status_{{ item.pvstreamer_status }}' id='{{ item.name }}_pvstreamer_status'>PVStreamer</li> 
@@ -50,6 +51,7 @@ List of instruments:<br>
                 <li class='status_{{ postprocess_status.catalog }}' id='{{ item.name }}_catalog_status'>Catalog</li>
                 <li class='status_{{ postprocess_status.reduction }}' id='{{ item.name }}_reduction_status'>Reduction</li>
             </ul>
+            </a>
         </td>
         <td> 
             <ul>

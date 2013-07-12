@@ -1,5 +1,6 @@
 from report.models import Instrument, DataRun, WorkflowSummary, RunStatus, StatusQueue
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
+from pvmon.models import PVName, PV, PVCache
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
@@ -102,6 +103,21 @@ def is_running(instrument_id):
         logging.error("Could not determine running condition: %s" % sys.exc_value)
     return "Unknown"
     
+def get_system_health(instrument_id=None):
+    """
+        Get system health status.
+        If an instrument_id is provided, the sub-systems relevant to that
+        instrument will also be provided,
+        otherwise only common sub-systems are provided.
+        @param instrument_id: Instrument object
+    """
+    das_status = report.view_util.get_post_processing_status()
+    das_status['workflow'] = get_workflow_status()
+    if instrument_id is not None:
+        das_status['dasmon'] = get_dasmon_status(instrument_id)
+        das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
+    return das_status
+    
 def get_run_status(**template_args):
     """
         Fill a template dictionary with run information
@@ -133,10 +149,7 @@ def get_run_status(**template_args):
     template_args["recording_status"] = is_running(instrument_id)
 
     # Get the system health status
-    das_status = report.view_util.get_post_processing_status()
-    das_status['dasmon'] = get_dasmon_status(instrument_id)
-    das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
-    template_args['das_status'] = das_status
+    template_args['das_status'] = get_system_health(instrument_id)
 
     # The DAS monitor link is filled out by report.view_util but we don't need it here
     template_args['dasmon_url'] = None
@@ -199,10 +212,10 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
-    if not ActiveInstrument.objects.is_alive(instrument_id):
-        return -1
-    
     try:
+        if not ActiveInstrument.objects.is_alive(instrument_id):
+            return -1
+    
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         # Check the status value
@@ -223,6 +236,32 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
         return 1
     return 0
     
+def get_workflow_status(red_timeout=1, yellow_timeout=10):
+    """
+        Get the health status of Workflow Manager
+        @param red_timeout: number of hours before declaring a process dead
+        @param yellow_timeout: number of seconds before declaring a process slow
+    """
+    delta_short = datetime.timedelta(seconds=yellow_timeout)
+    delta_long = datetime.timedelta(hours=red_timeout)
+    
+    try:
+        common_services = Instrument.objects.get(name='common')
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'workflowmgr')
+        last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest('timestamp')
+        if int(last_value.value)>0:
+            logging.error("WorkflowMgr status = %s" % last_value.value)
+            return 2
+    except:
+        logging.error("No cached status for WorkflowMgr on instrument")
+        return 2
+        
+    if timezone.now()-last_value.timestamp>delta_long:
+        return 2
+    elif timezone.now()-last_value.timestamp>delta_short:
+        return 1
+    return 0
+    
 def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     """
         Get the health status of DASMON server
@@ -232,10 +271,10 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
-    if not ActiveInstrument.objects.is_alive(instrument_id):
-        return -1
-    
     try:
+        if not ActiveInstrument.objects.is_alive(instrument_id):
+            return -1
+    
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         if int(last_value.value)>0:
@@ -250,6 +289,203 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     elif timezone.now()-last_value.timestamp>delta_short:
         return 1
     return 0
+
+def workflow_diagnostics(timeout=10):
+    """
+        Diagnostics for the workflow manager
+        @param timeout: number of seconds of silence before declaring a problem
+    """
+    delay_time = datetime.timedelta(seconds=timeout)
+    
+    wf_diag = {}
+    wf_conditions = []
+    
+    # Recent reported status
+    status_value = -1
+    status_time = 0
+    try:
+        common_services = Instrument.objects.get(name='common')
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'workflowmgr')
+        last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest('timestamp')
+        status_value = int(last_value.value)
+        status_time = timezone.localtime(last_value.timestamp)      
+    except:
+        # No data available, keep defaults
+        pass
+    
+    # Heartbeat
+    if status_time==0 or timezone.now()-status_time>delay_time:
+        wf_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
+
+    # Status
+    if status_value > 0:
+        labels = ["OK", "Fault", "Unresponsive", "Inactive"]
+        wf_conditions.append("WorkflowMgr reports a status of %s [%s]" % (status_value, labels[status_value]))
+    
+    if status_value < 0:
+        wf_conditions.append("The web monitor has not heard from WorkflowMgr in a long time: no data available")
+
+    wf_diag["status"] = status_value
+    wf_diag["status_time"] = status_time
+    wf_diag["conditions"] = wf_conditions
+    
+    return wf_diag
+    
+def postprocessing_diagnostics(timeout=10):
+    """
+        Diagnostics for the auto-reduction and cataloging
+        @param timeout: number of seconds of silence before declaring a problem
+    """
+    delay_time = datetime.timedelta(seconds=timeout)
+
+    red_diag = {}
+    red_conditions = []
+
+    post_processing = report.view_util.get_post_processing_status()
+    if post_processing["catalog"]>0:
+        red_conditions.append("The cataloging was slow in responding to latest requests")
+    if post_processing["reduction"]>0:
+        red_conditions.append("The reduction was slow in responding to latest requests")
+
+    red_diag["catalog_status"] = post_processing["catalog"]
+    red_diag["reduction_status"] = post_processing["reduction"]
+    red_diag["conditions"] = red_conditions
+    
+    return red_diag
+
+
+def pvstreamer_diagnostics(instrument_id, timeout=10):
+    """
+        Diagnostics for PVStreamer
+        @param instrument_id: Instrument object
+        @param timeout: number of seconds of silence before declaring a problem
+    """
+    delay_time = datetime.timedelta(seconds=timeout)
+    
+    pv_diag = {}
+    pv_conditions = []
+    dasmon_listener_warning = False
+    
+    # Recent reported status
+    status_value = -1
+    status_time = 0
+    try:
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
+        status_value = int(last_value.value)
+        status_time = timezone.localtime(last_value.timestamp)      
+    except:
+        # No data available, keep defaults
+        pass
+    
+    # Heartbeat
+    if status_time==0 or timezone.now()-status_time>delay_time:
+        dasmon_listener_warning = True
+        pv_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
+
+    # Status
+    if status_value > 0:
+        labels = ["OK", "Fault", "Unresponsive", "Inactive"]
+        pv_conditions.append("PVStreamer reports a status of %s [%s]" % (status_value, labels[status_value]))
+    
+    if status_value < 0:
+        pv_conditions.append("The web monitor has not heard from PVStreamer in a long time: no data available")
+
+    pv_diag["status"] = status_value
+    pv_diag["status_time"] = status_time
+    pv_diag["conditions"] = pv_conditions
+    pv_diag["dasmon_listener_warning"] = dasmon_listener_warning
+    
+    return pv_diag
+    
+def dasmon_diagnostics(instrument_id, timeout=10):
+    """
+        Diagnostics for DASMON
+        @param instrument_id: Instrument object
+        @param timeout: number of seconds of silence before declaring a problem
+    """
+    delay_time = datetime.timedelta(seconds=timeout)
+    dasmon_diag = {}
+    # Recent reported status
+    status_value = -1
+    status_time = 0
+    try:
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
+        status_value = int(last_value.value)
+        status_time = timezone.localtime(last_value.timestamp)      
+    except:
+        # No data available, keep defaults
+        pass
+    
+    # Recent PVs, which come from DASMON straight to the DB
+    last_pv_time = 0
+    try:
+        latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
+        last_pv_time = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
+    except:
+        # No data available, keep defaults
+        pass
+    
+    # Recent AMQ messages
+    last_amq_time = 0
+    try:
+        latest = StatusCache.objects.filter(instrument_id=instrument_id).latest("timestamp")
+        last_amq_time = timezone.localtime(latest.timestamp)
+    except:
+        # No data available, keep defaults
+        pass
+    
+    # Conditions
+    dasmon_conditions = []
+    slow_status = False
+    slow_pvs = False
+    slow_amq = False
+    dasmon_listener_warning = False
+    
+    # Recent PVs
+    if last_pv_time==0 or timezone.now()-last_pv_time>delay_time:
+        slow_pvs = True
+        dasmon_conditions.append("No PV updates in the past %s seconds" % str(timeout))
+    
+    # Recent AMQ
+    if last_amq_time==0 or timezone.now()-last_amq_time>delay_time:
+        slow_amq = True
+        dasmon_conditions.append("No ActiveMQ updates from DASMON in the past %s seconds" % str(timeout))
+    
+    # Heartbeat
+    if status_time==0 or timezone.now()-status_time>delay_time:
+        slow_status = True
+        dasmon_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
+    
+    # Status
+    if status_value > 0:
+        labels = ["OK", "Fault", "Unresponsive", "Inactive"]
+        dasmon_conditions.append("DASMON reports a status of %s [%s]" % (status_value, labels[status_value]))
+    
+    if status_value < 0:
+        dasmon_conditions.append("The web monitor has not heard from DASMON in a long time: no data available")
+    
+    if slow_status and slow_pvs and slow_amq:
+        dasmon_conditions.append("DASMON may be down: contact DASMON expert")
+    
+    if slow_pvs and not slow_status and not slow_amq:
+        dasmon_conditions.append("DASMON is up but not writing to the DB: contact DASMON expert")
+    
+    if (slow_status or slow_amq) and not slow_pvs:
+        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: contact DASMON expert")
+
+    if slow_status and slow_amq:
+        dasmon_listener_warning = True
+        
+    dasmon_diag["status"] = status_value
+    dasmon_diag["status_time"] = status_time
+    dasmon_diag["pv_time"] = last_pv_time
+    dasmon_diag["amq_time"] = last_amq_time
+    dasmon_diag["conditions"] = dasmon_conditions
+    dasmon_diag["dasmon_listener_warning"] = dasmon_listener_warning
+    
+    return dasmon_diag
 
 def get_completeness_status(instrument_id):
     """

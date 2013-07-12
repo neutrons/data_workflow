@@ -27,7 +27,7 @@ def summary(request):
     instruments = Instrument.objects.all().order_by('name')
     
     # Get the system health status
-    postprocess_status = report.view_util.get_post_processing_status()
+    postprocess_status = view_util.get_system_health()
     
     instrument_list = []
     for i in instruments:
@@ -78,6 +78,7 @@ def live_monitor(request, instrument):
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.get_run_status(**template_values)
     
+    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
     template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
     template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     
@@ -165,6 +166,51 @@ def help(request):
     
 @users.view_util.login_or_local_required
 @cache_page(5)
+def diagnostics(request, instrument):
+    """
+        Diagnose the health of an instrument
+        @param instrument: instrument name
+    """
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    
+    # DASMON
+    dasmon_diag = view_util.dasmon_diagnostics(instrument_id)
+    
+    # PVStreamer
+    pv_diag = view_util.pvstreamer_diagnostics(instrument_id)
+    
+    # Workflow Manager
+    wf_diag = view_util.workflow_diagnostics()
+    
+    # Post-processing
+    red_diag = view_util.postprocessing_diagnostics()
+    
+    # Actions messages
+    actions = []
+    if dasmon_diag['dasmon_listener_warning'] and pv_diag['dasmon_listener_warning']:
+        actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
+    
+    template_values = {'instrument':instrument.upper(),
+                       }
+    template_values = report.view_util.fill_template_values(request, **template_values)
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = view_util.get_run_status(**template_values)
+    
+    template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
+    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
+    template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
+    template_values['dasmon_diagnostics'] = dasmon_diag
+    template_values['pv_diagnostics'] = pv_diag
+    template_values['wf_diagnostics'] = wf_diag
+    template_values['post_diagnostics'] = red_diag
+    template_values['action_messages'] = actions
+    
+    return render_to_response('dasmon/diagnostics.html', template_values)
+
+
+@users.view_util.login_or_local_required
+@cache_page(5)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -187,10 +233,8 @@ def get_update(request, instrument):
     data_dict['variables'].append(recording_status)
     
     # Get current DAS health status
-    das_status = report.view_util.get_post_processing_status()
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    das_status['dasmon'] = view_util.get_dasmon_status(instrument_id)
-    das_status['pvstreamer'] = view_util.get_pvstreamer_status(instrument_id)
+    das_status = view_util.get_system_health(instrument_id)
     data_dict['das_status'] = das_status
     
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
@@ -210,7 +254,7 @@ def summary_update(request):
          Response to AJAX call to get updated health info for all instruments
     """
     # Get the system health status
-    postprocess_status = report.view_util.get_post_processing_status()
+    postprocess_status = view_util.get_system_health()
     
     instrument_list = []
     for i in Instrument.objects.all().order_by('name'):

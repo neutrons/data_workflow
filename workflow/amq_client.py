@@ -5,6 +5,7 @@ import time
 import stomp
 import logging
 import sys
+import json
 
 from database.transactions import get_message_queues
 from workflow_process import WorkflowProcess
@@ -139,12 +140,25 @@ class Client(object):
         except:
             logging.error("Problem starting AMQ client: %s" % sys.exc_value)
             
+        last_heartbeat = 0
         while(True):
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
                     
                 time.sleep(waiting_period)
+                
+                try:
+                    if time.time()-last_heartbeat>5:
+                        last_heartbeat = time.time()
+                        data_dict = {"src_name": "workflowmgr",
+                                     "status": "0"}
+                        message = json.dumps(data_dict)
+                        self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0", 
+                                              message=message, 
+                                              persistent='true')
+                except:
+                    logging.error("Problem sending heartbeat")
                 
                 # Check for workflow completion
                 if time.time()-self._workflow_check_start>self._workflow_check_delay:

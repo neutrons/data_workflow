@@ -404,23 +404,6 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
         reduction_start_id = StatusQueue.objects.get(name='REDUCTION.STARTED')
         latest_run = RunStatus.objects.filter(queue_id=postprocess_data_id).latest('created_on')
         
-        # If we didn't get a CATALOG.DATA_READY message within a few seconds, 
-        # the workflow manager has a problem
-        try:
-            latest_catalog_data = RunStatus.objects.filter(queue_id=catalog_data_id,
-                                                           run_id=latest_run.run_id).latest('created_on')
-            time_catalog_data = latest_catalog_data.created_on
-        except:
-            time_catalog_data = timezone.now()
-            
-        
-        if time_catalog_data-latest_run.created_on>delta_long:
-            status_dict["workflow"]=2
-        elif time_catalog_data-latest_run.created_on>delta_short:
-            status_dict["workflow"]=1
-        else:
-            status_dict["workflow"]=0        
-            
         # If we didn't get a CATALOG.STARTED message within a few seconds, 
         # the cataloging agent has a problem
         try:

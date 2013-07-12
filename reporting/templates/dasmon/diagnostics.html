@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} Diagnostics {% endblock %}
+
+{% block banner %}{{ instrument }} Diagnostics {% endblock %}    
+
+{% block right_side_links %}
+    <span style="float:right">live monitoring: 
+    <a href="{{ live_monitor_url }}">status</a> | <a href="{{ live_runs_url }}">runs</a> | <a href="{{ live_pv_url }}">PVs</a>
+    </span>
+{% endblock %}
+
+{% block summary %}
+<div class='status_bar'>
+<div class='status_box'>
+<ul>
+<li class='status_text'>Systems:</li>
+<li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
+<li class='status_{{ das_status.pvstreamer }}' id='pvstreamer_status'>PVStreamer</li>
+<li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
+<li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
+<li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
+</ul>
+</div>
+</div>
+
+{% if action_messages %}
+<p>
+The following items should be considered while interpreting the diagnostics below:
+<ul>
+{% for item in action_messages %}
+<li>{{ item }}</li>
+{% endfor %}
+</ul>
+</p>
+{% endif %}
+
+<p>
+<b>DASMON diagnostics:</b>
+<table cellspacing="0">
+<tbody>
+  <tr class="even">
+    <td>Last status: </td><td>{{dasmon_diagnostics.status}}</td>
+  </tr>
+  <tr class="odd">
+    <td>Last status update: </td><td>{{dasmon_diagnostics.status_time}}</td>
+  </tr>
+  <tr class="even">
+    <td>Last PV update: </td><td>{{dasmon_diagnostics.pv_time}}</td>
+  </tr>
+  <tr class="odd">
+    <td>Last AMQ update: </td><td>{{dasmon_diagnostics.amq_time}}</td>
+  </tr>
+</tbody>
+</table>
+</p>
+ 
+{% if dasmon_diagnostics.conditions %}
+Reported conditions:<br>
+<ul>
+{% for item in dasmon_diagnostics.conditions %}
+    <li>{{ item }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<p>
+<b>PVStreamer diagnostics:</b>
+<table cellspacing="0">
+<tbody>
+  <tr class="even">
+    <td>Last status: </td><td>{{pv_diagnostics.status}}</td>
+  </tr>
+  <tr class="odd">
+    <td>Last status update: </td><td>{{pv_diagnostics.status_time}}</td>
+  </tr>
+</tbody>
+</table>
+</p>
+ 
+{% if pv_diagnostics.conditions %}
+Reported conditions:<br>
+<ul>
+{% for item in pv_diagnostics.conditions %}
+    <li>{{ item }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+
+<p>
+<b>Workflow diagnostics:</b>
+<table cellspacing="0">
+<tbody>
+  <tr class="even">
+    <td>Last status: </td><td>{{wf_diagnostics.status}}</td>
+  </tr>
+  <tr class="odd">
+    <td>Last status update: </td><td>{{wf_diagnostics.status_time}}</td>
+  </tr>
+</tbody>
+</table>
+</p>
+ 
+{% if wf_diagnostics.conditions %}
+Reported conditions:<br>
+<ul>
+{% for item in wf_diagnostics.conditions %}
+    <li>{{ item }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+
+<p>
+<b>Cataloging & Reduction diagnostics:</b>
+<table cellspacing="0">
+<tbody>
+  <tr class="even">
+    <td>Last cataloging status: </td><td>{{post_diagnostics.catalog_status}}</td>
+  </tr>
+  <tr class="odd">
+    <td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td>
+  </tr>
+</tbody>
+</table>
+</p>
+ 
+{% if post_diagnostics.conditions %}
+Reported conditions:<br>
+<ul>
+{% for item in post_diagnostics.conditions %}
+    <li>{{ item }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}
+
+{% block nocontent %}{% endblock %}
