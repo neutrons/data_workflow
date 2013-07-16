@@ -473,7 +473,7 @@ def dasmon_diagnostics(instrument_id, timeout=10):
         dasmon_conditions.append("DASMON may be down: contact DASMON expert")
     
     if slow_pvs and not slow_status and not slow_amq:
-        dasmon_conditions.append("DASMON is up but not writing to the DB: contact DASMON expert")
+        dasmon_conditions.append("DASMON is up but not writing to the DB: check PVStreamer")
     
     if (slow_status or slow_amq) and not slow_pvs:
         dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: contact DASMON expert")
