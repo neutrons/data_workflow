@@ -90,7 +90,12 @@
     background-color: #f8bdb7;
 }
 .status_box .status_ {
-    background-color: silver;
+    background-color: white;
+    color: silver;
+}
+.status_box .status_-1 {
+    background-color: white;
+    color: silver;
 }
 
 .status_box .status_text_0 {

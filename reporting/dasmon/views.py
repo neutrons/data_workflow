@@ -33,7 +33,10 @@ def summary(request):
     for i in instruments:
         if not ActiveInstrument.objects.is_alive(i):
             continue
-        dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
+        if ActiveInstrument.objects.is_adara(i):
+            dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
+        else:
+            dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
         das_status = view_util.get_dasmon_status(i)
         pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)

@@ -81,6 +81,7 @@
     <div id="runs_per_hour"></div>
 </div>
 
+{% if is_adara %}
 <p class='dashboard_highlight'>
 <span class='dashboard_highlight' id="run_title">{{ run_title }}</span><br>
 <span class='dashboard_normal'>Proposal:</span> <span class='dashboard_highlight' id="{{ proposal_id }}">{{ proposal_id }}</span>
@@ -88,6 +89,7 @@
 <span class='dashboard_normal'>Status:</span> <span class='dashboard_highlight' id="recording_status">{{ recording_status }}</span>
 <span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate_top">{{ count_rate }}</span>
 </p>
+{% endif %}
 
 <div class='status_bar'>
 <div class='status_box'>

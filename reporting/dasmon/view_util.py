@@ -146,6 +146,9 @@ def get_run_status(**template_args):
     _find_and_fill("proposal_id")
     _find_and_fill("run_title")
     
+    # Are we currently running ADARA on this instrument?
+    template_args['is_adara'] = ActiveInstrument.objects.is_adara(instrument_id)
+    
     # Are we recording or not?
     template_args["recording_status"] = is_running(instrument_id)
 
@@ -498,7 +501,7 @@ def get_completeness_status(instrument_id):
     STATUS_OK = (0, "OK")
     STATUS_WARNING = (1, "Warning")
     STATUS_ERROR = (2, "Error")
-    STATUS_UNKNOWN = (None, "Unknown")
+    STATUS_UNKNOWN = (-1, "Unknown")
 
     if not ActiveInstrument.objects.is_alive(instrument_id):
         return (-1, "OK")
