@@ -35,6 +35,16 @@ class ActiveInstrumentManager(models.Manager):
         else:
             return True
     
+    def is_adara(self, instrument_id):
+        """
+            Returns True if the instrument is running ADARA
+        """
+        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        if len(instrument_list)>0:
+            return instrument_list[0].is_adara
+        else:
+            return True
+    
 class ActiveInstrument(models.Model):
     """
         Table containing the list of instruments that are expecting to
@@ -42,4 +52,5 @@ class ActiveInstrument(models.Model):
     """
     instrument_id = models.ForeignKey(Instrument, unique=True)
     is_alive = models.BooleanField(default=True)
+    is_adara = models.BooleanField(default=True)
     objects = ActiveInstrumentManager()

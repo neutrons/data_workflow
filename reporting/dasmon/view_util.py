@@ -214,7 +214,7 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_long = datetime.timedelta(hours=red_timeout)
     
     try:
-        if not ActiveInstrument.objects.is_alive(instrument_id):
+        if not ActiveInstrument.objects.is_adara(instrument_id):
             return -1
     
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
@@ -273,7 +273,7 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
     delta_long = datetime.timedelta(hours=red_timeout)
     
     try:
-        if not ActiveInstrument.objects.is_alive(instrument_id):
+        if not ActiveInstrument.objects.is_adara(instrument_id):
             return -1
     
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
