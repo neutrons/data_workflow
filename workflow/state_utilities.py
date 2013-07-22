@@ -33,6 +33,7 @@ def decode_message(message):
     
     # Create payload for the message
     data = {"instrument": tokens[2].lower(),
+            "facility": tokens[1].upper(),
             "ipts": tokens[3].lower(),
             "run_number": run_number,
             "data_file": message}
