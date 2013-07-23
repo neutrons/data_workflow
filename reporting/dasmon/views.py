@@ -37,11 +37,13 @@ def summary(request):
             dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
         else:
             dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
+        diagnostics_url = reverse('dasmon.views.diagnostics', args=[i.name])
         das_status = view_util.get_dasmon_status(i)
         pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)
         instrument_list.append({'name': i.name,
                                 'url': dasmon_url,
+                                'diagnostics_url': diagnostics_url,
                                 'dasmon_status': das_status,
                                 'pvstreamer_status': pvstreamer_status,
                                 'completeness': completeness,

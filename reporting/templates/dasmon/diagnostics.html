@@ -5,9 +5,15 @@
 {% block banner %}{{ instrument }} Diagnostics {% endblock %}    
 
 {% block right_side_links %}
+    {% if is_adara %}
     <span style="float:right">live monitoring: 
     <a href="{{ live_monitor_url }}">status</a> | <a href="{{ live_runs_url }}">runs</a> | <a href="{{ live_pv_url }}">PVs</a>
     </span>
+    {% else %}
+    <span style="float:right">live monitoring: 
+    <a href="{{ live_runs_url }}">runs</a>
+    </span>
+    {% endif %}
 {% endblock %}
 
 {% block summary %}
@@ -24,6 +30,7 @@
 </div>
 </div>
 
+{% if is_adara %}
 {% if action_messages %}
 <p>
 The following items should be considered while interpreting the diagnostics below:
@@ -86,7 +93,7 @@ Reported conditions:<br>
 {% endfor %}
 </ul>
 {% endif %}
-
+{% endif %}
 
 <p>
 <b>Workflow diagnostics:</b>
