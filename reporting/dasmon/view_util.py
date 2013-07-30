@@ -303,6 +303,7 @@ def workflow_diagnostics(timeout=10):
     
     wf_diag = {}
     wf_conditions = []
+    dasmon_listener_warning = False
     
     # Recent reported status
     status_value = -1
@@ -319,6 +320,7 @@ def workflow_diagnostics(timeout=10):
     
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
+        dasmon_listener_warning = True
         wf_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
 
     # Status
@@ -332,6 +334,7 @@ def workflow_diagnostics(timeout=10):
     wf_diag["status"] = status_value
     wf_diag["status_time"] = status_time
     wf_diag["conditions"] = wf_conditions
+    wf_diag["dasmon_listener_warning"] = dasmon_listener_warning
     
     return wf_diag
     

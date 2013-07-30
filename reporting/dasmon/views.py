@@ -171,6 +171,7 @@ def help(request):
     
 @users.view_util.login_or_local_required
 @cache_page(5)
+@users.view_util.monitor
 def diagnostics(request, instrument):
     """
         Diagnose the health of an instrument
@@ -193,7 +194,8 @@ def diagnostics(request, instrument):
     
     # Actions messages
     actions = []
-    if dasmon_diag['dasmon_listener_warning'] and pv_diag['dasmon_listener_warning']:
+    if dasmon_diag['dasmon_listener_warning'] and pv_diag['dasmon_listener_warning'] \
+        and wf_diag['dasmon_listener_warning']:
         actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
     
     template_values = {'instrument':instrument.upper(),
