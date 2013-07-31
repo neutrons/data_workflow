@@ -231,7 +231,7 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
             logging.error("PVStreamer status = %s" % last_value.value)
             return 2
     except:
-        logging.error("No cached status for PVStreamer on instrument %s" % instrument_id.name)
+        logging.debug("No cached status for PVStreamer on instrument %s" % instrument_id.name)
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
@@ -257,7 +257,7 @@ def get_workflow_status(red_timeout=1, yellow_timeout=10):
             logging.error("WorkflowMgr status = %s" % last_value.value)
             return 2
     except:
-        logging.error("No cached status for WorkflowMgr on instrument")
+        logging.debug("No cached status for WorkflowMgr on instrument")
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
@@ -285,7 +285,7 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
             logging.error("DASMON status = %s" % last_value.value)
             return 2
     except:
-        logging.error("No cached status for DASMON on instrument %s" % instrument_id.name)
+        logging.debug("No cached status for DASMON on instrument %s" % instrument_id.name)
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
