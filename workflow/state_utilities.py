@@ -61,9 +61,10 @@ def logged_action(action):
         
         
         destination = headers["destination"].replace('/queue/','')
-        logging.debug("%s r%d: %s" % (data["instrument"],
-                                      data["run_number"],
-                                      destination))
+        logging.debug("%s r%d: %s: %s" % (data["instrument"],
+                                          data["run_number"],
+                                          destination,
+                                          str(data)))
         transactions.add_status_entry(headers, message)
         return action(self, headers, message)
 
