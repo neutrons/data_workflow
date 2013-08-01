@@ -60,10 +60,10 @@ def logged_action(action):
                 partial_dict = decode_message(data["data_file"])
                 if "facility" not in data:
                     data["facility"] = partial_dict["facility"]
+                    message = json.dumps(data)
             except:
                 logging.error("Could not parse facility")
                 logging.error(sys.exc_value)
-        
         
         destination = headers["destination"].replace('/queue/','')
         logging.info("%s r%d: %s: %s" % (data["instrument"],
