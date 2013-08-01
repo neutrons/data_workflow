@@ -321,7 +321,7 @@ def workflow_diagnostics(timeout=10):
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
-        wf_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
+        wf_conditions.append("No heartbeat updates for more than %s seconds: %s" % (str(timeout), _red_message("contact Workflow Manager expert")))    
 
     # Status
     if status_value > 0:
@@ -349,10 +349,14 @@ def postprocessing_diagnostics(timeout=10):
     red_conditions = []
 
     post_processing = report.view_util.get_post_processing_status()
-    if post_processing["catalog"]>0:
+    if post_processing["catalog"]==1:
         red_conditions.append("The cataloging was slow in responding to latest requests")
-    if post_processing["reduction"]>0:
+    elif post_processing["catalog"]>1:
+        red_conditions.append("The cataloging is not processing files: %s" % _red_message("contact Auto Reduction expert"))
+    if post_processing["reduction"]==1:
         red_conditions.append("The reduction was slow in responding to latest requests")
+    elif post_processing["reduction"]>1:
+        red_conditions.append("The reduction is not processing files: %s" % _red_message("contact Auto Reduction expert"))
 
     red_diag["catalog_status"] = post_processing["catalog"]
     red_diag["reduction_status"] = post_processing["reduction"]
@@ -388,7 +392,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=10):
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
-        pv_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
+        pv_conditions.append("No heartbeat updates for more than %s seconds: %s" % (str(timeout), _red_message("contact PVStreamer expert")))
 
     # Status
     if status_value > 0:
@@ -465,7 +469,7 @@ def dasmon_diagnostics(instrument_id, timeout=10):
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
         slow_status = True
-        dasmon_conditions.append("No heartbeat updates in the past %s seconds" % str(timeout))        
+        dasmon_conditions.append("No heartbeat updates for more than %s seconds: %s" % (str(timeout), _red_message("contact DASMON expert")))     
     
     # Status
     if status_value > 0:
@@ -476,13 +480,13 @@ def dasmon_diagnostics(instrument_id, timeout=10):
         dasmon_conditions.append("The web monitor has not heard from DASMON in a long time: no data available")
     
     if slow_status and slow_pvs and slow_amq:
-        dasmon_conditions.append("DASMON may be down: contact DASMON expert")
+        dasmon_conditions.append("DASMON may be down:  %s" % _red_message("contact DASMON expert"))
     
     if slow_pvs and not slow_status and not slow_amq:
         dasmon_conditions.append("DASMON is up but not writing to the DB: check PVStreamer")
     
     if (slow_status or slow_amq) and not slow_pvs:
-        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: contact DASMON expert")
+        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" % _red_message("contact DASMON expert"))
 
     if slow_status and slow_amq:
         dasmon_listener_warning = True
@@ -495,6 +499,9 @@ def dasmon_diagnostics(instrument_id, timeout=10):
     dasmon_diag["dasmon_listener_warning"] = dasmon_listener_warning
     
     return dasmon_diag
+
+def _red_message(msg):
+    return "<span class='red'><b>%s</b></span>" % str(msg)
 
 def get_completeness_status(instrument_id):
     """
