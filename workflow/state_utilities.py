@@ -61,7 +61,7 @@ def logged_action(action):
                 data["facility"] = partial_dict["facility"]
                 message = json.dumps(data)
             except:
-                logging.error("Could not parse facility: %s" % str())
+                logging.error("Could not parse facility: %s" % str(partial_dict))
                 logging.error(sys.exc_value)
         
         destination = headers["destination"].replace('/queue/','')
