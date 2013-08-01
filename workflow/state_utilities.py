@@ -54,15 +54,14 @@ def logged_action(action):
             message = json.dumps(data)
             
         # Make sure the message is complete
-        if "data_file" in data:
+        if "data_file" in data and "facility" not in data:
             logging.error("Received incomplete message %s" % str(data))
             try:
                 partial_dict = decode_message(data["data_file"])
-                if "facility" not in data:
-                    data["facility"] = partial_dict["facility"]
-                    message = json.dumps(data)
+                data["facility"] = partial_dict["facility"]
+                message = json.dumps(data)
             except:
-                logging.error("Could not parse facility: %s" % str(partial_dict))
+                logging.error("Could not parse facility: %s" % str())
                 logging.error(sys.exc_value)
         
         destination = headers["destination"].replace('/queue/','')
