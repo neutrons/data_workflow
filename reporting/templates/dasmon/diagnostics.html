@@ -44,6 +44,7 @@ The following items should be considered while interpreting the diagnostics belo
 
 <p>
 <b>DASMON diagnostics:</b>
+<div style="margin-left:20px">
 <table cellspacing="0">
 <tbody>
   <tr class="even">
@@ -60,7 +61,7 @@ The following items should be considered while interpreting the diagnostics belo
   </tr>
 </tbody>
 </table>
-</p>
+<p>
  
 {% if dasmon_diagnostics.conditions %}
 Reported conditions:<br>
@@ -70,9 +71,11 @@ Reported conditions:<br>
 {% endfor %}
 </ul>
 {% endif %}
+</div>
 
 <p>
 <b>PVStreamer diagnostics:</b>
+<div style="margin-left:20px">
 <table cellspacing="0">
 <tbody>
   <tr class="even">
@@ -83,7 +86,7 @@ Reported conditions:<br>
   </tr>
 </tbody>
 </table>
-</p>
+<p>
  
 {% if pv_diagnostics.conditions %}
 Reported conditions:<br>
@@ -94,9 +97,11 @@ Reported conditions:<br>
 </ul>
 {% endif %}
 {% endif %}
+</div>
 
 <p>
 <b>Workflow diagnostics:</b>
+<div style="margin-left:20px">
 <table cellspacing="0">
 <tbody>
   <tr class="even">
@@ -107,7 +112,7 @@ Reported conditions:<br>
   </tr>
 </tbody>
 </table>
-</p>
+<p>
  
 {% if wf_diagnostics.conditions %}
 Reported conditions:<br>
@@ -117,10 +122,11 @@ Reported conditions:<br>
 {% endfor %}
 </ul>
 {% endif %}
-
+</div>
 
 <p>
 <b>Cataloging & Reduction diagnostics:</b>
+<div style="margin-left:20px">
 <table cellspacing="0">
 <tbody>
   <tr class="even">
@@ -131,7 +137,7 @@ Reported conditions:<br>
   </tr>
 </tbody>
 </table>
-</p>
+<p>
  
 {% if post_diagnostics.conditions %}
 Reported conditions:<br>
@@ -141,6 +147,7 @@ Reported conditions:<br>
 {% endfor %}
 </ul>
 {% endif %}
+</div>
 
 {% endblock %}
 
