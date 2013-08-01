@@ -66,7 +66,7 @@ def logged_action(action):
         
         
         destination = headers["destination"].replace('/queue/','')
-        logging.information("%s r%d: %s: %s" % (data["instrument"],
+        logging.info("%s r%d: %s: %s" % (data["instrument"],
                                           data["run_number"],
                                           destination,
                                           str(data)))
