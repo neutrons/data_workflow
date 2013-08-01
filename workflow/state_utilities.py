@@ -1,6 +1,7 @@
 import logging
 from database import transactions
 import json
+import sys
 
 def decode_message(message):
     """
@@ -54,14 +55,18 @@ def logged_action(action):
             
         # Make sure the message is complete
         if "data_file" in data:
-            partial_dict = decode_message(data["data_file"])
-            if "facility" not in data:
-                logging.error("Received incomplete message %s" % str(data))
-                data["facility"] = partial_dict["facility"]
+            logging.error("Received incomplete message %s" % str(data))
+            try:
+                partial_dict = decode_message(data["data_file"])
+                if "facility" not in data:
+                    data["facility"] = partial_dict["facility"]
+            except:
+                logging.error("Could not parse facility")
+                logging.error(sys.exc_value)
         
         
         destination = headers["destination"].replace('/queue/','')
-        logging.debug("%s r%d: %s: %s" % (data["instrument"],
+        logging.information("%s r%d: %s: %s" % (data["instrument"],
                                           data["run_number"],
                                           destination,
                                           str(data)))
