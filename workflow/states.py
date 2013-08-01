@@ -113,6 +113,7 @@ class Postprocess_data_ready(StateAction):
     """
         Default action for POSTPROCESS.DATA_READY messages
     """
+    @logged_action
     def __call__(self, headers, message):
         """
             Called to process a message
@@ -128,6 +129,7 @@ class Reduction_complete(StateAction):
     """
         Default action for REDUCTION.COMPLETE messages
     """
+    @logged_action
     def __call__(self, headers, message):
         """
             Called to process a message
