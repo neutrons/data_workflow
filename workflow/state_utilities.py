@@ -52,6 +52,14 @@ def logged_action(action):
             data = decode_message(message)
             message = json.dumps(data)
             
+        # Make sure the message is complete
+        if "data_file" in data:
+            partial_dict = decode_message(data["data_file"])
+            if "facility" not in data:
+                logging.error("Received incomplete message %s" % str(data))
+                data["facility"] = partial_dict["facility"]
+        
+        
         destination = headers["destination"].replace('/queue/','')
         logging.debug("%s r%d: %s" % (data["instrument"],
                                       data["run_number"],
