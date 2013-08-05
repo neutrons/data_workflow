@@ -1,4 +1,4 @@
-from dasmon.models import StatusVariable, Parameter, StatusCache, ActiveInstrument
+from dasmon.models import StatusVariable, Parameter, StatusCache, ActiveInstrument, Signal
 from django.contrib import admin
 
 class StatusVariableAdmin(admin.ModelAdmin):
@@ -13,9 +13,11 @@ class ActiveInstrumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'is_alive')
     list_editable = ('is_alive',)
     
+class SignalAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'message', 'level', 'timestamp')
+    
 admin.site.register(StatusVariable, StatusVariableAdmin)
 admin.site.register(Parameter, ParameterAdmin)
 admin.site.register(StatusCache, StatusVariableAdmin)
 admin.site.register(ActiveInstrument, ActiveInstrumentAdmin)
-
-
+admin.site.register(Signal, SignalAdmin)

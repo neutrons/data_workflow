@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', metavar='runid', type=int, help='Run number (int)', dest='runid')
     parser.add_argument('-i', metavar='ipts', type=int, help='IPTS number (int)', dest='ipts')
     parser.add_argument('-q', metavar='queue', help='ActiveMQ queue name', dest='queue')
-    parser.add_argument('-e', metavar='err', help='Error mesage', dest='err')
+    parser.add_argument('-e', metavar='err', help='Error message', dest='err')
     parser.add_argument('-d', metavar='file', help='data file path', dest='file')
     parser.add_argument('-b', metavar='instrument', help='instrument name', dest='instrument')
     namespace = parser.parse_args()

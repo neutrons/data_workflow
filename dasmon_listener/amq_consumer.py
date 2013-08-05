@@ -22,7 +22,7 @@ from settings import TOPIC_PREFIX
 from settings import LEGACY_PREFIX, LEGACY_INSTRUMENT
 sys.path.append(INSTALLATION_DIR)
 
-from dasmon.models import StatusVariable, Parameter, StatusCache
+from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
 from pvmon.models import PV, PVCache
 from report.models import Instrument
 
@@ -61,6 +61,7 @@ class Listener(stomp.ConnectionListener):
             data_dict = json.loads(message)
         except:
             logging.error("Could not decode message from %s" % destination)
+            logging.error(sys.exc_value)
             return
            
         try:
@@ -77,7 +78,16 @@ class Listener(stomp.ConnectionListener):
                     key = key[:len(key)-2]
                 store_and_cache(instrument_id, key, data_dict["status"])
 
-        # For signal messages, store each entry
+        # Process signals
+        elif "SIGNAL" in destination:
+            try:
+                logging.warn("SIGNAL: %s: %s" % (destination, str(data_dict)))
+                process_signal(instrument_id, data_dict)
+            except:
+                logging.error("Could not process signal: %s" % str(data_dict))
+                logging.error(sys.exc_value)
+            
+        # For other status messages, store each entry
         else:      
             for key in data_dict:
                 # If we find a dictionary, process its entries
@@ -98,6 +108,65 @@ class Listener(stomp.ConnectionListener):
                 else:
                     store_and_cache(instrument_id, key, data_dict[key])
             
+def process_signal(instrument_id, data):
+    """
+        Process and store signal messages.
+        @param instrument_id: Instrument object
+        @param data: data dictionary
+        
+        Asserted signals look like this:
+        {
+            "msg_type": "2147483648",
+            "src_name": "DASMON.0",
+            "timestamp": "1375464085",
+            "sig_name": "SID_SVP_HIGH",
+            "sig_source": "DAS",
+            "sig_message": "SV Pressure too high!",
+            "sig_level": "3"
+        }
+        
+        Retracted signals look like this:
+        {
+            "msg_type": "2147483649",
+            "src_name": "DASMON.0",
+            "timestamp": "1375464079",
+            "sig_name": "SID_SVP_HIGH"
+        }
+    """    
+    # Assert a signal
+    if 'sig_name' in data:
+        # Query the DB to see whether we have the signal asserted
+        asserted_sig = Signal.objects.filter(instrument_id=instrument_id,
+                                             name=data['sig_name']).order_by('timestamp').reverse()
+        if 'sig_level' in data:
+            level = int(data['sig_level']) if 'sig_level' in data else 0
+            message = data['sig_message'] if 'sig_message' in data else ''
+            source = data['sig_source'] if 'sig_source' in data else ''
+            timestamp = float(data['timestamp']) if 'timestamp' in data else time.time()
+            timestamp = timezone.localtime(datetime.datetime.fromtimestamp(timestamp))
+                
+            if len(asserted_sig) == 0:
+                signal = Signal(instrument_id=instrument_id,
+                             name=data['sig_name'],
+                             source=source,
+                             message=message,
+                             level=level,
+                             timestamp=timestamp)
+                signal.save()
+            else:
+                signal = asserted_sig[0]
+                signal.source = source
+                signal.message = message
+                signal.level = level
+                signal.timestamp = timestamp
+                signal.save()
+    
+        # Retract a signal
+        else:
+            for item in asserted_sig:
+                item.delete()
+    
+    
 def store_and_cache(instrument_id, key, value):
     """
         Store and cache a DASMON parameter

@@ -1,5 +1,5 @@
 from report.models import Instrument, DataRun, WorkflowSummary, RunStatus, StatusQueue
-from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
+from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
 from pvmon.models import PVName, PV, PVCache
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
@@ -625,3 +625,27 @@ def get_live_runs_update(request, instrument_id):
     return data_dict
 
 
+class SignalEntry(object):
+    """
+        Utility class representing a DASMON signal
+    """
+    def __init__(self, name='', status='', assert_time='', url=''):
+        self.name = name
+        self.status = status
+        self.assert_time = assert_time
+        self.url = url
+    
+def get_signals(instrument_id):
+    """
+        Get the current list of signals/alarms for a given instrument
+        @param instrument_id: Instrument object 
+    """
+    signals = Signal.objects.filter(instrument_id=instrument_id)
+    sig_alerts = []
+    for sig in signals:
+        sig_entry = SignalEntry(name=sig.name,
+                                status=sig.message,
+                                assert_time=sig.timestamp)
+        sig_alerts.append(sig_entry)
+        
+    return sig_alerts

@@ -41,6 +41,10 @@
             }
 
         }, dataType: "json", timeout: 30000 });
+
+        $.ajax({ url: "{{ signals_url }}", success: function(data) {
+            $('#signal_table').replaceWith(data);
+        }, dataType: "html", timeout: 30000 });    
     };
     
     function pop_monitor_plot(element_id)
@@ -117,6 +121,8 @@ created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
 Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
 {% endif %}
 </p>
+
+<span id='signal_table'></span>
 
 {% endblock %}
 

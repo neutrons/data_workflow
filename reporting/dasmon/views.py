@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page
+from django.template import Context, loader
 
 from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
@@ -86,6 +87,7 @@ def live_monitor(request, instrument):
     template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
     template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
     template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
+    template_values['signals_url'] = reverse('dasmon.views.get_signal_table',args=[instrument])
     
     return render_to_response('dasmon/live_monitor.html', template_values)
     
@@ -281,3 +283,15 @@ def summary_update(request):
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 
+@users.view_util.login_or_local_required
+def get_signal_table(request, instrument):
+    """
+        Ajax call to get the signal table
+    """
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    t = loader.get_template('dasmon/signal_table.html')
+    c = Context({
+            'signals': view_util.get_signals(instrument_id),
+        })
+    resp = t.render(c)
+    return HttpResponse(resp, mimetype="text/html")

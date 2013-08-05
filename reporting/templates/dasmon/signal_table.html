@@ -1,0 +1,20 @@
+<span id='signal_table'>
+{% if signals %}
+      <table cellspacing="0" class="message_table" id="alert_table">
+      <thead>
+      <tr>
+          <th> Signal </th> <th> Status </th> <th> Alert Time </th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for item in signals %}
+          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+          <td><span class='red'>{{ item.name }}</span></td>
+          <td><span class='red'>{{ item.status }}</span></td>
+          <td>{{ item.assert_time }}</td>
+          </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+{% endif %}
+</span>
