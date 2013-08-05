@@ -1,3 +1,12 @@
+# The DB settings are defined in the workflow manager
+from workflow.database.settings import DATABASES
+TIME_ZONE = 'America/New_York'
+USE_TZ = True
+INSTALLED_APPS = (
+    'dasmon',
+    )
+INSTALLATION_DIR = "/var/www/workflow/app"
+
 import os
 import sys
 import logging
