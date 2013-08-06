@@ -65,10 +65,10 @@ def logged_action(action):
                 logging.error(sys.exc_value)
         
         destination = headers["destination"].replace('/queue/','')
-        logging.info("%s r%d: %s: %s" % (data["instrument"],
-                                          data["run_number"],
-                                          destination,
-                                          str(data)))
+        logging.info("%s r%s: %s: %s" % (data["instrument"],
+                                         data["run_number"],
+                                         destination,
+                                         str(data)))
         transactions.add_status_entry(headers, message)
         return action(self, headers, message)
 

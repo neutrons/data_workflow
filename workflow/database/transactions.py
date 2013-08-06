@@ -77,7 +77,7 @@ def add_status_entry(headers, data):
         logging.error(sys.exc_value)
 
     # Check whether we already have an entry for this run
-    run_number = data_dict["run_number"]
+    run_number = int(data_dict["run_number"])
     try:
         run_id = DataRun.objects.get(run_number=run_number, instrument_id=instrument_id)
     except DataRun.DoesNotExist:
