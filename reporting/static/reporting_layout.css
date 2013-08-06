@@ -238,12 +238,12 @@ img {border: 0;}
 	margin-left:auto;
 	margin-right:auto;
 	background:#FFF;
-	padding-bottom:10px;
-	padding-top:10px;
-	padding-left:10px;
-	padding-right:10px;
-    max-width:520px;
-	min-width:520px;
+	padding-bottom:5px;
+	padding-top:5px;
+	padding-left:5px;
+	padding-right:5px;
+    max-width:530px;
+	min-width:530px;
 	color:#5B4729;
 	
     border: 1px solid #cdc0b0;
