@@ -651,7 +651,7 @@ def get_signals(instrument_id):
     used_keys = []
     for sig in signals:
         sig_entry = SignalEntry(name=sig.name,
-                                status=sig.message,
+                                status="<span class='red'><b>%s</b></span>" % sig.message,
                                 assert_time=sig.timestamp)
         try:
             monitored = MonitoredVariable.objects.filter(instrument=instrument_id,
@@ -677,8 +677,9 @@ def get_signals(instrument_id):
                     df = dateformat.DateFormat(localtime)
                     timestamp = df.format(settings.DATETIME_FORMAT)
                 except:
-                    value = '-'
-                sig_entry = SignalEntry(name=item.pv_name, status=latest.value, 
+                    value = 'No data available'
+                    timestamp = '-'
+                sig_entry = SignalEntry(name=item.pv_name, status=value, 
                                         key=item.pv_name, assert_time=timestamp)
                 sig_alerts.append(sig_entry)
     except:
