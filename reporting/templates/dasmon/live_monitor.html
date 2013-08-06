@@ -41,11 +41,30 @@
             }
 
         }, dataType: "json", timeout: 30000 });
+
+        pv_query_str = "";
+        for (var i=0;i<plotted_vars.length; i++) {
+            if (plotted_vars[i][1]=="2") pv_query_str += plotted_vars[i][0]+',';
+        }
+        if (pv_query_str.length>0) {
+            $.ajax({ url: "{{ pv_url }}?since="+last_run_id+"&vars="+pv_query_str, success: function(data) {
+    
+                plotted_data = data.live_plot_data;
+                
+                for (var i=0; i<plotted_vars.length; i++) {
+                    for (var j=0; j<plotted_data.length; j++) {
+                        if (plotted_data[j][0]==plotted_vars[i][0]) {
+                            plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_plot", plotted_vars[i][0]);
+                        }
+                    }
+                }
+            }, dataType: "json", timeout: 30000 });
+        }
         
         get_alarms();
     };
     
-    function pop_monitor_plot(element_id)
+    function pop_monitor_plot(element_id, option)
     {
         if (!$("#"+element_id+"_dialog").length)
         {
@@ -69,7 +88,7 @@
                     };
                 }
             });
-            plotted_vars.push([element_id, "1"]);
+            plotted_vars.push([element_id, option]);
         }
     }
     
@@ -155,7 +174,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
       {% for item in key_value_pairs %}
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           {% if item.value|is_number %}
-          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}');"> {{ item.key }} </a></td>
+          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '1');"> {{ item.key }} </a></td>
           {% else %}
           <td>{{ item.key }}</td>
           {% endif %}

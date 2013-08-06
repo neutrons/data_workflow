@@ -1,6 +1,6 @@
 from report.models import Instrument, DataRun, WorkflowSummary, RunStatus, StatusQueue
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
-from pvmon.models import PVName, PV, PVCache
+from pvmon.models import PVName, PV, PVCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
@@ -10,6 +10,7 @@ import logging
 import sys
 import time
 import report.view_util
+import pvmon.view_util
 
 
 def get_cached_variables(instrument_id, monitored_only=False):
@@ -629,23 +630,58 @@ class SignalEntry(object):
     """
         Utility class representing a DASMON signal
     """
-    def __init__(self, name='', status='', assert_time='', url=''):
+    def __init__(self, name='', status='', assert_time='', key=''):
         self.name = name
         self.status = status
         self.assert_time = assert_time
-        self.url = url
+        self.key = key
     
 def get_signals(instrument_id):
     """
         Get the current list of signals/alarms for a given instrument
         @param instrument_id: Instrument object 
     """
-    signals = Signal.objects.filter(instrument_id=instrument_id)
+    try:
+        signals = Signal.objects.filter(instrument_id=instrument_id)
+    except:
+        logging.error("Error reading signals: %s" % sys.exc_value)
+        return []
+        
     sig_alerts = []
+    used_keys = []
     for sig in signals:
         sig_entry = SignalEntry(name=sig.name,
                                 status=sig.message,
                                 assert_time=sig.timestamp)
+        try:
+            monitored = MonitoredVariable.objects.filter(instrument=instrument_id,
+                                                         rule_name=sig.name)
+            if len(monitored)>0:
+                sig_entry.key = str(monitored[0].pv_name)
+                used_keys.append(sig_entry.key)
+        except:
+            # Could not find an entry for this signal
+            logging.error("Problem finding PV for signal: %s" % sys.exc_value)
+            
         sig_alerts.append(sig_entry)
+        
+    # Get the monitored PVs and signal equivalences
+    try:
+        monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
+        for item in monitored:
+            if str(item.pv_name) not in used_keys:
+                try:
+                    latest = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name).latest("update_time")
+                    value = '%g' % latest.value
+                    localtime = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
+                    df = dateformat.DateFormat(localtime)
+                    timestamp = df.format(settings.DATETIME_FORMAT)
+                except:
+                    value = '-'
+                sig_entry = SignalEntry(name=item.pv_name, status=latest.value, 
+                                        key=item.pv_name, assert_time=timestamp)
+                sig_alerts.append(sig_entry)
+    except:
+        logging.error("Could not process monitored PVs: %s" % sys.exc_value)
         
     return sig_alerts

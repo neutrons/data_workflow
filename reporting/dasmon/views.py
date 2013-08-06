@@ -75,9 +75,11 @@ def live_monitor(request, instrument):
 
     # Update URL
     update_url = reverse('dasmon.views.get_update',args=[instrument])
+    pv_url = reverse('pvmon.views.get_update',args=[instrument])
 
     template_values = {'instrument': instrument.upper(),
                        'update_url': update_url,
+                       'pv_url': pv_url,
                        'key_value_pairs': view_util.get_cached_variables(instrument_id, monitored_only=True),
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)

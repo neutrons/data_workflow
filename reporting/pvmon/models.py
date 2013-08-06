@@ -1,5 +1,6 @@
 from django.db import models
 from report.models import Instrument
+from dasmon.models import Signal, Parameter
 
 
 class PVName(models.Model):
@@ -33,3 +34,14 @@ class PVCache(models.Model):
     value = models.FloatField()
     status = models.IntegerField()
     update_time = models.IntegerField()
+    
+
+class MonitoredVariable(models.Model):
+    """
+        Table of PVs that need special monitoring
+        and might have DASMON rules associated with them
+    """
+    instrument = models.ForeignKey(Instrument)
+    pv_name = models.ForeignKey(PVName, null=True, blank=True)
+    rule_name = models.CharField(max_length=50, default='', blank=True)
+    
