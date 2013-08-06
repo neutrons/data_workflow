@@ -64,22 +64,23 @@ function plot_combined_rates(run_data, error_data){
 function plot_monitor(monitor_data, element_id, label_text){
 	var options = {
 			xaxis: {
+				minTickSize:0.01,
 				show: true,
 				tickFormatter: function (val, axis) { 
 					if (val==0) {
 						return "now";
 					} else {
-						return val;
+						return val.toFixed(2);
 					}
 				},
 			},
 			yaxis: { 
-				minTickSize:1,
+				minTickSize:0.0001,
 				tickFormatter: function (val, axis) { 
 					if (val>10000 || (val<0.0001&&val>0)) {
 						return val.toExponential(); 
 					} else {
-						return val;
+						return val.toPrecision(3);
 					}
 				},
 			},
