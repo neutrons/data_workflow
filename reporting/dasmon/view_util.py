@@ -648,7 +648,6 @@ def get_signals(instrument_id):
         return []
         
     sig_alerts = []
-    used_keys = []
     for sig in signals:
         sig_entry = SignalEntry(name=sig.name,
                                 status="<span class='red'><b>%s</b></span>" % sig.message,
@@ -658,7 +657,6 @@ def get_signals(instrument_id):
                                                          rule_name=sig.name)
             if len(monitored)>0:
                 sig_entry.key = str(monitored[0].pv_name)
-                used_keys.append(sig_entry.key)
         except:
             # Could not find an entry for this signal
             logging.error("Problem finding PV for signal: %s" % sys.exc_value)
@@ -669,19 +667,18 @@ def get_signals(instrument_id):
     try:
         monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
         for item in monitored:
-            if str(item.pv_name) not in used_keys:
-                try:
-                    latest = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name).latest("update_time")
-                    value = '%g' % latest.value
-                    localtime = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
-                    df = dateformat.DateFormat(localtime)
-                    timestamp = df.format(settings.DATETIME_FORMAT)
-                except:
-                    value = 'No data available'
-                    timestamp = '-'
-                sig_entry = SignalEntry(name=item.pv_name, status=value, 
-                                        key=item.pv_name, assert_time=timestamp)
-                sig_alerts.append(sig_entry)
+            try:
+                latest = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name).latest("update_time")
+                value = '%g' % latest.value
+                localtime = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
+                df = dateformat.DateFormat(localtime)
+                timestamp = df.format(settings.DATETIME_FORMAT)
+            except:
+                value = 'No data available'
+                timestamp = '-'
+            sig_entry = SignalEntry(name=item.pv_name, status=value, 
+                                    key=item.pv_name, assert_time=timestamp)
+            sig_alerts.append(sig_entry)
     except:
         logging.error("Could not process monitored PVs: %s" % sys.exc_value)
         
