@@ -14,7 +14,7 @@ class ActiveInstrumentAdmin(admin.ModelAdmin):
     list_editable = ('is_alive',)
     
 class SignalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'message', 'level', 'timestamp')
+    list_display = ('id', 'instrument_id', 'name', 'message', 'level', 'timestamp')
     
 admin.site.register(StatusVariable, StatusVariableAdmin)
 admin.site.register(Parameter, ParameterAdmin)
