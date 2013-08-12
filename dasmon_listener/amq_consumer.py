@@ -23,7 +23,7 @@ from settings import LEGACY_PREFIX, LEGACY_INSTRUMENT
 sys.path.append(INSTALLATION_DIR)
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
-from pvmon.models import PV, PVCache
+from pvmon.models import PV, PVCache, MonitoredVariable
 from report.models import Instrument
 
 class Listener(stomp.ConnectionListener):
@@ -300,8 +300,11 @@ class Client(object):
                 
                 # Remove old PVMON entries
                 PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-                PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-                
+                old_entries = PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
+                for item in old_entries:
+                    if len(MonitoredVariable.objects.filter(instrument=item.instrument,
+                                                            pv_name=item.name))==0:
+                        item.delete()
                 time.sleep(waiting_period)
             except:
                 logging.error("Problem connecting to AMQ broker")
