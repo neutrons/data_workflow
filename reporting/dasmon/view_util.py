@@ -349,6 +349,20 @@ def postprocessing_diagnostics(timeout=10):
     red_diag = {}
     red_conditions = []
 
+    # Get the status of auto-reduction nodes
+    try:
+        common_services = Instrument.objects.get(name='common')
+        nodes = []
+        for item in Parameter.objects.all():
+            if item.name.startswith(settings.SYSTEM_STATUS_PREFIX+'autoreducer'):
+                last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
+                nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                              'time':timezone.localtime(last_value.timestamp)})
+        red_diag['ar_nodes']=nodes
+    except:
+        # No data available
+        pass
+
     post_processing = report.view_util.get_post_processing_status()
     if post_processing["catalog"]==1:
         red_conditions.append("The cataloging was slow in responding to latest requests")

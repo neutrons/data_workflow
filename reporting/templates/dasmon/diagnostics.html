@@ -135,6 +135,11 @@ Reported conditions:<br>
   <tr class="odd">
     <td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td>
   </tr>
+  {% for item in post_diagnostics.ar_nodes %}
+  <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+    <td>{{ item.node }}: </td><td>{{ item.time }}</td>
+  </tr>
+  {% endfor %}
 </tbody>
 </table>
 <p>
