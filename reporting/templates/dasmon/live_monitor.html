@@ -19,7 +19,7 @@
         query_str = "";
         for (var i=0;i<plotted_vars.length; i++) {
             if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
-        }
+        };
         $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&vars="+query_str, success: function(data) {
 
         	update_from_ajax_data(data);
@@ -45,7 +45,7 @@
         pv_query_str = "";
         for (var i=0;i<plotted_vars.length; i++) {
             if (plotted_vars[i][1]=="2") pv_query_str += plotted_vars[i][0]+',';
-        }
+        };
         if (pv_query_str.length>0) {
             $.ajax({ url: "{{ pv_url }}?since="+last_run_id+"&vars="+pv_query_str, success: function(data) {
     
