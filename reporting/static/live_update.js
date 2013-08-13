@@ -78,9 +78,9 @@ function plot_monitor(monitor_data, element_id, label_text){
 				minTickSize:0.0001,
 				tickFormatter: function (val, axis) { 
 					if (val>10000 || (val<0.0001&&val>0)) {
-						return val.toExponential(); 
+						return val.toExponential(4); 
 					} else {
-						return val.toPrecision(3);
+						return val.toPrecision(4);
 					}
 				},
 			},
