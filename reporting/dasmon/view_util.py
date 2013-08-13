@@ -124,8 +124,8 @@ def get_run_status(**template_args):
     """
         Fill a template dictionary with run information
     """
-    def _find_and_fill(dasmon_name):
-        _value = "Unknown"
+    def _find_and_fill(dasmon_name, default='-'):
+        _value = default
         try:
             key_id = Parameter.objects.get(name=dasmon_name)
             last_value = get_latest(instrument_id, key_id)
@@ -145,7 +145,7 @@ def get_run_status(**template_args):
     _find_and_fill("run_number")
     _find_and_fill("count_rate")
     _find_and_fill("proposal_id")
-    _find_and_fill("run_title")
+    _find_and_fill("run_title", '')
     
     # Are we currently running ADARA on this instrument?
     template_args['is_adara'] = ActiveInstrument.objects.is_adara(instrument_id)
