@@ -57,13 +57,16 @@ def login_or_local_required(fn):
         elif len(settings.ALLOWED_DOMAIN)>0:
             ip_addr =  request.META['REMOTE_ADDR']
 
-            # If the user is on the allowed domain, return the function
-            if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
-                return fn(request, *args, **kws)
-            
-            # If we allow a certain domain and the user is on the server, return the function
-            elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
-                return fn(request, *args, **kws)
+            try:
+                # If the user is on the allowed domain, return the function
+                if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
+                    return fn(request, *args, **kws)
+                
+                # If we allow a certain domain and the user is on the server, return the function
+                elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
+                    return fn(request, *args, **kws)
+            except:
+                logging.error("Error processing IP address: %s" % str(ip_addr))
 
         # If we made it here, we need to authenticate the user
         return redirect(redirect_url)   

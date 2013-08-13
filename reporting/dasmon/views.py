@@ -286,6 +286,7 @@ def summary_update(request):
 
 
 @users.view_util.login_or_local_required
+@cache_page(5)
 def get_signal_table(request, instrument):
     """
         Ajax call to get the signal table
