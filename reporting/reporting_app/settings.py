@@ -216,6 +216,9 @@ MONITOR_ON = True
 ## Prefix for status parameter names for monitored sub-systems
 SYSTEM_STATUS_PREFIX = 'system_'
 
+## Post-processing node prefix values (autoreduction and cataloging)
+POSTPROCESS_NODE_PREFIX = ['autoreducer', 'fermi']
+
 # Import local settings if available
 try:
     from local_settings import *

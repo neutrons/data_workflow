@@ -354,10 +354,11 @@ def postprocessing_diagnostics(timeout=10):
         common_services = Instrument.objects.get(name='common')
         nodes = []
         for item in Parameter.objects.all():
-            if item.name.startswith(settings.SYSTEM_STATUS_PREFIX+'autoreducer'):
-                last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
-                nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
-                              'time':timezone.localtime(last_value.timestamp)})
+            for node_prefix in settings.POSTPROCESS_NODE_PREFIX:
+                if item.name.startswith(settings.SYSTEM_STATUS_PREFIX+node_prefix):
+                    last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
+                    nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                                  'time':timezone.localtime(last_value.timestamp)})
         red_diag['ar_nodes']=nodes
     except:
         # No data available
