@@ -109,7 +109,7 @@ BEGIN
   ELSE
     UPDATE pvmon_pvcache
       SET value=new_value, update_time=new_time
-      WHERE name_id = n_id;
+      WHERE name_id = n_id AND instrument_id = n_instrument;
   END IF;
 END;
 $BODY$
