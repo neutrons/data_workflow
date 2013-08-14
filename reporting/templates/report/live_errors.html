@@ -41,7 +41,7 @@
             error_data = data.error_rate;
             plot_combined_rates(run_data, error_data);
 
-        }, dataType: "json", timeout: 30000 });
+        }, dataType: "json", timeout: 30000, cache: false });
     };    
 </script>   
 {% endblock %}

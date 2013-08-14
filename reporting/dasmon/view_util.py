@@ -77,6 +77,11 @@ def is_running(instrument_id):
         @param instrument_id: Instrument object
     """
     try:
+        if not ActiveInstrument.objects.is_adara(instrument_id):
+            return '-'
+    except:
+        logging.error("Could not determine whether %s is running ADARA" % str(instrument_id))
+    try:
         is_recording = False
         key_id = Parameter.objects.get(name="recording")
         last_value = get_latest(instrument_id, key_id)

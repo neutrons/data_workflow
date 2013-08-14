@@ -40,7 +40,7 @@
             	}
             }
 
-        }, dataType: "json", timeout: 30000 });
+        }, dataType: "json", timeout: 30000, cache: false });
 
         pv_query_str = "";
         for (var i=0;i<plotted_vars.length; i++) {
@@ -58,7 +58,7 @@
                         }
                     }
                 }
-            }, dataType: "json", timeout: 30000 });
+            }, dataType: "json", timeout: 30000, cache: false });
         }
         
         get_alarms();
@@ -96,7 +96,7 @@
     {
         $.ajax({ url: "{{ signals_url }}", success: function(data) {
             $('#signal_table').replaceWith(data);
-        }, dataType: "html", timeout: 30000 });    
+        }, dataType: "html", timeout: 30000, cache: false });    
     }
 </script>   
 {% endblock %}

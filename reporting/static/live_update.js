@@ -5,14 +5,8 @@ function global_system_status_update(data, i){
     content = "<li class='status_"+data.instruments[i].pvstreamer_status+"' id='"+data.instruments[i].name+"_pvstreamer_status'>PVStreamer</li>";
     $('#'+data.instruments[i].name+'_pvstreamer_status').replaceWith(content);
     
-    content = "<li class='status_"+data.postprocess_status.workflow+"' id='"+data.instruments[i].name+"_workflow_status'>Workflow</li>";
-    $('#'+data.instruments[i].name+'_workflow_status').replaceWith(content);
-    
-    content = "<li class='status_"+data.postprocess_status.catalog+"' id='"+data.instruments[i].name+"_catalog_status'>Catalog</li>";
-    $('#'+data.instruments[i].name+'_catalog_status').replaceWith(content);
-    
-    content = "<li class='status_"+data.postprocess_status.reduction+"' id='"+data.instruments[i].name+"_reduction_status'>Reduction</li>";
-    $('#'+data.instruments[i].name+'_reduction_status').replaceWith(content);
+    content = "<span id='"+data.instruments[i].name+"_recording_status'>"+data.instruments[i].recording_status+"</span>";
+    $('#'+data.instruments[i].name+'_recording_status').replaceWith(content);
     return content
 }
 

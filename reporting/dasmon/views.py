@@ -43,6 +43,7 @@ def summary(request):
         pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)
         instrument_list.append({'name': i.name,
+                                'recording_status': view_util.is_running(i),
                                 'url': dasmon_url,
                                 'diagnostics_url': diagnostics_url,
                                 'dasmon_status': das_status,
@@ -272,7 +273,8 @@ def summary_update(request):
         das_status = view_util.get_dasmon_status(i)
         pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)
-        instrument_list.append({'name': i.name, 
+        instrument_list.append({'name': i.name,
+                                'recording_status': view_util.is_running(i),
                                 'dasmon_status': das_status,
                                 'pvstreamer_status': pvstreamer_status,
                                 'completeness': completeness,
