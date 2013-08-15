@@ -60,7 +60,9 @@ def _prune_title_string(value):
         toks = pruned.split('><')
         if len(toks)>1:
             comments = "<span style='font-size:small'>%s</span>" % "<br>".join(toks[1:])
-        return "%s<br>%s" % (toks[0], comments)
+            return "%s<br>%s" % (toks[0], comments)
+        else:
+            return pruned
     except:
         return value
    
