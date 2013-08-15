@@ -34,6 +34,10 @@ def get_cached_variables(instrument_id, monitored_only=False):
             except:
                 string_value = kvp.value
             
+            # Tweak the title string so we don't have ><
+            if str(kvp.key_id)=='run_title':
+                string_value = _prune_title_string(string_value)
+                
             variable_dict = {"key": str(kvp.key_id),
                              "value": string_value,
                              "timestamp": df.format(settings.DATETIME_FORMAT),
@@ -42,6 +46,24 @@ def get_cached_variables(instrument_id, monitored_only=False):
 
     return key_value_pairs
 
+def _prune_title_string(value):
+    """
+        Replace unusual characters in a string.
+        This is mostly for run titles which come in
+        from the DAS with weird delimiters.
+        @param value: string
+    """
+    try:
+        pruned = value
+        if pruned.endswith('><'):
+            pruned = pruned[:len(pruned)-2]
+        toks = pruned.split('><')
+        if len(toks)>1:
+            comments = "<span style='font-size:small'>%s</span>" % "<br>".join(toks[1:])
+        return "%s<br>%s" % (toks[0], comments)
+    except:
+        return value
+   
 def get_latest(instrument_id, key_id):
     """
         Returns the latest entry for a given key on a given instrument
@@ -129,12 +151,14 @@ def get_run_status(**template_args):
     """
         Fill a template dictionary with run information
     """
-    def _find_and_fill(dasmon_name, default='-'):
+    def _find_and_fill(dasmon_name, default='-', prune=False):
         _value = default
         try:
             key_id = Parameter.objects.get(name=dasmon_name)
             last_value = get_latest(instrument_id, key_id)
             _value = last_value.value
+            if prune:
+                _value = _prune_title_string(_value)
         except:
             pass
         template_args[dasmon_name] = _value
@@ -150,7 +174,7 @@ def get_run_status(**template_args):
     _find_and_fill("run_number")
     _find_and_fill("count_rate")
     _find_and_fill("proposal_id")
-    _find_and_fill("run_title", '')
+    _find_and_fill("run_title", '', prune=True)
     
     # Are we currently running ADARA on this instrument?
     template_args['is_adara'] = ActiveInstrument.objects.is_adara(instrument_id)
