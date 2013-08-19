@@ -250,7 +250,9 @@ class Client(object):
                                 wait_on_receipt=True)
         conn.set_listener(self._consumer_name, listener)
         conn.start()
-        conn.connect()        
+        conn.connect()
+        # Give the connection threads a little breather
+        time.sleep(0.5)
         return conn
             
     def connect(self):
