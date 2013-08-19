@@ -205,7 +205,7 @@ class RunSorter(DataSorter):
         header = []
         header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
         header.append(self._create_header_dict("Created on", self.KEY_MOD))
-        header.append(self._create_header_dict("Last known error", None))
+        header.append(self._create_header_dict("Status", None))
         
         return data, header
     
