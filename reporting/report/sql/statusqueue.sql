@@ -2,22 +2,25 @@
 -- Known message queues
 --
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (17, 'POSTPROCESS.CHECK', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (16, 'TRANSLATION.COMPLETE', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (15, 'TRANSLATION.STARTED', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (20, 'REDUCTION_CATALOG.ERROR', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (14, 'REDUCTION_CATALOG.COMPLETE', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (13, 'REDUCTION_CATALOG.STARTED', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (16, 'TRANSLATION.COMPLETE', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (12, 'REDUCTION_CATALOG.DATA_READY', false);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (11, 'REDUCTION.COMPLETE', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (10, 'REDUCTION.NOT_NEEDED', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (9, 'REDUCTION.DISABLED', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (8, 'REDUCTION.STARTED', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (7, 'REDUCTION.DATA_READY', false);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (6, 'CATALOG.COMPLETE', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (5, 'CATALOG.STARTED', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (4, 'CATALOG.DATA_READY', false);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (3, 'POSTPROCESS.ERROR', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (2, 'POSTPROCESS.INFO', true);
-INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (1, 'POSTPROCESS.DATA_READY', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (18, 'REDUCTION.ERROR', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (9,  'REDUCTION.DISABLED', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (8,  'REDUCTION.STARTED', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (7,  'REDUCTION.DATA_READY', false);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (19, 'CATALOG.ERROR', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (6,  'CATALOG.COMPLETE', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (5,  'CATALOG.STARTED', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (4,  'CATALOG.DATA_READY', false);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (3,  'POSTPROCESS.ERROR', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (2,  'POSTPROCESS.INFO', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (1,  'POSTPROCESS.DATA_READY', true);
 SELECT pg_catalog.setval('report_statusqueue_id_seq', 17, true);
 
 --
