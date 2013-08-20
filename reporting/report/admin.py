@@ -34,6 +34,7 @@ class InformationAdmin(admin.ModelAdmin):
     
 class ErrorAdmin(admin.ModelAdmin):
     list_display = ('id', 'run_status_id', 'description')
+    list_filter = ('run_status_id__run_id__instrument_id',)
     search_fields = ['description']
     
 class StatusQueueAdmin(admin.ModelAdmin):
