@@ -116,21 +116,18 @@ class DataRun(models.Model):
         return "%s_%d" % (self.instrument_id, self.run_number)
     
     def last_error(self):
-        errors = Error.objects.filter(run_status_id__run_id=self)#.order_by('-run_status_id__created_on')
+        try:
+            s = WorkflowSummary.objects.get(run_id=self)
+            if s.complete is True:
+                return "<span class='green'>complete</span>"
+        except:
+            # No entry for this run
+            pass
+        
+        errors = Error.objects.filter(run_status_id__run_id=self)#.order_by('-run_status_id__created_on')        
         if len(errors)>0:
             return errors[len(errors)-1].description
-        else:
-            try:
-                s = WorkflowSummary.objects.get(run_id=self)
-                if s.complete is True:
-                    return "<span class='green'>complete</span>"
-                else:
-                    return "<span class='red'>incomplete</span>"
-            except:
-                # No entry for this run
-                pass
-            
-        return None
+        return "<span class='red'>incomplete</span>"
 
     def json_encode(self):
         """
