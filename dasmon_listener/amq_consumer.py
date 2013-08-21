@@ -92,12 +92,12 @@ class Listener(stomp.ConnectionListener):
         # For other status messages, store each entry
         else:      
             for key in data_dict:
-                # If we find a dictionary, process its entries
-                if type(data_dict[key])==dict:
-                    # The key is now an entry type and the entry itself
-                    # should be another dictionary for instances of that type
+                if key=='monitors' and type(data_dict[key])==dict:
                     for item in data_dict[key]:
-                        if type(data_dict[key][item])==dict:
+                        # Protect against old API
+                        if not type(data_dict[key][item])==dict:
+                            store_and_cache(instrument_id, 'monitor_count_%s' % str(item), data_dict[key][item])
+                        else:
                             identifier = None
                             counts = None
                             if "id" in data_dict[key][item]:
@@ -183,14 +183,14 @@ def store_and_cache(instrument_id, key, value):
         key_id.save()
     status_entry = StatusVariable(instrument_id=instrument_id,
                                   key_id=key_id,
-                                  value=value)
+                                  value=str(value))
     status_entry.save()
     
     # Update the latest value
     try:
         last_value = StatusCache.objects.filter(instrument_id=instrument_id,
                                              key_id=key_id).latest('timestamp')
-        last_value.value = value = status_entry.value
+        last_value.value = status_entry.value
         last_value.timestamp = status_entry.timestamp
         last_value.save()
     except:
