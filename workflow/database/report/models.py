@@ -115,19 +115,27 @@ class DataRun(models.Model):
     def __unicode__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)
     
-    def last_error(self):
+    def is_complete(self):
+        """
+            Return completion status
+        """
         try:
             s = WorkflowSummary.objects.get(run_id=self)
             if s.complete is True:
-                return "<span class='green'>complete</span>"
+                return True
         except:
             # No entry for this run
             pass
-        
+        return False
+         
+    def last_error(self):
+        """
+            Return last error
+        """
         errors = Error.objects.filter(run_status_id__run_id=self)#.order_by('-run_status_id__created_on')        
         if len(errors)>0:
             return errors[len(errors)-1].description
-        return "<span class='red'>incomplete</span>"
+        return None
 
     def json_encode(self):
         """

@@ -96,10 +96,12 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           <td><a href='{{ base_run_url }}{{ item.run_number }}/'>{{ item.run_number }}</a></td>
           <td>{{ item.created_on }}</td>
-          {% if item.last_error %} 
+          {% if item.is_complete %}
+          <td><span class='green'>complete</span></td>
+          {% elif item.last_error %} 
           <td class="error">{{ item.last_error|safe }}</td>
           {% else %}
-          <td></td>
+          <td><span class='red'>incomplete</span></td>
           {% endif %}
           </tr>
       {% endfor %}
