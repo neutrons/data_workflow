@@ -45,11 +45,14 @@ class WorkflowSummaryAdmin(admin.ModelAdmin):
     list_filter = ('run_id__instrument_id', 'complete', 'catalog_started', 'cataloged',
                     'reduction_needed', 'reduction_started', 'reduced', 
                     'reduction_cataloged', 'reduction_catalog_started')
-    list_display = ('run_id', 'complete', 'catalog_started', 'cataloged',
+    list_display = ('run_id', 'date', 'complete', 'catalog_started', 'cataloged',
                     'reduction_needed', 'reduction_started', 'reduced', 
                     'reduction_cataloged', 'reduction_catalog_started')
     search_fields = ['run_id__run_number']
     actions = [reduction_not_needed, reduction_needed]
+    
+    def date(self, summary):
+        return summary.run_id.created_on.strftime("%y-%m-%d")
         
 class TaskAdmin(admin.ModelAdmin):
     list_filter = ('instrument_id', 'input_queue_id')
