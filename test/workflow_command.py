@@ -19,7 +19,7 @@ if os.path.isfile("settings.py"):
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
     
-from settings import INSTALLATION_DIR
+INSTALLATION_DIR = "/var/www/workflow/app"
 sys.path.append(INSTALLATION_DIR)
 
 from report.models import Instrument, DataRun
