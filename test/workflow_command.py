@@ -1,5 +1,6 @@
 """
-    ActiveMQ client used to issue commands to the post-processing workflow
+    ActiveMQ client used to issue commands to the post-processing workflow.
+    NOTE: Only works for runs that are already in the DB
 """
 import time
 import stomp
@@ -8,9 +9,7 @@ logging.getLogger().setLevel(logging.INFO)
 import json
 import os
 import sys
-import datetime
 import argparse
-from django.utils import timezone
 from workflow.settings import brokers, icat_user, icat_passcode
 
 if os.path.isfile("settings.py"):
@@ -31,8 +30,9 @@ def send(destination, message, persistent='true'):
         @param message: message content
     """
     conn = stomp.Connection(host_and_ports=brokers, 
-                    user=icat_user, passcode=icat_passcode, 
-                    wait_on_receipt=True)
+                            user=icat_user, 
+                            passcode=icat_passcode, 
+                            wait_on_receipt=True)
     conn.start()
     conn.connect()
     conn.send(destination=destination, message=message, persistent=persistent)
@@ -40,7 +40,10 @@ def send(destination, message, persistent='true'):
     
 def fetch_data(instrument, run):
     """
-
+        Put together a dictionary that the post-processing will 
+        be able to process.
+        @param instrument: instrument short name
+        @param run: run number
     """
     # Find the instrument
     try:
@@ -72,6 +75,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Workflow manager test producer')
     parser.add_argument('-r', metavar='runid', type=int, help='Run number (int)', dest='runid', required=True)
     parser.add_argument('-b', metavar='instrument', help='instrument name', required=True, dest='instrument')
+    parser.add_argument('--post_process', help='Perform full post-processing',
+                        action='store_true', dest='do_post_process')
     parser.add_argument('--catalog', help='Catalog the data',
                         action='store_true', dest='do_catalog')
     parser.add_argument('--reduction', help='Perform reduction',
@@ -82,6 +87,8 @@ if __name__ == "__main__":
     namespace = parser.parse_args()
     
     queue = None
+    if namespace.do_post_process is not None and namespace.do_post_process is True:
+        queue = 'POSTPROCESS.DATA_READY'
     if namespace.do_catalog is not None and namespace.do_catalog is True:
         queue = 'CATALOG.DATA_READY'
     if namespace.do_reduction is not None and namespace.do_reduction is True:
