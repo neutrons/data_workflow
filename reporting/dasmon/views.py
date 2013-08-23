@@ -54,10 +54,12 @@ def summary(request):
   
     breadcrumbs = "home"
     update_url = reverse('dasmon.views.summary_update')
-    template_values = {'instruments':instrument_list,
-                       'breadcrumbs':breadcrumbs,
-                       'postprocess_status':postprocess_status,
-                       'update_url':update_url
+    central_services_url = reverse('dasmon.views.diagnostics', args=['common'])
+    template_values = {'instruments': instrument_list,
+                       'breadcrumbs': breadcrumbs,
+                       'postprocess_status': postprocess_status,
+                       'update_url': update_url,
+                       'central_services_url': central_services_url
                        }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('dasmon/global_summary.html',
@@ -78,18 +80,17 @@ def live_monitor(request, instrument):
     update_url = reverse('dasmon.views.get_update',args=[instrument])
     pv_url = reverse('pvmon.views.get_update',args=[instrument])
 
+    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument': instrument.upper(),
+                       'breadcrumbs':breadcrumbs,
                        'update_url': update_url,
                        'pv_url': pv_url,
                        'key_value_pairs': view_util.get_cached_variables(instrument_id, monitored_only=True),
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = view_util.get_run_status(**template_values)
+    template_values = view_util.fill_template_values(request, **template_values)
     
-    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
-    template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
-    template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     template_values['signals_url'] = reverse('dasmon.views.get_signal_table',args=[instrument])
     
     return render_to_response('dasmon/live_monitor.html', template_values)
@@ -138,7 +139,9 @@ def live_runs(request, instrument):
                        {'name': 'Created on'},
                        {'name': 'Status'}]
     
+    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument':instrument.upper(),
+                       'breadcrumbs':breadcrumbs,
                        'update_url':update_url,
                        'run_list':run_list,
                        'run_list_header':run_list_header,
@@ -146,10 +149,7 @@ def live_runs(request, instrument):
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = view_util.get_run_status(**template_values)
-    
-    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
-    template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
+    template_values = view_util.fill_template_values(request, **template_values)
     
     return render_to_response('dasmon/live_runs.html', template_values)
     
@@ -203,15 +203,14 @@ def diagnostics(request, instrument):
         and wf_diag['dasmon_listener_warning']:
         actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
     
+    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id, 'diagnostics')
     template_values = {'instrument':instrument.upper(),
+                       'breadcrumbs':breadcrumbs,
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = view_util.get_run_status(**template_values)
+    template_values = view_util.fill_template_values(request, **template_values)
     
-    template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
-    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
-    template_values['live_pv_url'] = reverse('pvmon.views.pv_monitor',args=[instrument])
     template_values['dasmon_diagnostics'] = dasmon_diag
     template_values['pv_diagnostics'] = pv_diag
     template_values['wf_diagnostics'] = wf_diag

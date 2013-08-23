@@ -42,12 +42,14 @@
 
 <div class='status_box'>
 <div class='diagnostics'>
+  <a href='{{ central_services_url|safe }}'>
     <ul>
         <li class='status_text'>Central systems:</li>
         <li class='status_{{ postprocess_status.workflow }}' id='workflow_status'>Workflow</li>
         <li class='status_{{ postprocess_status.catalog }}' id='catalog_status'>Catalog</li>
         <li class='status_{{ postprocess_status.reduction }}' id='reduction_status'>Reduction</li>
     </ul>
+  </a>
 </div>
 </div>
 

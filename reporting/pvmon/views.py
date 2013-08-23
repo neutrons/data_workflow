@@ -28,16 +28,18 @@ def pv_monitor(request, instrument):
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
+    # DASMON Breadcrumbs
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
+            reverse('report.views.instrument_summary',args=[instrument]), instrument.lower(), "monitor"
+            ) 
     template_values = {'instrument':instrument.upper(),
+                       'breadcrumbs': breadcrumbs,
                        'update_url':reverse('pvmon.views.get_update',args=[instrument]),
                        'key_value_pairs':view_util.get_cached_variables(instrument_id, True),
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.get_run_status(**template_values)
-    
-    template_values['live_runs_url'] = reverse('dasmon.views.live_runs',args=[instrument])
-    template_values['live_monitor_url'] = reverse('dasmon.views.live_monitor',args=[instrument])
+    template_values = dasmon.view_util.fill_template_values(request, **template_values)
     
     return render_to_response('pvmon/pv_monitor.html', template_values)
 

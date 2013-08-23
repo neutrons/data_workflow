@@ -1,28 +1,18 @@
-{% extends "base.html" %}
+{% extends "report/base_instrument.html" %}
 
 {% block title %}{{ instrument }} Diagnostics {% endblock %}
 
 {% block banner %}{{ instrument }} Diagnostics {% endblock %}    
-
-{% block right_side_links %}
-    {% if is_adara %}
-    <span style="float:right">live monitoring: 
-    <a href="{{ live_monitor_url }}">status</a> | <a href="{{ live_runs_url }}">runs</a> | <a href="{{ live_pv_url }}">PVs</a>
-    </span>
-    {% else %}
-    <span style="float:right">live monitoring: 
-    <a href="{{ live_runs_url }}">runs</a>
-    </span>
-    {% endif %}
-{% endblock %}
 
 {% block summary %}
 <div class='status_bar'>
 <div class='status_box'>
 <ul>
 <li class='status_text'>Systems:</li>
+{% if is_adara %}
 <li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
 <li class='status_{{ das_status.pvstreamer }}' id='pvstreamer_status'>PVStreamer</li>
+{% endif %}
 <li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
 <li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
 <li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>

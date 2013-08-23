@@ -13,6 +13,22 @@ import report.view_util
 import pvmon.view_util
 
 
+def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
+    """
+        Create breadcrumbs for a live monitoring view
+        @param instrument_id: Instrument object
+        @param current_view: name to give this view
+    """
+    breadcrumbs = "<a href='%s'>home</a>" % reverse('dasmon.views.summary')
+    if ActiveInstrument.objects.is_alive(instrument_id):
+        breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',
+                                                                 args=[instrument_id.name]),
+                                                         instrument_id.name)
+    else:
+        breadcrumbs += " &rsaquo; %s" % instrument_id.name
+    breadcrumbs += " &rsaquo; %s" % current_view
+    return breadcrumbs
+    
 def get_cached_variables(instrument_id, monitored_only=False):
     """
         Get cached parameter values for a given instrument
@@ -149,56 +165,64 @@ def get_system_health(instrument_id=None):
         das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
     return das_status
     
-def get_run_status(**template_args):
+def fill_template_values(request, **template_args):
     """
-        Fill a template dictionary with run information
+        Fill a template dictionary with information about the instrument
     """
-    def _find_and_fill(dasmon_name, default='-', prune=False):
-        _value = default
-        try:
-            key_id = Parameter.objects.get(name=dasmon_name)
-            last_value = get_latest(instrument_id, key_id)
-            _value = last_value.value
-            if prune:
-                _value = _prune_title_string(_value)
-        except:
-            pass
-        template_args[dasmon_name] = _value
-    
     if "instrument" not in template_args:
         return template_args
     
     instr = template_args["instrument"].lower()
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instr)
-    
-    # Look information to pull out
-    _find_and_fill("run_number")
-    _find_and_fill("count_rate")
-    _find_and_fill("proposal_id")
-    _find_and_fill("run_title", '', prune=True)
-    
-    # Are we currently running ADARA on this instrument?
-    template_args['is_adara'] = ActiveInstrument.objects.is_adara(instrument_id)
-    
-    # Are we recording or not?
-    template_args["recording_status"] = is_running(instrument_id)
 
-    # Get the system health status
-    template_args['das_status'] = get_system_health(instrument_id)
+    # Are we currently running ADARA on this instrument?
+    is_adara = ActiveInstrument.objects.is_adara(instrument_id)
+    is_alive = ActiveInstrument.objects.is_alive(instrument_id)
+    template_args['is_adara'] = is_adara
+    template_args['is_alive'] = is_alive
+
+    # Get live monitoring URLs
+    template_args['live_monitor_url'] = reverse('dasmon.views.live_monitor', args=[instr])
+    template_args['live_runs_url'] = reverse('dasmon.views.live_runs', args=[instr])
+    template_args['live_pv_url'] = reverse('pvmon.views.pv_monitor', args=[instr])
+
+    template_args["help_url"] = reverse('dasmon.views.help')
 
     # The DAS monitor link is filled out by report.view_util but we don't need it here
     template_args['dasmon_url'] = None
-
-    # DASMON Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
-            reverse('report.views.instrument_summary',args=[instr]), instr, "monitor"
-            ) 
-    template_args["breadcrumbs"] = breadcrumbs
     
-    template_args["help_url"] = reverse('dasmon.views.help')
+    # Get the system health status
+    template_args['das_status'] = get_system_health(instrument_id)
+    if is_adara:
+        # Are we recording or not?
+        template_args["recording_status"] = is_running(instrument_id)
+        # Look information to pull out
+        template_args["run_number"] = _find_value(instrument_id, "run_number")
+        template_args["count_rate"] = _find_value(instrument_id, "count_rate")
+        template_args["proposal_id"] = _find_value(instrument_id, "proposal_id")
+        template_args["run_title"] = _find_value(instrument_id, "run_title", '', prune=True)
 
-    return template_args
+    return template_args    
+
+def _find_value(instrument_id, dasmon_name, default='-', prune=False):
+    """
+        Return the latest value for a given DASMON entry.
+        @param instrument_id: Instrument object
+        @param dasmon_name: name of the DASMON entry
+        @param default: value to return if no entry is found
+        @param prune: if True, title strings will be tidied up
+    """
+    _value = default
+    try:
+        key_id = Parameter.objects.get(name=dasmon_name)
+        last_value = get_latest(instrument_id, key_id)
+        _value = last_value.value
+        if prune:
+            _value = _prune_title_string(_value)
+    except:
+        pass
+    return _value
 
 def get_live_variables(request, instrument_id):  
     """

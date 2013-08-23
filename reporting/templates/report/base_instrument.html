@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block summary %}
+
+<div class="summary_plots">
+  <div id="runs_per_hour"></div>
+</div>
+
+{% if is_adara %}
+<p class='dashboard_highlight'>
+  <span class='dashboard_highlight' id="run_title">{{ run_title|safe }}</span><br>
+  <span class='dashboard_normal'>Proposal:</span> <span class='dashboard_highlight' id="{{ proposal_id }}">{{ proposal_id }}</span>
+  <span class='dashboard_normal'>Run:</span> <span class='dashboard_highlight' id="run_number">{{ run_number }}</span><br>
+  <span class='dashboard_normal'>Status:</span> <span class='dashboard_highlight' id="recording_status">{{ recording_status }}</span>
+  <span class='dashboard_normal'>Count rate:</span> <span class='dashboard_highlight' id="count_rate_top">{{ count_rate }}</span>
+</p>
+{% endif %}
+
+<div class='status_bar'>
+  <div class='status_box'>
+    <div class='diagnostics'>
+      <a href='{{ live_monitor_url|safe }}diagnostics/'>
+        <ul>
+          <li class='status_text'>Systems:</li>
+{% if is_adara %}
+          <li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
+          <li class='status_{{ das_status.pvstreamer }}' id='pvstreamer_status'>PVStreamer</li>
+{% endif %}
+          <li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
+          <li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
+          <li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
+        </ul>
+      </a>
+    </div>
+  </div>
+</div>
+
+<p>
+{% if last_run %}
+Last translated run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
+from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
+created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
+{% elif last_expt %}
+Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
+{% endif %}
+</p>
+
+<span id='signal_table'></span>
+
+{% endblock %}
+
+{% block right_side_links %}
+    {% if is_adara %}
+    <span style="float:right">live monitoring: 
+    <a href="{{ live_monitor_url }}">status</a> | <a href="{{ live_runs_url }}">runs</a> | <a href="{{ live_pv_url }}">PVs</a>
+    </span>
+    {% elif is_alive %}
+    <span style="float:right">live monitoring: 
+    <a href="{{ live_runs_url }}">runs</a>
+    </span>
+    {% endif %}
+{% endblock %}

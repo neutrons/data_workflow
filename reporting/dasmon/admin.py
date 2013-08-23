@@ -10,8 +10,8 @@ class ParameterAdmin(admin.ModelAdmin):
     list_editable = ('monitored',)
 
 class ActiveInstrumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'instrument_id', 'is_alive')
-    list_editable = ('is_alive',)
+    list_display = ('id', 'instrument_id', 'is_alive', 'is_adara')
+    list_editable = ('is_alive', 'is_adara')
     
 class SignalAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'name', 'message', 'level', 'timestamp')

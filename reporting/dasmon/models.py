@@ -32,6 +32,9 @@ class StatusCache(models.Model):
 class ActiveInstrumentManager(models.Manager):
     
     def is_alive(self, instrument_id):
+        """
+            Returns True if the instrument should be presented as part of the suite of instruments
+        """
         instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
         if len(instrument_list)>0:
             return instrument_list[0].is_alive

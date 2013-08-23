@@ -8,6 +8,8 @@ import logging
 import sys
 from django.db import connection
 
+import dasmon.view_util
+
 def fill_template_values(request, **template_args):
     """
         Fill the template argument items needed to populate
@@ -46,11 +48,8 @@ def fill_template_values(request, **template_args):
     e_rate = error_rate(instrument_id)
     template_args['run_rate'] = str(r_rate)
     template_args['error_rate'] = str(e_rate)
-                                                  
-    live_monitor_url = reverse('dasmon.views.live_monitor',args=[instr])
-    template_args['live_monitor_url'] = live_monitor_url
-    live_runs_url = reverse('dasmon.views.live_runs',args=[instr])
-    template_args['live_runs_url'] = live_runs_url
+    
+    template_args = dasmon.view_util.fill_template_values(request, **template_args)
 
     return template_args
 

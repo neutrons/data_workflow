@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "report/base_instrument.html" %}
 
 {% block title %}{{ instrument }} Experiments {% endblock %}
 
@@ -42,21 +42,6 @@
 {% endblock %}
 
 {% block banner %}{{ instrument }} Experiments {% endblock %}
-
-{% block summary %}
-
-<div class="summary_plots">
-    <div id="runs_per_hour"></div>
-</div>
-
-{% if last_run %}
-Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
-from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
-created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
-{% elif last_expt %}
-Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
-{% endif %}
-{% endblock %}
 
 {% block bodytop %}
 <script id="source" language="javascript" type="text/javascript">
