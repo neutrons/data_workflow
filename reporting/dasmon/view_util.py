@@ -580,8 +580,11 @@ def get_completeness_status(instrument_id):
         @param instrument_id: Instrument object
     """
     STATUS_OK = (0, "OK")
-    STATUS_WARNING = (1, "Warning")
-    STATUS_ERROR = (2, "Error")
+    # Warning status still says OK but the background color is yellow
+    STATUS_WARNING = (1, "OK")
+    # Since incomplete might mean error conditions or a simple backlog 
+    # of runs to process, we report 'incomplete' on a red background
+    STATUS_ERROR = (2, "Incomplete")
     STATUS_UNKNOWN = (-1, "Unknown")
 
     if not ActiveInstrument.objects.is_alive(instrument_id):
