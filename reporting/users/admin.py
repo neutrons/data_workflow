@@ -1,4 +1,4 @@
-from users.models import PageView
+from users.models import PageView, DeveloperNode
 from django.contrib import admin
 import socket
 from django.conf import settings
@@ -30,20 +30,11 @@ class NonDeveloperUsers(admin.SimpleListFilter):
         Returns the filtered queryset based on the value
         provided in the query string and retrievable via
         `self.value()`.
-        """
-        developer_nodes = None
-        developer_ids = None
-        if hasattr(settings, "DEVELOPER_NODES"):
-            developer_nodes = settings.DEVELOPER_NODES
-        if hasattr(settings, "DEVELOPER_IDS"):
-            developer_ids = settings.DEVELOPER_IDS
-            
+        """ 
         if self.value() == 'non_developers':
             try:
-                if developer_ids is not None:
-                    queryset = queryset.exclude(user__username__in=developer_ids)
-                if developer_nodes is not None:
-                    queryset = queryset.exclude(ip__in=developer_nodes)
+                nodes = DeveloperNode.objects.all().values_list('ip', flat=True)
+                return queryset.exclude(user__is_staff=True).exclude(ip__in=nodes)
             except:
                 logging.error(sys.exc_value)
 
@@ -60,8 +51,18 @@ class PageViewAdmin(admin.ModelAdmin):
             return "unknown"
     get_host.short_description = "Host"
 
-
+class DeveloperNodeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'ip', 'get_host')
+    
+    def get_host(self, view):
+        try:
+            return socket.gethostbyaddr(view.ip)[0]
+        except:
+            return "unknown"
+    get_host.short_description = "Host"
+    
 admin.site.register(PageView, PageViewAdmin)
+admin.site.register(DeveloperNode, DeveloperNodeAdmin)
 
 
 

@@ -14,3 +14,9 @@ class PageView(models.Model):
     path = TruncatingCharField(max_length=128)
     ip = models.CharField(max_length=64)
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
+
+class DeveloperNode(models.Model):
+    """
+        Table of IP names recognized as developer nodes
+    """
+    ip = models.CharField(max_length=64)
