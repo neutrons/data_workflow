@@ -17,6 +17,7 @@ SETUP_ARGS = dict(
     entry_points = {
                     'console_scripts':[
                                        "dasmon_listener = dasmon_listener.listener_daemon:run",
+                                       "reduction_update = dasmon_listener.reduction_script_update:run",
                                        ]
                     },
     packages=["dasmon_listener"],

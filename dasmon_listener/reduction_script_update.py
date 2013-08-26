@@ -27,10 +27,13 @@ def send_msg(instrument="HYSA"):
     conn.disconnect()
     time.sleep(0.1)
     
-if __name__ == "__main__":
+def run():
     parser = argparse.ArgumentParser(description='Reduction script change notification')
     parser.add_argument('-b', metavar='instrument', help='instrument name', required=True, dest='instrument')
     namespace = parser.parse_args()
     send_msg(instrument=namespace.instrument)
+    
+if __name__ == "__main__":
+    run()
     
 
