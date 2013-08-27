@@ -584,7 +584,7 @@ def get_completeness_status(instrument_id):
     STATUS_WARNING = (1, "OK")
     # Since incomplete might mean error conditions or a simple backlog 
     # of runs to process, we report 'incomplete' on a red background
-    STATUS_ERROR = (2, "Incomplete")
+    STATUS_ERROR = (2, "Error")
     STATUS_UNKNOWN = (-1, "Unknown")
 
     if not ActiveInstrument.objects.is_alive(instrument_id):
@@ -605,6 +605,11 @@ def get_completeness_status(instrument_id):
                 return STATUS_WARNING
         
         latest_runs = latest_runs.order_by("created_on").reverse()
+        
+        # If the latest run has errors, simply return the error code
+        if latest_runs[0].last_error() is not None:
+            return STATUS_ERROR
+        
         s0 = WorkflowSummary.objects.get(run_id=latest_runs[0])
         s1 = WorkflowSummary.objects.get(run_id=latest_runs[1])
         s2 = WorkflowSummary.objects.get(run_id=latest_runs[2])
@@ -614,24 +619,51 @@ def get_completeness_status(instrument_id):
             status0 = s0.complete
             status1 = s1.complete
             status2 = s2.complete
+            error0 = latest_runs[0].last_error() is not None
+            error1 = latest_runs[1].last_error() is not None
+            error2 = latest_runs[2].last_error() is not None
         # If the latest is incomplete, it might still be processing, skip it
         else:
             status0 = s1.complete
             status1 = s2.complete
             status2 = s3.complete
+            error0 = latest_runs[1].last_error() is not None
+            error1 = latest_runs[2].last_error() is not None
+            error2 = latest_runs[3].last_error() is not None
         
         # Determine status
-        if status0 is False:
+        if error0 or error1 or error2:
             return STATUS_ERROR
-        else:
-            if status1 is False or status2 is False:
-                return STATUS_WARNING
-            else:
-                return STATUS_OK
+        
+        if status1 and status2 and status3:
+            return STATUS_OK
+        
+        return STATUS_WARNING
     except:
         logging.error("Output data completeness status")
         logging.error(sys.exc_value)
         return STATUS_UNKNOWN
+
+def get_run_status_text(run_id):
+    """
+        Get a textual description of the current status
+        for a given run
+        @param run_id: run object
+    """
+    status = 'unknown'
+    try:
+        s = WorkflowSummary.objects.get(run_id=run_id)
+        if s.complete is True:
+            status = "<span class='green'>complete</span>"
+        else:
+            if run_id.last_error() is not None:
+                status = "<span class='red'><b>error</b></span>"
+            else:
+                status = "<span class='red'>incomplete</span>"
+    except:
+        # No entry for this run
+        pass    
+    return status
 
 def get_live_runs_update(request, instrument_id):
     """
@@ -668,16 +700,7 @@ def get_live_runs_update(request, instrument_id):
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
         for r in run_list:
-            status = 'unknown'
-            try:
-                s = WorkflowSummary.objects.get(run_id=r)
-                if s.complete is True:
-                    status = "<span class='green'>complete</span>"
-                else:
-                    status = "<span class='red'>incomplete</span>"
-            except:
-                # No entry for this run
-                pass
+            status = get_run_status_text(r)
             
             run_dict = {"key": "run_id_%s" % str(r.id),
                         "value": status,

@@ -120,16 +120,7 @@ def live_runs(request, instrument):
         
     run_list = []
     for r in runs:
-        status = 'unknown'
-        try:
-            s = WorkflowSummary.objects.get(run_id=r)
-            if s.complete is True:
-                status = "<span class='green'>complete</span>"
-            else:
-                status = "<span class='red'>incomplete</span>"
-        except:
-            # No entry for this run
-            pass
+        status = view_util.get_run_status_text(r)
         run_list.append({'run_number':r.run_number,
                          'created_on':r.created_on,
                          'last_error':status,
