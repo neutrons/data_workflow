@@ -595,10 +595,10 @@ def get_completeness_status(instrument_id):
         # We don't use the last one because we may still be working on it.
         latest_runs = DataRun.objects.filter(instrument_id=instrument_id)
 
-        # We need at least 4 runs for a meaningful status        
+        # We need at least 3 runs for a meaningful status        
         if len(latest_runs)==0:    
             return STATUS_UNKNOWN
-        if len(latest_runs)<4:
+        if len(latest_runs)<3:
             if WorkflowSummary.objects.get(run_id=latest_runs[0]).complete is True:
                 return STATUS_OK
             else:
@@ -606,36 +606,22 @@ def get_completeness_status(instrument_id):
         
         latest_runs = latest_runs.order_by("created_on").reverse()
         
-        # If the latest run has errors, simply return the error code
-        if latest_runs[0].last_error() is not None:
-            return STATUS_ERROR
-        
         s0 = WorkflowSummary.objects.get(run_id=latest_runs[0])
         s1 = WorkflowSummary.objects.get(run_id=latest_runs[1])
         s2 = WorkflowSummary.objects.get(run_id=latest_runs[2])
-        s3 = WorkflowSummary.objects.get(run_id=latest_runs[3])
-        # If the latest is complete, use it to determine the status        
-        if s0.complete:
-            status0 = s0.complete
-            status1 = s1.complete
-            status2 = s2.complete
-            error0 = latest_runs[0].last_error() is not None
-            error1 = latest_runs[1].last_error() is not None
-            error2 = latest_runs[2].last_error() is not None
-        # If the latest is incomplete, it might still be processing, skip it
-        else:
-            status0 = s1.complete
-            status1 = s2.complete
-            status2 = s3.complete
-            error0 = latest_runs[1].last_error() is not None
-            error1 = latest_runs[2].last_error() is not None
-            error2 = latest_runs[3].last_error() is not None
+        status0 = s0.complete
+        status1 = s1.complete
+        status2 = s2.complete
+        error0 = latest_runs[0].last_error() is not None
+        error1 = latest_runs[1].last_error() is not None
+        error2 = latest_runs[2].last_error() is not None
         
-        # Determine status
+        # If we have errors within the last 3 runs, report an error
         if error0 or error1 or error2:
             return STATUS_ERROR
         
-        if status0 and status1 and status2:
+        # If everything but the last run is incomplete, we are OK
+        if status1 and status2:
             return STATUS_OK
         
         return STATUS_WARNING
