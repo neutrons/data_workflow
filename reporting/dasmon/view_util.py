@@ -635,7 +635,7 @@ def get_completeness_status(instrument_id):
         if error0 or error1 or error2:
             return STATUS_ERROR
         
-        if status1 and status2 and status3:
+        if status0 and status1 and status2:
             return STATUS_OK
         
         return STATUS_WARNING
