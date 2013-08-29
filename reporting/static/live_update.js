@@ -92,7 +92,44 @@ function plot_monitor(monitor_data, element_id, label_text){
 				position: 'nw'
 			}
 	};
-	$.plot($(element_id), [ {label:label_text, data:monitor_data} ],
+	
+	if (window.plotted_monitor_vars == null)
+		window.plotted_monitor_vars = [];
+	
+	if ($.inArray(element_id, window.plotted_monitor_vars)>=0) { 
+		options.yaxis.transform = function (v) { return Math.log(v); };
+		options.yaxis.inverseTransform = function (v) { return Math.exp(v); };
+	};
+	
+	var plot = $.plot($(element_id), [ {label:label_text, data:monitor_data} ],
 	                              options);
+	$.each(plot.getAxes(), function (i, axis) {
+		if (!axis.show)
+			return;
+		
+		if (axis.direction != "y")
+			return;
+
+		var box = axis.box;
+
+		$("<div class='axisTarget' style='position:absolute; left:" + box.left + "px; top:" + box.top + "px; width:" + box.width +  "px; height:" + box.height + "px'></div>")
+			.data("axis.direction", axis.direction)
+			.data("axis.n", axis.n)
+			.css({ backgroundColor: "#f00", opacity: 0, cursor: "pointer" })
+			.appendTo(plot.getPlaceholder())
+			.hover(
+				function () { $(this).css({ opacity: 0.10 }) },
+				function () { $(this).css({ opacity: 0 }) }
+			)
+			.click(function () {
+				if ($.inArray(element_id, window.plotted_monitor_vars)>=0) { 
+					var var_index = window.plotted_monitor_vars.indexOf(element_id);
+					window.plotted_monitor_vars.splice(var_index, 1);
+				} else {
+					window.plotted_monitor_vars.push(element_id); 
+				};
+				plot_monitor(monitor_data, element_id, label_text);
+			});
+	});
 }
 
