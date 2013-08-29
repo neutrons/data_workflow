@@ -99,6 +99,7 @@ function plot_monitor(monitor_data, element_id, label_text){
 	if ($.inArray(element_id, window.plotted_monitor_vars)>=0) { 
 		options.yaxis.transform = function (v) { return Math.log(v); };
 		options.yaxis.inverseTransform = function (v) { return Math.exp(v); };
+		options.yaxis.min = 1;
 	};
 	
 	var plot = $.plot($(element_id), [ {label:label_text, data:monitor_data} ],
