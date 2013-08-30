@@ -99,7 +99,15 @@ function plot_monitor(monitor_data, element_id, label_text){
 	if ($.inArray(element_id, window.plotted_monitor_vars)>=0) { 
 		options.yaxis.transform = function (v) { return Math.log(v); };
 		options.yaxis.inverseTransform = function (v) { return Math.exp(v); };
-		options.yaxis.min = 1;
+		
+		var ymin = -1.0;
+		for (i=0; i<monitor_data.length; i++) {
+			if (ymin<0 && monitor_data[i][1]>0)
+				ymin = monitor_data[i][1];
+			else if (monitor_data[i][1]>0 && monitor_data[i][1]<ymin)
+				ymin = monitor_data[i][1];
+		}
+		options.yaxis.min = ymin;
 	};
 	
 	var plot = $.plot($(element_id), [ {label:label_text, data:monitor_data} ],
