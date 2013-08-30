@@ -102,10 +102,9 @@ function plot_monitor(monitor_data, element_id, label_text){
 		
 		var ymin = -1.0;
 		for (i=0; i<monitor_data.length; i++) {
-			if (ymin<0 && monitor_data[i][1]>0)
-				ymin = monitor_data[i][1];
-			else if (monitor_data[i][1]>0 && monitor_data[i][1]<ymin)
-				ymin = monitor_data[i][1];
+			val = +monitor_data[i][1];
+			if (val>0.0 && val<ymin) ymin = val;
+			if (ymin<0.0 && val>0.0) ymin = val;
 		}
 		options.yaxis.min = ymin;
 	};
