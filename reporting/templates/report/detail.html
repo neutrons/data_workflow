@@ -5,15 +5,14 @@
 
 {% block header %}
 
-<div id="dialog-confirm" title="Submit for post-processing" style="display:none;">
-   <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+<div id="dialog-confirm" title="Submit for post-processing" style="display:none">
+   <p><span class="ui-icon ui-icon-alert" style="float: left"></span>
    Confirm submission?</p>
 </div>
 <script>
     function confirm() {
         $( "#dialog-confirm" ).dialog({
             resizable: false,
-            height:140,
             modal: true,
             buttons: {
                 "Submit": function() {
