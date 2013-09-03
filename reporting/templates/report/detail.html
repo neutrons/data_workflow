@@ -3,6 +3,31 @@
 {% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
 {% block banner %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
 
+{% block header %}
+
+<div id="dialog-confirm" title="Submit for post-processing" style="display:none;">
+   <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+   Confirm submission?</p>
+</div>
+<script>
+    function confirm() {
+        $( "#dialog-confirm" ).dialog({
+            resizable: false,
+            height:140,
+            modal: true,
+            buttons: {
+                "Submit": function() {
+                    window.location.href = "reduce";
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                        }
+                    }
+        });
+    };
+</script>   
+{% endblock %}
+
 {% block summary %}
       Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
       Experiment title: {{ icat_info.title|default:"unknown" }}<br>
@@ -29,9 +54,6 @@
 {% endblock %}
 
 {% block content %}
-      {% if reduce_url %}
-      Send to automated <a href='{{reduce_url}}'>reduction</a><br>
-      {% endif %} 
       <table cellspacing="0" class="message_table">
       <thead>
       <tr>
@@ -54,5 +76,10 @@
         {% endfor %}
       </tbody>
       </table>
+      
+      <br>
+      {% if reduce_url %}
+      Send to automated <a href='javascript:void(0);' onClick="confirm();">reduction</a>
+      {% endif %} 
 
 {% endblock %}

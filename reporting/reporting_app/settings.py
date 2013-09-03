@@ -139,7 +139,7 @@ AUTH_LDAP_USER_DN_TEMPLATE = ""
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
 LOGIN_URL = '/workflow/users/login'
-LANDING_VIEW = 'report.views.summary'
+LANDING_VIEW = 'dasmon.views.summary'
 
 LOGGING = {
     'version': 1,
