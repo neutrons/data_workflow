@@ -377,12 +377,12 @@ class Task(models.Model):
     ## Message queue that starts this task
     input_queue_id = models.ForeignKey(StatusQueue)
     ## Python class to be instantiated and run
-    task_class = models.CharField(max_length=50, null=True)
+    task_class = models.CharField(max_length=50, null=True, blank=True)
     ## Output messages to be sent
-    task_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_task_queue_ids+')
+    task_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_task_queue_ids+', blank=True)
     ## Expected success messages from tasks
     # Map one-to-one with task queue IDs
-    success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+') 
+    success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+', blank=True) 
     objects = TaskManager()
     
     def task_queues(self):

@@ -1,4 +1,5 @@
-from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue
+from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue, Task
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson, dateformat, timezone
@@ -53,6 +54,70 @@ def fill_template_values(request, **template_args):
 
     return template_args
 
+def needs_reduction(request, run_id):
+    """
+        Determine whether we need a reduction link to 
+        submit a run for automated reduction
+        @param request: HTTP request object
+        @param run_id: DataRun object
+    """
+    # Verify that user is allowed to launch a job
+    try:
+        instr_group = Group.objects.get(name="InstrumentTeam")
+    except Group.DoesNotExist:
+        return False
+
+    if not instr_group in request.user.groups.all() \
+        and request.user.is_staff is False:
+        return False
+    
+    # Get REDUCTION.DATA_READY queue
+    try:
+        red_queue = StatusQueue.objects.get(name="REDUCTION.DATA_READY")
+    except StatusQueue.DoesNotExist:
+        logging.error(sys.exc_value)
+        return False
+
+    # Check whether we have a task for this queue    
+    tasks = Task.objects.filter(instrument_id=run_id.instrument_id,
+                                input_queue_id=red_queue)
+    if len(tasks)==1 and \
+        (tasks[0].task_class is None or len(tasks[0].task_class)==0) \
+        and len(tasks[0].task_queue_ids.all())==0:
+            return False
+       
+    return True
+    
+    
+def send_reduction_request(instrument_id, run_id):
+    """
+        Send an AMQ message to the workflow manager to reprocess
+        the run
+        @param instrument_id: Instrument object
+        @param run_id: DataRun object
+    """
+    from workflow.settings import brokers, icat_user, icat_passcode
+    import stomp
+    import json
+    # Build up dictionary
+    data_dict = {'facility': 'SNS',
+                 'instrument': str(instrument_id),
+                 'ipts': run_id.ipts_id.expt_name.upper(),
+                 'run_number': run_id.run_number,
+                 'data_file': run_id.file
+                 }
+    data = json.dumps(data_dict)
+    conn = stomp.Connection(host_and_ports=brokers, 
+                            user=icat_user, 
+                            passcode=icat_passcode, 
+                            wait_on_receipt=True)
+    conn.start()
+    conn.connect()
+    conn.send(destination='/queue/POSTPROCESS.DATA_READY', message=data, persistent='true')
+    conn.disconnect()
+    logging.info("Reduction requested: %s" % str(data))
+        
+        
 class DataSorter(object):
     """
         Sorter object to organize data in a sorted grid

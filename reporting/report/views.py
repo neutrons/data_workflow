@@ -1,5 +1,5 @@
-from django.http import Http404, HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
+from django.http import Http404, HttpResponse, HttpResponseServerError
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
@@ -50,6 +50,11 @@ def detail(request, instrument, run_id):
             run_id          
             ) 
     
+    # Check whether we need a re-reduce link
+    reduce_url = None
+    if view_util.needs_reduction(request, run_object):
+        reduce_url = 'reduce'
+    
     # Find status entries
     status_objects, status_header = view_util.ActivitySorter(request)(run_object)
     
@@ -59,11 +64,32 @@ def detail(request, instrument, run_id):
                        'status_header':status_header,
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
+                       'reduce_url':reduce_url,
                        }
 
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/detail.html', template_values)
+
+@users.view_util.login_or_local_required
+@users.view_util.monitor
+def submit_for_reduction(request, instrument, run_id):
+    """
+        Send a run for automated reduction
+        @param instrument: instrument name
+        @param run_id: run number
+    """
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
+    try:
+        view_util.send_reduction_request(instrument_id, run_object)
+    except:
+        logging.error("Could not send reduction request")
+        logging.error(sys.exc_value)
+        return HttpResponseServerError()
+    return redirect(reverse('report.views.detail',args=[instrument, run_id]))
+    
 
 @users.view_util.login_or_local_required
 @users.view_util.monitor
