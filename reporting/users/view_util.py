@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+from django.contrib.auth.models import Group
 
 # import code for encoding urls and generating md5 hashes
 import hashlib
@@ -72,6 +73,23 @@ def login_or_local_required(fn):
         return redirect(redirect_url)   
     return request_processor
 
+def is_instrument_staff(request, instrument_id):
+    """
+        Determine whether a user is part of an 
+        instrument team 
+        @param request: HTTP request object
+        @param instrument_id: Instrument object
+    """
+    try:
+        instrument_name = str(instrument_id).upper()
+        instr_group = Group.objects.get(name="%s%s" % (instrument_name,
+                                                       settings.INSTRUMENT_TEAM_SUFFIX))
+        if instr_group in request.user.groups.all():
+            return True
+    except Group.DoesNotExist:
+        pass
+    return request.user.is_staff
+        
 def monitor(fn):
     """
         Function decorator to monitor page usage

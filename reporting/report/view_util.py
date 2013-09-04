@@ -1,7 +1,7 @@
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue, Task
-from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseServerError
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import simplejson, dateformat, timezone
 import datetime
 from django.conf import settings
@@ -61,16 +61,6 @@ def needs_reduction(request, run_id):
         @param request: HTTP request object
         @param run_id: DataRun object
     """
-    # Verify that user is allowed to launch a job
-    try:
-        instr_group = Group.objects.get(name="InstrumentTeam")
-    except Group.DoesNotExist:
-        return False
-
-    if not instr_group in request.user.groups.all() \
-        and request.user.is_staff is False:
-        return False
-    
     # Get REDUCTION.DATA_READY queue
     try:
         red_queue = StatusQueue.objects.get(name="REDUCTION.DATA_READY")
@@ -89,7 +79,7 @@ def needs_reduction(request, run_id):
     return True
     
     
-def send_reduction_request(instrument_id, run_id, user=None):
+def send_processing_request(instrument_id, run_id, user=None, destination=None):
     """
         Send an AMQ message to the workflow manager to reprocess
         the run
@@ -99,6 +89,8 @@ def send_reduction_request(instrument_id, run_id, user=None):
     from workflow.settings import brokers, icat_user, icat_passcode
     import stomp
     import json
+    if destination is None:
+        destination = '/queue/POSTPROCESS.DATA_READY'
     # Build up dictionary
     data_dict = {'facility': 'SNS',
                  'instrument': str(instrument_id),
@@ -116,11 +108,31 @@ def send_reduction_request(instrument_id, run_id, user=None):
                             wait_on_receipt=True)
     conn.start()
     conn.connect()
-    conn.send(destination='/queue/POSTPROCESS.DATA_READY', message=data, persistent='true')
+    conn.send(destination=destination, message=data, persistent='true')
     conn.disconnect()
     logging.info("Reduction requested: %s" % str(data))
         
         
+def processing_request(request, instrument, run_id, destination):
+    """
+        Process a request for post-processing
+        @param instrument: instrument name
+        @param run_id: run number [string]
+        @param destination: outgoing AMQ queue
+    """
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
+    try:
+        send_processing_request(instrument_id, run_object, request.user,
+                                          destination=destination)
+    except:
+        logging.error("Could not send post-processing request: %s" % destination)
+        logging.error(sys.exc_value)
+        return HttpResponseServerError()
+    return redirect(reverse('report.views.detail',args=[instrument, run_id]))
+    
+    
 class DataSorter(object):
     """
         Sorter object to organize data in a sorted grid

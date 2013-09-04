@@ -216,6 +216,9 @@ MONITOR_ON = True
 ## Prefix for status parameter names for monitored sub-systems
 SYSTEM_STATUS_PREFIX = 'system_'
 
+## Instrument team user group suffix
+INSTRUMENT_TEAM_SUFFIX = 'InstrumentTeam'
+
 ## Post-processing node prefix values (autoreduction and cataloging)
 POSTPROCESS_NODE_PREFIX = ['autoreducer', 'fermi']
 

@@ -11,6 +11,7 @@ import sys
 import time
 import report.view_util
 import pvmon.view_util
+import users.view_util
 
 
 def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
@@ -175,6 +176,9 @@ def fill_template_values(request, **template_args):
     instr = template_args["instrument"].lower()
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instr)
+   
+    # Check whether the user is part of the instrument team
+    template_args['is_instrument_staff'] = users.view_util.is_instrument_staff(request, instrument_id)
 
     # Are we currently running ADARA on this instrument?
     is_adara = ActiveInstrument.objects.is_adara(instrument_id)

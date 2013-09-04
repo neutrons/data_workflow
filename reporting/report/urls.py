@@ -6,6 +6,8 @@ urlpatterns = patterns('',
     url(r'^(?P<instrument>[\w]+)/update/$', 'report.views.get_instrument_update'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/$', 'report.views.detail'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/reduce/$', 'report.views.submit_for_reduction'),
+    url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/catalog/$', 'report.views.submit_for_cataloging'),
+    url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/postprocess/$', 'report.views.submit_for_post_processing'),
     url(r'^(?P<instrument>[\w]+)/experiment/(?P<ipts>[\w\-]+)/update/$', 'report.views.get_experiment_update'),
     url(r'^(?P<instrument>[\w]+)/experiment/(?P<ipts>[\w\-]+)/$', 'report.views.ipts_summary'),
     

@@ -14,10 +14,12 @@ INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (18, 'REDUCT
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (9,  'REDUCTION.DISABLED', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (8,  'REDUCTION.STARTED', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (7,  'REDUCTION.DATA_READY', false);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (21, 'REDUCTION.REQUEST', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (19, 'CATALOG.ERROR', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (6,  'CATALOG.COMPLETE', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (5,  'CATALOG.STARTED', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (4,  'CATALOG.DATA_READY', false);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (22, 'CATALOG.REQUEST', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (3,  'POSTPROCESS.ERROR', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (2,  'POSTPROCESS.INFO', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (1,  'POSTPROCESS.DATA_READY', true);

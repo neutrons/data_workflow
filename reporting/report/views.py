@@ -81,17 +81,30 @@ def submit_for_reduction(request, instrument, run_id):
         @param instrument: instrument name
         @param run_id: run number
     """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
-    try:
-        view_util.send_reduction_request(instrument_id, run_object, request.user)
-    except:
-        logging.error("Could not send reduction request")
-        logging.error(sys.exc_value)
-        return HttpResponseServerError()
-    return redirect(reverse('report.views.detail',args=[instrument, run_id]))
+    return view_util.processing_request(request, instrument, run_id,
+                                        destination='/queue/REDUCTION.REQUEST')    
+
+@users.view_util.login_or_local_required
+@users.view_util.monitor
+def submit_for_post_processing(request, instrument, run_id):
+    """
+        Send a run for complete post-processing
+        @param instrument: instrument name
+        @param run_id: run number
+    """
+    return view_util.processing_request(request, instrument, run_id,
+                                        destination='/queue/POSTPROCESS.DATA_READY')    
     
+@users.view_util.login_or_local_required
+@users.view_util.monitor
+def submit_for_cataloging(request, instrument, run_id):
+    """
+        Send a run for cataloging
+        @param instrument: instrument name
+        @param run_id: run number
+    """
+    return view_util.processing_request(request, instrument, run_id,
+                                        destination='/queue/CATALOG.REQUEST')        
 
 @users.view_util.login_or_local_required
 @users.view_util.monitor

@@ -124,6 +124,34 @@ class Postprocess_data_ready(StateAction):
         self.send(destination='/queue/%s' % REDUCTION_DATA_READY, message=message, persistent='true')
         
         
+class Reduction_request(StateAction):
+    """
+        Default action for REDUCTION.REQUEST messages
+    """
+    def __call__(self, headers, message):
+        """
+            Called to process a message
+            @param headers: message headers
+            @param message: JSON-encoded message content
+        """
+        # Tell workers for start reduction
+        self.send(destination='/queue/%s' % REDUCTION_DATA_READY, message=message, persistent='true')
+        
+        
+class Catalog_request(StateAction):
+    """
+        Default action for CATALOG.REQUEST messages
+    """
+    def __call__(self, headers, message):
+        """
+            Called to process a message
+            @param headers: message headers
+            @param message: JSON-encoded message content
+        """
+        # Tell workers for start cataloging
+        self.send(destination='/queue/%s' % CATALOG_DATA_READY, message=message, persistent='true')
+        
+        
 class Reduction_complete(StateAction):
     """
         Default action for REDUCTION.COMPLETE messages

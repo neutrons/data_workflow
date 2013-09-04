@@ -10,13 +10,13 @@
    Confirm submission?</p>
 </div>
 <script>
-    function confirm() {
+    function confirm(action) {
         $( "#dialog-confirm" ).dialog({
             resizable: false,
             modal: true,
             buttons: {
                 "Submit": function() {
-                    window.location.href = "reduce";
+                    window.location.href = action;
                     },
                     Cancel: function() {
                         $( this ).dialog( "close" );
@@ -77,8 +77,12 @@
       </table>
       
       <br>
+      {% if is_instrument_staff %}
+      Submit for post-processing: <a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>
       {% if reduce_url %}
-      Send to automated <a href='javascript:void(0);' onClick="confirm();">reduction</a>
+      | <a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>
+      | <a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>
       {% endif %} 
+      {% endif %}
 
 {% endblock %}
