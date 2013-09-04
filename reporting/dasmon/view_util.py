@@ -411,9 +411,13 @@ def postprocessing_diagnostics(timeout=10):
         for item in Parameter.objects.all():
             for node_prefix in settings.POSTPROCESS_NODE_PREFIX:
                 if item.name.startswith(settings.SYSTEM_STATUS_PREFIX+node_prefix):
-                    last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
-                    nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
-                                  'time':timezone.localtime(last_value.timestamp)})
+                    try:
+                        last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
+                        nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                                      'time':timezone.localtime(last_value.timestamp)})
+                    except:
+                        nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                                      'time':'No heartbeat - contact post-processing expert'})
         red_diag['ar_nodes']=nodes
     except:
         # No data available
