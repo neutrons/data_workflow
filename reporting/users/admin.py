@@ -1,5 +1,7 @@
 from users.models import PageView, DeveloperNode
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 import socket
 from django.conf import settings
 import logging
@@ -61,6 +63,18 @@ class DeveloperNodeAdmin(admin.ModelAdmin):
             return "unknown"
     get_host.short_description = "Host"
     
+class SNSUserAdmin(UserAdmin):
+    list_display = ('username', 'first_name', 'last_name', 'get_groups', 'is_staff', 'is_superuser')
+    
+    def get_groups(self, user):
+        groups = []
+        for g in user.groups.all():
+            groups.append(g.name)
+        return ', '.join(groups)
+    get_groups.short_description = "Groups"
+
+admin.site.unregister(User)
+admin.site.register(User, SNSUserAdmin)
 admin.site.register(PageView, PageViewAdmin)
 admin.site.register(DeveloperNode, DeveloperNodeAdmin)
 
