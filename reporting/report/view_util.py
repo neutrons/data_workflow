@@ -89,7 +89,7 @@ def needs_reduction(request, run_id):
     return True
     
     
-def send_reduction_request(instrument_id, run_id):
+def send_reduction_request(instrument_id, run_id, user=None):
     """
         Send an AMQ message to the workflow manager to reprocess
         the run
@@ -106,6 +106,9 @@ def send_reduction_request(instrument_id, run_id):
                  'run_number': run_id.run_number,
                  'data_file': run_id.file
                  }
+    if user is not None:
+        data_dict['information'] = "Requested by %s" % user
+
     data = json.dumps(data_dict)
     conn = stomp.Connection(host_and_ports=brokers, 
                             user=icat_user, 

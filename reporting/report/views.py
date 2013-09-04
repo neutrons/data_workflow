@@ -3,6 +3,8 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
+import logging
+import sys
 
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error
 from icat_server_communication import get_run_info, get_ipts_info
@@ -83,7 +85,7 @@ def submit_for_reduction(request, instrument, run_id):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
     try:
-        view_util.send_reduction_request(instrument_id, run_object)
+        view_util.send_reduction_request(instrument_id, run_object, request.user)
     except:
         logging.error("Could not send reduction request")
         logging.error(sys.exc_value)
