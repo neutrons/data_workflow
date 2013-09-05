@@ -1,7 +1,7 @@
 """
     Live monitoring
 """
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
@@ -277,12 +277,15 @@ def summary_update(request):
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 
-@users.view_util.login_or_local_required
 @cache_page(5)
 def get_signal_table(request, instrument):
     """
         Ajax call to get the signal table
     """
+    # First check that the user is authenticated
+    if not request.user.is_authenticated():
+        return HttpResponseForbidden()
+    
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template('dasmon/signal_table.html')
     c = Context({
