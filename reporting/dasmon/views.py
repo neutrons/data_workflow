@@ -242,9 +242,7 @@ def get_update(request, instrument):
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     
     # Recent run info
-    run_dict = view_util.get_live_runs_update(request, instrument_id)
-    for k in run_dict:
-        data_dict[k] = run_dict[k]
+    data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 

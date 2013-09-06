@@ -50,6 +50,7 @@ class WorkflowSummaryAdmin(admin.ModelAdmin):
                     'reduction_cataloged', 'reduction_catalog_started')
     search_fields = ['run_id__run_number']
     actions = [reduction_not_needed, reduction_needed]
+    list_editable = ('reduction_needed', 'complete')
     
     def date(self, summary):
         return summary.run_id.created_on.strftime("%y-%m-%d")

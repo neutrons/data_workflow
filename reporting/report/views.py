@@ -185,6 +185,11 @@ def ipts_summary(request, instrument, ipts):
                                                              show_all=show_all,
                                                              n_shown=n_max,
                                                              instrument_id=instrument_id)
+    # Get the ID of the first displayed run so that we can update the
+    # status of runs that are displayed
+    first_run_id = 0
+    if len(run_list)>0:
+        first_run_id = run_list[len(run_list)-1].id
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
@@ -203,6 +208,7 @@ def ipts_summary(request, instrument, ipts):
                        'number_of_runs':number_of_runs,
                        'ipts_url':ipts_url,
                        'update_url':update_url,
+                       'first_run_id':first_run_id,
                        }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
@@ -270,17 +276,6 @@ def get_experiment_update(request, instrument, ipts):
          @param instrument: instrument name
          @param ipts: experiment name
     """ 
-    # Protect against lower-case requests
-    ipts = ipts.upper()
-
-    since = request.GET.get('since', '0')
-    try:
-        since = int(since)
-        since_run_id = get_object_or_404(DataRun, id=since)
-    except:
-        since = 0
-        since_run_id = None
-    
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     # Get experiment
@@ -288,25 +283,7 @@ def get_experiment_update(request, instrument, ipts):
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)    
-    run_list = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id, id__gt=since).order_by('created_on')
-    
-    update_list = []
-    if since_run_id is not None and len(run_list)>0:
-        data_dict['last_run_id'] = run_list[0].id
-        for r in run_list:
-            if since_run_id.created_on < r.created_on:
-                localtime = timezone.localtime(r.created_on)
-                df = dateformat.DateFormat(localtime)
-                expt_dict = {"run":r.run_number,
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
-                            "last_error":"",
-                            "run_id":str(r.id),
-                            }
-                if r.last_error() is not None:
-                    expt_dict["last_error"] = r.last_error()
-                update_list.append(expt_dict)
-    data_dict['run_list'] = update_list
-    data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'
+    data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 

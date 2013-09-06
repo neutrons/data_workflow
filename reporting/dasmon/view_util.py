@@ -638,11 +638,12 @@ def get_completeness_status(instrument_id):
         logging.error(sys.exc_value)
         return STATUS_UNKNOWN
 
-def get_run_status_text(run_id):
+def get_run_status_text(run_id, show_error=False):
     """
         Get a textual description of the current status
         for a given run
         @param run_id: run object
+        @param show_error: if true, the last error will be whow, otherwise "error"
     """
     status = 'unknown'
     try:
@@ -650,8 +651,12 @@ def get_run_status_text(run_id):
         if s.complete is True:
             status = "<span class='green'>complete</span>"
         else:
-            if run_id.last_error() is not None:
-                status = "<span class='red'><b>error</b></span>"
+            last_error = run_id.last_error()
+            if last_error is not None:
+                if show_error:
+                    status = "<span class='red'>%s</span>" % last_error
+                else:
+                    status = "<span class='red'><b>error</b></span>"
             else:
                 status = "<span class='red'>incomplete</span>"
     except:
@@ -659,14 +664,14 @@ def get_run_status_text(run_id):
         pass    
     return status
 
-def get_live_runs_update(request, instrument_id):
+def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     """
          Get updated information about the latest runs
          @param request: HTTP request so we can get the 'since' parameter
          @param instrument_id: Instrument model object
-    """ 
-    data_dict = {}
-    
+         @param ipts_id: filter by experiment, if provided
+         @param data_dict: dictionary to populate
+    """     
     # Get the last run ID that the client knows about
     since_run_id = None
     run_list = []
@@ -684,7 +689,13 @@ def get_live_runs_update(request, instrument_id):
         try:
             complete_since = int(complete_since)
             # Get last experiment and last run
-            run_list = DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since).order_by('created_on').reverse()
+            if ipts_id is not None:
+                run_list = DataRun.objects.filter(instrument_id=instrument_id,
+                                                  ipts_id=ipts_id,
+                                                  id__gte=complete_since).order_by('created_on').reverse()
+            else:
+                run_list = DataRun.objects.filter(instrument_id=instrument_id,
+                                                  id__gte=complete_since).order_by('created_on').reverse()
         except:
             # Invalid value for complete_since
             pass
@@ -694,7 +705,7 @@ def get_live_runs_update(request, instrument_id):
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
         for r in run_list:
-            status = get_run_status_text(r)
+            status = get_run_status_text(r, ipts_id is not None)
             
             run_dict = {"key": "run_id_%s" % str(r.id),
                         "value": status,
