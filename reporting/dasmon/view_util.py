@@ -704,16 +704,13 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     update_list = []
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
-        delay_time = datetime.timedelta(seconds=60)
-
         for r in run_list:
-            status_time = timezone.localtime(RunStatus.objects.last_timestamp(r))    
-            if timezone.now()-status_time<delay_time:
-                status = get_run_status_text(r, ipts_id is not None)
-                run_dict = {"key": "run_id_%s" % str(r.id),
-                            "value": status,
-                            }
-                status_list.append(run_dict)
+            status = get_run_status_text(r, ipts_id is not None)
+            
+            run_dict = {"key": "run_id_%s" % str(r.id),
+                        "value": status,
+                        }
+            status_list.append(run_dict)
             
             if since_run_id.created_on < r.created_on:
                 localtime = timezone.localtime(r.created_on)
