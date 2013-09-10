@@ -625,7 +625,7 @@ def get_completeness_status(instrument_id):
         error2 = latest_runs[2].last_error() is not None
         
         # If we have errors within the last 3 runs, report an error
-        if error0 or error1 or error2:
+        if (not status0 and error0) or (not status1 and error1) or (not status2 and error2):
             return STATUS_ERROR
         
         # If everything but the last run is incomplete, we are OK
