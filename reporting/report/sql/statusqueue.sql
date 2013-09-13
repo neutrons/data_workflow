@@ -23,6 +23,7 @@ INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (22, 'CATALO
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (3,  'POSTPROCESS.ERROR', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (2,  'POSTPROCESS.INFO', true);
 INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (1,  'POSTPROCESS.DATA_READY', true);
+INSERT INTO report_statusqueue (id, name, is_workflow_input) VALUES (23, 'FERMI_REDUCTION.DATA_READY', true);
 SELECT pg_catalog.setval('report_statusqueue_id_seq', 17, true);
 
 --

@@ -150,7 +150,7 @@ def run():
     stderr_file = None
     check_frequency = None
     recover = False
-    flexible_tasks = False
+    flexible_tasks = True
     
     if namespace.command in ['start', 'restart']:
         if namespace.output_dir is not None:
