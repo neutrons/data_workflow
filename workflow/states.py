@@ -65,7 +65,6 @@ class StateAction(object):
         
                 headers = {'destination': destination, 
                           'message-id': ''}
-                transactions.add_status_entry(headers, message)
         
     @logged_action
     def __call__(self, headers, message):
