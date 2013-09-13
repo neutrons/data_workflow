@@ -103,7 +103,7 @@ def run():
     start_parser.add_argument('-r', help='try to recover from workflow problems',
                         action='store_true', dest='recover')
     
-    start_parser.add_argument('--flexible_tasks', help='read task definitions from DB',
+    start_parser.add_argument('--skip_flexible_tasks', help='read task definitions from DB',
                         action='store_true', dest='flexible_tasks')
     
 
@@ -163,7 +163,7 @@ def run():
         if namespace.recover is not None:
             recover = namespace.recover
         if namespace.flexible_tasks is not None:
-            flexible_tasks = namespace.flexible_tasks
+            flexible_tasks = not namespace.flexible_tasks
     
     #TODO: allow multiple listening processes
     number_of_processes = 1
