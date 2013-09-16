@@ -73,13 +73,6 @@ class StateAction(object):
             @param headers: message headers
             @param message: JSON-encoded message content
         """
-        # Remove information and errors from the message we
-        # are about the send
-        data_dict = json.loads(message)
-        data_dict['error'] = ""
-        data_dict['information'] = ""
-        message = json.dumps(data_dict)
-
         # Find task definition in DB if available
         if self._user_db_task:
             task_data = transactions.get_task(headers, message)
