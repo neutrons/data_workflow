@@ -58,7 +58,7 @@ class Listener(stomp.ConnectionListener):
             action(headers, message)
         except:
             logging.error("Listener failed to process message: %s" % str(sys.exc_value))
-            logging.error("  Message: %s" % str(message))
+            logging.error("  Message: %s: %s" % (headers['destination'], str(message)))
 
     def _get_connection(self):
         """

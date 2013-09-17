@@ -52,17 +52,6 @@ def logged_action(action):
         except:
             data = decode_message(message)
             message = json.dumps(data)
-            
-        # Make sure the message is complete
-        if "data_file" in data and "facility" not in data:
-            logging.error("Received incomplete message %s" % str(data))
-            try:
-                partial_dict = decode_message(data["data_file"])
-                data["facility"] = partial_dict["facility"]
-                message = json.dumps(data)
-            except:
-                logging.error("Could not parse facility: %s" % str(partial_dict))
-                logging.error(sys.exc_value)
         
         destination = headers["destination"].replace('/queue/','')
         logging.info("%s r%s: %s: %s" % (data["instrument"],
@@ -70,6 +59,14 @@ def logged_action(action):
                                          destination,
                                          str(data)))
         transactions.add_status_entry(headers, message)
+        
+        # Clean up the extra information 
+        if data.has_key('information'):
+            del data['information']
+        if data.has_key('error'):
+            del data['error']
+        message = json.dumps(data)
+        
         return action(self, headers, message)
 
     return process_function
