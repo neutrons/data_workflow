@@ -281,8 +281,8 @@ def get_signal_table(request, instrument):
         Ajax call to get the signal table
     """
     # First check that the user is authenticated
-    if not request.user.is_authenticated():
-        return HttpResponseForbidden()
+    #if not request.user.is_authenticated():
+    #    return HttpResponseForbidden()
     
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template('dasmon/signal_table.html')
