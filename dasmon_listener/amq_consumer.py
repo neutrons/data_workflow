@@ -74,11 +74,16 @@ class Listener(stomp.ConnectionListener):
         if "STATUS" in destination:
             if "STS" in destination:
                 store_and_cache(instrument_id, "system_sts", data_dict["status"])
-            elif "src_name" in data_dict and "status" in data_dict:
-                key = "system_%s" % data_dict["src_name"].lower()
-                if key.endswith(".0"):
-                    key = key[:len(key)-2]
-                store_and_cache(instrument_id, key, data_dict["status"])
+            elif "status" in data_dict:
+                key = None
+                if "src_id" in data_dict:
+                    key = "system_%s" % data_dict["src_id"].lower()
+                elif "src_name" in data_dict:
+                    key = "system_%s" % data_dict["src_name"].lower()
+                if key is not None:
+                    if key.endswith(".0"):
+                        key = key[:len(key)-2]
+                    store_and_cache(instrument_id, key, data_dict["status"])
 
         # Process signals
         elif "SIGNAL" in destination:
