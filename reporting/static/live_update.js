@@ -79,9 +79,9 @@ function plot_monitor(monitor_data, element_id, label_text){
 				},
 			},
 			shadowSize: 0,
-			bars: {
-				show: false,
-				lineWidth: 1
+			lines: {
+				show: true,
+				steps: true
 			},
 			grid: { 
 				color: "#5e5e5e",
