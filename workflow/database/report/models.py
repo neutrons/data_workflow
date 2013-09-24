@@ -297,6 +297,8 @@ class WorkflowSummary(models.Model):
         # Check whether we need reduction (default is no)
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION.NOT_NEEDED'))>0:
             self.reduction_needed = False
+        elif len(RunStatus.objects.status(self.run_id, 'REDUCTION.DISABLED'))>0:
+            self.reduction_needed = False
         
         # Look for reduction status
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION.COMPLETE'))>0:
