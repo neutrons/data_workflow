@@ -55,7 +55,7 @@ def upload_image(request, instrument, run_id):
                 file_content = ContentFile(f.read())
             # Sanity check
             _, ext = os.path.splitext(file_name)
-            if ext.lower() not in ['jpeg', 'jpg', 'png', 'gif']:
+            if ext.lower() not in ['.jpeg', '.jpg', '.png', '.gif']:
                 logging.error("Uploaded file doesn't appear to be an image: %s" % file_name)
                 return HttpResponse(status=400)
             # Store file info to DB
