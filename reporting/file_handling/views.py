@@ -23,6 +23,7 @@ class UploadFileForm(forms.Form):
 
 
 @users.view_util.login_or_local_required
+@users.view_util.monitor
 def upload_image(request, instrument, run_id):
     """
         Upload an image representing the reduced data 
