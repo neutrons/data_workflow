@@ -33,7 +33,7 @@
       Experiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
       {% if image_url %}
       <p>
-        <img src="{{ image_url|safe }}" alt="Reduced data">
+        <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">
       <p>
       {% endif %}
       Data files: 
