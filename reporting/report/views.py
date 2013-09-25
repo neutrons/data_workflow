@@ -60,6 +60,15 @@ def detail(request, instrument, run_id):
     # Find status entries
     status_objects, status_header = view_util.ActivitySorter(request)(run_object)
     
+    # Look for an image of the reduction
+    try:
+        from file_handling.models import ReducedImage
+        image = ReducedImage.objects.filter(run_id=run_object).latest('created_on')
+        if image is not None:
+            image_url = image.file.url
+    except:
+        image_url = None
+    
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
@@ -67,6 +76,7 @@ def detail(request, instrument, run_id):
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
+                       'image_url':image_url,
                        }
 
     template_values = users.view_util.fill_template_values(request, **template_values)

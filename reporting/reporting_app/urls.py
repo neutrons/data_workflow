@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     url(r'^report/', include('report.urls')),
     url(r'^dasmon/', include('dasmon.urls')),
     url(r'^pvmon/', include('pvmon.urls')),
+    url(r'^files/', include('file_handling.urls')),
     url(r'^users/', include('users.urls')),
     url(r'^database/', include(admin.site.urls)),
 )

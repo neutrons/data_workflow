@@ -31,6 +31,11 @@
       Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
       Experiment title: {{ icat_info.title|default:"unknown" }}<br>
       Experiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
+      {% if image_url %}
+      <p>
+        <img src="{{ image_url|safe }}" alt="Reduced data">
+      <p>
+      {% endif %}
       Data files: 
       <ul>
       {%if icat_info.data_files %}
