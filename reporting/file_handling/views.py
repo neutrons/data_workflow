@@ -6,6 +6,8 @@ from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 import urllib2
+import os
+import logging
 from report.models import DataRun, Instrument
 from file_handling.models import ReducedImage
 import users.view_util
@@ -22,9 +24,9 @@ class UploadFileForm(forms.Form):
     data_url = forms.URLField(required=False, verify_exists=True)
 
 
+@csrf_exempt
 @users.view_util.login_or_local_required
 @users.view_util.monitor
-@csrf_exempt
 def upload_image(request, instrument, run_id):
     """
         Upload an image representing the reduced data 
@@ -51,6 +53,11 @@ def upload_image(request, instrument, run_id):
                 f = urllib2.urlopen(urllib2.Request(url=data_url))
                 file_name = data_url
                 file_content = ContentFile(f.read())
+            # Sanity check
+            _, ext = os.path.splitext(file_name)
+            if ext.lower() not in ['jpeg', 'jpg', 'png', 'gif']:
+                logging.error("Uploaded file doesn't appear to be an image: %s" % file_name)
+                return HttpResponse(status=400)
             # Store file info to DB
             # Search to see whether a file with that name exists.
             # Check whether the file is owned by the user before deleting it.
