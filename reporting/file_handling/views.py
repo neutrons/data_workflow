@@ -3,6 +3,7 @@ from django.core.files.base import ContentFile
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 import urllib2
 from report.models import DataRun, Instrument
@@ -17,13 +18,13 @@ class UploadFileForm(forms.Form):
     """
         Simple form to select a data file on the user's machine
     """
-    # http://dl.dropbox.com/u/16900303/5731_frame1_Iq.xml
     file  = forms.FileField(required=False)
     data_url = forms.URLField(required=False, verify_exists=True)
 
 
 @users.view_util.login_or_local_required
 @users.view_util.monitor
+@csrf_exempt
 def upload_image(request, instrument, run_id):
     """
         Upload an image representing the reduced data 
