@@ -14,7 +14,7 @@ import users.view_util
 
 from django import forms
 from django.core.files.base import ContentFile
-
+from django.contrib.auth import login, logout, authenticate
 
 class UploadFileForm(forms.Form):
     """
@@ -22,10 +22,11 @@ class UploadFileForm(forms.Form):
     """
     file  = forms.FileField(required=False)
     data_url = forms.URLField(required=False, verify_exists=True)
+    username = forms.CharField()
+    password = forms.CharField()
 
 
 @csrf_exempt
-@users.view_util.login_or_local_required
 @users.view_util.monitor
 def upload_image(request, instrument, run_id):
     """
@@ -34,14 +35,19 @@ def upload_image(request, instrument, run_id):
         @param instrument: instrument name
         @param run_id: run number
     """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
-
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         
         if form.is_valid():
+            user = authenticate(username=request.POST['username'],
+                                password=request.POST['password'])
+            if user is not None and not user.is_anonymous():
+                login(request,user)
+            else:
+                return HttpResponse(status=401)
+            if not request.user.is_authenticated():
+                return HttpResponse(status=401)
+            
             # Prepare to save data to disk
             if 'file' in request.FILES:
                 # A file is uploaded directly
@@ -62,6 +68,10 @@ def upload_image(request, instrument, run_id):
             # Search to see whether a file with that name exists.
             # Check whether the file is owned by the user before deleting it.
             # If it's not, just create a new file with the same name.
+            # Get instrument
+            instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+            run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
+
             image_entries = ReducedImage.objects.filter(name__endswith=file_name, run_id=run_object)
             if len(image_entries)>0:                
                 image = image_entries[0]
