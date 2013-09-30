@@ -125,6 +125,12 @@
     color: #9d301d;
 }
 
+.plot_timeframe {
+    font-size:10px;
+    float:right;
+    padding-right:5px;
+}
+
 .summary {
 	padding-left: 5px;	
 }

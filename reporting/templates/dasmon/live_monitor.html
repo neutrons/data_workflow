@@ -14,13 +14,14 @@
     var error_data = {{ error_rate|safe }};
     var plotted_vars = [];
     var plotted_data = [];
+    var plot_timeframe = '7200';
 
     function poll() {
         query_str = "";
         for (var i=0;i<plotted_vars.length; i++) {
             if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
         };
-        $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&vars="+query_str, success: function(data) {
+        $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&time="+plot_timeframe+"&vars="+query_str, success: function(data) {
 
         	update_from_ajax_data(data);
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
@@ -47,7 +48,7 @@
             if (plotted_vars[i][1]=="2") pv_query_str += plotted_vars[i][0]+',';
         };
         if (pv_query_str.length>0) {
-            $.ajax({ url: "{{ pv_url }}?since="+last_run_id+"&vars="+pv_query_str, success: function(data) {
+            $.ajax({ url: "{{ pv_url }}?since="+last_run_id+"&time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
     
                 plotted_data = data.live_plot_data;
                 
@@ -64,20 +65,31 @@
         get_alarms();
     };
     
+    function max_timeframe(time_period) 
+    {
+    	plot_timeframe = time_period;
+    	poll();
+    }
+    
     function pop_monitor_plot(element_id, option)
     {
         if (!$("#"+element_id+"_dialog").length)
         {
             var plot_content = "<div id='"+element_id+"_dialog' title='"+element_id+"'>";
             plot_content    += "  <div class='live_plots'>";
+            plot_content    += "    <div class='plot_timeframe'>";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"900\");'>15m</a> | ";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"7200\");'>2h</a> | ";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"86400\");'>max</a>";
+            plot_content    += "    </div><br>";
             plot_content    += "    <div style='height:150px' id='"+element_id+"_plot'><span class='waiting'>Working... this will take a second or two.</span></div>";
-            plot_content    += "    <span style='float:right'>time elapsed [minutes]</span><br>";
+            plot_content    += "    <div class='plot_timeframe'>time elapsed [minutes]</div><br>";
             plot_content    += "  </div>";
             plot_content    += "</div>";
             $('#dialog_placeholder').append(plot_content);
             $( "#"+element_id+"_dialog" ).dialog({
             	width: 400,
-            	height: 220,
+            	height: 230,
             	resizable: false,
             	closeOnEscape: true,
                 close: function( event, ui ) 

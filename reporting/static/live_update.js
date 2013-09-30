@@ -64,7 +64,7 @@ function plot_monitor(monitor_data, element_id, label_text){
 					if (val==0) {
 						return "now";
 					} else {
-						return val.toFixed(2);
+						return val.toFixed(1);
 					}
 				},
 			},

@@ -238,10 +238,16 @@ def get_live_variables(request, instrument_id):
         live_keys=live_vars.split(',')
     else:
         return []
+    plot_timeframe = request.GET.get('time', settings.DASMON_PLOT_TIME_RANGE)
+    try:
+        plot_timeframe = int(plot_timeframe)
+    except:
+        logging.warning("Bad time period request: %s" % str(plot_timeframe))
+        plot_timeframe = settings.DASMON_PLOT_TIME_RANGE
     
     data_dict = []
     now = timezone.now()
-    two_hours = now-datetime.timedelta(seconds=settings.DASMON_PLOT_TIME_RANGE)
+    two_hours = now-datetime.timedelta(seconds=plot_timeframe)
     for key in live_keys:
         key = key.strip()
         if len(key)==0: continue
