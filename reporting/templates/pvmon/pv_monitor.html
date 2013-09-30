@@ -16,6 +16,7 @@
     var error_data = {{ error_rate|safe }};
     var plotted_vars = [];
     var plotted_data = [];
+    var plot_timeframe = '7200';
 
     function poll() {
         query_str = "";
@@ -44,12 +45,23 @@
         }, dataType: "json", timeout: 30000, cache: false });
     };
     
+    function max_timeframe(time_period) 
+    {
+        plot_timeframe = time_period;
+        poll();
+    }
+
     function pop_monitor_plot(element_id)
     {
         if (!$("#"+element_id+"_dialog").length)
         {
             var plot_content = "<div id='"+element_id+"_dialog' title='"+element_id+"'>";
             plot_content    += "  <div class='live_plots'>";
+            plot_content    += "    <div class='plot_timeframe'>";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"900\");'>15m</a> | ";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"7200\");'>2h</a> | ";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"86400\");'>max</a>";
+            plot_content    += "    </div><br>";
             plot_content    += "    <div style='height:150px' id='"+element_id+"_plot'><span class='waiting'>Working... this will take a second or two.</span></div>";
             plot_content    += "    <span style='float:right'>time elapsed [minutes]</span><br>";
             plot_content    += "  </div>";
@@ -57,7 +69,7 @@
             $('#dialog_placeholder').append(plot_content);
             $( "#"+element_id+"_dialog" ).dialog({
                 width: 400,
-                height: 220,
+                height: 230,
                 resizable: false,
                 closeOnEscape: true,
                 close: function( event, ui ) 
