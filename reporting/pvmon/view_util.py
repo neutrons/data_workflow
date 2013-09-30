@@ -19,10 +19,17 @@ def get_live_variables(request, instrument_id):
         live_keys=live_vars.split(',')
     else:
         return []
+    plot_timeframe = request.GET.get('time', settings.PVMON_PLOT_TIME_RANGE)
+    try:
+        plot_timeframe = int(plot_timeframe)
+    except:
+        logging.warning("Bad time period request: %s" % str(plot_timeframe))
+        plot_timeframe = settings.PVMON_PLOT_TIME_RANGE
+
     
     data_dict = []
     now = time.time()
-    two_hours = now-settings.PVMON_PLOT_TIME_RANGE
+    two_hours = now-plot_timeframe
     for key in live_keys:
         key = key.strip()
         if len(key)==0: continue
@@ -31,7 +38,10 @@ def get_live_variables(request, instrument_id):
             key_id = PVName.objects.get(name=key)
             values = PV.objects.filter(instrument_id=instrument_id,
                                        name=key_id,
-                                       update_time__gte=two_hours).order_by('update_time').reverse()
+                                       update_time__gte=two_hours)
+            if len(values)==0:
+                continue
+            values = values.order_by('update_time').reverse()
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values)<2:
@@ -39,9 +49,26 @@ def get_live_variables(request, instrument_id):
                                            name=key_id).order_by('update_time').reverse()
                 if len(values)>settings.PVMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.PVMON_NUMBER_OF_OLD_PTS]
-            for v in values:
-                delta_t = now-v.update_time
-                data_list.append([-delta_t/60.0, v.value])
+
+            # Average out points every two minutes when plotting a long period of time
+            if now-values[len(values)-1].update_time>datetime.timedelta(seconds=2*60*60):
+                range_t = now-values[len(values)-1].update_time
+                range_minutes = int(math.floor(range_t/120))+1
+                data_values = range_minutes*[0]
+                data_counts = range_minutes*[0]
+                for v in values:
+                    delta_t = now-v.update_time
+                    i_bin = int(math.floor(delta_t/120))
+                    data_counts[i_bin] += 1.0
+                    data_values[i_bin] += float(v.value)
+                for i in range(range_minutes):
+                    if data_counts[i]>0:
+                        data_values[i] /= data_counts[i]
+                    data_list.append([-i*2.0, data_values[i]])                
+            else:
+                for v in values:
+                    delta_t = now-v.update_time
+                    data_list.append([-delta_t/60.0, v.value])
             data_dict.append([key,data_list])
         except:
             # Could not find data for this key
