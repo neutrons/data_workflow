@@ -192,7 +192,7 @@ def store_and_cache(instrument_id, key, value):
         value_string = value_string[:128]
     status_entry = StatusVariable(instrument_id=instrument_id,
                                   key_id=key_id,
-                                  value=str(value))
+                                  value=value_string)
     status_entry.save()
     
     # Update the latest value
