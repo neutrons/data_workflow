@@ -51,7 +51,7 @@ def get_live_variables(request, instrument_id):
                     values = values[:settings.PVMON_NUMBER_OF_OLD_PTS]
 
             # Average out points every two minutes when plotting a long period of time
-            if now-values[len(values)-1].update_time>datetime.timedelta(seconds=2*60*60):
+            if now-values[len(values)-1].update_time>2*60*60:
                 range_t = now-values[len(values)-1].update_time
                 range_minutes = int(math.floor(range_t/120))+1
                 data_values = range_minutes*[0]
