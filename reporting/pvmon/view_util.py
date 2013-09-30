@@ -6,6 +6,7 @@ import datetime
 import logging
 import sys
 import time
+import math
 
 def get_live_variables(request, instrument_id):  
     """
