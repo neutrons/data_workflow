@@ -9,6 +9,7 @@ from django.conf import settings
 import logging
 import sys
 import time
+import math
 import report.view_util
 import pvmon.view_util
 import users.view_util
@@ -264,9 +265,26 @@ def get_live_variables(request, instrument_id):
                                                        key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()
                 if len(values)>settings.DASMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.DASMON_NUMBER_OF_OLD_PTS]
-            for v in values:
-                delta_t = now-v.timestamp
-                data_list.append([-delta_t.total_seconds()/60.0, v.value])
+            
+            # Average out points every two minutes when plotting a long period of time
+            if now-values[len(values)-1].timestamp>datetime.timedelta(seconds=2*60*60):
+                range_t = now-values[len(values)-1].timestamp
+                range_minutes = int(math.floor(range_t.total_seconds()/120))+1
+                data_values = range_minutes*[0]
+                data_counts = range_minutes*[0]
+                for v in values:
+                    delta_t = now-v.timestamp
+                    i_bin = int(math.floor(delta_t.total_seconds()/120))
+                    data_counts[i_bin] += 1.0
+                    data_values[i_bin] += float(v.value)
+                for i in range(range_minutes):
+                    if data_counts[i]>0:
+                        data_values[i] /= data_counts[i]
+                    data_list.append([-i*2.0, data_values[i]])
+            else:
+                for v in values:
+                    delta_t = now-v.timestamp
+                    data_list.append([-delta_t.total_seconds()/60.0, v.value])
             data_dict.append([key,data_list])
         except:
             # Could not find data for this key
