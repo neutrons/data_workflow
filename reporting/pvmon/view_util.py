@@ -50,7 +50,13 @@ def get_live_variables(request, instrument_id):
                 if len(values)>0:
                     values = values.order_by('update_time').reverse()
                 else:
-                    data_dict.append([key,[]])
+                    latest_entry = PVCache.objects.filter(instrument=instrument_id, name=key)
+                    if len(latest_entry)>0:
+                        latest_entry = latest_entry.latest("update_time")
+                        delta_t = now-latest_entry.update_time
+                        data_dict.append([key,[-delta_t/60.0, latest_entry.value]])
+                    else:
+                        data_dict.append([key,[]])
                     continue
                 if len(values)>settings.PVMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.PVMON_NUMBER_OF_OLD_PTS]
