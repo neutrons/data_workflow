@@ -257,12 +257,19 @@ def get_live_variables(request, instrument_id):
             key_id = Parameter.objects.get(name=key)
             values = StatusVariable.objects.filter(instrument_id=instrument_id,
                                                    key_id=key_id,
-                                                   timestamp__gte=two_hours).order_by(settings.DASMON_SQL_SORT).reverse()
+                                                   timestamp__gte=two_hours)
+            if len(values)>0:
+                values = values.order_by(settings.DASMON_SQL_SORT).reverse()
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values)==0:
                 values = StatusVariable.objects.filter(instrument_id=instrument_id,
-                                                       key_id=key_id).order_by(settings.DASMON_SQL_SORT).reverse()
+                                                       key_id=key_id)
+                if len(values)>0:
+                    values = values.order_by(settings.DASMON_SQL_SORT).reverse()
+                else:
+                    data_dict.append([key,[]])
+                    continue
                 if len(values)>settings.DASMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.DASMON_NUMBER_OF_OLD_PTS]
             
@@ -275,8 +282,11 @@ def get_live_variables(request, instrument_id):
                 for v in values:
                     delta_t = now-v.timestamp
                     i_bin = int(math.floor(delta_t.total_seconds()/120))
-                    data_counts[i_bin] += 1.0
-                    data_values[i_bin] += float(v.value)
+                    if i_bin<range_minutes:
+                        data_counts[i_bin] += 1.0
+                        data_values[i_bin] += float(v.value)
+                    else:
+                        logging.warning("Skipping point %s/%s %s(%s) = %s" % (i_bin, range_minutes, key, v.timestamp, v.value))
                 for i in range(range_minutes):
                     if data_counts[i]>0:
                         data_values[i] /= data_counts[i]
