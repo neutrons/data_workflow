@@ -54,7 +54,7 @@ def get_live_variables(request, instrument_id):
                     if len(latest_entry)>0:
                         latest_entry = latest_entry.latest("update_time")
                         delta_t = now-latest_entry.update_time
-                        data_dict.append([key,[-delta_t/60.0, latest_entry.value]])
+                        data_dict.append([key,[[-delta_t/60.0, latest_entry.value]]])
                     else:
                         data_dict.append([key,[]])
                     continue
