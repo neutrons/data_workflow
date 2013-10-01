@@ -50,7 +50,7 @@ def get_live_variables(request, instrument_id):
                 if len(values)>0:
                     values = values.order_by('update_time').reverse()
                 else:
-                    latest_entry = PVCache.objects.filter(instrument=instrument_id, name=key)
+                    latest_entry = PVCache.objects.filter(instrument=instrument_id, name=key_id)
                     if len(latest_entry)>0:
                         latest_entry = latest_entry.latest("update_time")
                         delta_t = now-latest_entry.update_time
