@@ -19,7 +19,6 @@ else:
 from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 from settings import TOPIC_PREFIX
-from settings import LEGACY_PREFIX, LEGACY_INSTRUMENT
 sys.path.append(INSTALLATION_DIR)
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
@@ -41,14 +40,13 @@ class Listener(stomp.ConnectionListener):
             @param message: JSON-encoded message content
         """
         destination = headers["destination"]
+        # Extract the instrument name
         instrument = None
         try:
             toks = destination.upper().split('.')
             if len(toks)>1:
                 if toks[0]=="/TOPIC/%s" % TOPIC_PREFIX:  
                     instrument = toks[1].lower()
-                elif toks[0]=="/TOPIC/%s" % LEGACY_PREFIX:
-                    instrument = LEGACY_INSTRUMENT.lower()
             if instrument is None:
                 logging.error("Could not extract instrument name from %s" % destination)
                 return
@@ -57,6 +55,7 @@ class Listener(stomp.ConnectionListener):
             logging.error(str(sys.exc_value))
             return
             
+        # Load the JSON message into a dictionary
         try:
             data_dict = json.loads(message)
         except:
@@ -64,6 +63,7 @@ class Listener(stomp.ConnectionListener):
             logging.error(sys.exc_value)
             return
            
+        # Get or create the instrument object from the DB
         try:
             instrument_id = Instrument.objects.get(name=instrument)
         except Instrument.DoesNotExist:
