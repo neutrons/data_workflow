@@ -83,6 +83,8 @@ class Listener(stomp.ConnectionListener):
                 if key is not None:
                     if key.endswith(".0"):
                         key = key[:len(key)-2]
+                    if key.endswith("_0"):
+                        key = key[:len(key)-2]
                     store_and_cache(instrument_id, key, data_dict["status"])
 
         # Process signals
