@@ -5,6 +5,7 @@ from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
 import logging
 import sys
+import os
 
 from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error
 from icat_server_communication import get_run_info, get_ipts_info
@@ -61,13 +62,14 @@ def detail(request, instrument, run_id):
     status_objects, status_header = view_util.ActivitySorter(request)(run_object)
     
     # Look for an image of the reduction
+    image_url = None
     try:
         from file_handling.models import ReducedImage
         image = ReducedImage.objects.filter(run_id=run_object).latest('created_on')
-        if image is not None:
+        if image is not None and bool(image.file) and os.path.isfile(image.file.path):
             image_url = image.file.url
     except:
-        image_url = None
+        logging.error("Error finding reduced image: %s" % sys.exc_value)
     
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
