@@ -20,7 +20,7 @@ class ReducedImage(models.Model):
 
     def file_link(self):
         if self.file:
-            return "<a href='%s%s'>download</a>" % (settings.MEDIA_URL, self.file.name)
+            return "<a href='%s%s'>%s</a>" % (settings.MEDIA_URL, self.file.name, self.name)
         else:
             return "No attachment"
 
