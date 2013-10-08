@@ -220,7 +220,6 @@ def get_update(request, instrument):
     """ 
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    key_value_pairs = StatusCache.objects.filter(instrument_id=instrument_id)
     
     # Get last experiment and last run
     data_dict = report.view_util.get_current_status(instrument_id)      
@@ -237,7 +236,6 @@ def get_update(request, instrument):
     # Get current DAS health status
     das_status = view_util.get_system_health(instrument_id)
     data_dict['das_status'] = das_status
-    
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     
     # Recent run info
