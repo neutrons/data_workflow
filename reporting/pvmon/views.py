@@ -77,7 +77,7 @@ def get_update(request, instrument):
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     
     # Recent run info
-    data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
+    #data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
     
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
