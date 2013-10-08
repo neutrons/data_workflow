@@ -235,7 +235,6 @@ def get_update(request, instrument):
     data_dict['variables'].append(recording_status)
     
     # Get current DAS health status
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     das_status = view_util.get_system_health(instrument_id)
     data_dict['das_status'] = das_status
     

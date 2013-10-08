@@ -71,7 +71,6 @@ def get_update(request, instrument):
     data_dict['variables'].append(recording_status)
     
     # Get current DAS health status
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     das_status = dasmon.view_util.get_system_health(instrument_id)
     data_dict['das_status'] = das_status
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
