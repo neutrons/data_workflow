@@ -92,25 +92,22 @@ def get_cached_variables(instrument_id, monitored_only=False):
         @param instrument_id: Instrument object
         @param monitored_only: if True, only monitored PVs are returned
     """
-    # Get the PV list
-    keys = PVName.objects.all().order_by("name")
+    values = PVCache.objects.filter(instrument=instrument_id)
+    if len(values)>0:
+        values = values.order_by("name__name")
     
     key_value_pairs = []
-    for k in keys:
-        values = PVCache.objects.filter(instrument=instrument_id, name=k)
-        if len(values)>0:
-            latest = values.latest("update_time")
-            
-            if latest.name.monitored or monitored_only is False:
-                localtime = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
-                df = dateformat.DateFormat(localtime)
-                string_value = '%g' % latest.value            
-    
-                item = {'key': str(latest.name),
-                        'value': string_value,
-                        'timestamp': df.format(settings.DATETIME_FORMAT),
-                        }
-                key_value_pairs.append(item)
+    for kvp in values:
+        if kvp.name.monitored or monitored_only is False:
+            localtime = timezone.localtime(datetime.datetime.fromtimestamp(kvp.update_time))
+            df = dateformat.DateFormat(localtime)
+            string_value = '%g' % kvp.value            
+
+            item = {'key': str(kvp.name),
+                    'value': string_value,
+                    'timestamp': df.format(settings.DATETIME_FORMAT),
+                    }
+            key_value_pairs.append(item)
 
     return key_value_pairs
 
