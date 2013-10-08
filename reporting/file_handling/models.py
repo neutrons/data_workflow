@@ -26,6 +26,12 @@ class ReducedImage(models.Model):
 
     file_link.allow_tags = True
     
+    def file_size(self):
+        if self.file:
+            return str(self.file.size)
+        else:
+            return "N/A"
+    file_size.short_description = "Bytes"
     
 # These two auto-delete files from filesystem when they are unneeded:
 @receiver(models.signals.post_delete, sender=ReducedImage)
