@@ -21,7 +21,7 @@ class UploadFileForm(forms.Form):
         Simple form to select a data file on the user's machine
     """
     file  = forms.FileField(required=False)
-    data_url = forms.URLField(required=False, verify_exists=True)
+    data_url = forms.URLField(required=False)
     username = forms.CharField()
     password = forms.CharField()
 

@@ -10,6 +10,8 @@ DATABASES = {
         }
 }
 
+SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
+
 TIME_ZONE = 'America/New_York'
 
 USE_TZ = True
