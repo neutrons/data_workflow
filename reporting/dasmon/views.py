@@ -69,6 +69,37 @@ def summary(request):
 @users.view_util.login_or_local_required
 @cache_page(5)
 @users.view_util.monitor
+def activity_summary(request):
+    """
+        Run rates for all instruments
+    """
+    global_status_url = reverse('dasmon.views.summary',args=[])
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; activity" % global_status_url
+    
+    template_values = {'breadcrumbs': breadcrumbs,
+                       'update_url': reverse('dasmon.views.activity_update'),
+                       }
+    
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('dasmon/activity_summary.html',
+                              template_values)    
+    
+def activity_update(request):
+    instruments = Instrument.objects.all().order_by('name')
+    
+    instrument_list = []
+    for i in instruments:
+        if not ActiveInstrument.objects.is_alive(i):
+            continue
+        instrument_list.append({'label':i.name,
+                                'data':report.view_util.run_rate(i)})
+        
+    return HttpResponse(simplejson.dumps({'run_rate':instrument_list}), mimetype="application/json")
+    
+        
+@users.view_util.login_or_local_required
+@cache_page(5)
+@users.view_util.monitor
 def live_monitor(request, instrument):
     """
         Display the list of latest errors

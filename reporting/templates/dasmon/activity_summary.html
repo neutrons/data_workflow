@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %} Activity Summary {% endblock %}
+
+{% block banner %} Activity Summary {% endblock %}    
+
+{% block header %}
+
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+
+<script>
+    function plot_activity(run_data){
+    	   var options = {
+    	            xaxis: {
+    	                show: true,
+    	                min: -24,
+    	                max: 1,
+    	                ticks:[[-24, "-24 hrs"], [1, "last hour"]]  
+    	            },
+    	            yaxis: { minTickSize:1 },
+    	            shadowSize: 0,
+    	            bars: {
+    	                show: true,
+    	                lineWidth: 1
+    	            },
+    	            grid: { 
+    	                color: "#5e5e5e",
+    	                borderWidth: 1
+    	            },
+    	            legend: {
+    	                show: true,
+    	                position: 'nw'
+    	            }
+    	    };
+    	    $.plot($("#runs_per_hour"), run_data, options);
+    }
+    function poll(){
+        $.ajax({ url: "{{ update_url }}", success: function(data){
+            plot_activity(data.run_rate);
+        }, dataType: "json", timeout: 30000, cache: false });
+    };    
+</script>   
+{% endblock %}
+
+{% block summary %}
+<div class="summary_plots">
+  <div id="runs_per_hour">Updating... Please wait a moment.</div>
+</div>
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    poll();
+    setInterval(poll, 10000);
+</script>
+{% endblock %}
+
+{% block nocontent %}{% endblock %}
