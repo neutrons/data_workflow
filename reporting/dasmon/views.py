@@ -88,22 +88,22 @@ def activity_summary(request):
 def activity_update(request):
     instruments = Instrument.objects.all().order_by('name')
     #              YELLOW     ORANGE     TURQUOISE  PURPLE
-    color_list = ['#FFFF73', '#BF7130', '#006363', '#48036F',
-                  '#BFBF30', '#A64B00', '#009999', '#7109AA',
-                  '#A6A600', '#FFB273', '#5CCCCC', '#AD66D5',
-                  '#A66E00', '#E567B1', '#88B32D', '#4573D5'
+    color_list = ['#FFFF73', '#BC2F2F', '#006363', '#48036F',
+                  '#BFBF30', '#A66E00', '#009999', '#7109AA',
+                  '#F1EF00', '#FFBE40', '#5CCCCC', '#AD66D5',
+                  '#E5DBEB', '#E567B1', '#88B32D', '#4573D5'
                   ]
     instrument_list = []
     count = 0
     for i in instruments:
         if not ActiveInstrument.objects.is_alive(i):
             continue
-        count += 1
         series = {'label':i.name,
                   'data':report.view_util.run_rate(i)}
         if count<len(color_list):
             series['color'] = color_list[count]
         instrument_list.append(series)
+        count += 1
         
     return HttpResponse(simplejson.dumps({'run_rate':instrument_list}), mimetype="application/json")
     
