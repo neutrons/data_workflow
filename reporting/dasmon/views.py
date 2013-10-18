@@ -98,8 +98,15 @@ def activity_update(request):
     for i in instruments:
         if not ActiveInstrument.objects.is_alive(i):
             continue
+        rate = report.view_util.run_rate(i)
+        rate_corrected = [[j, 0] for j in range(24)]
+        for pt in rate:
+            try:
+                rate_corrected[pt[0]] = pt
+            except:
+                logging.error("Bad run rate point for %s: %s" % (i.name, str(rate)))
         series = {'label':i.name,
-                  'data':report.view_util.run_rate(i)}
+                  'data':rate_corrected}
         if count<len(color_list):
             series['color'] = color_list[count]
         instrument_list.append(series)
