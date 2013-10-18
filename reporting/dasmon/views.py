@@ -94,6 +94,7 @@ def activity_update(request):
                   '#E5DBEB', '#E567B1', '#88B32D', '#4573D5'
                   ]
     instrument_list = []
+    total_rate = [[-j, 0] for j in range(24)]
     count = 0
     for i in instruments:
         if not ActiveInstrument.objects.is_alive(i):
@@ -104,12 +105,22 @@ def activity_update(request):
             for rc in rate_corrected:
                 if rc[0]==pt[0]:
                     rc[1] = pt[1]
+        
+        for j in range(24):
+            total_rate[j][1] += rate_corrected[j][1]
+            
         series = {'label':i.name,
                   'data':rate_corrected}
         if count<len(color_list):
             series['color'] = color_list[count]
         instrument_list.append(series)
         count += 1
+        
+    instrument_list.append({'label': '',
+                            'data': total_rate,
+                            'color': '#aaaaaa',
+                            'stack': 0,
+                            'bars': {'fill': 0}})
         
     return HttpResponse(simplejson.dumps({'run_rate':instrument_list}), mimetype="application/json")
     
