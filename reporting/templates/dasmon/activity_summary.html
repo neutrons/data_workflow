@@ -22,7 +22,8 @@
             },
             grid: {
                 color: "#5e5e5e",
-                borderWidth: 1
+                borderWidth: 1,
+                hoverable: true
             },
             series: {
                 stack:1,
@@ -38,7 +39,44 @@
             },
         };
         $.plot($("#runs_per_hour"), run_data, options);
+        
+        function showTooltip(x, y, contents) {
+            $("<div id='tooltip'>" + contents + "</div>").css({
+                position: "absolute",
+                display: "none",
+                top: y + 5,
+                left: x + 5,
+                border: "1px solid #fdd",
+                padding: "2px",
+                "background-color": "#fee",
+                opacity: 0.80
+            }).appendTo("body").fadeIn(0);
+        }
+
+        var previousPoint = null;
+        $("#runs_per_hour").bind("plothover", function (event, pos, item) {
+            if (item) {
+                    if (previousPoint != item.dataIndex) {
+                        previousPoint = item.dataIndex;
+                        $("#tooltip").remove();
+                        var x = item.datapoint[0].toFixed(2),
+                        y = item.datapoint[1].toFixed(2);
+                        var output = '';
+                        var index = Math.round(-x);
+                        for (var i=0; i<run_data.length; i++) {
+                            if (run_data[i].label.length>0 && run_data[i].data[index][1]>0) {
+                                output += run_data[i].label+' '+run_data[i].data[index][1]+'<br>';
+                            }
+                        }
+                        showTooltip(item.pageX, item.pageY, output);
+                    }
+                } else {
+                    $("#tooltip").remove();
+                    previousPoint = null;
+                };
+        });
     }
+
     function poll(){
         $.ajax({ url: "{{ update_url }}", success: function(data){
             plot_activity(data.run_rate);
