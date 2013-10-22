@@ -62,18 +62,11 @@ class Listener(stomp.ConnectionListener):
             logging.error("Could not decode message from %s" % destination)
             logging.error(sys.exc_value)
             return
-           
-        # Get or create the instrument object from the DB
-        try:
-            instrument_id = Instrument.objects.get(name=instrument)
-        except Instrument.DoesNotExist:
-            instrument_id = Instrument(name=instrument)
-            instrument_id.save()
-            
+        
         # If we get a STATUS message, store it as such
         if "STATUS" in destination:
             if "STS" in destination:
-                store_and_cache(instrument_id, "system_sts", data_dict["status"])
+                store_and_cache(instrument, "system_sts", data_dict["status"])
             elif "status" in data_dict:
                 key = None
                 if "src_id" in data_dict:
@@ -85,13 +78,13 @@ class Listener(stomp.ConnectionListener):
                         key = key[:len(key)-2]
                     if key.endswith("_0"):
                         key = key[:len(key)-2]
-                    store_and_cache(instrument_id, key, data_dict["status"])
+                    store_and_cache(instrument, key, data_dict["status"])
 
         # Process signals
         elif "SIGNAL" in destination:
             try:
                 logging.warn("SIGNAL: %s: %s" % (destination, str(data_dict)))
-                process_signal(instrument_id, data_dict)
+                process_signal(instrument, data_dict)
             except:
                 logging.error("Could not process signal: %s" % str(data_dict))
                 logging.error(sys.exc_value)
@@ -103,7 +96,7 @@ class Listener(stomp.ConnectionListener):
                     for item in data_dict[key]:
                         # Protect against old API
                         if not type(data_dict[key][item])==dict:
-                            store_and_cache(instrument_id, 'monitor_count_%s' % str(item), data_dict[key][item])
+                            store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item])
                         else:
                             identifier = None
                             counts = None
@@ -113,11 +106,11 @@ class Listener(stomp.ConnectionListener):
                                 counts = data_dict[key][item]["counts"]
                             if identifier is not None and counts is not None:
                                 parameter_name = "%s_count_%s" % (item, identifier)
-                                store_and_cache(instrument_id, parameter_name, counts)
+                                store_and_cache(instrument, parameter_name, counts)
                 else:
-                    store_and_cache(instrument_id, key, data_dict[key])
+                    store_and_cache(instrument, key, data_dict[key])
             
-def process_signal(instrument_id, data):
+def process_signal(instrument, data):
     """
         Process and store signal messages.
         @param instrument_id: Instrument object
@@ -141,7 +134,14 @@ def process_signal(instrument_id, data):
             "timestamp": "1375464079",
             "sig_name": "SID_SVP_HIGH"
         }
-    """    
+    """
+    # Get or create the instrument object from the DB
+    try:
+        instrument_id = Instrument.objects.get(name=instrument)
+    except Instrument.DoesNotExist:
+        instrument_id = Instrument(name=instrument)
+        instrument_id.save()
+
     # Assert a signal
     if 'sig_name' in data:
         # Query the DB to see whether we have the signal asserted
@@ -176,13 +176,20 @@ def process_signal(instrument_id, data):
                 item.delete()
     
     
-def store_and_cache(instrument_id, key, value):
+def store_and_cache(instrument, key, value):
     """
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
         @param key: key string
         @param value: value for the given key
     """
+    # Get or create the instrument object from the DB
+    try:
+        instrument_id = Instrument.objects.get(name=instrument)
+    except Instrument.DoesNotExist:
+        instrument_id = Instrument(name=instrument)
+        instrument_id.save()
+
     try:
         key_id = Parameter.objects.get(name=key)
     except:

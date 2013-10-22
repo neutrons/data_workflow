@@ -33,7 +33,7 @@ class DasMonListenerDaemon(Daemon):
         c = Client(brokers, amq_user, amq_pwd, 
                    queues, "dasmon_listener")
         c.set_listener(Listener())
-        c.listen_and_wait(0.1)
+        c.listen_and_wait(0.01)
 
 def run():
     parser = argparse.ArgumentParser(description='DASMON listener')
