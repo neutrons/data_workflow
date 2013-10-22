@@ -315,23 +315,26 @@ class Client(object):
             terminated.
             @param waiting_period: sleep time between connection to a broker
         """
+        last_purge_time = None
         while(True):
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
-                # Remove old entries
-                delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
-                cutoff = timezone.now()-delta_time
-                StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
-                StatusCache.objects.filter(timestamp__lte=cutoff).delete()
-                
-                # Remove old PVMON entries
-                PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-                old_entries = PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
-                for item in old_entries:
-                    if len(MonitoredVariable.objects.filter(instrument=item.instrument,
-                                                            pv_name=item.name))==0:
-                        item.delete()
+                if last_purge_time is None or time.time()-last_purge_time>120:
+                    last_purge_time = time.time()
+                    # Remove old entries
+                    delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
+                    cutoff = timezone.now()-delta_time
+                    StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
+                    StatusCache.objects.filter(timestamp__lte=cutoff).delete()
+                    
+                    # Remove old PVMON entries
+                    PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
+                    old_entries = PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
+                    for item in old_entries:
+                        if len(MonitoredVariable.objects.filter(instrument=item.instrument,
+                                                                pv_name=item.name))==0:
+                            item.delete()
                 time.sleep(waiting_period)
             except:
                 logging.error("Problem connecting to AMQ broker")
