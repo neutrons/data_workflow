@@ -22,8 +22,7 @@
             if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
         };
         $.ajax({ url: "{{ update_url }}?time="+plot_timeframe+"&vars="+query_str, success: function(data) {
-
-        	update_from_ajax_data(data);
+            update_from_ajax_data(data);
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
             $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
             $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
@@ -34,14 +33,14 @@
             plot_combined_rates(run_data, error_data);
             
             for (var i=0; i<plotted_vars.length; i++) {
-            	for (var j=0; j<plotted_data.length; j++) {
-            		if (plotted_data[j][0]==plotted_vars[i][0]) {
-            			plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_plot", plotted_vars[i][0]);
-            		}
-            	}
+                for (var j=0; j<plotted_data.length; j++) {
+                    if (plotted_data[j][0]==plotted_vars[i][0]) {
+                        plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_plot", plotted_vars[i][0]);
+                    }
+                }
             }
 
-        }, dataType: "json", timeout: 30000, cache: false });
+        }, dataType: "json", timeout: 30000, cache: true });
 
         pv_query_str = "";
         for (var i=0;i<plotted_vars.length; i++) {
@@ -49,7 +48,6 @@
         };
         if (pv_query_str.length>0) {
             $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
-    
                 plotted_data = data.live_plot_data;
                 
                 for (var i=0; i<plotted_vars.length; i++) {
@@ -59,7 +57,7 @@
                         }
                     }
                 }
-            }, dataType: "json", timeout: 30000, cache: false });
+            }, dataType: "json", timeout: 30000, cache: true });
         }
         
         get_alarms();
@@ -67,8 +65,8 @@
     
     function max_timeframe(time_period) 
     {
-    	plot_timeframe = time_period;
-    	poll();
+        plot_timeframe = time_period;
+        poll();
     }
     
     function pop_monitor_plot(element_id, option)
@@ -88,13 +86,13 @@
             plot_content    += "</div>";
             $('#dialog_placeholder').append(plot_content);
             $( "#"+element_id+"_dialog" ).dialog({
-            	width: 400,
-            	height: 230,
-            	resizable: false,
-            	closeOnEscape: true,
-                close: function( event, ui ) 
-                { 
-                    $( "#"+element_id+"_dialog" ).remove(); 
+                width: 400,
+                height: 230,
+                resizable: false,
+                closeOnEscape: true,
+                close: function( event, ui )
+                {
+                    $( "#"+element_id+"_dialog" ).remove();
                     for (var i = 0; i < plotted_vars.length; i++) {
                         if (plotted_vars[i][0]==element_id) plotted_vars[i][1]="0";
                     };
@@ -109,15 +107,15 @@
     {
         $.ajax({ url: "{{ signals_url }}", success: function(data) {
             $('#signal_table').replaceWith(data);
-        }, dataType: "html", timeout: 30000, cache: false });    
+        }, dataType: "html", timeout: 30000, cache: false });
     }
-</script>   
+</script>
 {% endblock %}
 
 {% block banner %}{{ instrument }} Monitor {% endblock %}
 
 {% block right_side_links %}
-    <span style="float:right">live monitoring: 
+    <span style="float:right">live monitoring:
     <b>status</b> | <a href="{{ live_runs_url }}">runs</a> | <a href="{{ live_pv_url }}">PVs</a>
     </span>
 {% endblock %}
@@ -130,31 +128,27 @@
 {% endblock %}
 
 {% block content %}
-      <table cellspacing="0" class="message_table" id="error_table">
-      <thead>
+  <table cellspacing="0" class="message_table" id="error_table">
+    <thead>
       <tr>
-          <th> Key </th> <th> Value </th> <th> Last Updated </th>
+        <th> Key </th> <th> Value </th> <th> Last Updated </th>
       </tr>
-      </thead>
-      <tbody>
+    </thead>
+    <tbody>
       {% for item in key_value_pairs %}
-          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-          {% if item.value|is_number %}
-          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '1');"> {{ item.key }} </a></td>
-          {% else %}
-          <td>{{ item.key }}</td>
-          {% endif %}
-          <td><span id="{{ item.key }}">{{ item.value }}</span></td>
-          <td><span id="{{ item.key }}_timestamp">{{ item.timestamp }}</span></td>
-          </tr>
+      <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+        {% if item.value|is_number %}<td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '1');"> {{ item.key }} </a></td>{% else %}<td>{{ item.key }}</td>{% endif %}
+        <td><span id="{{ item.key }}">{{ item.value }}</span></td>
+        <td><span id="{{ item.key }}_timestamp">{{ item.timestamp }}</span></td>
+      </tr>
       {% endfor %}
-      </tbody>
-      </table>
-      <br>
+    </tbody>
+  </table>
+  <br>
 
-<div id="dialog_placeholder"></div>
+  <div id="dialog_placeholder"></div>
 
-<script id="source" language="javascript" type="text/javascript">
+  <script id="source" language="javascript" type="text/javascript">
     plot_combined_rates(run_data, error_data);
-</script>
+  </script>
 {% endblock%}
