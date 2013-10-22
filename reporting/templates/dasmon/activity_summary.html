@@ -80,7 +80,7 @@
     function poll(){
         $.ajax({ url: "{{ update_url }}", success: function(data){
             plot_activity(data.run_rate);
-        }, dataType: "json", timeout: 30000, cache: false });
+        }, dataType: "json", timeout: 30000, cache: true });
     };    
 </script>   
 {% endblock %}
