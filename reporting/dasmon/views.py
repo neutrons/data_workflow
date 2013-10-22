@@ -304,7 +304,7 @@ def get_update(request, instrument):
 
 
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(15)
 def summary_update(request):
     """
          Response to AJAX call to get updated health info for all instruments
