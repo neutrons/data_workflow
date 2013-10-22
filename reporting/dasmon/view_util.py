@@ -301,12 +301,14 @@ def get_live_variables(request, instrument_id):
             logging.warning("Could not process %s: %s" % (key, sys.exc_value))
     return data_dict
 
-def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
+def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
     """
         Get the health status of PVStreamer
         @param red_timeout: number of hours before declaring a process dead
         @param yellow_timeout: number of seconds before declaring a process slow
     """
+    if yellow_timeout is None:
+        yellow_timeout = settings.HEARTBEAT_TIMEOUT
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
@@ -334,12 +336,14 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=10):
         return 1
     return 0
     
-def get_workflow_status(red_timeout=1, yellow_timeout=10):
+def get_workflow_status(red_timeout=1, yellow_timeout=None):
     """
         Get the health status of Workflow Manager
         @param red_timeout: number of hours before declaring a process dead
         @param yellow_timeout: number of seconds before declaring a process slow
     """
+    if yellow_timeout is None:
+        yellow_timeout = settings.HEARTBEAT_TIMEOUT
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
@@ -360,12 +364,14 @@ def get_workflow_status(red_timeout=1, yellow_timeout=10):
         return 1
     return 0
     
-def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
+def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=None):
     """
         Get the health status of DASMON server
         @param red_timeout: number of hours before declaring a process dead
         @param yellow_timeout: number of seconds before declaring a process slow
     """
+    if yellow_timeout is None:
+        yellow_timeout = settings.HEARTBEAT_TIMEOUT
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
     
@@ -388,11 +394,13 @@ def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=10):
         return 1
     return 0
 
-def workflow_diagnostics(timeout=10):
+def workflow_diagnostics(timeout=None):
     """
         Diagnostics for the workflow manager
         @param timeout: number of seconds of silence before declaring a problem
     """
+    if timeout is None:
+        timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
     
     wf_diag = {}
@@ -432,11 +440,13 @@ def workflow_diagnostics(timeout=10):
     
     return wf_diag
     
-def postprocessing_diagnostics(timeout=10):
+def postprocessing_diagnostics(timeout=None):
     """
         Diagnostics for the auto-reduction and cataloging
         @param timeout: number of seconds of silence before declaring a problem
     """
+    if timeout is None:
+        timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
 
     red_diag = {}
@@ -478,12 +488,14 @@ def postprocessing_diagnostics(timeout=10):
     return red_diag
 
 
-def pvstreamer_diagnostics(instrument_id, timeout=10):
+def pvstreamer_diagnostics(instrument_id, timeout=None):
     """
         Diagnostics for PVStreamer
         @param instrument_id: Instrument object
         @param timeout: number of seconds of silence before declaring a problem
     """
+    if timeout is None:
+        timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
     
     pv_diag = {}
@@ -522,12 +534,14 @@ def pvstreamer_diagnostics(instrument_id, timeout=10):
     
     return pv_diag
     
-def dasmon_diagnostics(instrument_id, timeout=10):
+def dasmon_diagnostics(instrument_id, timeout=None):
     """
         Diagnostics for DASMON
         @param instrument_id: Instrument object
         @param timeout: number of seconds of silence before declaring a problem
     """
+    if timeout is None:
+        timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
     dasmon_diag = {}
     # Recent reported status

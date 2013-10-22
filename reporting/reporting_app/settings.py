@@ -218,6 +218,8 @@ DASMON_NUMBER_OF_OLD_PTS = 20
 # MONITORING OPTION
 MONITOR_ON = True
 
+HEARTBEAT_TIMEOUT = 15
+
 ## Prefix for status parameter names for monitored sub-systems
 SYSTEM_STATUS_PREFIX = 'system_'
 
