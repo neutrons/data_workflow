@@ -28,66 +28,53 @@
 {% endblock %}
 
 {% block summary %}
-      Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
-      Experiment title: {{ icat_info.title|default:"unknown" }}<br>
-      Experiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
-      {% if image_url %}
-      <p>
-        <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">
-      <p>
-      {% endif %}
-      Data files: 
-      <ul>
-      {%if icat_info.data_files %}
-          {% for item in icat_info.data_files %}
-              <li>{{ item|default:"unknown" }}</li>
-          {% endfor %}
-      {% else %}
-          {{ run_object.file|default:"unknown" }}
-      {% endif %}
-      </ul>
-      Reduced files: 
-      <ul>
-      {%if icat_info.reduced_files %}
-          {% for item in icat_info.reduced_files %}
-              <li>{{ item|default:"unknown" }}</li>
-          {% endfor %}
-      {% endif %}
-      </ul>
-      
+  Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
+  Experiment title: {{ icat_info.title|default:"unknown" }}<br>
+  Experiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
+  {% if image_url %}
+  <p>
+    <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">
+  <p>
+  {% endif %}
+  Data files: 
+  <ul>
+  {%if icat_info.data_files %}
+    {% for item in icat_info.data_files %}<li>{{ item|default:"unknown" }}</li>
+    {% endfor %}
+  {% else %}
+    {{ run_object.file|default:"unknown" }}
+  {% endif %}
+  </ul>
+  Reduced files: 
+  <ul>
+  {%if icat_info.reduced_files %}
+    {% for item in icat_info.reduced_files %}<li>{{ item|default:"unknown" }}</li>
+    {% endfor %}
+  {% endif %}
+  </ul>
 {% endblock %}
 
 {% block content %}
-      <table cellspacing="0" class="message_table">
-      <thead>
+  <table cellspacing="0" class="message_table">
+    <thead>
       <tr>
-      {% for item in status_header %}
-        <th {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
+      {% for item in status_header %}<th{% if item.class %} class="{{item.class}}"{% endif %}>{% if item.url %}<a href={{ item.url|safe }}>{% endif %}{{ item.name|safe }}{% if item.url %}</a>{% endif %}</th>
       {% endfor %}
       </tr>
-      </thead>
-      <tbody>
-        {% for item in status %}
-        <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-            <td>{{ item.queue_id.name }}</td>
-            {% if item.last_error %} 
-            <td class="error">{{ item.last_error.description }}</td>
-            {% else %}
-            <td>{{ item.last_info.description }}</td>
-            {% endif %}
-            <td>{{ item.created_on }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      </table>
-      
-      <br>
-      {% if is_instrument_staff %}
-      Submit for post-processing: <a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>
-      {% if reduce_url %}
-      | <a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>
-      | <a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>
-      {% endif %} 
-      {% endif %}
-
+    </thead>
+    <tbody>
+      {% for item in status %}
+      <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+        <td>{{ item.queue_id.name }}</td>
+        {% if item.last_error %}<td class="error">{{ item.last_error.description }}</td>{% else %}<td>{{ item.last_info.description }}</td>{% endif %}
+        <td>{{ item.created_on }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br>
+  {% if is_instrument_staff %}
+  Submit for post-processing: <a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>
+  {% if reduce_url %} | <a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a> | <a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>{% endif %} 
+  {% endif %}
 {% endblock %}

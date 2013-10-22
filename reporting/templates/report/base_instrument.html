@@ -46,17 +46,16 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 </p>
 
 <span id='signal_table'></span>
-
 {% endblock %}
 
 {% block right_side_links %}
-    {% if is_adara %}
-    <span style="float:right">live monitoring: 
+  {% if is_adara %}
+  <span style="float:right">live monitoring: 
     <a href="{{ live_monitor_url }}">status</a> | <a href="{{ live_runs_url }}">runs</a> | <a href="{{ live_pv_url }}">PVs</a>
-    </span>
-    {% elif is_alive %}
-    <span style="float:right">live monitoring: 
+  </span>
+  {% elif is_alive %}
+  <span style="float:right">live monitoring: 
     <a href="{{ live_runs_url }}">runs</a>
-    </span>
-    {% endif %}
+  </span>
+  {% endif %}
 {% endblock %}

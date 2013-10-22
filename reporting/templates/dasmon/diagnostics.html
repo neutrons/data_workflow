@@ -2,7 +2,7 @@
 
 {% block title %}{{ instrument }} Diagnostics {% endblock %}
 
-{% block banner %}{{ instrument }} Diagnostics {% endblock %}    
+{% block banner %}{{ instrument }} Diagnostics {% endblock %}
 
 {% block summary %}
 <div class='status_bar'>
@@ -36,28 +36,27 @@ The following items should be considered while interpreting the diagnostics belo
 <b>DASMON diagnostics:</b>
 <div style="margin-left:20px">
 <table cellspacing="0">
-<tbody>
-  <tr class="even">
-    <td>Last status: </td><td>{{dasmon_diagnostics.status}}</td>
-  </tr>
-  <tr class="odd">
-    <td>Last status update: </td><td>{{dasmon_diagnostics.status_time}}</td>
-  </tr>
-  <tr class="even">
-    <td>Last PV update: </td><td>{{dasmon_diagnostics.pv_time}}</td>
-  </tr>
-  <tr class="odd">
-    <td>Last AMQ update: </td><td>{{dasmon_diagnostics.amq_time}}</td>
-  </tr>
-</tbody>
+  <tbody>
+    <tr class="even">
+      <td>Last status: </td><td>{{dasmon_diagnostics.status}}</td>
+    </tr>
+    <tr class="odd">
+      <td>Last status update: </td><td>{{dasmon_diagnostics.status_time}}</td>
+    </tr>
+    <tr class="even">
+      <td>Last PV update: </td><td>{{dasmon_diagnostics.pv_time}}</td>
+    </tr>
+    <tr class="odd">
+      <td>Last AMQ update: </td><td>{{dasmon_diagnostics.amq_time}}</td>
+    </tr>
+  </tbody>
 </table>
 <p>
  
 {% if dasmon_diagnostics.conditions %}
 Reported conditions:<br>
 <ul>
-{% for item in dasmon_diagnostics.conditions %}
-    <li>{{ item|safe }}</li>
+{% for item in dasmon_diagnostics.conditions %}<li>{{ item|safe }}</li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -67,22 +66,21 @@ Reported conditions:<br>
 <b>PVStreamer diagnostics:</b>
 <div style="margin-left:20px">
 <table cellspacing="0">
-<tbody>
-  <tr class="even">
-    <td>Last status: </td><td>{{pv_diagnostics.status}}</td>
-  </tr>
-  <tr class="odd">
-    <td>Last status update: </td><td>{{pv_diagnostics.status_time}}</td>
-  </tr>
-</tbody>
+  <tbody>
+    <tr class="even">
+      <td>Last status: </td><td>{{pv_diagnostics.status}}</td>
+    </tr>
+    <tr class="odd">
+      <td>Last status update: </td><td>{{pv_diagnostics.status_time}}</td>
+    </tr>
+  </tbody>
 </table>
 <p>
- 
+
 {% if pv_diagnostics.conditions %}
 Reported conditions:<br>
 <ul>
-{% for item in pv_diagnostics.conditions %}
-    <li>{{ item|safe }}</li>
+{% for item in pv_diagnostics.conditions %}<li>{{ item|safe }}</li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -93,22 +91,21 @@ Reported conditions:<br>
 <b>Workflow diagnostics:</b>
 <div style="margin-left:20px">
 <table cellspacing="0">
-<tbody>
-  <tr class="even">
-    <td>Last status: </td><td>{{wf_diagnostics.status}}</td>
-  </tr>
-  <tr class="odd">
-    <td>Last status update: </td><td>{{wf_diagnostics.status_time}}</td>
-  </tr>
-</tbody>
+  <tbody>
+    <tr class="even">
+      <td>Last status: </td><td>{{wf_diagnostics.status}}</td>
+    </tr>
+    <tr class="odd">
+      <td>Last status update: </td><td>{{wf_diagnostics.status_time}}</td>
+    </tr>
+  </tbody>
 </table>
 <p>
  
 {% if wf_diagnostics.conditions %}
 Reported conditions:<br>
 <ul>
-{% for item in wf_diagnostics.conditions %}
-    <li>{{ item|safe }}</li>
+{% for item in wf_diagnostics.conditions %}<li>{{ item|safe }}</li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -118,27 +115,26 @@ Reported conditions:<br>
 <b>Cataloging & Reduction diagnostics:</b>
 <div style="margin-left:20px">
 <table cellspacing="0">
-<tbody>
-  <tr class="even">
-    <td>Last cataloging status: </td><td>{{post_diagnostics.catalog_status}}</td>
-  </tr>
-  <tr class="odd">
-    <td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td>
-  </tr>
-  {% for item in post_diagnostics.ar_nodes %}
-  <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-    <td>{{ item.node }}: </td><td>{{ item.time }}</td>
-  </tr>
-  {% endfor %}
-</tbody>
+  <tbody>
+    <tr class="even">
+      <td>Last cataloging status: </td><td>{{post_diagnostics.catalog_status}}</td>
+    </tr>
+    <tr class="odd">
+      <td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td>
+    </tr>
+{% for item in post_diagnostics.ar_nodes %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}odd{% else %}even{% endif %}">
+      <td>{{ item.node }}: </td><td>{{ item.time }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
 </table>
 <p>
- 
+
 {% if post_diagnostics.conditions %}
 Reported conditions:<br>
 <ul>
-{% for item in post_diagnostics.conditions %}
-    <li>{{ item|safe }}</li>
+{% for item in post_diagnostics.conditions %}<li>{{ item|safe }}</li>
 {% endfor %}
 </ul>
 {% endif %}
