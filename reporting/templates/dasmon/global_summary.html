@@ -26,7 +26,7 @@
                 var content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
                 $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
             }
-        }, dataType: "json", timeout: 30000, cache: false });
+        }, dataType: "json", timeout: 30000, cache: true });
     };
 </script>
 {% endblock %}
