@@ -38,95 +38,69 @@
     }
 </script>
 </head>
- 
 <body>
+{% if user_alert %}
 <script id="source" language="javascript" type="text/javascript">
-	{% if user_alert %}
     $(document).ready(show_alert);
-    {% endif %}
 </script>
-    {% block bodytop %}
-    {% endblock %}
-    
- 	<div class="user_info">
- 	{% if gravatar_url %}
-		<img src="{{ gravatar_url|safe }}&s=16" height="16" width="16" alt="{{ user.username}}">
-	{% endif %}
-		{{ user.username }} |
-    {% if help_url %}
-        <a href="{{ help_url }}">help</a> |
-    {% endif %}
-	{% if user.is_authenticated %}
-		<a href="{{ logout_url }}">logout</a>
-	{% else %}
-		<a href="{{ login_url }}">login</a>
-	{% endif %}
-	</div>
-    
-    <a class="banner_logo" href="http://neutrons.ornl.gov/" target="_blank"><img title="SNS" src="/static/sns_logo_111x75.png" alt="SNS" /></a>
-    <div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
+{% endif %}
+{% block bodytop %}
+{% endblock %}
 
-    <div class='user_alert'>
-    {% if user_alert %}
-        <div id="alert_message">
-        {% for item in user_alert %}
-            {{ item|safe }} {% if not forloop.last %}<br><br>{% endif %}
-        {% endfor %}
-        </div>
-        {% else %}
-    <div id="alert_message"></div>
-    {% endif %}
-    </div> 
+<div class="user_info">
+  {% if gravatar_url %}<img src="{{ gravatar_url|safe }}&s=16" height="16" width="16" alt="{{ user.username}}">{% endif %} {{ user.username }} |{% if help_url %} <a href="{{ help_url }}">help</a> |{% endif %}{% if user.is_authenticated %} <a href="{{ logout_url }}">logout</a>{% else %} <a href="{{ login_url }}">login</a>{% endif %}
+</div>
 
-    <div class="breadcrumbs">
-    {% block breadcrumb %}
-    {% if breadcrumbs %}
-        {{ breadcrumbs|safe }}
-    {% else %}
-        <a href="/">home</a>
-    {% endif %}
-    {% block right_side_links %}
-    {% endblock %}
-    {% endblock %}
-    </div>
+<a class="banner_logo" href="http://neutrons.ornl.gov/" target="_blank"><img title="SNS" src="/static/sns_logo_111x75.png" alt="SNS" /></a>
+<div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
 
-    <div class="summary">    
-    {% block summary %}{% endblock %}
-    
-	{% block nocontent %}
-    <div class="box">
-    {% block content %}{% endblock %}
-    </div>
-    {% endblock %}
-    </div>
+<div class='user_alert'>
+  {% if user_alert %}
+  <div id="alert_message">
+  {% for item in user_alert %}
+    {{ item|safe }} {% if not forloop.last %}<br><br>{% endif %}
+  {% endfor %}
+  </div>
+  {% else %}<div id="alert_message"></div>{% endif %}
+</div> 
 
-<footer>    
-        <div class="ornlFooter">
-            <table style="width: 100%">
-                <tr>
-                    <td>
-                        <a id="FooterUTBLogoLink" title="UT-Battelle" href="http://ut-battelle.org" target="_blank" style="display:inline-block;height:44px;width:150px;"><img title="UT-Battelle" src="/static/utb_logo.png" alt="UT-Battelle" /></a>
-                    </td>
-                    <td class="links">
-                        <ul>
-                            <li>
-                                <a id="HyperLink2" title="Security Notice" href="http://www.ornl.gov/ornlhome/disclaimers.shtml" target="_blank">Security Notice</a><span>·</span></li>
-                            <li>
-                                <a id="HyperLink3" title="Internal Users" href="http://www.ornl.gov/ornlhome/remote.shtml" target="_blank">Internal Users</a><br></li>
-                            <li>
-                                <a id="HyperLink5" title="DOE - Oak Ridge" href="http://www.oakridge.doe.gov/external/" target="_blank">DOE - Oak Ridge</a><span>·</span></li>
-                            <li>
-                                <a id="HyperLink6" title="UT-Battelle" href="http://ut-battelle.org" target="_blank">UT-Battelle</a></li>
-                        </ul>
-                    </td>
-                    <td>
-                        <a id="FooterScienceLogoLink" title="Department of Energy , Office of Science" href="http://science.energy.gov/" target="_blank" style="display:inline-block;height:56px;width:173px;"><img title="Department of Energy , Office of Science" src="/static/doe_os_logo.png" alt="Department of Energy , Office of Science" /></a>
-                    </td>
-                </tr>
-            </table>
-        </div>
- </footer>
+<div class="breadcrumbs">
+  {% block breadcrumb %}
+  {% if breadcrumbs %}{{ breadcrumbs|safe }}{% else %}<a href="/">home</a>{% endif %}
+  {% block right_side_links %}{% endblock %}
+  {% endblock %}
+</div>
 
+<div class="summary">
+{% block summary %}{% endblock %}
+{% block nocontent %}
+<div class="box">
+{% block content %}{% endblock %}
+</div> <!--  box -->
+{% endblock %}
+</div> <!--  summary -->
+
+<footer>
+  <div class="ornlFooter">
+    <table style="width: 100%">
+      <tr>
+        <td>
+          <a id="FooterUTBLogoLink" title="UT-Battelle" href="http://ut-battelle.org" target="_blank" style="display:inline-block;height:44px;width:150px;"><img title="UT-Battelle" src="/static/utb_logo.png" alt="UT-Battelle" /></a>
+        </td>
+        <td class="links">
+          <ul>
+            <li><a id="HyperLink2" title="Security Notice" href="http://www.ornl.gov/ornlhome/disclaimers.shtml" target="_blank">Security Notice</a><span>·</span></li>
+            <li><a id="HyperLink3" title="Internal Users" href="http://www.ornl.gov/ornlhome/remote.shtml" target="_blank">Internal Users</a><br></li>
+            <li><a id="HyperLink5" title="DOE - Oak Ridge" href="http://www.oakridge.doe.gov/external/" target="_blank">DOE - Oak Ridge</a><span>·</span></li>
+            <li><a id="HyperLink6" title="UT-Battelle" href="http://ut-battelle.org" target="_blank">UT-Battelle</a></li>
+          </ul>
+        </td>
+        <td>
+          <a id="FooterScienceLogoLink" title="Department of Energy , Office of Science" href="http://science.energy.gov/" target="_blank" style="display:inline-block;height:56px;width:173px;"><img title="Department of Energy , Office of Science" src="/static/doe_os_logo.png" alt="Department of Energy , Office of Science" /></a>
+        </td>
+      </tr>
+    </table>
+  </div>
+</footer>
 </body>
-
 </html>

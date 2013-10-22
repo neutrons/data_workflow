@@ -188,6 +188,11 @@ def store_and_cache(instrument_id, key, value):
     except:
         key_id = Parameter(name=key)
         key_id.save()
+        
+    # Do bother with parameter that are not monitored
+    if key_id.monitored is False:
+        return
+    
     # The longest allowable string is 128 characters
     value_string = str(value)
     if len(value_string)>128:
