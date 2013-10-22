@@ -84,7 +84,7 @@ def activity_summary(request):
     return render_to_response('dasmon/activity_summary.html',
                               template_values)    
     
-@cache_page(5)
+@cache_page(15)
 def activity_update(request):
     instruments = Instrument.objects.all().order_by('name')
     #              YELLOW     ORANGE     TURQUOISE  PURPLE
