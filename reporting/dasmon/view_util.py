@@ -38,10 +38,14 @@ def get_cached_variables(instrument_id, monitored_only=False):
         @param monitored_only: if True, only monitored parameters are returned
     """
     parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
-    
+    # Variables that are displayed on top
+    top_variables = ['run_number', 'proposal_id', 'run_title']
     key_value_pairs = []
     for kvp in parameter_values:
         if kvp.key_id.monitored or monitored_only is False:
+            # Exclude top variables
+            if str(kvp.key_id) in top_variables:
+                continue
             localtime = timezone.localtime(kvp.timestamp)
             df = dateformat.DateFormat(localtime)
             
