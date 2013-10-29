@@ -71,6 +71,26 @@ def detail(request, instrument, run_id):
     except:
         logging.error("Error finding reduced image: %s" % sys.exc_value)
     
+    # Check whether this is the last known run for this instrument
+    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    if last_run_id == run_object:
+        next_url = None
+    else:
+        try:
+            DataRun.objects.get(instrument_id=instrument_id,
+                                run_number=run_object.run_number+1)
+            next_url = reverse('report.views.detail', args=[instrument, run_object.run_number+1])
+        except:
+            next_url = None
+
+    # Get previous run
+    try:
+        DataRun.objects.get(instrument_id=instrument_id,
+                            run_number=run_object.run_number-1)
+        prev_url = reverse('report.views.detail', args=[instrument, run_object.run_number-1])
+    except:
+        prev_url = None
+    
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
@@ -79,6 +99,8 @@ def detail(request, instrument, run_id):
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
                        'image_url':image_url,
+                       'prev_url': prev_url,
+                       'next_url': next_url,
                        }
 
     template_values = users.view_util.fill_template_values(request, **template_values)

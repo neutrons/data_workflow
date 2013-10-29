@@ -28,6 +28,8 @@
 {% endblock %}
 
 {% block summary %}
+  <span style='float:right'>{% if prev_url %}<a href='{{ prev_url|safe }}'>previous</a>{% else %}previous{% endif %} | {% if next_url %}<a href='{{ next_url|safe }}'>next</a>{% else %}next{% endif %}</span>
+  <br>
   Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
   Experiment title: {{ icat_info.title|default:"unknown" }}<br>
   Experiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
