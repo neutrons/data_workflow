@@ -29,13 +29,20 @@ class RunStatusAdmin(admin.ModelAdmin):
     search_fields = ['run_id__run_number']
 
 class InformationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'run_status_id', 'description')
+    list_display = ('id', 'run_status_id', 'time', 'description')
     search_fields = ['description']
     
+    def time(self, obj):
+        return obj.run_status_id.created_on
+    
+
 class ErrorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'run_status_id', 'description')
+    list_display = ('id', 'run_status_id', 'time', 'description')
     list_filter = ('run_status_id__run_id__instrument_id',)
     search_fields = ['description']
+    
+    def time(self, obj):
+        return obj.run_status_id.created_on
     
 class StatusQueueAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'is_workflow_input')
