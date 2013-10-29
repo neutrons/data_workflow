@@ -1,6 +1,7 @@
 from report.models import DataRun, StatusQueue, RunStatus, WorkflowSummary, IPTS, Instrument
 from report.models import Information, Error, Task
 from django.contrib import admin
+from django.utils import timezone
 
 def reduction_not_needed(modeladmin, request, queryset):
     queryset.update(reduction_needed=False)
@@ -33,8 +34,7 @@ class InformationAdmin(admin.ModelAdmin):
     search_fields = ['description']
     
     def time(self, obj):
-        return obj.run_status_id.created_on
-    
+        return timezone.localtime(obj.run_status_id.created_on)
 
 class ErrorAdmin(admin.ModelAdmin):
     list_display = ('id', 'run_status_id', 'time', 'description')
@@ -42,7 +42,7 @@ class ErrorAdmin(admin.ModelAdmin):
     search_fields = ['description']
     
     def time(self, obj):
-        return obj.run_status_id.created_on
+        return timezone.localtime(obj.run_status_id.created_on)
     
 class StatusQueueAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'is_workflow_input')
