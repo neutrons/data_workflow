@@ -44,7 +44,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
     for kvp in parameter_values:
         if kvp.key_id.monitored or monitored_only is False:
             # Exclude top variables
-            if str(kvp.key_id) in top_variables:
+            if monitored_only and str(kvp.key_id) in top_variables:
                 continue
             localtime = timezone.localtime(kvp.timestamp)
             df = dateformat.DateFormat(localtime)
