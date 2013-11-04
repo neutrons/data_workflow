@@ -303,7 +303,7 @@ def get_update(request, instrument):
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 
-@users.view_util.login_or_local_required
+@users.view_util.login_or_local_required_401
 @cache_page(15)
 def summary_update(request):
     """

@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
+from django.http import HttpResponse
 
 # import code for encoding urls and generating md5 hashes
 import hashlib
@@ -36,41 +37,53 @@ def fill_template_values(request, **template_args):
 
     return template_args
 
+def _check_credentials(request):
+    """
+        Internal utility method to check whether a user has access to a view
+    """
+    # If we don't allow guests but the user is authenticated, return the function
+    if request.user.is_authenticated():
+        return True
+    
+    # If we allow users on a domain, check the user's IP
+    elif len(settings.ALLOWED_DOMAIN)>0:
+        ip_addr =  request.META['REMOTE_ADDR']
+        try:
+            # If the user is on the allowed domain, return the function
+            if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
+                return True
+            # If we allow a certain domain and the user is on the server, return the function
+            elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
+                return True
+        except:
+            logging.error("Error processing IP address: %s" % str(ip_addr))
+            
+    return False
+    
 def login_or_local_required(fn):
     """
         Function decorator to check whether a user is allowed
         to see a view.
     """
     def request_processor(request, *args, **kws):
-        # Login URL
-        redirect_url = reverse('users.views.perform_login')
-        redirect_url  += '?next=%s' % request.path
-        
-        # If we allow guests in, just return the function
-        #if settings.ALLOW_GUESTS:
-        #    return fn(request, *args, **kws)
-        
-        # If we don't allow guests but the user is authenticated, return the function
-        if request.user.is_authenticated():
+        if _check_credentials(request):
             return fn(request, *args, **kws)
-        
-        # If we allow users on a domain, check the user's IP
-        elif len(settings.ALLOWED_DOMAIN)>0:
-            ip_addr =  request.META['REMOTE_ADDR']
-
-            try:
-                # If the user is on the allowed domain, return the function
-                if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
-                    return fn(request, *args, **kws)
-                
-                # If we allow a certain domain and the user is on the server, return the function
-                elif socket.gethostbyaddr(ip_addr)[0] =='localhost':
-                    return fn(request, *args, **kws)
-            except:
-                logging.error("Error processing IP address: %s" % str(ip_addr))
 
         # If we made it here, we need to authenticate the user
+        redirect_url = reverse('users.views.perform_login')
+        redirect_url  += '?next=%s' % request.path
         return redirect(redirect_url)   
+    return request_processor
+
+def login_or_local_required_401(fn):
+    """
+        Function decorator to check whether a user is allowed
+        to see a view.
+    """
+    def request_processor(request, *args, **kws):
+        if _check_credentials(request):
+            return fn(request, *args, **kws)
+        return HttpResponse(status=401)
     return request_processor
 
 def is_instrument_staff(request, instrument_id):

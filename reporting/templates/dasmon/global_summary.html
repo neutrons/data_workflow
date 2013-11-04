@@ -26,7 +26,8 @@
                 var content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
                 $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
             }
-        }, dataType: "json", timeout: 30000, cache: true });
+        }, dataType: "json", timeout: 30000, cache: true,
+        statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
     };
 </script>
 {% endblock %}
