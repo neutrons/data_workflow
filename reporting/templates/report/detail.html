@@ -29,10 +29,10 @@
 
 {% block summary %}
   <span style='float:right'>{% if prev_url %}<a href='{{ prev_url|safe }}'>previous</a>{% else %}previous{% endif %} | {% if next_url %}<a href='{{ next_url|safe }}'>next</a>{% else %}next{% endif %}</span>
-  <br>
-  Experiment: {{ icat_info.proposal|default:"unknown" }}<br>
-  Experiment title: {{ icat_info.title|default:"unknown" }}<br>
-  Experiment created on: {{ icat_info.createTime|default:"unknown" }}<br>
+  <br><br>
+  Run title: {{ icat_info.title|default:"unknown" }}<br>
+  Run start: {{ icat_info.startTime|default:"unknown" }}<br>
+  Run end: {{ icat_info.endTime|default:"unknown" }}<br>
   {% if image_url %}
   <p>
     <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">

@@ -55,14 +55,14 @@ def get_ipts_info(instrument, ipts):
     return run_info
     
 def get_run_info(instrument, ipts, run_number):
-    # Get basic experiment info
-    run_info = get_ipts_info(instrument, ipts)
-    
-    # Get file location
+    """
+        Get ICAT info for the specified run
+    """
+    run_info = {}
     try:
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
                                       ICAT_PORT, timeout=2.0)
-        url = '/icat-rest-ws/datafile/SNS/%s/%s' % (instrument.upper(), run_number)
+        url = '/icat-rest-ws/dataset/SNS/%s/%s' % (instrument.upper(), run_number)
         conn.request('GET', url)
         r = conn.getresponse()
         dom = xml.dom.minidom.parseString(r.read())
@@ -78,6 +78,39 @@ def get_run_info(instrument, ipts, run_number):
         
         run_info['data_files'] = data_paths
         run_info['reduced_files'] = reduced_paths
+        
+        metadata = dom.getElementsByTagName('metadata')
+        if len(metadata)>0:
+            for n in metadata[0].childNodes:
+                # Run title
+                if n.nodeName=='title' and n.hasChildNodes():
+                    run_info['title'] = get_text_from_xml(n.childNodes)
+                # Start time
+                if n.nodeName=='startTime' and n.hasChildNodes():
+                    timestr = get_text_from_xml(n.childNodes)
+                    try:
+                        tz_location = timestr.rfind('+')
+                        if tz_location<0:
+                            tz_location = timestr.rfind('-')
+                        if tz_location>0:
+                            date_time_str = timestr[:tz_location]
+                            tz_str = timestr[tz_location:]
+                            run_info['startTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
+                    except:
+                        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
+                # End time
+                if n.nodeName=='endTime' and n.hasChildNodes():
+                    timestr = get_text_from_xml(n.childNodes)
+                    try:
+                        tz_location = timestr.rfind('+')
+                        if tz_location<0:
+                            tz_location = timestr.rfind('-')
+                        if tz_location>0:
+                            date_time_str = timestr[:tz_location]
+                            tz_str = timestr[tz_location:]
+                            run_info['endTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
+                    except:
+                        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
     except:
         logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
         
