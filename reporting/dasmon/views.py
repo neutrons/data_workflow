@@ -270,7 +270,7 @@ def diagnostics(request, instrument):
     return render_to_response('dasmon/diagnostics.html', template_values)
 
 
-@users.view_util.login_or_local_required
+@users.view_util.login_or_local_required_401
 @cache_page(5)
 def get_update(request, instrument):
     """
@@ -331,6 +331,7 @@ def summary_update(request):
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 
+@users.view_util.login_or_local_required_401
 @cache_page(5)
 def get_signal_table(request, instrument):
     """

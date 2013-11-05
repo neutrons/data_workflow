@@ -2,6 +2,7 @@ from django.http import Http404, HttpResponse, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
+from django.views.decorators.cache import cache_page
 from django.conf import settings
 import logging
 import sys
@@ -303,7 +304,8 @@ def live_errors(request, instrument):
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/live_errors.html', template_values)
     
-@users.view_util.login_or_local_required
+@users.view_util.login_or_local_required_401
+@cache_page(5)
 def get_experiment_update(request, instrument, ipts):
     """
          Ajax call to get updates behind the scenes
@@ -322,7 +324,8 @@ def get_experiment_update(request, instrument, ipts):
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 
-@users.view_util.login_or_local_required
+@users.view_util.login_or_local_required_401
+@cache_page(5)
 def get_instrument_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -362,7 +365,8 @@ def get_instrument_update(request, instrument):
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
   
-@users.view_util.login_or_local_required
+@users.view_util.login_or_local_required_401
+@cache_page(5)
 def get_error_update(request, instrument):
     """
          Ajax call to get updates behind the scenes

@@ -40,8 +40,8 @@
             run_data = data.run_rate;
             error_data = data.error_rate;
             plot_combined_rates(run_data, error_data);
-
-        }, dataType: "json", timeout: 30000, cache: true });
+        }, dataType: "json", timeout: 30000, cache: true,
+        statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
     };    
 </script>   
 {% endblock %}
