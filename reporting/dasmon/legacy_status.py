@@ -17,7 +17,7 @@ def get_ops_status(instrument):
 
         for group in data.keys():
             for item in data[group].keys():
-                key_value_pairs.append({'key':item.replace(' ', '_'),
+                key_value_pairs.append({'key':item.replace(' ', '_').replace('(', '[').replace(')', ']'),
                                         'value': data[group][item]})
         return key_value_pairs
     except:
