@@ -55,7 +55,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
   </span>
   {% elif is_alive %}
   <span style="float:right">live monitoring: 
-    <a href="{{ live_runs_url }}">runs</a>
+    <a href="{{ legacy_url }}">status</a> | <a href="{{ live_runs_url }}">runs</a>
   </span>
   {% endif %}
 {% endblock %}
