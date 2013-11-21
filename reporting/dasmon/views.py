@@ -15,6 +15,8 @@ from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrume
 import view_util
 import report.view_util
 import users.view_util
+import legacy_status
+
 import logging
 import sys
 
@@ -124,13 +126,50 @@ def activity_update(request):
         
     return HttpResponse(simplejson.dumps({'run_rate':instrument_list}), mimetype="application/json")
     
-        
+@users.view_util.login_or_local_required
+@cache_page(5)
+@users.view_util.monitor
+def legacy_monitor(request, instrument):
+    """
+        For legacy instruments, show contents of old status page
+        @param instrument: instrument name
+    """
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    update_url = reverse('dasmon.views.get_update',args=[instrument])
+    legacy_update_url = reverse('dasmon.views.get_legacy_data',args=[instrument])
+    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
+    kvp = legacy_status.get_ops_status(instrument)
+    template_values = {'instrument': instrument.upper(),
+                       'breadcrumbs':breadcrumbs,
+                       'update_url': update_url,
+                       'legacy_update_url': legacy_update_url,
+                       'key_value_pairs':kvp}
+    if len(kvp)==0:
+        inst_url = 'http://%s/%s/status/' % (legacy_status.STATUS_HOST, instrument.lower())
+        template_values['user_alert'] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
+    for item in kvp:
+        if item['key'] in ['Proposal', 'Detector_Rate', 'Run', 'Status']:
+            template_values[item['key']] = item['value']
+    template_values = report.view_util.fill_template_values(request, **template_values)
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = view_util.fill_template_values(request, **template_values)
+    return render_to_response('dasmon/legacy_monitor.html', template_values)
+
+@users.view_util.login_or_local_required_401
+@cache_page(5)
+def get_legacy_data(request, instrument):
+    """
+        Return the latest legacy status information
+    """
+    data_dict = legacy_status.get_ops_status(instrument)
+    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+
 @users.view_util.login_or_local_required
 @cache_page(5)
 @users.view_util.monitor
 def live_monitor(request, instrument):
     """
-        Display the list of latest errors
+        Display the list of current DASMON status
         @param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -159,7 +198,7 @@ def live_monitor(request, instrument):
 @users.view_util.monitor
 def live_runs(request, instrument):
     """
-        Display the list of latest errors
+        Display the list of latest runs
         @param instrument: instrument name
     """
     # Get instrument

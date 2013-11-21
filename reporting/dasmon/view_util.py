@@ -195,6 +195,7 @@ def fill_template_values(request, **template_args):
     template_args['live_monitor_url'] = reverse('dasmon.views.live_monitor', args=[instr])
     template_args['live_runs_url'] = reverse('dasmon.views.live_runs', args=[instr])
     template_args['live_pv_url'] = reverse('pvmon.views.pv_monitor', args=[instr])
+    template_args['legacy_url'] = reverse('dasmon.views.legacy_monitor', args=[instr])
 
     #template_args["help_url"] = reverse('dasmon.views.help')
 

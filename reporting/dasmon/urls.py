@@ -11,4 +11,7 @@ urlpatterns = patterns('',
     url(r'^(?P<instrument>[\w]+)/update/$', 'dasmon.views.get_update'),
     url(r'^(?P<instrument>[\w]+)/diagnostics/$', 'dasmon.views.diagnostics'),
     url(r'^(?P<instrument>[\w]+)/signals/$', 'dasmon.views.get_signal_table'),
+    url(r'^(?P<instrument>[\w]+)/legacy/$', 'dasmon.views.legacy_monitor'),
+    url(r'^(?P<instrument>[\w]+)/legacy/update/$', 'dasmon.views.get_legacy_data'),
+    
 )
