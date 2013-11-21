@@ -138,14 +138,14 @@ def legacy_monitor(request, instrument):
     update_url = reverse('dasmon.views.get_update',args=[instrument])
     legacy_update_url = reverse('dasmon.views.get_legacy_data',args=[instrument])
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
-    kvp = legacy_status.get_ops_status(instrument)
+    kvp = legacy_status.get_ops_status(instrument_id)
     template_values = {'instrument': instrument.upper(),
                        'breadcrumbs':breadcrumbs,
                        'update_url': update_url,
                        'legacy_update_url': legacy_update_url,
                        'key_value_pairs':kvp}
     if len(kvp)==0:
-        inst_url = 'http://%s/%s/status/' % (legacy_status.STATUS_HOST, instrument.lower())
+        inst_url = legacy_status.get_legacy_url(instrument_id)
         template_values['user_alert'] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
     for item in kvp:
         if item['key'] in ['Proposal', 'Detector_Rate', 'Run', 'Status']:
@@ -161,7 +161,8 @@ def get_legacy_data(request, instrument):
     """
         Return the latest legacy status information
     """
-    data_dict = legacy_status.get_ops_status(instrument)
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    data_dict = legacy_status.get_ops_status(instrument_id)
     return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
 
 @users.view_util.login_or_local_required

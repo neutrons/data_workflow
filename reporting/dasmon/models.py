@@ -73,3 +73,13 @@ class Signal(models.Model):
     message       = models.CharField(max_length=250)
     level         = models.IntegerField()
     timestamp     = models.DateTimeField('timestamp')
+    
+class LegacyURL(models.Model):
+    """
+        Table of URLs pointing to the legacy instrument status service
+    """
+    instrument_id = models.ForeignKey(Instrument, unique=True)
+    url = models.CharField(max_length=128)
+    long_name = models.CharField(max_length=40)
+    
+    
