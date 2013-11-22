@@ -7,4 +7,10 @@ def is_number(value):
         return True
     except:
         return False
-  
+    
+@register.filter(name='strip')
+def strip(value):
+    try:
+        return value.strip().replace('_', ' ')
+    except:
+        return value

@@ -29,10 +29,13 @@
         }, dataType: "json", timeout: 30000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
 
-        $.ajax({ url: "{{ legacy_update_url }}", success: function(data) {
-        	for (var i=0; i<data.length; i++)
-            { 
-                $('#'+data[i].key).replaceWith("<span id='"+data[i].key+"'>"+data[i].value+"</span>");
+        $.ajax({ url: "{{ legacy_update_url }}", success: function(legacy_data) {
+            for (var i=0; i<legacy_data.length; i++)
+            {
+                for (var j=0; j<legacy_data[i].data.length; j++)
+                {
+                    $('#'+legacy_data[i].data[j].key).replaceWith("<span id='"+legacy_data[i].data[j].key+"'>"+legacy_data[i].data[j].value+"</span>");
+                }
             }
         }, dataType: "json", timeout: 30000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
@@ -94,21 +97,24 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% endblock %}
 
 {% block content %}
-  <table cellspacing="0" class="message_table" id="error_table">
+  {% for group in key_value_pairs %}
+  <h3 class='table_title'>{{ group.group }}</h3>
+  <table cellspacing="0" class="message_table">
     <thead>
       <tr>
         <th> Key </th> <th> Value </th>
       </tr>
     </thead>
     <tbody>
-      {% for item in key_value_pairs %}
+    {% for item in group.data %}
       <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-        <td>{{ item.key }}</td>
+        <td>{{ item.key|strip }}</td>
         <td><span id="{{ item.key }}">{{ item.value }}</span></td>
       </tr>
-      {% endfor %}
+    {% endfor %}
     </tbody>
   </table>
+  {% endfor %}
   <br>
 
   <div id="dialog_placeholder"></div>

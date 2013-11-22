@@ -15,13 +15,19 @@ def get_ops_status(instrument_id):
         conn.request('GET', '%s/data.json' % url)
         r = conn.getresponse()
         data = json.loads(r.read())
-        key_value_pairs = []
-
-        for group in data.keys():
-            for item in data[group].keys():
-                key_value_pairs.append({'key':item.replace(' ', '_').replace('(', '[').replace(')', ']'),
+        organized_data = []
+        groups = data.keys()
+        groups.sort()
+        for group in groups:
+            key_value_pairs = []
+            keys = data[group].keys()
+            keys.sort()
+            for item in keys:
+                key_value_pairs.append({'key':item.replace(' ', '_').replace('(%)','[pct]').replace('(', '[').replace(')', ']').replace('#',''),
                                         'value': data[group][item]})
-        return key_value_pairs
+            organized_data.append({'group':group,
+                                   'data':key_value_pairs})
+        return organized_data
     except:
         logging.error("Could not connect to status page: %s" % sys.exc_value)
         return []

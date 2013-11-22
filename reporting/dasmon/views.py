@@ -147,9 +147,10 @@ def legacy_monitor(request, instrument):
     if len(kvp)==0:
         inst_url = legacy_status.get_legacy_url(instrument_id)
         template_values['user_alert'] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
-    for item in kvp:
-        if item['key'] in ['Proposal', 'Detector_Rate', 'Run', 'Status']:
-            template_values[item['key']] = item['value']
+    for group in kvp:
+        for item in group['data']:
+            if item['key'] in ['Proposal', 'Detector_Rate', 'Run', 'Status']:
+                template_values[item['key']] = item['value']
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
