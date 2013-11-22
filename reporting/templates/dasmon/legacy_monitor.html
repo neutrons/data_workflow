@@ -109,7 +109,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
     {% for item in group.data %}
       <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
         <td>{{ item.key|strip }}</td>
-        <td><span id="{{ item.key }}">{{ item.value }}</span></td>
+        <td><span id="{{ item.key }}">{{ item.value|safe }}</span></td>
       </tr>
     {% endfor %}
     </tbody>
