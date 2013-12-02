@@ -377,6 +377,7 @@ def summary_update(request):
                  }
     response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
+    response['Content-Length'] = len(response.content)
     return response
 
 
@@ -399,4 +400,5 @@ def get_signal_table(request, instrument):
     response = HttpResponse(resp, content_type="text/html")
     response['Connection'] = 'Keep-Alive'
     response['Keep-Alive'] = 'timeout=1'
+    response['Content-Length'] = len(response.content)
     return response
