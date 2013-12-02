@@ -346,6 +346,7 @@ def get_update(request, instrument):
     data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
     response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
+    response['Keep-Alive'] = 'timeout=1'
     return response
 
 
@@ -396,5 +397,6 @@ def get_signal_table(request, instrument):
         })
     resp = t.render(c)
     response = HttpResponse(resp, content_type="text/html")
-    response['Connection'] = 'close'
+    response['Connection'] = 'Keep-Alive'
+    response['Keep-Alive'] = 'timeout=1'
     return response
