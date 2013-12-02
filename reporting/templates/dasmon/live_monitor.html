@@ -39,7 +39,7 @@
                     }
                 }
             }
-        }, dataType: "json", timeout: 30000, cache: true,
+        }, dataType: "json", timeout: 2000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
 
         pv_query_str = "";
@@ -57,7 +57,7 @@
                         }
                     }
                 }
-            }, dataType: "json", timeout: 30000, cache: true,
+            }, dataType: "json", timeout: 2000, cache: true,
             statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
         }
         
