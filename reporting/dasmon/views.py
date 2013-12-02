@@ -124,7 +124,9 @@ def activity_update(request):
                             'stack': 0,
                             'bars': {'fill': 0}})
         
-    return HttpResponse(simplejson.dumps({'run_rate':instrument_list}), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps({'run_rate':instrument_list}), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
     
 @users.view_util.login_or_local_required
 @cache_page(5)
@@ -164,7 +166,9 @@ def get_legacy_data(request, instrument):
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     data_dict = legacy_status.get_ops_status(instrument_id)
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
 
 @users.view_util.login_or_local_required
 @cache_page(5)
@@ -340,8 +344,9 @@ def get_update(request, instrument):
     
     # Recent run info
     data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
-    
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
 
 
 @users.view_util.login_or_local_required_401
@@ -369,7 +374,9 @@ def summary_update(request):
     data_dict = {'instruments':instrument_list,
                  'postprocess_status':postprocess_status
                  }
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
 
 
 @users.view_util.login_or_local_required_401
@@ -388,4 +395,6 @@ def get_signal_table(request, instrument):
             'signals': view_util.get_signals(instrument_id),
         })
     resp = t.render(c)
-    return HttpResponse(resp, mimetype="text/html")
+    response = HttpResponse(resp, content_type="text/html")
+    response['Connection'] = 'close'
+    return response
