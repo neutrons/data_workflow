@@ -321,7 +321,9 @@ def get_experiment_update(request, instrument, ipts):
     data_dict = view_util.get_current_status(instrument_id)    
     data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
     
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
 
 
 @users.view_util.login_or_local_required_401
@@ -362,7 +364,9 @@ def get_instrument_update(request, instrument):
     data_dict['expt_list'] = update_list
     data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'
     
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
 
   
 @users.view_util.login_or_local_required_401
@@ -406,5 +410,8 @@ def get_error_update(request, instrument):
     data_dict['errors'] = err_list
     data_dict['refresh_needed'] = refresh_needed
     
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
+
 
