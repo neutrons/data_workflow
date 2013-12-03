@@ -55,10 +55,10 @@ def get_update(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
     # Get last experiment and last run
-    data_dict = report.view_util.get_current_status(instrument_id)  
+    data_dict = report.view_util.get_current_status(instrument_id)
     
     # Update the last PV values
-    data_dict['variables'] = view_util.get_cached_variables(instrument_id)
+    data_dict['variables'] = view_util.get_cached_variables(instrument_id, monitored_only=True)
     data_dict['variables'].extend(dasmon.view_util.get_cached_variables(instrument_id, monitored_only=False))
         
     # Update the recording status
@@ -75,8 +75,6 @@ def get_update(request, instrument):
     data_dict['das_status'] = das_status
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     
-    # Recent run info
-    #data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
-    
-    return HttpResponse(simplejson.dumps(data_dict), mimetype="application/json")
-
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    return response
