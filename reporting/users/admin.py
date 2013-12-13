@@ -1,4 +1,4 @@
-from users.models import PageView, DeveloperNode
+from users.models import PageView, DeveloperNode, SiteNotification
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
@@ -73,10 +73,15 @@ class SNSUserAdmin(UserAdmin):
         return ', '.join(groups)
     get_groups.short_description = "Groups"
 
+class SiteNotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'message', 'is_active')
+    list_editable = ('message', 'is_active')
+
 admin.site.unregister(User)
 admin.site.register(User, SNSUserAdmin)
 admin.site.register(PageView, PageViewAdmin)
 admin.site.register(DeveloperNode, DeveloperNodeAdmin)
+admin.site.register(SiteNotification, SiteNotificationAdmin)
 
 
 

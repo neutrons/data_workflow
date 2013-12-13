@@ -11,6 +11,7 @@ from django.template import Context, loader
 
 from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
+from users.models import SiteNotification
 
 import view_util
 import report.view_util
@@ -279,24 +280,11 @@ def diagnostics(request, instrument):
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    
-    # DASMON
-    dasmon_diag = view_util.dasmon_diagnostics(instrument_id)
-    
-    # PVStreamer
-    pv_diag = view_util.pvstreamer_diagnostics(instrument_id)
-    
+
     # Workflow Manager
     wf_diag = view_util.workflow_diagnostics()
-    
     # Post-processing
     red_diag = view_util.postprocessing_diagnostics()
-    
-    # Actions messages
-    actions = []
-    if dasmon_diag['dasmon_listener_warning'] and pv_diag['dasmon_listener_warning'] \
-        and wf_diag['dasmon_listener_warning']:
-        actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
     
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id, 'diagnostics')
     template_values = {'instrument':instrument.upper(),
@@ -306,12 +294,29 @@ def diagnostics(request, instrument):
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
     
-    template_values['dasmon_diagnostics'] = dasmon_diag
-    template_values['pv_diagnostics'] = pv_diag
+    actions = []
+    if ActiveInstrument.objects.is_adara(instrument_id):
+        # DASMON
+        dasmon_diag = view_util.dasmon_diagnostics(instrument_id)
+        # PVStreamer
+        pv_diag = view_util.pvstreamer_diagnostics(instrument_id)
+        # Actions messages
+        if dasmon_diag['dasmon_listener_warning'] and pv_diag['dasmon_listener_warning'] \
+            and wf_diag['dasmon_listener_warning']:
+            actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
+        template_values['dasmon_diagnostics'] = dasmon_diag
+        template_values['pv_diagnostics'] = pv_diag
+
     template_values['wf_diagnostics'] = wf_diag
     template_values['post_diagnostics'] = red_diag
     template_values['action_messages'] = actions
     
+    notices = []
+    for item in SiteNotification.objects.filter(is_active=True):
+        notices.append(item.message)
+    if len(notices)>0:
+        template_values['user_alert'] = notices
+
     return render_to_response('dasmon/diagnostics.html', template_values)
 
 

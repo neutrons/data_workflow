@@ -20,3 +20,7 @@ class DeveloperNode(models.Model):
         Table of IP names recognized as developer nodes
     """
     ip = models.CharField(max_length=64)
+    
+class SiteNotification(models.Model):
+    message = models.TextField()
+    is_active = models.BooleanField(default=False)

@@ -278,13 +278,13 @@ img {border: 0;}
 
 .user_alert {
 	cursor: pointer;
-	float:right;
 	display:none;
 	background: #FFEA7D;color: black;
 	padding: 0px;
 	margin-top:5px;
+	margin-left: auto;
+	margin-right: auto;
 	border: 1px solid #96740B;
-	margin-right:10px;
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	border-radius: 5px; /* future proofing */

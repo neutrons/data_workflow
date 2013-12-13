@@ -414,7 +414,7 @@ def workflow_diagnostics(timeout=None):
     
     # Recent reported status
     status_value = -1
-    status_time = 0
+    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         common_services = Instrument.objects.get(name='common')
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'workflowmgr')
@@ -426,7 +426,7 @@ def workflow_diagnostics(timeout=None):
         pass
     
     # Heartbeat
-    if status_time==0 or timezone.now()-status_time>delay_time:
+    if timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         wf_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("contact Workflow Manager expert")))
@@ -510,7 +510,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None):
     
     # Recent reported status
     status_value = -1
-    status_time = 0
+    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
@@ -521,7 +521,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None):
         pass
     
     # Heartbeat
-    if status_time==0 or timezone.now()-status_time>delay_time:
+    if timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         pv_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("ask on-call instrument contact to restart PVStreamer")))
@@ -553,7 +553,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     dasmon_diag = {}
     # Recent reported status
     status_value = -1
-    status_time = 0
+    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
@@ -564,7 +564,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         pass
     
     # Recent PVs, which come from DASMON straight to the DB
-    last_pv_time = 0
+    last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     last_pv_timestamp = 0
     try:
         latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
@@ -575,7 +575,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         pass
     
     # Recent AMQ messages
-    last_amq_time = 0
+    last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         latest = StatusCache.objects.filter(instrument_id=instrument_id).latest("timestamp")
         last_amq_time = timezone.localtime(latest.timestamp)
@@ -591,18 +591,18 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     dasmon_listener_warning = False
     
     # Recent PVs
-    if last_pv_timestamp==0 or time.time()-last_pv_timestamp>timeout:
+    if time.time()-last_pv_timestamp>timeout:
         slow_pvs = True
         dasmon_conditions.append("No PV updates in the past %s seconds" % str(time.time()-last_pv_timestamp))
     
     # Recent AMQ
-    if last_amq_time==0 or timezone.now()-last_amq_time>delay_time:
+    if timezone.now()-last_amq_time>delay_time:
         slow_amq = True
         df = dateformat.DateFormat(last_amq_time)
         dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % df.format(settings.DATETIME_FORMAT))
     
     # Heartbeat
-    if status_time==0 or timezone.now()-status_time>delay_time:
+    if timezone.now()-status_time>delay_time:
         slow_status = True
         df = dateformat.DateFormat(status_time)
         dasmon_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("ask on-call instrument contact to restart DASMON")))     
