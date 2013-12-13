@@ -428,7 +428,8 @@ def workflow_diagnostics(timeout=None):
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
-        wf_conditions.append("No heartbeat updates for more than %s seconds: %s" % (str(timeout), _red_message("contact Workflow Manager expert")))    
+        df = dateformat.DateFormat(status_time)
+        wf_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("contact Workflow Manager expert")))
 
     # Status
     if status_value > 0:
@@ -522,7 +523,8 @@ def pvstreamer_diagnostics(instrument_id, timeout=None):
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
-        pv_conditions.append("No heartbeat updates for more than %s seconds: %s" % (str(timeout), _red_message("contact PVStreamer expert")))
+        df = dateformat.DateFormat(status_time)
+        pv_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("ask on-call instrument contact to restart PVStreamer")))
 
     # Status
     if status_value > 0:
@@ -591,17 +593,19 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     # Recent PVs
     if last_pv_timestamp==0 or time.time()-last_pv_timestamp>timeout:
         slow_pvs = True
-        dasmon_conditions.append("No PV updates in the past %s seconds" % str(timeout))
+        dasmon_conditions.append("No PV updates in the past %s seconds" % str(time.time()-last_pv_timestamp))
     
     # Recent AMQ
     if last_amq_time==0 or timezone.now()-last_amq_time>delay_time:
         slow_amq = True
-        dasmon_conditions.append("No ActiveMQ updates from DASMON in the past %s seconds" % str(timeout))
+        df = dateformat.DateFormat(last_amq_time)
+        dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % df.format(settings.DATETIME_FORMAT))
     
     # Heartbeat
     if status_time==0 or timezone.now()-status_time>delay_time:
         slow_status = True
-        dasmon_conditions.append("No heartbeat updates for more than %s seconds: %s" % (str(timeout), _red_message("contact DASMON expert")))     
+        df = dateformat.DateFormat(status_time)
+        dasmon_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("ask on-call instrument contact to restart DASMON")))     
     
     # Status
     if status_value > 0:
@@ -612,13 +616,13 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dasmon_conditions.append("The web monitor has not heard from DASMON in a long time: no data available")
     
     if slow_status and slow_pvs and slow_amq:
-        dasmon_conditions.append("DASMON may be down:  %s" % _red_message("contact DASMON expert"))
+        dasmon_conditions.append("DASMON may be down:  %s" % _red_message("ask on-call instrument contact to restart DASMON"))
     
     if slow_pvs and not slow_status and not slow_amq:
         dasmon_conditions.append("DASMON is up but not writing to the DB: check PVStreamer")
     
     if (slow_status or slow_amq) and not slow_pvs:
-        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" % _red_message("contact DASMON expert"))
+        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" % _red_message("ask on-call instrument contact to restart DASMON"))
 
     if slow_status and slow_amq:
         dasmon_listener_warning = True
