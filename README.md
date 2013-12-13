@@ -47,3 +47,6 @@ SNS data workflow manager and reporting app
 	Those will speed up the run rate and error rate queries. No change needs to be made
 	to the settings when installing those stored procedures and the application will
 	use them automatically.
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/neutrons/data_workflow/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
