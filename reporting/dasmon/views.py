@@ -22,7 +22,7 @@ import logging
 import sys
 
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(60)
 @users.view_util.monitor
 def summary(request):
     """
@@ -70,7 +70,7 @@ def summary(request):
 
 
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(60)
 @users.view_util.monitor
 def activity_summary(request):
     """
