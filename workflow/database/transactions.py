@@ -82,12 +82,10 @@ def add_status_entry(headers, data):
         run_id = DataRun.objects.get(run_number=run_number, instrument_id=instrument_id)
     except DataRun.DoesNotExist:
         logging.info("Creating entry for run %s-%d" % (instrument, run_number))
-        run_id = DataRun(run_number=run_number,
-                         instrument_id=instrument_id,
-                         ipts_id=ipts_id,
-                         file=data_dict["data_file"])
-        run_id.save()
-    
+        run_id = DataRun.create_and_save(run_number=run_number,
+                                         instrument_id=instrument_id,
+                                         ipts_id=ipts_id,
+                                         file=data_dict["data_file"])
     
     # Add a workflow summary for this new run
     try:

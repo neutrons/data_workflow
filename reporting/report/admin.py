@@ -1,4 +1,4 @@
-from report.models import DataRun, StatusQueue, RunStatus, WorkflowSummary, IPTS, Instrument
+from report.models import DataRun, StatusQueue, RunStatus, WorkflowSummary, IPTS, Instrument, InstrumentStatus
 from report.models import Information, Error, Task
 from django.contrib import admin
 from django.utils import dateformat, timezone
@@ -73,6 +73,9 @@ class TaskAdmin(admin.ModelAdmin):
                     'task_queues', 'success_queues')
     search_fields = ['instrument_id__name', 'input_queue_id__name']
     
+class InstrumentStatusAdmin(admin.ModelAdmin):
+    list_display = ('id', 'instrument_id', 'last_run_id')
+    
 admin.site.register(DataRun, DataRunAdmin)
 admin.site.register(StatusQueue, StatusQueueAdmin)
 admin.site.register(RunStatus, RunStatusAdmin)
@@ -82,3 +85,4 @@ admin.site.register(Instrument)
 admin.site.register(Information, InformationAdmin)
 admin.site.register(Error, ErrorAdmin)
 admin.site.register(Task, TaskAdmin)
+admin.site.register(InstrumentStatus, InstrumentStatusAdmin)

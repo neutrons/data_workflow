@@ -1,4 +1,4 @@
-from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue, Task
+from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
@@ -439,7 +439,15 @@ def get_current_status(instrument_id):
         @param instrument_id: Instrument model object
     """
     # Get last experiment and last run
-    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    try:
+        status = InstrumentStatus.objects.get(instrument_id=instrument_id)
+        last_run_id = status.last_run_id
+    except:
+        last_run_id = DataRun.objects.get_last_run(instrument_id)
+        logging.error("No InstrumentStatus object created yet for %s" % instrument_id.name)
+        if last_run_id is not None:
+            instrument = InstrumentStatus(instrument_id=instrument_id, last_run_id=last_run_id)
+            instrument.save()
     if last_run_id is None:
         last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
     else:

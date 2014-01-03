@@ -115,6 +115,30 @@ class DataRun(models.Model):
     def __unicode__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)
     
+    @classmethod
+    def create_and_save(cls, run_number, ipts_id, instrument_id, file):
+        """
+            Create a database entry for this run
+            and update the instrument status
+        """
+        # Create a run object
+        run_id = cls(run_number=run_number,
+                    instrument_id=instrument_id,
+                    ipts_id=ipts_id,
+                    file=file)
+        run_id.save()
+        
+        # Update the instrument status
+        try:
+            instrument = InstrumentStatus.objects.get(instrument_id=instrument_id)
+        except:
+            instrument = InstrumentStatus(instrument_id=instrument_id)
+            instrument.save()
+        instrument.last_run_id = run_id
+        instrument.save()
+            
+        return run_id
+    
     def is_complete(self):
         """
             Return completion status
@@ -409,3 +433,11 @@ class Task(models.Model):
                            "task_queues": [str(q) for q in self.task_queue_ids.all()],
                            "success_queues": [str(q) for q in self.success_queue_ids.all()]})
         
+class InstrumentStatus(models.Model):
+    """
+        Cache the latest information for each instrument.
+        This can be used to quickly access status information.
+    """
+    instrument_id = models.ForeignKey(Instrument, unique=True)
+    last_run_id = models.ForeignKey(DataRun, null=True)
+    
