@@ -8,6 +8,7 @@ from django.conf import settings
 import logging
 import sys
 from django.db import connection
+from django.core.cache import cache
 
 import dasmon.view_util
 
@@ -370,6 +371,35 @@ class ErrorSorter(DataSorter):
         else:
             return Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by(self.sort_item)
 
+def retrieve_rates(instrument_id, last_run):
+    """
+        Retrieve the run rate and error rate for an instrument.
+        Try to get it from the cache if possible.
+        @param instrument_id: Instrument object
+        @param last_run: last run number [int]
+    """
+    # Check whether we have a cached value and whether it is up to date
+    last_cached_run = cache.get('%s_rate_last_run' % instrument_id.name)
+    
+    def _get_rate(id):
+        rate = cache.get('%s_%s_rate' % (instrument_id.name, id))
+        if rate is not None and last_cached_run is not None and last_run==last_cached_run:
+            return cache.get('%s_%s_rate' % (instrument_id.name, id))
+        return None
+    
+    runs = _get_rate('run')
+    errors = _get_rate('error')
+    
+    # If we didn't find good rates in the cache, recalculate them
+    if runs is None or errors is None:
+        runs = run_rate(instrument_id)
+        errors = error_rate(instrument_id)
+        cache.set('%s_run_rate' % instrument_id.name, runs, settings.RUN_RATE_CACHE_TIMEOUT)
+        cache.set('%s_error_rate' % instrument_id.name, errors, settings.RUN_RATE_CACHE_TIMEOUT)
+        cache.set('%s_rate_last_run' % instrument_id.name, last_run)
+        
+    return runs, errors
+    
 def run_rate(instrument_id, n_hours=24):
     """
         Returns the rate of new runs for the last n_hours hours.
@@ -453,8 +483,7 @@ def get_current_status(instrument_id):
     else:
         last_expt_id = last_run_id.ipts_id
 
-    r_rate = run_rate(instrument_id)
-    e_rate = error_rate(instrument_id)
+    r_rate, e_rate = retrieve_rates(instrument_id, last_run_id.run_number)
     data_dict = {
                  'run_rate':r_rate,
                  'error_rate':e_rate,

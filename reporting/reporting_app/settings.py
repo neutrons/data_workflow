@@ -199,6 +199,9 @@ CACHES = {
     }
 }
 
+# Timeout value for cached run and error rates, in seconds
+RUN_RATE_CACHE_TIMEOUT = 120
+
 # QUERY TUNING - SAFE FOR POSTGRESQL 
 # If the tables IDs are always incrementing, use 'id' below
 # otherwise use 'timestamp'
