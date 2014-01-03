@@ -1,5 +1,6 @@
 from django.db import models
 import json
+import logging
 
 class InstrumentManager(models.Manager):
     def find_instrument(self, instrument):
@@ -101,6 +102,25 @@ class DataRunManager(models.Manager):
             return last_run_query[0]
         return None
     
+    def get_last_cached_run(self, instrument_id):
+        """
+            Try to get the last run from the InstrumentStatus table.
+            If we can't find it, find it the long way and add the result
+            to the cache.
+            @param instrument_id: Instrument object
+            @param ipts_id: IPTS object
+        """
+        try:
+            status = InstrumentStatus.objects.get(instrument_id=instrument_id)
+            last_run_id = status.last_run_id
+        except:
+            last_run_id = DataRun.objects.get_last_run(instrument_id)
+            logging.error("No InstrumentStatus object created yet for %s" % instrument_id.name)
+            if last_run_id is not None:
+                instrument = InstrumentStatus(instrument_id=instrument_id, last_run_id=last_run_id)
+                instrument.save()
+        return last_run_id
+
 class DataRun(models.Model):
     """
         TODO: run number should be unique for a given instrument

@@ -27,7 +27,7 @@ def fill_template_values(request, **template_args):
     instrument_id = get_object_or_404(Instrument, name=instr)
 
     # Get last experiment and last run
-    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
     if last_run_id is None:
         last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
     else:
@@ -46,8 +46,7 @@ def fill_template_values(request, **template_args):
     template_args['base_run_url'] = base_run_url
     
     # Get run rate and error rate
-    r_rate = run_rate(instrument_id)
-    e_rate = error_rate(instrument_id)
+    r_rate, e_rate = retrieve_rates(instrument_id, last_run_id)
     template_args['run_rate'] = str(r_rate)
     template_args['error_rate'] = str(e_rate)
     
@@ -371,13 +370,17 @@ class ErrorSorter(DataSorter):
         else:
             return Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by(self.sort_item)
 
-def retrieve_rates(instrument_id, last_run):
+def retrieve_rates(instrument_id, last_run_id):
     """
         Retrieve the run rate and error rate for an instrument.
         Try to get it from the cache if possible.
         @param instrument_id: Instrument object
-        @param last_run: last run number [int]
+        @param last_run_id: DataRun object
     """
+    last_run = None
+    if last_run_id is not None:
+        last_run = last_run_id.run_number
+        
     # Check whether we have a cached value and whether it is up to date
     last_cached_run = cache.get('%s_rate_last_run' % instrument_id.name)
     
@@ -465,25 +468,20 @@ def error_rate(instrument_id, n_hours=24):
 def get_current_status(instrument_id):
     """
         Get current status information such as the last
-        experiment/run for a given instrument
+        experiment/run for a given instrument.
+        
+        Used to populate AJAX response, so must not contain Model objects
+        
         @param instrument_id: Instrument model object
     """
     # Get last experiment and last run
-    try:
-        status = InstrumentStatus.objects.get(instrument_id=instrument_id)
-        last_run_id = status.last_run_id
-    except:
-        last_run_id = DataRun.objects.get_last_run(instrument_id)
-        logging.error("No InstrumentStatus object created yet for %s" % instrument_id.name)
-        if last_run_id is not None:
-            instrument = InstrumentStatus(instrument_id=instrument_id, last_run_id=last_run_id)
-            instrument.save()
+    last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
     if last_run_id is None:
         last_expt_id = IPTS.objects.get_last_ipts(instrument_id)
     else:
         last_expt_id = last_run_id.ipts_id
 
-    r_rate, e_rate = retrieve_rates(instrument_id, last_run_id.run_number)
+    r_rate, e_rate = retrieve_rates(instrument_id, last_run_id)
     data_dict = {
                  'run_rate':r_rate,
                  'error_rate':e_rate,
