@@ -1,5 +1,5 @@
 from django.db import models
-from report.models import Instrument, DataRun
+from report.models import DataRun
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.dispatch import receiver

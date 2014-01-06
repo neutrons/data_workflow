@@ -1,5 +1,4 @@
 from django.http import HttpResponse
-from django.core.files.base import ContentFile
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
@@ -14,7 +13,7 @@ import users.view_util
 
 from django import forms
 from django.core.files.base import ContentFile
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, authenticate
 
 class UploadFileForm(forms.Form):
     """

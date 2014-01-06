@@ -1,6 +1,6 @@
-from report.models import Instrument, DataRun, WorkflowSummary, RunStatus, StatusQueue
+from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
-from pvmon.models import PVName, PV, PVCache, MonitoredVariable
+from pvmon.models import PVCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
@@ -11,9 +11,7 @@ import sys
 import time
 import math
 import report.view_util
-import pvmon.view_util
 import users.view_util
-
 
 def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
     """

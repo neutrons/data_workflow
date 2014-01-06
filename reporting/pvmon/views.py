@@ -9,13 +9,11 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 
 from report.models import Instrument
-from pvmon.models import PV, PVName, PVCache
 
 import view_util
 import report.view_util
 import users.view_util
 import dasmon.view_util
-import datetime
 
 @users.view_util.login_or_local_required
 @cache_page(5)

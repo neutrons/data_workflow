@@ -1,5 +1,5 @@
-from django.http import Http404, HttpResponse, HttpResponseServerError
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.views.decorators.cache import cache_page
@@ -8,7 +8,7 @@ import logging
 import sys
 import os
 
-from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error
+from report.models import DataRun, IPTS, Instrument, Error
 from icat_server_communication import get_run_info, get_ipts_info
 
 import view_util
@@ -198,10 +198,10 @@ def ipts_summary(request, instrument, ipts):
     # Get experiment
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
     
-    filter = request.GET.get('show', 'recent').lower()
-    show_all = filter=='all'
+    query_filter = request.GET.get('show', 'recent').lower()
+    show_all = query_filter=='all'
     try:
-        n_max = int(filter)
+        n_max = int(query_filter)
     except:
         n_max = 20
     number_of_runs = ipts_id.number_of_runs(instrument_id)
@@ -258,10 +258,10 @@ def live_errors(request, instrument):
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
         
-    filter = request.GET.get('show', 'recent').lower()
-    show_all = filter=='all'
+    query_filter = request.GET.get('show', 'recent').lower()
+    show_all = query_filter=='all'
     try:
-        n_max = int(filter)
+        n_max = int(query_filter)
     except:
         n_max = 20
 
