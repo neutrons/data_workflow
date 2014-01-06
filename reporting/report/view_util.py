@@ -219,7 +219,7 @@ class DataSorter(object):
                 d['url'] = url
                 
         if min_width is not None:
-            d['style'] = "min-width: %dpx;" % min_width
+            d['style'] = "width: %dpx;" % min_width
         return d
 
     def __call__(self, instrument_id=None): return NotImplemented
@@ -322,9 +322,9 @@ class ActivitySorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Message", None))
+        header.append(self._create_header_dict("Message", None, min_width=170))
         header.append(self._create_header_dict("Information", None))
-        header.append(self._create_header_dict("Time", self.KEY_MOD))
+        header.append(self._create_header_dict("Time", self.KEY_MOD, min_width=90))
         
         return data, header
     
@@ -356,10 +356,10 @@ class ErrorSorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Experiment", None, min_width=80))
+        header.append(self._create_header_dict("Experiment", None, min_width=70))
         header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
         header.append(self._create_header_dict("Error", None))
-        header.append(self._create_header_dict("Time", self.KEY_MOD))
+        header.append(self._create_header_dict("Time", self.KEY_MOD, min_width=90))
         
         return data, header
     

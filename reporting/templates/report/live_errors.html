@@ -56,7 +56,7 @@
 
 {% block content %}
 List of {{ instrument }} errors {% if instrument_url %}(view <a href='{{ instrument_url }}'>experiments</a>){% endif %}<br>
-      <table cellspacing="0" class="message_table" id="error_table">
+      <table cellspacing="0" class="message_table fixed_table" id="error_table">
       <thead>
       <tr>
         {% for item in error_header %}
