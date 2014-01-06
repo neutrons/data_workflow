@@ -73,7 +73,7 @@ def detail(request, instrument, run_id):
         logging.error("Error finding reduced image: %s" % sys.exc_value)
     
     # Check whether this is the last known run for this instrument
-    last_run_id = DataRun.objects.get_last_run(instrument_id)
+    last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
     if last_run_id == run_object:
         next_url = None
     else:
