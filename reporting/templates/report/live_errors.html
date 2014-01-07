@@ -8,7 +8,8 @@
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 
 <script>
-	var last_error_id = '{{ last_error.id }}';
+	var last_error_id = 0;
+	{% for item in error_list %}{% if forloop.first %}last_error_id = '{{ item.id }}';{% endif %}{% endfor %}
 	var run_data = {{ run_rate|safe }};
 	var error_data = {{ error_rate|safe }};
 	var num_shown = {{ number_shown }};

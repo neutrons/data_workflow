@@ -277,12 +277,6 @@ def live_errors(request, instrument):
     
     update_url = reverse('report.views.get_error_update',args=[instrument])
     
-    # Get last error ID
-    try:
-        last_error = Error.objects.latest('run_status_id__created_on')
-    except:
-        last_error = None
-    
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
             reverse('report.views.instrument_summary',args=[instrument]), instrument, "errors"
@@ -298,14 +292,13 @@ def live_errors(request, instrument):
                        'instrument_url':instrument_url,
                        'error_url':error_url,
                        'update_url':update_url,
-                       'last_error':last_error,
                        }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/live_errors.html', template_values)
     
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_experiment_update(request, instrument, ipts):
     """
          Ajax call to get updates behind the scenes
@@ -327,7 +320,7 @@ def get_experiment_update(request, instrument, ipts):
 
 
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_instrument_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -370,7 +363,7 @@ def get_instrument_update(request, instrument):
 
   
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_error_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -378,37 +371,40 @@ def get_error_update(request, instrument):
          @param ipts: experiment name
     """ 
     since = request.GET.get('since', '0')
-    refresh_needed = '1'
     try:
         since = int(since)
         last_error_id = get_object_or_404(Error, id=since)
     except:
-        refresh_needed = '0'
         last_error_id = None
     
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())    
     
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)    
-    errors = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('run_status_id__created_on')
     
     err_list = []
-    if last_error_id is not None and len(errors)>0:
-        data_dict['last_error_id'] = errors[0].id
-        refresh_needed = '1' if last_error_id.run_status_id.created_on<errors[0].run_status_id.created_on else '0'         
-        for e in errors:
-            if last_error_id.run_status_id.created_on<e.run_status_id.created_on:
-                localtime = timezone.localtime(e.run_status_id.created_on)
-                df = dateformat.DateFormat(localtime)
-                err_dict = {"run":e.run_status_id.run_id.run_number,
-                            "ipts":e.run_status_id.run_id.ipts_id.expt_name,
-                            "description":e.description,
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
-                            "error_id":e.id,
-                            }
-                err_list.append(err_dict)    
+    if last_error_id is not None:
+        errors = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id,
+                                      id__gt=last_error_id.id).order_by('run_status_id__created_on')        
+        if len(errors)>0:
+            last_error_id_number = None
+            for e in errors:
+                if last_error_id_number is None:
+                    last_error_id_number = e.id
+                    
+                if last_error_id.run_status_id.created_on<e.run_status_id.created_on:
+                    localtime = timezone.localtime(e.run_status_id.created_on)
+                    df = dateformat.DateFormat(localtime)
+                    err_dict = {"run":e.run_status_id.run_id.run_number,
+                                "ipts":e.run_status_id.run_id.ipts_id.expt_name,
+                                "description":e.description,
+                                "timestamp":df.format(settings.DATETIME_FORMAT),
+                                "error_id":e.id,
+                                }
+                    err_list.append(err_dict)
+            data_dict['last_error_id'] = last_error_id_number
     data_dict['errors'] = err_list
-    data_dict['refresh_needed'] = refresh_needed
+    data_dict['refresh_needed'] = '1' if len(err_list)>0 else '0'
     
     response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
