@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
-from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page, cache_control
 
 from report.models import Instrument
 
@@ -16,7 +16,8 @@ import users.view_util
 import dasmon.view_util
 
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def pv_monitor(request, instrument):
     """
@@ -43,7 +44,7 @@ def pv_monitor(request, instrument):
 
 
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
