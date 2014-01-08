@@ -19,7 +19,7 @@ import users.view_util
 import legacy_status
 
 @users.view_util.login_or_local_required
-@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def summary(request):
     """
@@ -38,7 +38,7 @@ def summary(request):
 
 
 @users.view_util.login_or_local_required
-@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def activity_summary(request):
     """
@@ -55,7 +55,7 @@ def activity_summary(request):
     return render_to_response('dasmon/activity_summary.html',
                               template_values)    
     
-@cache_page(15)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def activity_update(request):
     instruments = Instrument.objects.all().order_by('name')
     #              YELLOW     ORANGE     TURQUOISE  PURPLE
@@ -322,7 +322,7 @@ def get_update(request, instrument):
 
 
 @users.view_util.login_or_local_required_401
-@cache_page(15)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def summary_update(request):
     """
          Response to AJAX call to get updated health info for all instruments
