@@ -660,7 +660,7 @@ def get_completeness_status(instrument_id):
             return STATUS_UNKNOWN
         
         latest_runs = DataRun.objects.filter(instrument_id=instrument_id,
-                                             run_number__gte=latest_run_id.run_number-3)
+                                             run_number__gte=latest_run_id.run_number-3).order_by("created_on").reverse()
 
         # We need at least 3 runs for a meaningful status        
         if len(latest_runs)==0:    
@@ -670,8 +670,6 @@ def get_completeness_status(instrument_id):
                 return STATUS_OK
             else:
                 return STATUS_WARNING
-        
-        latest_runs = latest_runs.order_by("created_on").reverse()
         
         r0 = latest_runs[0]
         r1 = latest_runs[1]
@@ -846,3 +844,35 @@ def get_signals(instrument_id):
         logging.error("Could not process monitored PVs: %s" % sys.exc_value)
         
     return sig_alerts
+
+def get_instrument_status_summary():
+    """
+        Create an instrument status dictionary that can be used
+        to fill out the summary page template or the summary update response.
+    """
+    instrument_list = []
+    for i in Instrument.objects.all().order_by('name'):
+        is_adara = ActiveInstrument.objects.is_adara(i)
+        if not ActiveInstrument.objects.is_alive(i):
+            continue
+        if is_adara:
+            dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
+            das_status = get_dasmon_status(i)
+            pvstreamer_status = get_pvstreamer_status(i)
+        else:
+            dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
+            das_status = -1
+            pvstreamer_status = -1
+        diagnostics_url = reverse('dasmon.views.diagnostics', args=[i.name])
+        completeness, message = get_completeness_status(i)
+        instrument_list.append({'name': i.name,
+                                'recording_status': is_running(i),
+                                'url': dasmon_url,
+                                'diagnostics_url': diagnostics_url,
+                                'dasmon_status': das_status,
+                                'pvstreamer_status': pvstreamer_status,
+                                'completeness': completeness,
+                                'completeness_msg': message
+                                })
+    return instrument_list
+    

@@ -25,44 +25,12 @@ def summary(request):
     """
         List of available instruments
     """
-    instruments = Instrument.objects.all().order_by('name')
-    
     # Get the system health status
-    postprocess_status = view_util.get_system_health()
-    
-    instrument_list = []
-    for i in instruments:
-        is_adara = ActiveInstrument.objects.is_adara(i)
-        if not ActiveInstrument.objects.is_alive(i):
-            continue
-        if is_adara:
-            dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
-            das_status = view_util.get_dasmon_status(i)
-            pvstreamer_status = view_util.get_pvstreamer_status(i)
-        else:
-            dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
-            das_status = -1
-            pvstreamer_status = -1
-        diagnostics_url = reverse('dasmon.views.diagnostics', args=[i.name])
-        completeness, message = view_util.get_completeness_status(i)
-        instrument_list.append({'name': i.name,
-                                'recording_status': view_util.is_running(i),
-                                'url': dasmon_url,
-                                'diagnostics_url': diagnostics_url,
-                                'dasmon_status': das_status,
-                                'pvstreamer_status': pvstreamer_status,
-                                'completeness': completeness,
-                                'completeness_msg': message
-                                })
-  
-    breadcrumbs = "home"
-    update_url = reverse('dasmon.views.summary_update')
-    central_services_url = reverse('dasmon.views.diagnostics', args=['common'])
-    template_values = {'instruments': instrument_list,
-                       'breadcrumbs': breadcrumbs,
-                       'postprocess_status': postprocess_status,
-                       'update_url': update_url,
-                       'central_services_url': central_services_url
+    template_values = {'instruments': view_util.get_instrument_status_summary(),
+                       'breadcrumbs': "home",
+                       'postprocess_status': view_util.get_system_health(),
+                       'update_url': reverse('dasmon.views.summary_update'),
+                       'central_services_url': reverse('dasmon.views.diagnostics', args=['common'])
                        }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('dasmon/global_summary.html',
@@ -360,23 +328,8 @@ def summary_update(request):
          Response to AJAX call to get updated health info for all instruments
     """
     # Get the system health status
-    postprocess_status = view_util.get_system_health()
-    
-    instrument_list = []
-    for i in Instrument.objects.all().order_by('name'):
-        das_status = view_util.get_dasmon_status(i)
-        pvstreamer_status = view_util.get_pvstreamer_status(i)
-        completeness, message = view_util.get_completeness_status(i)
-        instrument_list.append({'name': i.name,
-                                'recording_status': view_util.is_running(i),
-                                'dasmon_status': das_status,
-                                'pvstreamer_status': pvstreamer_status,
-                                'completeness': completeness,
-                                'completeness_msg': message
-                                })
-  
-    data_dict = {'instruments':instrument_list,
-                 'postprocess_status':postprocess_status
+    data_dict = {'instruments':view_util.get_instrument_status_summary(),
+                 'postprocess_status':view_util.get_system_health()
                  }
     response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
