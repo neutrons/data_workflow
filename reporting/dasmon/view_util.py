@@ -652,13 +652,17 @@ def get_completeness_status(instrument_id):
     STATUS_ERROR = (2, "Error")
     STATUS_UNKNOWN = (-1, "Unknown")
 
-    if not ActiveInstrument.objects.is_alive(instrument_id):
-        return (-1, "OK")
-    
     try:
         # Check for completeness of the three runs before the last run.
         # We don't use the last one because we may still be working on it.
-        latest_runs = DataRun.objects.filter(instrument_id=instrument_id)
+        latest_run_id = DataRun.objects.get_last_cached_run(instrument_id)
+        
+        # If we don't have any run yet, return unknown
+        if latest_run_id is None:
+            return STATUS_UNKNOWN
+        
+        latest_runs = DataRun.objects.filter(instrument_id=instrument_id,
+                                             run_number__gte=latest_run_id.run_number-3)
 
         # We need at least 3 runs for a meaningful status        
         if len(latest_runs)==0:    
@@ -671,15 +675,18 @@ def get_completeness_status(instrument_id):
         
         latest_runs = latest_runs.order_by("created_on").reverse()
         
-        s0 = WorkflowSummary.objects.get(run_id=latest_runs[0])
-        s1 = WorkflowSummary.objects.get(run_id=latest_runs[1])
-        s2 = WorkflowSummary.objects.get(run_id=latest_runs[2])
+        r0 = latest_runs[0]
+        r1 = latest_runs[1]
+        r2 = latest_runs[2]
+        s0 = WorkflowSummary.objects.get(run_id=r0)
+        s1 = WorkflowSummary.objects.get(run_id=r1)
+        s2 = WorkflowSummary.objects.get(run_id=r2)
         status0 = s0.complete
         status1 = s1.complete
         status2 = s2.complete
-        error0 = latest_runs[0].last_error() is not None
-        error1 = latest_runs[1].last_error() is not None
-        error2 = latest_runs[2].last_error() is not None
+        error0 = r0.last_error() is not None
+        error1 = r1.last_error() is not None
+        error2 = r2.last_error() is not None
         
         # If we have errors within the last 3 runs, report an error
         if (not status0 and error0) or (not status1 and error1) or (not status2 and error2):

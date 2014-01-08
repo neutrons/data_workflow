@@ -22,7 +22,7 @@ import logging
 import sys
 
 @users.view_util.login_or_local_required
-@cache_page(60)
+#@cache_page(60)
 @users.view_util.monitor
 def summary(request):
     """
@@ -35,15 +35,18 @@ def summary(request):
     
     instrument_list = []
     for i in instruments:
+        is_adara = ActiveInstrument.objects.is_adara(i)
         if not ActiveInstrument.objects.is_alive(i):
             continue
-        if ActiveInstrument.objects.is_adara(i):
+        if is_adara:
             dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
+            das_status = view_util.get_dasmon_status(i)
+            pvstreamer_status = view_util.get_pvstreamer_status(i)
         else:
             dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
+            das_status = -1
+            pvstreamer_status = -1
         diagnostics_url = reverse('dasmon.views.diagnostics', args=[i.name])
-        das_status = view_util.get_dasmon_status(i)
-        pvstreamer_status = view_util.get_pvstreamer_status(i)
         completeness, message = view_util.get_completeness_status(i)
         instrument_list.append({'name': i.name,
                                 'recording_status': view_util.is_running(i),

@@ -511,17 +511,14 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
     delta_long = datetime.timedelta(hours=red_timeout)
  
     try:
-        # Get latest DATA_READY message
-        postprocess_data_id = StatusQueue.objects.get(name='POSTPROCESS.DATA_READY')
-        catalog_data_id = StatusQueue.objects.get(name='CATALOG.DATA_READY')
-        catalog_start_id = StatusQueue.objects.get(name='CATALOG.STARTED')
-        reduction_start_id = StatusQueue.objects.get(name='REDUCTION.STARTED')
-        latest_run = RunStatus.objects.filter(queue_id=postprocess_data_id).latest('created_on')
+        run_ids = [ r.last_run_id for r in InstrumentStatus.objects.all()]
+        latest_run = RunStatus.objects.filter(run_id__in=run_ids,
+                                              queue_id__name='POSTPROCESS.DATA_READY').latest('created_on')
         
         # If we didn't get a CATALOG.STARTED message within a few seconds, 
         # the cataloging agent has a problem
         try:
-            latest_catalog_start = RunStatus.objects.filter(queue_id=catalog_start_id,
+            latest_catalog_start = RunStatus.objects.filter(queue_id__name='CATALOG.STARTED',
                                                             run_id=latest_run.run_id).latest('created_on')
             time_catalog_start = latest_catalog_start.created_on
         except:
@@ -537,7 +534,7 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
         # If we didn't get a REDUCTION.STARTED message within a few seconds, 
         # the cataloging agent has a problem
         try:
-            latest_reduction_start = RunStatus.objects.filter(queue_id=reduction_start_id,
+            latest_reduction_start = RunStatus.objects.filter(queue_id__name='REDUCTION.STARTED',
                                                             run_id=latest_run.run_id).latest('created_on')
             time_reduction_start = latest_reduction_start.created_on
         except:
