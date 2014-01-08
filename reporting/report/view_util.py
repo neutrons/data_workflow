@@ -1,4 +1,4 @@
-from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task
+from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
@@ -511,7 +511,7 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
     delta_long = datetime.timedelta(hours=red_timeout)
  
     try:
-        run_ids = [ r.last_run_id for r in InstrumentStatus.objects.all()]
+        run_ids = InstrumentStatus.objects.all().values_list('last_run_id')
         latest_run = RunStatus.objects.filter(run_id__in=run_ids,
                                               queue_id__name='POSTPROCESS.DATA_READY').latest('created_on')
         
@@ -545,7 +545,7 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
         elif time_reduction_start-latest_run.created_on>delta_short:
             status_dict["reduction"]=1
         else:
-            status_dict["reduction"]=0               
+            status_dict["reduction"]=0
     except:
         logging.error("Could not determine post-processing status")
         logging.error(sys.exc_value)

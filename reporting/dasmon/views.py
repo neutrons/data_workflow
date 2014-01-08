@@ -19,7 +19,7 @@ import users.view_util
 import legacy_status
 
 @users.view_util.login_or_local_required
-#@cache_page(60)
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def summary(request):
     """
@@ -70,7 +70,7 @@ def summary(request):
 
 
 @users.view_util.login_or_local_required
-@cache_page(60)
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def activity_summary(request):
     """
