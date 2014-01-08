@@ -6,7 +6,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
-from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page, cache_control
 from django.template import Context, loader
 
 from report.models import Instrument, DataRun
