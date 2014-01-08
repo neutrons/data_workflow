@@ -13,6 +13,12 @@
 	font-size:11px;
 }
 
+.fixed_table {
+	table-layout: fixed;
+	width:530px;
+}
+.fixed_table td, th { overflow:scroll; }
+
 td, th {
     line-height: 13px;
     vertical-align: middle;

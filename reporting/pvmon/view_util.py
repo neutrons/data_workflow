@@ -1,6 +1,5 @@
 from pvmon.models import PVName, PV, PVCache
-from django.core.urlresolvers import reverse
-from django.utils import simplejson, dateformat, timezone
+from django.utils import dateformat, timezone
 from django.conf import settings
 import datetime
 import logging
@@ -99,7 +98,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
     key_value_pairs = []
     for kvp in values:
         if kvp.name.monitored or monitored_only is False:
-            localtime = timezone.localtime(datetime.datetime.fromtimestamp(kvp.update_time))
+            localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
             df = dateformat.DateFormat(localtime)
             string_value = '%g' % kvp.value            
 

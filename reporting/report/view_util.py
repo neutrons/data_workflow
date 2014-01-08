@@ -1,8 +1,8 @@
-from report.models import DataRun, RunStatus, WorkflowSummary, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus
+from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
-from django.utils import simplejson, dateformat, timezone
+from django.utils import dateformat, timezone
 import datetime
 from django.conf import settings
 import logging
@@ -219,7 +219,7 @@ class DataSorter(object):
                 d['url'] = url
                 
         if min_width is not None:
-            d['style'] = "min-width: %dpx;" % min_width
+            d['style'] = "width: %dpx;" % min_width
         return d
 
     def __call__(self, instrument_id=None): return NotImplemented
@@ -322,9 +322,9 @@ class ActivitySorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Message", None))
+        header.append(self._create_header_dict("Message", None, min_width=170))
         header.append(self._create_header_dict("Information", None))
-        header.append(self._create_header_dict("Time", self.KEY_MOD))
+        header.append(self._create_header_dict("Time", self.KEY_MOD, min_width=90))
         
         return data, header
     
@@ -356,10 +356,10 @@ class ErrorSorter(DataSorter):
             
         # Create the header dictionary    
         header = []
-        header.append(self._create_header_dict("Experiment", None, min_width=80))
+        header.append(self._create_header_dict("Experiment", None, min_width=70))
         header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
         header.append(self._create_header_dict("Error", None))
-        header.append(self._create_header_dict("Time", self.KEY_MOD))
+        header.append(self._create_header_dict("Time", self.KEY_MOD, min_width=90))
         
         return data, header
     
@@ -384,10 +384,10 @@ def retrieve_rates(instrument_id, last_run_id):
     # Check whether we have a cached value and whether it is up to date
     last_cached_run = cache.get('%s_rate_last_run' % instrument_id.name)
     
-    def _get_rate(id):
-        rate = cache.get('%s_%s_rate' % (instrument_id.name, id))
+    def _get_rate(id_name):
+        rate = cache.get('%s_%s_rate' % (instrument_id.name, id_name))
         if rate is not None and last_cached_run is not None and last_run==last_cached_run:
-            return cache.get('%s_%s_rate' % (instrument_id.name, id))
+            return cache.get('%s_%s_rate' % (instrument_id.name, id_name))
         return None
     
     runs = _get_rate('run')

@@ -1,7 +1,5 @@
 from django.db import models
 from report.models import Instrument
-from dasmon.models import Signal, Parameter
-
 
 class PVName(models.Model):
     """

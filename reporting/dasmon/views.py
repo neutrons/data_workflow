@@ -1,7 +1,7 @@
 """
     Live monitoring
 """
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
@@ -9,17 +9,14 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.template import Context, loader
 
-from report.models import Instrument, DataRun, WorkflowSummary
-from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument
+from report.models import Instrument, DataRun
+from dasmon.models import ActiveInstrument
 from users.models import SiteNotification
 
 import view_util
 import report.view_util
 import users.view_util
 import legacy_status
-
-import logging
-import sys
 
 @users.view_util.login_or_local_required
 #@cache_page(60)
@@ -133,7 +130,7 @@ def activity_update(request):
     return response
     
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def legacy_monitor(request, instrument):
     """
@@ -163,7 +160,7 @@ def legacy_monitor(request, instrument):
     return render_to_response('dasmon/legacy_monitor.html', template_values)
 
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_legacy_data(request, instrument):
     """
         Return the latest legacy status information
@@ -175,7 +172,7 @@ def get_legacy_data(request, instrument):
     return response
 
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def live_monitor(request, instrument):
     """
@@ -204,7 +201,7 @@ def live_monitor(request, instrument):
     return render_to_response('dasmon/live_monitor.html', template_values)
     
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def live_runs(request, instrument):
     """
@@ -218,10 +215,8 @@ def live_runs(request, instrument):
     update_url = reverse('dasmon.views.get_update',args=[instrument])
 
     # Get the latest runs
-    runs = DataRun.objects.filter(instrument_id=instrument_id)
+    runs = DataRun.objects.filter(instrument_id=instrument_id).order_by("id").reverse()[:20]
     if len(runs)>0:
-        nmax = min(20, len(runs))
-        runs = runs.order_by("id").reverse()[:nmax]
         first_run = runs[len(runs)-1].id
     else:
         first_run = 0
@@ -274,7 +269,7 @@ def help(request):
 
     
 @users.view_util.login_or_local_required
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @users.view_util.monitor
 def diagnostics(request, instrument):
     """
@@ -324,7 +319,7 @@ def diagnostics(request, instrument):
 
 
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -390,15 +385,11 @@ def summary_update(request):
 
 
 @users.view_util.login_or_local_required_401
-@cache_page(5)
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_signal_table(request, instrument):
     """
         Ajax call to get the signal table
     """
-    # First check that the user is authenticated
-    #if not request.user.is_authenticated():
-    #    return HttpResponseForbidden()
-    
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template('dasmon/signal_table.html')
     c = Context({
