@@ -20,6 +20,7 @@ import legacy_status
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def summary(request):
     """
@@ -39,6 +40,7 @@ def summary(request):
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def activity_summary(request):
     """
@@ -99,6 +101,7 @@ def activity_update(request):
     
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def legacy_monitor(request, instrument):
     """
@@ -141,6 +144,7 @@ def get_legacy_data(request, instrument):
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def live_monitor(request, instrument):
     """
@@ -170,6 +174,7 @@ def live_monitor(request, instrument):
     
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def live_runs(request, instrument):
     """
@@ -238,6 +243,7 @@ def help(request):
     
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
 def diagnostics(request, instrument):
     """
