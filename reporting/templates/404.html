@@ -1,51 +1,16 @@
-<!DOCTYPE html>
-<html>
-<!--[if lte IE 8]>
-<script src="lib/html5.js" type="text/javascript"></script>
-<![endif]-->
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>SNS Data Processing Report</title>
+{% extends "base.html" %}
 
-<link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
+{% block breadcrumb %}{% endblock %}
 
-</head>
- 
-<body>
-
-	<header>
-    	<div class="banner_title">404</div>
-    </header>
-
-	<p>This is not the data you are looking for.</p>
-
-<footer>    
-        <div class="ornlFooter">
-            <table style="width: 100%">
-                <tr>
-                    <td>
-                        <a id="FooterUTBLogoLink" title="UT-Battelle" href="http://ut-battelle.org" target="_blank" style="display:inline-block;height:44px;width:150px;"><img title="UT-Battelle" src="/static/utb_logo.png" alt="UT-Battelle" /></a>
-                    </td>
-                    <td class="links">
-                        <ul>
-                            <li>
-                                <a id="HyperLink2" title="Security Notice" href="http://www.ornl.gov/ornlhome/disclaimers.shtml" target="_blank">Security Notice</a><span>·</span></li>
-                            <li>
-                                <a id="HyperLink3" title="Internal Users" href="http://www.ornl.gov/ornlhome/remote.shtml" target="_blank">Internal Users</a><br></li>
-                            <li>
-                                <a id="HyperLink5" title="DOE - Oak Ridge" href="http://www.oakridge.doe.gov/external/" target="_blank">DOE - Oak Ridge</a><span>·</span></li>
-                            <li>
-                                <a id="HyperLink6" title="UT-Battelle" href="http://ut-battelle.org" target="_blank">UT-Battelle</a></li>
-                        </ul>
-                    </td>
-                    <td>
-                        <a id="FooterScienceLogoLink" title="Department of Energy , Office of Science" href="http://science.energy.gov/" target="_blank" style="display:inline-block;height:56px;width:173px;"><img title="Department of Energy , Office of Science" src="/static/doe_os_logo.png" alt="Department of Energy , Office of Science" /></a>
-                    </td>
-                </tr>
-            </table>
-        </div>
- </footer>
-
-</body>
-
-</html>
+{% block content %}
+    <h3>The data you are looking for could not be found.</h3>
+    <p>
+    This may be due to a number of reasons:
+    <ul>
+      <li>
+        You may be looking for a run that pre-dates the workflow manager.<br>
+        All SNS data is cataloged, but runs taken prior to mid-2013 are unlikely to be in this system.
+      </li>
+      <li>The page you are trying to access simply doesn't exist.</li>
+    </ul>
+{% endblock %}
