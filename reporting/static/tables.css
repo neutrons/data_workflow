@@ -17,7 +17,7 @@
 	table-layout: fixed;
 	width:530px;
 }
-.fixed_table td, th { overflow:scroll; }
+.fixed_table td, th { overflow:hidden; }
 
 td, th {
     line-height: 13px;
