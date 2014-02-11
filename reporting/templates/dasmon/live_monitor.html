@@ -110,6 +110,8 @@
             $('#signal_table').replaceWith(data);
         }, dataType: "html", timeout: 30000, cache: false });
     }
+    
+    function ack_alarm(ack_url) { $.ajax({ url: ack_url, cache: false }); }
 </script>
 {% endblock %}
 

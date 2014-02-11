@@ -116,7 +116,7 @@ def monitor(fn):
             visit = PageView(user=user,
                              view="%s.%s" % (fn.__module__, fn.__name__),
                              ip=request.META['REMOTE_ADDR'],
-                             path=request.path_info)
+                             path=request.get_full_path())
             visit.save()
         return fn(request, *args, **kws)
     

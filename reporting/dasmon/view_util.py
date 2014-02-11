@@ -791,11 +791,12 @@ class SignalEntry(object):
     """
         Utility class representing a DASMON signal
     """
-    def __init__(self, name='', status='', assert_time='', key=''):
+    def __init__(self, name='', status='', assert_time='', key='', ack_url=''):
         self.name = name
         self.status = status
         self.assert_time = assert_time
         self.key = key
+        self.ack_url = ack_url
     
 def get_signals(instrument_id):
     """
@@ -812,7 +813,8 @@ def get_signals(instrument_id):
     for sig in signals:
         sig_entry = SignalEntry(name=sig.name,
                                 status="<span class='red'><b>%s</b></span>" % sig.message,
-                                assert_time=sig.timestamp)
+                                assert_time=sig.timestamp,
+                                ack_url=reverse('dasmon.views.acknowledge_signal',args=[instrument_id, sig.id]))
         try:
             monitored = MonitoredVariable.objects.filter(instrument=instrument_id,
                                                          rule_name=sig.name)

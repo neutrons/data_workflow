@@ -10,7 +10,7 @@ from django.views.decorators.cache import cache_page, cache_control
 from django.template import Context, loader
 
 from report.models import Instrument, DataRun
-from dasmon.models import ActiveInstrument
+from dasmon.models import ActiveInstrument, Signal
 from users.models import SiteNotification
 
 import view_util
@@ -351,11 +351,19 @@ def get_signal_table(request, instrument):
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template('dasmon/signal_table.html')
-    c = Context({
-            'signals': view_util.get_signals(instrument_id),
-        })
+    template_values = {'signals': view_util.get_signals(instrument_id)}
+    template_values['is_instrument_staff'] = users.view_util.is_instrument_staff(request, instrument_id)
+    c = Context(template_values)
     resp = t.render(c)
     response = HttpResponse(resp, content_type="text/html")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
+
+
+@users.view_util.login_or_local_required_401
+@users.view_util.monitor
+def acknowledge_signal(request, instrument, sig_id):
+    sig_object = get_object_or_404(Signal, id=sig_id)
+    sig_object.delete()
+    return HttpResponse()
