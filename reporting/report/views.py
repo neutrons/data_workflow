@@ -9,7 +9,7 @@ import sys
 import os
 
 from report.models import DataRun, IPTS, Instrument, Error
-from icat_server_communication import get_run_info, get_ipts_info
+from icat_server_communication import get_run_info
 
 import view_util
 import users.view_util
@@ -206,8 +206,6 @@ def ipts_summary(request, instrument, ipts):
         n_max = 20
     number_of_runs = ipts_id.number_of_runs(instrument_id)
     
-    icat_info = get_ipts_info(instrument, ipts)
-
     # Get IPTS URL
     ipts_url = reverse('report.views.ipts_summary',args=[instrument,ipts])
     update_url = reverse('report.views.get_experiment_update',args=[instrument,ipts])
@@ -237,7 +235,6 @@ def ipts_summary(request, instrument, ipts):
                        'run_list':run_list,
                        'run_list_header':run_list_header,
                        'breadcrumbs':breadcrumbs,
-                       'icat_info':icat_info,
                        'all_shown':show_all,
                        'number_shown':len(run_list),
                        'number_of_runs':number_of_runs,

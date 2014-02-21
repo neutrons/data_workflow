@@ -70,7 +70,6 @@ created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
 Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
 {% endif %}
 <br>
-Run range for {{ ipts_number|upper }}: {{ icat_info.run_range|default:"unknown" }}<br>
 {% endblock %}
 
 {% block bodytop %}
