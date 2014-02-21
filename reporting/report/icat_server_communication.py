@@ -44,7 +44,7 @@ def get_ipts_info(instrument, ipts):
     # Get basic run info
     try:
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
-                                      ICAT_PORT, timeout=0.5)
+                                      ICAT_PORT, timeout=1.5)
         conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/meta' % (instrument.upper(),
                                                                          ipts.upper()))
         r = conn.getresponse()
