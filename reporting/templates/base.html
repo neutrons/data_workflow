@@ -32,6 +32,9 @@
 
 {% block header %}{% endblock %}
 <script type="text/javascript">
+    $(function() {
+        $( document ).tooltip();
+    });
     function show_alert() {
         $(".user_alert").show("slide", {direction:'right'}, 50 );
         $(".user_alert").click(function(){$(this).fadeOut("fast");});

@@ -1,4 +1,5 @@
 import httplib
+import urllib
 import xml.dom.minidom
 import logging
 import sys
@@ -16,7 +17,28 @@ def get_text_from_xml(nodelist):
             rc.append(node.data)
     return ''.join(rc)
 
+def decode_time(timestamp):
+    """
+        Decode timestamp and return a datetime object
+    """
+    try:
+        tz_location = timestamp.rfind('+')
+        if tz_location<0:
+            tz_location = timestamp.rfind('-')
+        if tz_location>0:
+            date_time_str = timestamp[:tz_location]
+            try:
+                return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
+            except:
+                return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S")
+    except:
+        logging.error("Could not parse timestamp '%s': %s" % (timestamp, sys.exc_value))
+        return None
+    
 def get_ipts_info(instrument, ipts):
+    """
+        Query ICAT for info about an experiment
+    """
     run_info = {}
     
     # Get basic run info
@@ -24,34 +46,26 @@ def get_ipts_info(instrument, ipts):
         conn = httplib.HTTPConnection(ICAT_DOMAIN, 
                                       ICAT_PORT, timeout=0.5)
         conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/meta' % (instrument.upper(),
-                                                                      ipts.upper()))
+                                                                         ipts.upper()))
         r = conn.getresponse()
         dom = xml.dom.minidom.parseString(r.read())
-        metadata = dom.getElementsByTagName('metadata')
+        metadata = dom.getElementsByTagName('proposal')
         if len(metadata)>0:
             for n in metadata[0].childNodes:
                 # Run title
                 if n.nodeName=='title' and n.hasChildNodes():
-                    run_info['title'] = get_text_from_xml(n.childNodes)
-                # IPTS
-                if n.nodeName=='proposal' and n.hasChildNodes():
-                    run_info['proposal'] = get_text_from_xml(n.childNodes)
+                    run_info['title'] = urllib.unquote(get_text_from_xml(n.childNodes))
+                # Run range
+                if n.nodeName=='runRange' and n.hasChildNodes():
+                    run_info['run_range'] = get_text_from_xml(n.childNodes)
                 # Time
                 if n.nodeName=='createTime' and n.hasChildNodes():
                     timestr = get_text_from_xml(n.childNodes)
-                    try:
-                        tz_location = timestr.rfind('+')
-                        if tz_location<0:
-                            tz_location = timestr.rfind('-')
-                        if tz_location>0:
-                            date_time_str = timestr[:tz_location]
-                            tz_str = timestr[tz_location:]
-                            run_info['createTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
-                    except:
-                        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
-                    
+                    run_info['createTime'] = decode_time(timestr)
     except:
+        run_info['icat_error'] = 'Could not communicate with catalog server'
         logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
+    logging.error(str(run_info))
     return run_info
     
 def get_run_info(instrument, ipts, run_number):
@@ -88,29 +102,11 @@ def get_run_info(instrument, ipts, run_number):
                 # Start time
                 if n.nodeName=='startTime' and n.hasChildNodes():
                     timestr = get_text_from_xml(n.childNodes)
-                    try:
-                        tz_location = timestr.rfind('+')
-                        if tz_location<0:
-                            tz_location = timestr.rfind('-')
-                        if tz_location>0:
-                            date_time_str = timestr[:tz_location]
-                            tz_str = timestr[tz_location:]
-                            run_info['startTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
-                    except:
-                        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
+                    run_info['startTime'] = decode_time(timestr)
                 # End time
                 if n.nodeName=='endTime' and n.hasChildNodes():
                     timestr = get_text_from_xml(n.childNodes)
-                    try:
-                        tz_location = timestr.rfind('+')
-                        if tz_location<0:
-                            tz_location = timestr.rfind('-')
-                        if tz_location>0:
-                            date_time_str = timestr[:tz_location]
-                            tz_str = timestr[tz_location:]
-                            run_info['endTime'] = datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S.%f")
-                    except:
-                        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
+                    run_info['endTime'] = decode_time(timestr)
     except:
         logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
         
