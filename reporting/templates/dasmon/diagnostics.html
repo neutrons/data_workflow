@@ -98,6 +98,16 @@ Reported conditions:<br>
     <tr class="odd">
       <td>Last status update: </td><td>{{wf_diagnostics.status_time}}</td>
     </tr>
+{% for item in wf_diagnostics.processes %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}odd{% else %}even{% endif %}">
+      <td>PID {{ item.pid }}: </td><td>{{ item.time }}</td>
+    </tr>
+{% endfor %}
+{% for item in wf_diagnostics.dasmon_listener %}
+    <tr class="{% if forloop.counter|divisibleby:2 %}odd{% else %}even{% endif %}">
+      <td>Dasmon listener PID {{ item.pid }}: </td><td>{{ item.time }}</td>
+    </tr>
+{% endfor %}
   </tbody>
 </table>
 <p>

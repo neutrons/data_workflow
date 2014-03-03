@@ -1,15 +1,22 @@
 """
     ActiveMQ workflow manager client
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
 """
 import time
 import stomp
 import logging
 import sys
 import json
+import os
 
 from database.transactions import get_message_queues
 from workflow_process import WorkflowProcess
-from . import __version__ as version        
+try:
+    from . import __version__ as version
+except:
+    version = 'development'
         
 class Client(object):
     """
@@ -154,7 +161,8 @@ class Client(object):
                     if time.time()-last_heartbeat>5:
                         last_heartbeat = time.time()
                         data_dict = {"src_name": "workflowmgr",
-                                     "status": "0"}
+                                     "status": "0",
+                                     "pid": str(os.getpid())}
                         message = json.dumps(data_dict)
                         self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0", 
                                               message=message, 

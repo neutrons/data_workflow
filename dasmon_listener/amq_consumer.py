@@ -1,5 +1,8 @@
 """
     DASMON ActiveMQ consumer class
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
 """
 import time
 import stomp
@@ -79,6 +82,8 @@ class Listener(stomp.ConnectionListener):
                     if key.endswith("_0"):
                         key = key[:len(key)-2]
                     store_and_cache(instrument, key, data_dict["status"])
+                    if "pid" in data_dict:
+                        store_and_cache(instrument, "%s_pid" % key, data_dict["pid"])
 
         # Process signals
         elif "SIGNAL" in destination:
@@ -316,6 +321,7 @@ class Client(object):
             @param waiting_period: sleep time between connection to a broker
         """
         last_purge_time = None
+        last_heartbeat = 0
         while(True):
             try:
                 if self._connection is None or self._connection.is_connected() is False:
@@ -336,6 +342,12 @@ class Client(object):
                                                                 pv_name=item.name))==0:
                             item.delete()
                 time.sleep(waiting_period)
+                try:
+                    if time.time()-last_heartbeat>5:
+                        last_heartbeat = time.time()
+                        store_and_cache("common", "system_dasmon_listener_pid", str(os.getpid()))
+                except:
+                    logging.error("Problem writing heartbeat %s" % sys.exc_value)
             except:
                 logging.error("Problem connecting to AMQ broker")
                 time.sleep(5.0)

@@ -1,3 +1,9 @@
+"""
+    Status monitor utilities to support 'dasmon' views
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
 from pvmon.models import PVCache, MonitoredVariable
@@ -413,15 +419,45 @@ def workflow_diagnostics(timeout=None):
     # Recent reported status
     status_value = -1
     status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
+    common_services = None
     try:
         common_services = Instrument.objects.get(name='common')
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'workflowmgr')
         last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest('timestamp')
         status_value = int(last_value.value)
-        status_time = timezone.localtime(last_value.timestamp)      
+        status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        pass
+        if common_services is None:
+            logging.error("workflow_diagnostics could not get 'common' instrument")
+    
+    # Determine the number of workflow manager processes running
+    process_list = []
+    try:
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'workflowmgr_pid')
+        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by('-timestamp')
+        pid_list = []
+        for item in last_values:
+            if item.value not in pid_list:
+                pid_list.append(item.value)
+                process_list.append({'pid': item.value,
+                                     'time': timezone.localtime(item.timestamp)})
+    except:
+        logging.error("workflow_diagnostics: %s" % sys.exc_value)
+    
+    dasmon_listener_list = []
+    try:
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon_listener_pid')
+        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by('-timestamp')
+        pid_list = []
+        for item in last_values:
+            if item.value not in pid_list:
+                pid_list.append(item.value)
+                
+                dasmon_listener_list.append({'pid': item.value,
+                                            'time': timezone.localtime(item.timestamp)})
+    except:
+        logging.error("workflow_diagnostics: %s" % sys.exc_value)
     
     # Heartbeat
     if timezone.now()-status_time>delay_time:
@@ -441,6 +477,8 @@ def workflow_diagnostics(timeout=None):
     wf_diag["status_time"] = status_time
     wf_diag["conditions"] = wf_conditions
     wf_diag["dasmon_listener_warning"] = dasmon_listener_warning
+    wf_diag["processes"] = process_list
+    wf_diag["dasmon_listener"] = dasmon_listener_list
     
     return wf_diag
     
