@@ -10,7 +10,7 @@ import os
 
 from report.models import DataRun, IPTS, Instrument, Error
 from icat_server_communication import get_run_info
-
+import datetime
 import view_util
 import users.view_util
 import dasmon.view_util
@@ -24,9 +24,44 @@ def summary(request):
     # Get base URL
     base_url = reverse('report.views.instrument_summary',args=['aaaa'])
     base_url = base_url.replace('/aaaa','')
-    breadcrumbs = "home"
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse('dasmon.views.summary')
 
+    # Number of runs as a function of time
+    max_date = datetime.date.today().replace(day=1)
+    epoch = datetime.date(1970,1,1)
+    # Fill in the partial data for the current month
+    runs = DataRun.objects.filter(created_on__gte=max_date)
+    run_rate = []
+    run_summary = [{'min_date': max_date,
+                    'max_date': datetime.date.today(),
+                    'number_of_runs': len(runs)}]
+    run_rate.append([1000*int((datetime.date.today()-epoch).total_seconds()), len(runs)])
+    for i in range(24):
+        # End date
+        month = max_date.month-1
+        if month<=0:
+            max_date = max_date.replace(month=12, year=max_date.year-1)
+        else:
+            max_date = max_date.replace(month=month)
+            
+        # Start date
+        month = max_date.month-1
+        if month<=0:
+            min_date = max_date.replace(month=12, year=max_date.year-1)
+        else:
+            min_date = max_date.replace(month=month)
+
+        runs = DataRun.objects.filter(created_on__lt=max_date,
+                                      created_on__gte=min_date)
+        if len(runs)>0:
+            run_summary.append({'min_date': min_date,
+                                'max_date': max_date,
+                                'number_of_runs': len(runs)})
+            run_rate.append([1000*int((max_date-epoch).total_seconds()), len(runs)])
+        
     template_values = {'instruments':instruments,
+                       'run_summary': run_summary,
+                       'run_rate': run_rate,
                        'breadcrumbs':breadcrumbs,
                        'base_instrument_url':base_url}
     template_values = users.view_util.fill_template_values(request, **template_values)
