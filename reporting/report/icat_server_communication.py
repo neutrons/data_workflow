@@ -96,10 +96,24 @@ def get_run_info(instrument, ipts, run_number):
         metadata = dom.getElementsByTagName('metadata')
         if len(metadata)>0:
             for n in metadata[0].childNodes:
-                # Run title and other basic info
-                for item in ['title', 'duration', 'totalCounts', 'protonCharge']:
+                # Run title
+                if n.nodeName=='title' and n.hasChildNodes():
+                    run_info['title'] = get_text_from_xml(n.childNodes)
+                # Duration
+                if n.nodeName=='duration' and n.hasChildNodes():
+                    value = get_text_from_xml(n.childNodes)
+                    try:
+                        run_info['duration'] = "%g sec" % float(value)
+                    except:
+                        run_info['duration'] = value
+                # Basic info
+                for item in ['totalCounts', 'protonCharge']:
                     if n.nodeName==item and n.hasChildNodes():
-                        run_info[item] = get_text_from_xml(n.childNodes)
+                        value = get_text_from_xml(n.childNodes)
+                        try:
+                            run_info[item] = "%g" % float(value)
+                        except:
+                            run_info[item] = value
                  # Start time
                 if n.nodeName=='startTime' and n.hasChildNodes():
                     timestr = get_text_from_xml(n.childNodes)
