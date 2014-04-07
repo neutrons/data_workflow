@@ -502,9 +502,14 @@ def postprocessing_diagnostics(timeout=None):
             for node_prefix in settings.POSTPROCESS_NODE_PREFIX:
                 if item.name.startswith(settings.SYSTEM_STATUS_PREFIX+node_prefix):
                     try:
-                        last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
-                        nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
-                                      'time':timezone.localtime(last_value.timestamp)})
+                        if item.name.endswith('_pid'):
+                            last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
+                            nodes.append({'node':'%s PID %s' % (item.name[len(settings.SYSTEM_STATUS_PREFIX):len(item.name)-4], last_value.value),
+                                          'time':timezone.localtime(last_value.timestamp)})
+                        else:
+                            last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
+                            nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                                          'time':timezone.localtime(last_value.timestamp)})
                     except:
                         nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
                                       'time':'No heartbeat - contact post-processing expert'})
