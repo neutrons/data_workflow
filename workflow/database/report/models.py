@@ -94,11 +94,11 @@ class DataRunManager(models.Manager):
             @param ipts_id: IPTS object
         """
         if ipts_id is None:
-            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id).order_by('created_on').reverse()
+            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id)
         else:
-            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id,
-                                                                                ipts_id=ipts_id).order_by('created_on').reverse()
+            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id, ipts_id=ipts_id)
         if len(last_run_query)>0:
+            last_run_query = last_run_query.order_by('created_on').reverse()
             return last_run_query[0]
         return None
     
