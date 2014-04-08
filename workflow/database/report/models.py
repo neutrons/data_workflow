@@ -115,7 +115,6 @@ class DataRunManager(models.Manager):
             last_run_id = status.last_run_id
         except:
             last_run_id = DataRun.objects.get_last_run(instrument_id)
-            logging.error("No InstrumentStatus object created yet for %s" % instrument_id.name)
             if last_run_id is not None:
                 instrument = InstrumentStatus(instrument_id=instrument_id, last_run_id=last_run_id)
                 instrument.save()
