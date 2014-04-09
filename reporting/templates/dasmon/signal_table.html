@@ -19,12 +19,12 @@
       {% for item in signals %}
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           {% if item.key %}
-          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} 
-                  <span class="inlinesparkline">{{ item.data }}</span></a></td>
+          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>
+          <td>{{ item.status|safe }} <span class="inlinesparkline">{{ item.data }}</span></td>
           {% else %}
           <td>{{ item.name|safe }}{% if is_instrument_staff %} (<a href='javascript:void(0);' title="Click to remove signal (instrument team only)" onClick="ack_alarm('{{ item.ack_url }}?info={{ item.name }}');">clear</a>){% endif %}</td>
-          {% endif %}
           <td>{{ item.status|safe }}</td>
+          {% endif %}
           <td>{{ item.assert_time }}</td>
           </tr>
       {% endfor %}
