@@ -9,10 +9,10 @@
                                                    highlightSpotColor: 'undefined'} ); });
    </script>
    <div class="box">
-      <table cellspacing="0" class="message_table" id="alert_table">
+      <table cellspacing="0" class="message_table fixed_table" id="alert_table">
       <thead>
       <tr>
-          <th> Signal/PV </th> <th> Value </th> <th> Last Updated </th>
+          <th> Signal/PV </th> <th> Value </th> <th style="width: 50px;" > History </th> <th> Last Updated </th>
       </tr>
       </thead>
       <tbody>
@@ -20,10 +20,10 @@
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           {% if item.key %}
           <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>
-          <td>{{ item.status|safe }} <span class="inlinesparkline">{{ item.data }}</span></td>
+          <td>{{ item.status|safe }}</td><td><span class="inlinesparkline">{{ item.data }}</span></td>
           {% else %}
           <td>{{ item.name|safe }}{% if is_instrument_staff %} (<a href='javascript:void(0);' title="Click to remove signal (instrument team only)" onClick="ack_alarm('{{ item.ack_url }}?info={{ item.name }}');">clear</a>){% endif %}</td>
-          <td>{{ item.status|safe }}</td>
+          <td>{{ item.status|safe }}</td><td></td>
           {% endif %}
           <td>{{ item.assert_time }}</td>
           </tr>
