@@ -1,7 +1,12 @@
 <span id='signal_table'>
 {% if signals %}
    <script id="source" language="javascript" type="text/javascript">
-   $(function() { $('.inlinesparkline').sparkline(); });
+   $(function() { $('.inlinesparkline').sparkline('html', 
+                                                  {type: 'line',width: '50px',
+                                                   spotColor: 'undefined',
+                                                   minSpotColor: 'undefined',
+                                                   maxSpotColor: 'undefined',
+                                                   highlightSpotColor: 'undefined'} ); });
    </script>
    <div class="box">
       <table cellspacing="0" class="message_table" id="alert_table">
