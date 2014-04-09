@@ -1,5 +1,8 @@
 <span id='signal_table'>
 {% if signals %}
+   <script id="source" language="javascript" type="text/javascript">
+   $(function() { $('.inlinesparkline').sparkline(); });
+   </script>
    <div class="box">
       <table cellspacing="0" class="message_table" id="alert_table">
       <thead>
@@ -11,7 +14,8 @@
       {% for item in signals %}
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           {% if item.key %}
-          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>
+          <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} 
+                  <span class="inlinesparkline">{{ item.data }}</span></a></td>
           {% else %}
           <td>{{ item.name|safe }}{% if is_instrument_staff %} (<a href='javascript:void(0);' title="Click to remove signal (instrument team only)" onClick="ack_alarm('{{ item.ack_url }}?info={{ item.name }}');">clear</a>){% endif %}</td>
           {% endif %}

@@ -1,4 +1,4 @@
-from pvmon.models import PVName, PV, PVCache
+from pvmon.models import PVName, PV, PVCache, MonitoredVariable
 from django.utils import dateformat, timezone
 from django.conf import settings
 import datetime
@@ -7,19 +7,32 @@ import sys
 import time
 import math
 
-def get_live_variables(request, instrument_id):  
+def get_live_variables(request, instrument_id, key_id=None):
     """
         Create a data dictionary with requested live data
         @param request: HTTP request object
         @param instrument_id: Instrument object
+        @param keys: list of keys to return data for
     """  
     # Get variable update request
-    live_vars = request.GET.get('vars', '')
-    if len(live_vars)>0:
-        live_keys=live_vars.split(',')
+    if request is not None:
+        live_vars = request.GET.get('vars', '')
+        if len(live_vars)>0:
+            live_keys_str=live_vars.split(',')
+            live_keys = []
+            for key in live_keys_str:
+                key = key.strip()
+                if len(key)==0: continue
+                key_id = PVName.objects.get(name=key)
+                live_keys.append(key_id)
+        else:
+            return []
+        plot_timeframe = request.GET.get('time', settings.PVMON_PLOT_TIME_RANGE)
     else:
-        return []
-    plot_timeframe = request.GET.get('time', settings.PVMON_PLOT_TIME_RANGE)
+        if key_id is None:
+            return []
+        live_keys = [key_id]
+        plot_timeframe = settings.DASMON_PLOT_TIME_RANGE
     try:
         plot_timeframe = int(plot_timeframe)
     except:
@@ -30,12 +43,10 @@ def get_live_variables(request, instrument_id):
     data_dict = []
     now = time.time()
     two_hours = now-plot_timeframe
-    for key in live_keys:
-        key = key.strip()
-        if len(key)==0: continue
+    for key_id in live_keys:
+        key = str(key_id.name)
         try:
             data_list = []
-            key_id = PVName.objects.get(name=key)
             values = PV.objects.filter(instrument_id=instrument_id,
                                        name=key_id,
                                        update_time__gte=two_hours)
@@ -74,7 +85,7 @@ def get_live_variables(request, instrument_id):
                 for i in range(range_minutes):
                     if data_counts[i]>0:
                         data_values[i] /= data_counts[i]
-                    data_list.append([-i*2.0, data_values[i]])                
+                    data_list.append([-i*2.0, data_values[i]])
             else:
                 for v in values:
                     delta_t = now-v.update_time

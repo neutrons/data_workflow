@@ -17,6 +17,7 @@ import sys
 import time
 import math
 import report.view_util
+import pvmon.view_util
 import users.view_util
 
 def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
@@ -241,6 +242,9 @@ def _find_value(instrument_id, dasmon_name, default='-', prune=False):
 def get_live_variables(request, instrument_id):  
     """
         Create a data dictionary with requested live data
+        
+        @param request: HttpRequest object
+        @param instrument_id: Instrument object
     """  
     # Get variable update request
     live_vars = request.GET.get('vars', '')
@@ -840,6 +844,7 @@ class SignalEntry(object):
         self.assert_time = assert_time
         self.key = key
         self.ack_url = ack_url
+        self.data = None
     
 def get_signals(instrument_id):
     """
@@ -884,6 +889,16 @@ def get_signals(instrument_id):
                 timestamp = '-'
             sig_entry = SignalEntry(name=item.pv_name, status=value, 
                                     key=item.pv_name, assert_time=timestamp)
+            data = pvmon.view_util.get_live_variables(request=None, 
+                                                      instrument_id=instrument_id, 
+                                                      key_id=item.pv_name)
+            data_list = []
+            try:
+                for point in data[0][1]:
+                    data_list.append('%g:%g' % (point[0], point[1]))
+            except:
+                logging.error(sys.exc_value)
+            sig_entry.data=','.join(data_list)
             sig_alerts.append(sig_entry)
     except:
         logging.error("Could not process monitored PVs: %s" % sys.exc_value)
