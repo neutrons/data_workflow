@@ -172,8 +172,8 @@ def get_system_health(instrument_id=None):
     das_status = report.view_util.get_post_processing_status()
     das_status['workflow'] = get_workflow_status()
     if instrument_id is not None:
-        das_status['dasmon'] = get_dasmon_status(instrument_id)
-        das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
+        das_status['dasmon'] = get_component_status(instrument_id, process='dasmon')
+        das_status['pvstreamer'] = get_component_status(instrument_id, process='pvstreamer')
     return das_status
     
 def fill_template_values(request, **template_args):
@@ -314,9 +314,9 @@ def get_live_variables(request, instrument_id):
             logging.warning("Could not process %s: %s" % (key, sys.exc_value))
     return data_dict
 
-def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
+def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, process='dasmon'):
     """
-        Get the health status of PVStreamer
+        Get the health status of an ADARA component
         @param red_timeout: number of hours before declaring a process dead
         @param yellow_timeout: number of seconds before declaring a process slow
     """
@@ -329,7 +329,7 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
         if not ActiveInstrument.objects.is_adara(instrument_id):
             return -1
     
-        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+process)
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         # Check the status value
         #    STATUS_OK = 0
@@ -337,18 +337,20 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
         #    STATUS_UNRESPONSIVE = 2
         #    STATUS_INACTIVE = 3
         if int(last_value.value)>0:
-            logging.error("PVStreamer status = %s" % last_value.value)
+            logging.error("%s status = %s" % (process, last_value.value))
             return 2
     except:
-        logging.debug("No cached status for PVStreamer on instrument %s" % instrument_id.name)
+        logging.debug("No cached status for %s on instrument %s" % (process, instrument_id.name))
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
+        logging.error("%s has a long delay in %s" % (process, instrument_id))
         return 2
     elif timezone.now()-last_value.timestamp>delta_short:
+        logging.error("%s has a short delay in %s" % (process, instrument_id))
         return 1
     return 0
-    
+
 def get_workflow_status(red_timeout=1, yellow_timeout=None):
     """
         Get the health status of Workflow Manager
@@ -369,36 +371,6 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
             return 2
     except:
         logging.debug("No cached status for WorkflowMgr on instrument")
-        return 2
-        
-    if timezone.now()-last_value.timestamp>delta_long:
-        return 2
-    elif timezone.now()-last_value.timestamp>delta_short:
-        return 1
-    return 0
-    
-def get_dasmon_status(instrument_id, red_timeout=1, yellow_timeout=None):
-    """
-        Get the health status of DASMON server
-        @param red_timeout: number of hours before declaring a process dead
-        @param yellow_timeout: number of seconds before declaring a process slow
-    """
-    if yellow_timeout is None:
-        yellow_timeout = settings.HEARTBEAT_TIMEOUT
-    delta_short = datetime.timedelta(seconds=yellow_timeout)
-    delta_long = datetime.timedelta(hours=red_timeout)
-    
-    try:
-        if not ActiveInstrument.objects.is_adara(instrument_id):
-            return -1
-    
-        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
-        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
-        if int(last_value.value)>0:
-            logging.error("DASMON status = %s" % last_value.value)
-            return 2
-    except:
-        logging.debug("No cached status for DASMON on instrument %s" % instrument_id.name)
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
@@ -918,8 +890,8 @@ def get_instrument_status_summary():
             continue
         if is_adara:
             dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
-            das_status = get_dasmon_status(i)
-            pvstreamer_status = get_pvstreamer_status(i)
+            das_status = get_component_status(i, process='dasmon')
+            pvstreamer_status = get_component_status(i, process='pvstreamer')
         else:
             dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
             das_status = -1
