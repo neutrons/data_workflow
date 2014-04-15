@@ -539,11 +539,12 @@ def postprocessing_diagnostics(timeout=None):
     return red_diag
 
 
-def pvstreamer_diagnostics(instrument_id, timeout=None):
+def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
     """
         Diagnostics for PVStreamer
         @param instrument_id: Instrument object
         @param timeout: number of seconds of silence before declaring a problem
+        @param process: name of the process to diagnose (pvsd or pvstreamer)
     """
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
@@ -553,14 +554,14 @@ def pvstreamer_diagnostics(instrument_id, timeout=None):
     pv_conditions = []
     dasmon_listener_warning = False
     
-    # Recent reported status
+    # Recent PVStreamer reported status
     status_value = -1
     status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
-        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'pvstreamer')
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+process)
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         status_value = int(last_value.value)
-        status_time = timezone.localtime(last_value.timestamp)      
+        status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
         pass
@@ -569,15 +570,15 @@ def pvstreamer_diagnostics(instrument_id, timeout=None):
     if timezone.now()-status_time>delay_time:
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
-        pv_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT), _red_message("ask on-call instrument contact to restart PVStreamer")))
+        pv_conditions.append("No %s heartbeat since %s: %s" % (process, df.format(settings.DATETIME_FORMAT), _red_message("ask on-call instrument contact to restart PVStreamer")))
 
     # Status
     if status_value > 0:
         labels = ["OK", "Fault", "Unresponsive", "Inactive"]
-        pv_conditions.append("PVStreamer reports a status of %s [%s]" % (status_value, labels[status_value]))
+        pv_conditions.append("%s reports a status of %s [%s]" % (process, status_value, labels[status_value]))
     
     if status_value < 0:
-        pv_conditions.append("The web monitor has not heard from PVStreamer in a long time: no data available")
+        pv_conditions.append("The web monitor has not heard from %s in a long time: no data available" % process)
 
     pv_diag["status"] = status_value
     pv_diag["status_time"] = status_time

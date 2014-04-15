@@ -84,8 +84,34 @@ Reported conditions:<br>
 {% endfor %}
 </ul>
 {% endif %}
+</div>
+
+{% if pvsd_diagnostics.status >= 0 %}
+<p>
+<b>PVSD diagnostics:</b>
+<div style="margin-left:20px">
+<table cellspacing="0">
+  <tbody>
+    <tr class="even">
+      <td>Last status: </td><td>{{pvsd_diagnostics.status}}</td>
+    </tr>
+    <tr class="odd">
+      <td>Last status update: </td><td>{{pvsd_diagnostics.status_time}}</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+
+{% if pvsd_diagnostics.conditions %}
+Reported conditions:<br>
+<ul>
+{% for item in pvsd_diagnostics.conditions %}<li>{{ item|safe }}</li>
+{% endfor %}
+</ul>
 {% endif %}
 </div>
+{% endif %}
+{% endif %}
 
 <p>
 <b>Workflow diagnostics:</b>
