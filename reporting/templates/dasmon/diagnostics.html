@@ -62,6 +62,7 @@ Reported conditions:<br>
 {% endif %}
 </div>
 
+{% if pv_diagnostics %}
 <p>
 <b>PVStreamer diagnostics:</b>
 <div style="margin-left:20px">
@@ -85,8 +86,9 @@ Reported conditions:<br>
 </ul>
 {% endif %}
 </div>
+{% endif %}
 
-{% if pvsd_diagnostics.status >= 0 %}
+{% if pvsd_diagnostics %}
 <p>
 <b>PVSD diagnostics:</b>
 <div style="margin-left:20px">

@@ -270,17 +270,17 @@ def diagnostics(request, instrument):
     if ActiveInstrument.objects.is_adara(instrument_id):
         # DASMON
         dasmon_diag = view_util.dasmon_diagnostics(instrument_id)
+        template_values['dasmon_diagnostics'] = dasmon_diag
         # PVStreamer
-        pv_diag = view_util.pvstreamer_diagnostics(instrument_id)
-        # pvsd
-        pvsd_diag = view_util.pvstreamer_diagnostics(instrument_id, process='pvsd')
+        if ActiveInstrument.objects.has_pvstreamer(instrument_id):
+            template_values['pv_diagnostics'] = view_util.pvstreamer_diagnostics(instrument_id)
+        # PVSD
+        if ActiveInstrument.objects.has_pvsd(instrument_id):
+            template_values['pvsd_diagnostics'] = view_util.pvstreamer_diagnostics(instrument_id, process='pvsd')
         # Actions messages
-        if dasmon_diag['dasmon_listener_warning'] and pv_diag['dasmon_listener_warning'] \
+        if dasmon_diag['dasmon_listener_warning'] \
             and wf_diag['dasmon_listener_warning']:
             actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
-        template_values['dasmon_diagnostics'] = dasmon_diag
-        template_values['pv_diagnostics'] = pv_diag
-        template_values['pvsd_diagnostics'] = pvsd_diag
 
     template_values['wf_diagnostics'] = wf_diag
     template_values['post_diagnostics'] = red_diag

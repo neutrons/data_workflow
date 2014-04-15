@@ -51,6 +51,28 @@ class ActiveInstrumentManager(models.Manager):
         else:
             return True
 
+    def has_pvsd(self, instrument_id):
+        """
+            Returns True if the instrument is running pvsd
+            Defaults to False
+        """
+        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        if len(instrument_list)>0:
+            return instrument_list[0].has_pvsd
+        else:
+            return False
+
+    def has_pvstreamer(self, instrument_id):
+        """
+            Returns True if the instrument is running PVStreamer
+            Defaults to True
+        """
+        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        if len(instrument_list)>0:
+            return instrument_list[0].has_pvstreamer
+        else:
+            return True
+
 
 class ActiveInstrument(models.Model):
     """
@@ -60,6 +82,8 @@ class ActiveInstrument(models.Model):
     instrument_id = models.ForeignKey(Instrument, unique=True)
     is_alive      = models.BooleanField(default=True)
     is_adara      = models.BooleanField(default=True)
+    has_pvsd      = models.BooleanField(default=False)
+    has_pvstreamer= models.BooleanField(default=True)
     objects       = ActiveInstrumentManager()
     
     

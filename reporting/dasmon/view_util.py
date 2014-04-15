@@ -173,7 +173,7 @@ def get_system_health(instrument_id=None):
     das_status['workflow'] = get_workflow_status()
     if instrument_id is not None:
         das_status['dasmon'] = get_component_status(instrument_id, process='dasmon')
-        das_status['pvstreamer'] = get_component_status(instrument_id, process='pvstreamer')
+        das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
     return das_status
     
 def fill_template_values(request, **template_args):
@@ -314,6 +314,20 @@ def get_live_variables(request, instrument_id):
             logging.warning("Could not process %s: %s" % (key, sys.exc_value))
     return data_dict
 
+def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
+    """
+        Get the health status of PVStreamer
+        @param red_timeout: number of hours before declaring a process dead
+        @param yellow_timeout: number of seconds before declaring a process slow
+    """
+    pvsd_status = -1
+    pvstreamer_status = -1
+    if ActiveInstrument.objects.has_pvsd(instrument_id):
+        pvsd_status = get_component_status(instrument_id, red_timeout, yellow_timeout, process='pvsd')
+    if ActiveInstrument.objects.has_pvstreamer(instrument_id):
+        pvstreamer_status = get_component_status(instrument_id, red_timeout, yellow_timeout, process='pvstreamer')
+    return max(pvstreamer_status, pvsd_status)
+    
 def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, process='dasmon'):
     """
         Get the health status of an ADARA component
@@ -891,7 +905,7 @@ def get_instrument_status_summary():
         if is_adara:
             dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
             das_status = get_component_status(i, process='dasmon')
-            pvstreamer_status = get_component_status(i, process='pvstreamer')
+            pvstreamer_status = get_pvstreamer_status(i)
         else:
             dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
             das_status = -1
