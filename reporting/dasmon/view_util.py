@@ -358,10 +358,10 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
         return 2
         
     if timezone.now()-last_value.timestamp>delta_long:
-        logging.error("%s has a long delay in %s" % (process, instrument_id))
+        logging.debug("%s has a long delay in %s" % (process, instrument_id))
         return 2
     elif timezone.now()-last_value.timestamp>delta_short:
-        logging.error("%s has a short delay in %s" % (process, instrument_id))
+        logging.debug("%s has a short delay in %s" % (process, instrument_id))
         return 1
     return 0
 
