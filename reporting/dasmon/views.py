@@ -334,8 +334,6 @@ def get_update(request, instrument):
 
 
 @users.view_util.login_or_local_required_401
-#@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-#@cache_control(private=True, must_revalidate=True)
 def summary_update(request):
     """
          Response to AJAX call to get updated health info for all instruments
