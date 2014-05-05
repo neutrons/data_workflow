@@ -58,6 +58,7 @@ def activity_summary(request):
                               template_values)    
     
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 def activity_update(request):
     instruments = Instrument.objects.all().order_by('name')
     #              YELLOW     ORANGE     TURQUOISE  PURPLE
@@ -132,6 +133,7 @@ def legacy_monitor(request, instrument):
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 def get_legacy_data(request, instrument):
     """
         Return the latest legacy status information
@@ -297,6 +299,7 @@ def diagnostics(request, instrument):
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
@@ -332,6 +335,7 @@ def get_update(request, instrument):
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 def summary_update(request):
     """
          Response to AJAX call to get updated health info for all instruments
@@ -348,6 +352,7 @@ def summary_update(request):
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 def get_signal_table(request, instrument):
     """
         Ajax call to get the signal table
