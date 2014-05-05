@@ -904,8 +904,16 @@ def get_instrument_status_summary():
             continue
         if is_adara:
             dasmon_url = reverse('dasmon.views.live_monitor',args=[i.name])
-            das_status = get_component_status(i, process='dasmon')
-            pvstreamer_status = get_pvstreamer_status(i)
+            try:
+                das_status = get_component_status(i, process='dasmon')
+            except:
+                logging.error(sys.exc_value)
+                das_status = 2
+            try:
+                pvstreamer_status = get_pvstreamer_status(i)
+            except:
+                logging.error(sys.exc_value)
+                pvstreamer_status = 2
         else:
             dasmon_url = reverse('dasmon.views.live_runs',args=[i.name])
             das_status = -1
