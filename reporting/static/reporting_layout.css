@@ -27,22 +27,22 @@
 }
 
 .diagnostics a:link {
-    color:#5B4729;
+    color:#555555;
     text-decoration:none;
 }
 
 .diagnostics a:visited {
-    color:#5B4729;
+    color:#555555;
     text-decoration:none;
 }
 
 .diagnostics a:hover {
-    color:#5B4729;
+    color:#555555;
     text-decoration:none;
 }
 
 .diagnostics a:active {
-    color:#5B4729;
+    color:#555555;
     text-decoration:none;
 }
 
@@ -204,7 +204,7 @@ header {
 .banner_title {
 
 	text-align:left;
-	padding-left:130px;
+	padding-left:150px;
 	margin-top:24px;
 	margin-bottom:30px;
 	font-size:24px;
@@ -220,7 +220,7 @@ body {
 	font-size:12px;
 	max-width:550px;
 	min-width:550px;
-    color:#5B4729;
+    color:#555555;
 }
 
 p {
@@ -241,8 +241,6 @@ img {border: 0;}
 
 .box {
 	text-align:left;
-	margin-left:auto;
-	margin-right:auto;
 	background:#FFF;
 	padding-bottom:5px;
 	padding-top:5px;
@@ -250,7 +248,7 @@ img {border: 0;}
 	padding-right:5px;
     max-width:530px;
 	min-width:530px;
-	color:#5B4729;
+	color:#555555;
 	
     border: 1px solid #cdc0b0;
 	
