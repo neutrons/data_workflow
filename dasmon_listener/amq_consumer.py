@@ -25,7 +25,7 @@ from settings import TOPIC_PREFIX
 sys.path.append(INSTALLATION_DIR)
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
-from pvmon.models import PV, PVCache, MonitoredVariable
+from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
 from report.models import Instrument
 
 class Listener(stomp.ConnectionListener):
@@ -334,9 +334,16 @@ class Client(object):
                     StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
                     StatusCache.objects.filter(timestamp__lte=cutoff).delete()
                     
-                    # Remove old PVMON entries
+                    # Remove old PVMON entries: first, the float values
                     PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
                     old_entries = PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
+                    for item in old_entries:
+                        if len(MonitoredVariable.objects.filter(instrument=item.instrument,
+                                                                pv_name=item.name))==0:
+                            item.delete()
+                    # Remove old PVMON entries: second, the string values
+                    PVString.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
+                    old_entries = PVStringCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument,
                                                                 pv_name=item.name))==0:
