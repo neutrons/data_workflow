@@ -34,6 +34,28 @@ class PVCache(models.Model):
     update_time = models.IntegerField()
     
 
+class PVString(models.Model):
+    """
+        Table holding string values
+    """
+    instrument = models.ForeignKey(Instrument, null=True)
+    name = models.ForeignKey(PVName)
+    value = models.TextField()
+    status = models.IntegerField()
+    update_time = models.IntegerField()
+    
+
+class PVStringCache(models.Model):
+    """
+        Table holding the latest string values
+    """
+    instrument = models.ForeignKey(Instrument, null=True)
+    name = models.ForeignKey(PVName)
+    value = models.TextField()
+    status = models.IntegerField()
+    update_time = models.IntegerField()
+    
+
 class MonitoredVariable(models.Model):
     """
         Table of PVs that need special monitoring
