@@ -1,4 +1,10 @@
-from pvmon.models import PVName, PV, PVCache, MonitoredVariable
+"""
+    Utilities to compile the PVs stored in the web monitor DB.
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
+from pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable
 from django.utils import dateformat, timezone
 from django.conf import settings
 import datetime
@@ -12,7 +18,7 @@ def get_live_variables(request, instrument_id, key_id=None):
         Create a data dictionary with requested live data
         @param request: HTTP request object
         @param instrument_id: Instrument object
-        @param keys: list of keys to return data for
+        @param key_id: key to return data for, if request is None
     """  
     # Get variable update request
     if request is not None:
@@ -39,7 +45,6 @@ def get_live_variables(request, instrument_id, key_id=None):
         logging.warning("Bad time period request: %s" % str(plot_timeframe))
         plot_timeframe = settings.PVMON_PLOT_TIME_RANGE
 
-    
     data_dict = []
     now = time.time()
     two_hours = now-plot_timeframe
@@ -102,22 +107,32 @@ def get_cached_variables(instrument_id, monitored_only=False):
         @param instrument_id: Instrument object
         @param monitored_only: if True, only monitored PVs are returned
     """
+    def _process_pvs(queryset):
+        for kvp in queryset:
+            if kvp.name.monitored or monitored_only is False:
+                localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
+                df = dateformat.DateFormat(localtime)
+                if type(kvp.value)==float:
+                    string_value = '%g' % kvp.value
+                else:
+                    string_value = '%s' % kvp.value
+    
+                item = {'key': str(kvp.name),
+                        'value': string_value,
+                        'timestamp': df.format(settings.DATETIME_FORMAT),
+                        }
+                key_value_pairs.append(item)
+
+    key_value_pairs = []
     values = PVCache.objects.filter(instrument=instrument_id)
     if len(values)>0:
         values = values.order_by("name__name")
+    _process_pvs(values)
     
-    key_value_pairs = []
-    for kvp in values:
-        if kvp.name.monitored or monitored_only is False:
-            localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
-            df = dateformat.DateFormat(localtime)
-            string_value = '%g' % kvp.value            
-
-            item = {'key': str(kvp.name),
-                    'value': string_value,
-                    'timestamp': df.format(settings.DATETIME_FORMAT),
-                    }
-            key_value_pairs.append(item)
+    values = PVStringCache.objects.filter(instrument=instrument_id)
+    if len(values)>0:
+        values = values.order_by("name__name")
+    _process_pvs(values)
 
     return key_value_pairs
 

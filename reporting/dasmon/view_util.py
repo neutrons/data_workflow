@@ -6,7 +6,7 @@
 """
 from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
-from pvmon.models import PVCache, MonitoredVariable
+from pvmon.models import PVCache, PVStringCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
@@ -866,9 +866,15 @@ def get_signals(instrument_id):
         monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
         for item in monitored:
             try:
-                latest = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name).latest("update_time")
-                value = '%g' % latest.value
-                localtime = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
+                latests = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
+                if len(latests)==0:
+                    latests = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
+                latest = latests.latest("update_time")
+                if type(latest.value)==float:
+                    value = '%g' % latest.value
+                else:
+                    value = '%s' % latest.value
+                localtime = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.utc)
                 df = dateformat.DateFormat(localtime)
                 timestamp = df.format(settings.DATETIME_FORMAT)
             except:

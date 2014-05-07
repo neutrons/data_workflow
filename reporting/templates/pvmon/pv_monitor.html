@@ -1,4 +1,5 @@
 {% extends "dasmon/live_monitor.html" %}
+{% load dasmon_tags %}
 
 {% block title %}{{ instrument }} Process Variables {% endblock %}
 
@@ -109,7 +110,7 @@
     <tbody>
       {% for item in key_value_pairs %}
       <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-        <td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}');"> {{ item.key }} </a></td>
+        {% if item.value|is_number %}<td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}');"> {{ item.key }} </a></td>{% else %}<td>{{ item.key }}</td>{% endif %}
         <td><span id="{{ item.key }}">{{ item.value }}</span></td>
         <td><span id="{{ item.key }}_timestamp">{{ item.timestamp }}</span></td>
       </tr>

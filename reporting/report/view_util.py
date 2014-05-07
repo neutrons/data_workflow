@@ -1,3 +1,9 @@
+"""
+    Status monitor utilities to support 'report' views
+    
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
@@ -420,7 +426,7 @@ def run_rate(instrument_id, n_hours=24):
         return [ [int(r[0]), int(r[1])] for r in rows ]
     except:
         connection.close()
-        logging.error(sys.exc_value)
+        logging.error("Run rate: %s" % sys.exc_value)
         
         # Do it by hand (slow)
         time = timezone.now()
@@ -451,7 +457,7 @@ def error_rate(instrument_id, n_hours=24):
         return [ [int(r[0]), int(r[1])] for r in rows ]
     except:
         connection.close()
-        logging.error(sys.exc_value)
+        logging.error("Error rate: %s" % sys.exc_value)
         
         # Do it by hand (slow)
         time = timezone.now()
