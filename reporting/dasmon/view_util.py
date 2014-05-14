@@ -724,7 +724,7 @@ def get_completeness_status(instrument_id):
             return STATUS_ERROR
         
         # If everything but the last run is incomplete, we are OK
-        if not status0 and status1:
+        if status1:
             return STATUS_OK
         
         return STATUS_WARNING
