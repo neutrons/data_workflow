@@ -699,7 +699,7 @@ def get_completeness_status(instrument_id):
         # We need at least 3 runs for a meaningful status        
         if len(latest_runs)==0:    
             return STATUS_UNKNOWN
-        if len(latest_runs)<3:
+        if len(latest_runs)<2:
             if WorkflowSummary.objects.get(run_id=latest_runs[0]).complete is True:
                 return STATUS_OK
             else:
@@ -707,28 +707,24 @@ def get_completeness_status(instrument_id):
         
         r0 = latest_runs[0]
         r1 = latest_runs[1]
-        r2 = latest_runs[2]
         s0 = WorkflowSummary.objects.get(run_id=r0)
         s1 = WorkflowSummary.objects.get(run_id=r1)
-        s2 = WorkflowSummary.objects.get(run_id=r2)
         status0 = s0.complete
         status1 = s1.complete
-        status2 = s2.complete
         error0 = r0.last_error() is not None
         error1 = r1.last_error() is not None
-        error2 = r2.last_error() is not None
         
         # If the last run is complete, but any of the previous two has an error,
         # then return a warning
-        if status0 and ((not status1 and error1) or (not status2 and error2)):
+        if status0 and (not status1 and error1):
             return STATUS_WARNING
         
         # If we have errors within the last 3 runs, report an error
-        if (not status0 and error0) or (not status1 and error1) or (not status2 and error2):
+        if (not status0 and error0) or (not status1 and error1):
             return STATUS_ERROR
         
         # If everything but the last run is incomplete, we are OK
-        if status1 and status2:
+        if not status0 and status1:
             return STATUS_OK
         
         return STATUS_WARNING
