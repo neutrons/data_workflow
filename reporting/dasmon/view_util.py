@@ -718,6 +718,11 @@ def get_completeness_status(instrument_id):
         error1 = r1.last_error() is not None
         error2 = r2.last_error() is not None
         
+        # If the last run is complete, but any of the previous two has an error,
+        # then return a warning
+        if status0 and ((not status1 and error1) or (not status2 and error2)):
+            return STATUS_WARNING
+        
         # If we have errors within the last 3 runs, report an error
         if (not status0 and error0) or (not status1 and error1) or (not status2 and error2):
             return STATUS_ERROR

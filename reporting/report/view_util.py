@@ -39,7 +39,7 @@ def fill_template_values(request, **template_args):
     else:
         last_expt_id = last_run_id.ipts_id
     template_args['last_expt'] = last_expt_id
-    template_args['last_run'] = last_run_id   
+    template_args['last_run'] = last_run_id
 
     # Get base IPTS URL
     base_ipts_url = reverse('report.views.ipts_summary',args=[instr,'0000'])
@@ -557,7 +557,4 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
         logging.error(sys.exc_value)
     
     return status_dict
-    
-    
-    
     
