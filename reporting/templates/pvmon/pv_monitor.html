@@ -57,7 +57,7 @@
     {
         var clean_name = element_id.replace(/:/g, '_');
         var dialog_name = clean_name+"_dialog"
-        if (!$(dialog_name).length)
+        if (!$("#"+dialog_name).length)
         {
             var plot_content = "<div id='"+dialog_name+"' title='"+element_id+"'>";
             plot_content    += "  <div class='live_plots'>";
