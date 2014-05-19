@@ -29,7 +29,12 @@ def get_live_variables(request, instrument_id, key_id=None):
             for key in live_keys_str:
                 key = key.strip()
                 if len(key)==0: continue
-                key_id = PVName.objects.get(name=key)
+                key_ids = PVName.objects.filter(name__iexact=key)
+                if len(key_ids)>0:
+                    key_id = key_ids[0]
+                else:
+                    logging.error("Error finding %s" % key)
+                    return []
                 live_keys.append(key_id)
         else:
             return []
