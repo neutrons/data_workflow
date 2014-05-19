@@ -157,7 +157,7 @@ LOGGING = {
     },
     'handlers': {
         'null': {
-            'level':'DEBUG',
+            'level':'INFO',
             'class':'django.utils.log.NullHandler',
         },
         'console':{
@@ -174,20 +174,20 @@ LOGGING = {
         },
         'django.db.backends': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARN',
             'propagate': False,
         },
         'report': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
         'dasmon': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
         'django_auth_ldap': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARN',
         },
     }
 }
