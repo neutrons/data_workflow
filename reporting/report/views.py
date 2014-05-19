@@ -105,9 +105,11 @@ def detail(request, instrument, run_id):
     image_url = None
     try:
         from file_handling.models import ReducedImage
-        image = ReducedImage.objects.filter(run_id=run_object).latest('created_on')
-        if image is not None and bool(image.file) and os.path.isfile(image.file.path):
-            image_url = image.file.url
+        images = ReducedImage.objects.filter(run_id=run_object)
+        if len(images)>0:
+            image = images.latest('created_on')
+            if image is not None and bool(image.file) and os.path.isfile(image.file.path):
+                image_url = image.file.url
     except:
         logging.error("Error finding reduced image: %s" % sys.exc_value)
     
