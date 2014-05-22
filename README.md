@@ -48,5 +48,4 @@ SNS data workflow manager and reporting app
 	to the settings when installing those stored procedures and the application will
 	use them automatically.
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/neutrons/data_workflow/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
+[![DOI Badge](https://zenodo.org/badge/4139/neutrons/data_workflow.png)](http://dx.doi.org/10.5281/zenodo.10054)
