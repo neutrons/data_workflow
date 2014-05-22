@@ -27,16 +27,16 @@ def summary(request):
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse('dasmon.views.summary')
 
     # Number of runs as a function of time
-    max_date = datetime.date.today().replace(day=1)
-    epoch = datetime.date(1970,1,1)
-    adara_start = datetime.date(2012,10,1)
+    max_date = datetime.datetime.now().replace(day=1)
+    epoch = datetime.datetime(1970,1,1)
+    adara_start = datetime.datetime(2012,10,1)
     # Fill in the partial data for the current month
     runs = DataRun.objects.filter(created_on__gte=max_date)
     run_rate = []
     run_summary = [{'min_date': max_date,
-                    'max_date': datetime.date.today(),
+                    'max_date': datetime.datetime.today(),
                     'number_of_runs': len(runs)}]
-    run_rate.append([1000*int((datetime.date.today()-epoch).total_seconds()), len(runs)])
+    run_rate.append([1000*int((datetime.datetime.today()-epoch).total_seconds()), len(runs)])
     while True:
         # Make sure we don't display zeros for the period before
         # the system was installed
