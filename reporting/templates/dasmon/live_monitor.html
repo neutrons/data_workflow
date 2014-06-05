@@ -112,7 +112,7 @@
     {
         $.ajax({ url: "{{ signals_url }}", success: function(data) {
             $('#signal_table').replaceWith(data);
-        }, dataType: "html", timeout: 30000, cache: false });
+        }, dataType: "html", timeout: 30000, cache: true });
     }
     
     function ack_alarm(ack_url) { $.ajax({ url: ack_url, cache: false }); }
