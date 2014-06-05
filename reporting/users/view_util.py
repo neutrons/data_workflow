@@ -7,6 +7,7 @@ from django.http import HttpResponse
 import hashlib
 import socket
 import logging
+import sys
 from reporting_app import settings
 
 from users.models import PageView
@@ -79,11 +80,17 @@ def login_or_local_required_401(fn):
     """
         Function decorator to check whether a user is allowed
         to see a view.
+        
+        Usually used for AJAX calls. Never returns a 500.
     """
     def request_processor(request, *args, **kws):
-        if _check_credentials(request):
-            return fn(request, *args, **kws)
-        return HttpResponse(status=401)
+        try:
+            if _check_credentials(request):
+                return fn(request, *args, **kws)
+            return HttpResponse(status=401)
+        except:
+            logging.error("Error authenticating: %s" % sys.exc_value)
+            return HttpResponse(status=401)
     return request_processor
 
 def is_instrument_staff(request, instrument_id):
