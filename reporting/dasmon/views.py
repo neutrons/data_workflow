@@ -19,6 +19,7 @@ import users.view_util
 import legacy_status
 
 import sys
+import logging
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
