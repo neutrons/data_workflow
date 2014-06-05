@@ -1,9 +1,20 @@
 from dasmon.models import StatusVariable, Parameter, StatusCache, ActiveInstrument, Signal, LegacyURL
 from django.contrib import admin
+import datetime
+import sys
+import logging
 
 class StatusVariableAdmin(admin.ModelAdmin):
     list_filter = ('instrument_id', 'key_id')
-    list_display = ('id', 'instrument_id', 'key_id', 'value', 'timestamp')
+    list_display = ('id', 'instrument_id', 'key_id', 'value', 'timestamp', 'msg_time')
+    def msg_time(self, obj):
+        if obj.key_id.name == 'timestamp':
+            try:
+                return datetime.datetime.fromtimestamp(int(obj.value))
+            except:
+                logging.error(sys.exc_value)
+                return 'error'
+        return '-'
 
 class ParameterAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'monitored')
