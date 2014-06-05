@@ -202,7 +202,7 @@ CACHES = {
 # Timeout value for cached run and error rates, in seconds
 RUN_RATE_CACHE_TIMEOUT = 120
 # Timeout value for cached pages that are expected to be quick to render, in seconds
-FAST_PAGE_CACHE_TIMEOUT = 5
+FAST_PAGE_CACHE_TIMEOUT = 10
 # Timeout value for cached pages that are expected to be slow to render, in seconds
 SLOW_PAGE_CACHE_TIMEOUT = 60
 
