@@ -18,6 +18,8 @@ import report.view_util
 import users.view_util
 import legacy_status
 
+import sys
+
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
@@ -370,6 +372,15 @@ def get_signal_table(request, instrument):
 @users.view_util.login_or_local_required_401
 @users.view_util.monitor
 def acknowledge_signal(request, instrument, sig_id):
-    sig_object = get_object_or_404(Signal, id=sig_id)
-    sig_object.delete()
+    """
+        Acknowledge a signal and remove it from the DB
+        @param request: request obect
+        @param instrument: instrument name
+        @param sig_id: signal ID
+    """
+    try:
+        sig_object = get_object_or_404(Signal, id=sig_id)
+        sig_object.delete()
+    except:
+        logging.error("ACK signal %s/%s: %s" % (instrument, sig_id, sys.exc_value))
     return HttpResponse()

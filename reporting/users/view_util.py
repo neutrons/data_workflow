@@ -89,7 +89,7 @@ def login_or_local_required_401(fn):
                 return fn(request, *args, **kws)
             return HttpResponse(status=401)
         except:
-            logging.error("Error authenticating [%s]: %s" % (request.path, sys.exc_value))
+            logging.error("[%s]: %s" % (request.path, sys.exc_value))
             return HttpResponse(status=500)
     return request_processor
 
