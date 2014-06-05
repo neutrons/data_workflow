@@ -49,7 +49,14 @@ class Listener(stomp.ConnectionListener):
             toks = destination.upper().split('.')
             if len(toks)>1:
                 if toks[0]=="/TOPIC/%s" % TOPIC_PREFIX:  
-                    instrument = toks[1].lower()
+                    instrument_name = toks[1].lower()
+                    
+                    # Get or create the instrument object from the DB
+                    try:
+                        instrument = Instrument.objects.get(name=instrument_name)
+                    except Instrument.DoesNotExist:
+                        instrument = Instrument(name=instrument_name)
+                        instrument.save()
             if instrument is None:
                 logging.error("Could not extract instrument name from %s" % destination)
                 return
@@ -115,7 +122,7 @@ class Listener(stomp.ConnectionListener):
                 else:
                     store_and_cache(instrument, key, data_dict[key])
             
-def process_signal(instrument, data):
+def process_signal(instrument_id, data):
     """
         Process and store signal messages.
         @param instrument_id: Instrument object
@@ -140,13 +147,6 @@ def process_signal(instrument, data):
             "sig_name": "SID_SVP_HIGH"
         }
     """
-    # Get or create the instrument object from the DB
-    try:
-        instrument_id = Instrument.objects.get(name=instrument)
-    except Instrument.DoesNotExist:
-        instrument_id = Instrument(name=instrument)
-        instrument_id.save()
-
     # Assert a signal
     if 'sig_name' in data:
         # Query the DB to see whether we have the signal asserted
@@ -181,20 +181,13 @@ def process_signal(instrument, data):
                 item.delete()
     
     
-def store_and_cache(instrument, key, value):
+def store_and_cache(instrument_id, key, value):
     """
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
         @param key: key string
         @param value: value for the given key
     """
-    # Get or create the instrument object from the DB
-    try:
-        instrument_id = Instrument.objects.get(name=instrument)
-    except Instrument.DoesNotExist:
-        instrument_id = Instrument(name=instrument)
-        instrument_id.save()
-
     try:
         key_id = Parameter.objects.get(name=key)
     except:
@@ -320,6 +313,14 @@ class Client(object):
             terminated.
             @param waiting_period: sleep time between connection to a broker
         """
+        # Get or create the "common" instrument object from the DB.
+        # This dummy instrument is used for heartbeats and central services.
+        try:
+            common_instrument = Instrument.objects.get(name='common')
+        except Instrument.DoesNotExist:
+            common_instrument = Instrument(name='common')
+            common_instrument.save()
+            
         last_purge_time = None
         last_heartbeat = 0
         while(True):
@@ -352,7 +353,7 @@ class Client(object):
                 try:
                     if time.time()-last_heartbeat>5:
                         last_heartbeat = time.time()
-                        store_and_cache("common", "system_dasmon_listener_pid", str(os.getpid()))
+                        store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
                 except:
                     logging.error("Problem writing heartbeat %s" % sys.exc_value)
             except:
