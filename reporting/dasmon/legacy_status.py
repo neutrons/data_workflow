@@ -29,7 +29,7 @@ def get_ops_status(instrument_id):
                                    'data':key_value_pairs})
         return organized_data
     except:
-        logging.error("Could not connect to status page: %s" % sys.exc_value)
+        logging.warning("Could not get legacy DAS status: %s" % sys.exc_value)
         return []
 
 def get_legacy_url(instrument_id, include_domain=True):
