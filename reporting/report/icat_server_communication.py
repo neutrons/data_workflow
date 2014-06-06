@@ -5,8 +5,11 @@ import logging
 import sys
 import datetime
 try:
-    from workflow.database.settings import ICAT_DOMAIN, ICAT_PORT
+    from django.conf import settings
+    ICAT_DOMAIN = settings.ICAT_DOMAIN
+    ICAT_PORT = settings.ICAT_PORT
 except:
+    logging.warning("Could not find ICAT config: %s" % sys.exc_value)
     ICAT_DOMAIN = 'icat.sns.gov'
     ICAT_PORT = 2080
 

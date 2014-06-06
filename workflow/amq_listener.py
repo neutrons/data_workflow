@@ -65,7 +65,7 @@ class Listener(stomp.ConnectionListener):
             Create a connection for sending messages, or return the existing
             one if we already created one
         """
-        if self._send_connection is None:
+        if self._send_connection is None or self._send_connection.is_connected() is False:
             logging.info("[workflow_send_connection] Attempting to connect to ActiveMQ broker")
             conn = stomp.Connection(host_and_ports=self._brokers, 
                                     user=self._user,
