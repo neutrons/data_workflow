@@ -22,6 +22,8 @@ import logging
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)
+logging.getLogger('stomp.py').setLevel(logging.WARNING)
+
 # Formatter
 ft = logging.Formatter('%(levelname)s:%(asctime)-15s %(message)s')
 # Create a log file handler

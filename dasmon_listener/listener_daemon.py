@@ -7,6 +7,8 @@ import argparse
 import logging
 # Set log level
 logging.getLogger().setLevel(logging.INFO)
+logging.getLogger('stomp.py').setLevel(logging.WARNING)
+
 # Formatter
 ft = logging.Formatter('%(asctime)-15s %(message)s')
 # Create a log file handler

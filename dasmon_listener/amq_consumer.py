@@ -264,14 +264,20 @@ class Client(object):
             else:
                 listener = self._listener
 
-        logging.info("[%s] Attempting to connect to ActiveMQ broker" % self._consumer_name)
-        conn = stomp.Connection(host_and_ports=self._brokers, 
-                                user=self._user,
-                                passcode=self._passcode, 
-                                wait_on_receipt=True)
-        conn.set_listener(self._consumer_name, listener)
-        conn.start()
-        conn.connect()
+        logging.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
+        if stomp.__version__[0]<4:
+            conn = stomp.Connection(host_and_ports=self._brokers, 
+                                    user=self._user,
+                                    passcode=self._passcode, 
+                                    wait_on_receipt=True)
+            conn.set_listener(self._consumer_name, listener)
+            conn.start()
+            conn.connect()
+        else:
+            conn = stomp.Connection(host_and_ports=self._brokers)
+            conn.set_listener(self._consumer_name, listener)
+            conn.start()
+            conn.connect(self._user, self._passcode, wait=True)
         # Give the connection threads a little breather
         time.sleep(0.5)
         return conn
@@ -287,7 +293,7 @@ class Client(object):
         logging.info("[%s] Subscribing to %s" % (self._consumer_name,
                                                  str(self._queues)))
         for q in self._queues:
-            self._connection.subscribe(destination=q, ack='auto', persistent='true')
+            self._connection.subscribe(destination=q, id=1, ack='auto')
     
     def _disconnect(self):
         """
@@ -357,7 +363,7 @@ class Client(object):
                 except:
                     logging.error("Problem writing heartbeat %s" % sys.exc_value)
             except:
-                logging.error("Problem connecting to AMQ broker")
+                logging.error("Problem connecting to AMQ broker %s" % sys.exc_value)
                 time.sleep(5.0)
             
     def send(self, destination, message, persistent='true'):
@@ -369,4 +375,7 @@ class Client(object):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        self._connection.send(destination=destination, message=message, persistent=persistent)
+        if stomp.__version__[0]<4:
+            self._connection.send(destination=destination, message=message, persistent=persistent)
+        else:
+            self._connection.send(destination, message)

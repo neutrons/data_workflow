@@ -67,11 +67,16 @@ class Listener(stomp.ConnectionListener):
         """
         if self._send_connection is None or self._send_connection.is_connected() is False:
             logging.info("[workflow_send_connection] Attempting to connect to ActiveMQ broker")
-            conn = stomp.Connection(host_and_ports=self._brokers, 
-                                    user=self._user,
-                                    passcode=self._passcode, 
-                                    wait_on_receipt=True)
-            conn.start()
-            conn.connect()        
+            if stomp.__version__[0]<4:
+                conn = stomp.Connection(host_and_ports=self._brokers, 
+                                        user=self._user,
+                                        passcode=self._passcode, 
+                                        wait_on_receipt=True)
+                conn.start()
+                conn.connect()
+            else:
+                conn = stomp.Connection(host_and_ports=self._brokers)
+                conn.start()
+                conn.connect(self._user, self._passcode, wait=True)
             self._send_connection = conn
         return self._send_connection

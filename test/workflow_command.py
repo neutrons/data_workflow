@@ -29,13 +29,18 @@ def send(destination, message, persistent='true'):
         @param destination: name of the queue
         @param message: message content
     """
-    conn = stomp.Connection(host_and_ports=brokers, 
-                            user=icat_user, 
-                            passcode=icat_passcode, 
-                            wait_on_receipt=True)
-    conn.start()
-    conn.connect()
-    conn.send(destination=destination, message=message, persistent=persistent)
+    if stomp.__version__[0]<4:
+        conn = stomp.Connection(host_and_ports=brokers, 
+                        user=icat_user, passcode=icat_passcode, 
+                        wait_on_receipt=True)
+        conn.start()
+        conn.connect()
+        conn.send(destination=destination, message=message, persistent=persistent)
+    else:
+        conn = stomp.Connection(host_and_ports=brokers)
+        conn.start()
+        conn.connect(icat_user, icat_passcode, wait=True)
+        conn.send(destination, message)
     conn.disconnect()
     
 def fetch_data(instrument, run):

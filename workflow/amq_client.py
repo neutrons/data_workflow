@@ -90,14 +90,20 @@ class Client(object):
         """
         if consumer_name is None:
             consumer_name = self._consumer_name
-        logging.info("[%s] Attempting to connect to ActiveMQ broker" % consumer_name)
-        conn = stomp.Connection(host_and_ports=self._brokers, 
-                                user=self._user,
-                                passcode=self._passcode, 
-                                wait_on_receipt=True)
-        conn.set_listener(consumer_name, self._listener)
-        conn.start()
-        conn.connect()
+        logging.info("[%s] Connecting to %s" % (consumer_name, str(self._brokers)))
+        if stomp.__version__[0]<4:
+            conn = stomp.Connection(host_and_ports=self._brokers, 
+                                    user=self._user,
+                                    passcode=self._passcode, 
+                                    wait_on_receipt=True)
+            conn.set_listener(consumer_name, self._listener)
+            conn.start()
+            conn.connect()
+        else:
+            conn = stomp.Connection(host_and_ports=self._brokers)
+            conn.set_listener(consumer_name, self._listener)
+            conn.start()
+            conn.connect(self._user, self._passcode, wait=True)
         # Give the connection threads a little breather
         time.sleep(0.5)
         return conn
@@ -113,7 +119,7 @@ class Client(object):
         logging.info("[%s] Subscribing to %s" % (self._consumer_name,
                                                  str(self._queues)))
         for q in self._queues:
-            self._connection.subscribe(destination=q, ack='auto', persistent='true')
+            self._connection.subscribe(destination=q, id=0, ack='auto')
     
     def _disconnect(self):
         """
@@ -164,17 +170,20 @@ class Client(object):
                                      "status": "0",
                                      "pid": str(os.getpid())}
                         message = json.dumps(data_dict)
-                        self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0", 
-                                              message=message, 
-                                              persistent='true')
+                        if stomp.__version__[0]<4:
+                            self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0", 
+                                                  message=message, 
+                                                  persistent='true')
+                        else:
+                            self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message)
                 except:
-                    logging.error("Problem sending heartbeat")
+                    logging.error("Problem sending heartbeat: %s" % sys.exc_value)
                 
                 # Check for workflow completion
                 if time.time()-self._workflow_check_start>self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
             except:
-                logging.error("Problem connecting to AMQ broker")
+                logging.error("Problem connecting to AMQ broker: %s" % sys.exc_value)
                 time.sleep(5.0)
                 

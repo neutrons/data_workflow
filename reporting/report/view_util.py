@@ -108,13 +108,19 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
         data_dict['information'] = "Requested by %s" % user
 
     data = json.dumps(data_dict)
-    conn = stomp.Connection(host_and_ports=brokers, 
-                            user=icat_user, 
-                            passcode=icat_passcode, 
-                            wait_on_receipt=True)
-    conn.start()
-    conn.connect()
-    conn.send(destination=destination, message=data, persistent='true')
+    if stomp.__version__[0]<4:
+        conn = stomp.Connection(host_and_ports=brokers, 
+                                user=icat_user, 
+                                passcode=icat_passcode, 
+                                wait_on_receipt=True)
+        conn.start()
+        conn.connect()
+        conn.send(destination=destination, message=data, persistent='true')
+    else:
+        conn = stomp.Connection(host_and_ports=brokers)
+        conn.start()
+        conn.connect(icat_user, icat_passcode, wait=True)
+        conn.send(destination, data)
     conn.disconnect()
     logging.info("Reduction requested: %s" % str(data))
         
