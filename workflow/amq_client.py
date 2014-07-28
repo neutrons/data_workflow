@@ -175,7 +175,8 @@ class Client(object):
                                                   message=message, 
                                                   persistent='true')
                         else:
-                            self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message)
+                            self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message, 
+                                                  persistent='true')
                 except:
                     logging.error("Problem sending heartbeat: %s" % sys.exc_value)
                 

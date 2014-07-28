@@ -97,7 +97,7 @@ class StateAction(object):
                                            message=message, 
                                            persistent=persistent)
             else:
-                self._send_connection.send(destination, message)
+                self._send_connection.send(destination, message, persistent=persistent)
             headers = {'destination': destination, 
                        'message-id': ''}
             transactions.add_status_entry(headers, message)

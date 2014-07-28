@@ -378,4 +378,4 @@ class Client(object):
         if stomp.__version__[0]<4:
             self._connection.send(destination=destination, message=message, persistent=persistent)
         else:
-            self._connection.send(destination, message)
+            self._connection.send(destination, message, persistent=persistent)
