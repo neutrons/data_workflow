@@ -119,8 +119,8 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
     else:
         conn = stomp.Connection(host_and_ports=brokers)
         conn.start()
-        conn.connect(icat_user, icat_passcode, wait=True, persistent='true')
-        conn.send(destination, data)
+        conn.connect(icat_user, icat_passcode, wait=True)
+        conn.send(destination, data, persistent='true')
     conn.disconnect()
     logging.info("Reduction requested: %s" % str(data))
         
