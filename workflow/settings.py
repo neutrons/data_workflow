@@ -12,3 +12,9 @@ CATALOG_DATA_READY = "CATALOG.DATA_READY"
 REDUCTION_DATA_READY = "REDUCTION.DATA_READY"
 REDUCTION_CATALOG_DATA_READY = "REDUCTION_CATALOG.DATA_READY"
 
+# Import local settings if available
+try:
+    from local_settings import *
+except ImportError, e:
+    LOCAL_SETTINGS = False
+    pass

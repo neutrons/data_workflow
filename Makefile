@@ -28,7 +28,7 @@ clean:
 	
 install: clean workflow webapp
        
-webapp:
+webapp: workflow
 	# Install DASMON listener
 	python setup_dasmon_listener.py clean
 	python setup_dasmon_listener.py install
@@ -67,6 +67,9 @@ webapp:
 	
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
 	#cd $(prefix)/app; python manage.py createcachetable webcache
+	
+	# Modify and copy the wsgi configuration
+	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
 	
 	@echo "\n\nReady to go: run apachectl restart\n"
 	
