@@ -14,6 +14,7 @@ from workflow.database.settings import DATABASES
 #        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
 #    }
 #}
+DATABASES['default']['CONN_MAX_AGE']=5
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
