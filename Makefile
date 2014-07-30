@@ -28,12 +28,12 @@ clean:
 	
 install: clean workflow webapp
 
-dasmonlistener: check
+dasmonlistener: webapp/core
 	# Install DASMON listener
 	python setup_dasmon_listener.py clean
 	python setup_dasmon_listener.py install
 	
-webapp: workflow
+webapp/core: workflow
 	# Make sure the install directories exist
 	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
 	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
@@ -59,6 +59,7 @@ webapp: workflow
 	# Install apache config
 	cp -R reporting/apache $(prefix)
 
+webapp: webapp/core
 	# Collect the static files and install them
 	cd $(prefix)/app; python manage.py collectstatic --noinput
 
@@ -78,4 +79,5 @@ webapp: workflow
 .PHONY: install
 .PHONY: workflow
 .PHONY: webapp
+.PHONY: webapp/core
 .PHONY: dasmonlistener
