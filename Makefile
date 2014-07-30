@@ -27,12 +27,13 @@ clean:
 	rm -fR build/
 	
 install: clean workflow webapp
-       
-webapp: workflow
+
+dasmonlistener: check
 	# Install DASMON listener
 	python setup_dasmon_listener.py clean
 	python setup_dasmon_listener.py install
-
+	
+webapp: workflow
 	# Make sure the install directories exist
 	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
 	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
@@ -77,3 +78,4 @@ webapp: workflow
 .PHONY: install
 .PHONY: workflow
 .PHONY: webapp
+.PHONY: dasmonlistener
