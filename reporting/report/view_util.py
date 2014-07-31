@@ -13,7 +13,7 @@ import datetime
 from django.conf import settings
 import logging
 import sys
-from django.db import connection
+from django.db import connection, transaction
 from django.core.cache import cache
 
 import dasmon.view_util
@@ -415,6 +415,7 @@ def retrieve_rates(instrument_id, last_run_id):
         
     return runs, errors
     
+@transaction.commit_on_success
 def run_rate(instrument_id, n_hours=24):
     """
         Returns the rate of new runs for the last n_hours hours.
@@ -432,7 +433,7 @@ def run_rate(instrument_id, n_hours=24):
         return [ [int(r[0]), int(r[1])] for r in rows ]
     except:
         connection.close()
-        logging.error("Run rate: %s" % sys.exc_value)
+        logging.error("Run rate (%s): %s" % (str(instrument_id), sys.exc_value))
         
         # Do it by hand (slow)
         time = timezone.now()
@@ -446,6 +447,7 @@ def run_rate(instrument_id, n_hours=24):
             runs.append([-i,n])
         return runs
 
+@transaction.commit_on_success
 def error_rate(instrument_id, n_hours=24):
     """
         Returns the rate of errors for the last n_hours hours.
@@ -463,7 +465,7 @@ def error_rate(instrument_id, n_hours=24):
         return [ [int(r[0]), int(r[1])] for r in rows ]
     except:
         connection.close()
-        logging.error("Error rate: %s" % sys.exc_value)
+        logging.error("Error rate (%s): %s" % (str(instrument_id), sys.exc_value))
         
         # Do it by hand (slow)
         time = timezone.now()
