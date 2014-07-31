@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
+from django.views.decorators.vary import vary_on_cookie
 from django.template import Context, loader
 
 from report.models import Instrument, DataRun
@@ -25,6 +26,7 @@ import logging
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def summary(request):
     """
         List of available instruments
@@ -45,6 +47,7 @@ def summary(request):
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def activity_summary(request):
     """
         Run rates for all instruments
@@ -107,6 +110,7 @@ def activity_update(request):
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def legacy_monitor(request, instrument):
     """
         For legacy instruments, show contents of old status page
@@ -151,6 +155,7 @@ def get_legacy_data(request, instrument):
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def live_monitor(request, instrument):
     """
         Display the list of current DASMON status
@@ -181,6 +186,7 @@ def live_monitor(request, instrument):
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def live_runs(request, instrument):
     """
         Display the list of latest runs
@@ -250,6 +256,7 @@ def help(request):
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def diagnostics(request, instrument):
     """
         Diagnose the health of an instrument

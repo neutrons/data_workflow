@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
-
+from django.views.decorators.vary import vary_on_cookie
 from report.models import Instrument
 
 import view_util
@@ -19,6 +19,7 @@ import dasmon.view_util
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def pv_monitor(request, instrument):
     """
         Display the list of latest PV values
