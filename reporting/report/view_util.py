@@ -548,15 +548,21 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
         # If we didn't get a REDUCTION.STARTED message within a few seconds, 
         # the cataloging agent has a problem
         try:
+            latest_reduction_ready = RunStatus.objects.filter(queue_id__name='REDUCTION.DATA_READY',
+                                                              run_id=latest_run.run_id).latest('created_on')
+            time_reduction_ready = latest_reduction_ready.created_on
+        except:
+            time_reduction_ready = timezone.now()
+        try:
             latest_reduction_start = RunStatus.objects.filter(queue_id__name='REDUCTION.STARTED',
-                                                            run_id=latest_run.run_id).latest('created_on')
+                                                              run_id=latest_run.run_id).latest('created_on')
             time_reduction_start = latest_reduction_start.created_on
         except:
             time_reduction_start = timezone.now()
                 
-        if time_reduction_start-latest_run.created_on>delta_long:
+        if time_reduction_start-time_reduction_ready>delta_long:
             status_dict["reduction"]=2
-        elif time_reduction_start-latest_run.created_on>delta_short:
+        elif time_reduction_start-time_reduction_ready>delta_short:
             status_dict["reduction"]=1
         else:
             status_dict["reduction"]=0
