@@ -157,8 +157,7 @@ def process_signal(instrument_id, data):
             message = data['sig_message'] if 'sig_message' in data else ''
             source = data['sig_source'] if 'sig_source' in data else ''
             timestamp = float(data['timestamp']) if 'timestamp' in data else time.time()
-            timestamp = timezone.localtime(datetime.datetime.fromtimestamp(timestamp))
-                
+            timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.utc)
             if len(asserted_sig) == 0:
                 signal = Signal(instrument_id=instrument_id,
                              name=data['sig_name'],
