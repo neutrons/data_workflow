@@ -550,7 +550,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
         status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        pass
+        logging.error("pvstreamer_diagnostics: %s" % sys.exc_value)
     
     # Heartbeat
     if timezone.now()-status_time>delay_time:
@@ -590,21 +590,21 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX+'dasmon')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         status_value = int(last_value.value)
-        status_time = timezone.localtime(last_value.timestamp)      
+        status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        pass
+        logging.error("dasmon_diagnostics: %s" % sys.exc_value)
     
     # Recent PVs, which come from DASMON straight to the DB
     last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     last_pv_timestamp = 0
     try:
         latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
-        last_pv_time = timezone.localtime(datetime.datetime.fromtimestamp(latest.update_time))
+        last_pv_time = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.get_current_timezone())
         last_pv_timestamp = latest.update_time
     except:
         # No data available, keep defaults
-        pass
+        logging.error("dasmon_diagnostics: %s" % sys.exc_value)
     
     # Recent AMQ messages
     last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
