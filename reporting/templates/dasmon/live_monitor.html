@@ -115,7 +115,11 @@
         }, dataType: "html", timeout: 30000, cache: true });
     }
     
-    function ack_alarm(ack_url) { $.ajax({ url: ack_url, cache: false }); }
+    function ack_alarm(ack_url, id)
+    {
+        $.ajax({ url: ack_url, cache: false });
+        $(id).remove();
+    }
 </script>
 {% endblock %}
 

@@ -359,11 +359,13 @@ def summary_update(request):
 
 
 @users.view_util.login_or_local_required_401
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
 def get_signal_table(request, instrument):
     """
         Ajax call to get the signal table
+        
+        Note: Since users can interact with this table, we are not caching it.
+        That avoids seeing cleared entries momentarily reappearing in the case 
+        where the page requests a refresh while the cache hasn't yet been updated.
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template('dasmon/signal_table.html')
