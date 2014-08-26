@@ -156,6 +156,12 @@
 	font-size:12px;	
 }
 
+.dashboard_plots
+{
+    height:50px;
+    width: 200px;
+    padding:0;
+}
 
 .summary_plots
 {

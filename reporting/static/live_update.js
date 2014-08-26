@@ -27,13 +27,19 @@ function update_from_ajax_data(data){
     $('#reduction_status').replaceWith("<li class='status_"+data.das_status.reduction+"' id='reduction_status'>Reduction</li>");
 }
 
-function plot_combined_rates(run_data, error_data){
+function plot_combined_rates(run_data, error_data, anchor, parameters){
+	parameters = (typeof parameters === "undefined") ? {} : parameters;
+	use_labels = (typeof parameters.use_labels === "undefined") ? true : parameters.use_labels;
+	show_ticks = (typeof parameters.show_ticks === "undefined") ? true : parameters.show_ticks;
+	anchor = (typeof anchor === "undefined") ? "#runs_per_hour" : anchor;
+	ticks_option = [[-24, "-24 hrs"], [1, "last hour"]];
+	if (!show_ticks) { ticks_option = 0; };
 	var options = {
 			xaxis: {
 				show: true,
 				min: -24,
 				max: 1,
-				ticks:[[-24, "-24 hrs"], [1, "last hour"]] 	
+				ticks: ticks_option
 			},
 			yaxis: { minTickSize:1 },
 			shadowSize: 0,
@@ -50,9 +56,15 @@ function plot_combined_rates(run_data, error_data){
 				position: 'nw'
 			}
 	};
-	$.plot($("#runs_per_hour"), [ {label:"Number of runs [#/hr]", data:run_data},
-	                              {label:"Number of errors [#/hr]", data:error_data, color:"#ED5B4B"} ],
-	                              options);
+	if (use_labels) {
+		$.plot($(anchor), [ {label:"Number of runs [#/hr]", data:run_data},
+		                    {label:"Number of errors [#/hr]", data:error_data, color:"#ED5B4B"} ],
+		                    options);
+	} else {
+		$.plot($(anchor), [ {data:run_data},
+		                    {data:error_data, color:"#ED5B4B"} ],
+		                    options);
+	}
 }
 
 function plot_monitor(monitor_data, element_id, label_text){

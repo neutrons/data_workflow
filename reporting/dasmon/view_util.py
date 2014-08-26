@@ -938,3 +938,16 @@ def get_instrument_status_summary():
                                 })
     return instrument_list
     
+def get_dashboard_data():
+    """
+        Get all the run and error rates
+    """
+    instruments = Instrument.objects.all().order_by('name')
+    data_dict = {}
+    for i in instruments:
+        if not ActiveInstrument.objects.is_alive(i):
+            continue
+        last_run_id = DataRun.objects.get_last_cached_run(i)
+        r_rate, e_rate = report.view_util.retrieve_rates(i, last_run_id)
+        data_dict[i.name] = { 'run_rate':r_rate, 'error_rate':e_rate }
+    return data_dict
