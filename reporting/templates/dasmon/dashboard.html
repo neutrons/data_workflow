@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %} Instrument Status {% endblock %}
+{% block banner %} Instrument Status {% endblock %}
+
+{% block header %}
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+
+<script>
+  var instrument_rates = {
+  {% for item, value in data.items %}
+    {{ item }}: { run_rate: {{ value.run_rate|safe }}, error_rate: {{ value.error_rate|safe }} },{% endfor %}
+  };
+  function plot_rates() {
+    {% for item in instruments %}
+    plot_combined_rates(instrument_rates.{{ item.name|lower }}.run_rate, instrument_rates.{{ item.name|lower }}.error_rate, "#runs_per_hour_{{ item.name|lower }}", {use_labels: false, show_ticks: false});{% endfor %}
+  }
+  function poll() {
+    $.ajax({ url: "{{ update_url }}", success: function(data) {
+        content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
+        $('#workflow_status').replaceWith(content);
+        
+        content = "<li class='status_"+data.postprocess_status.catalog+"' id='catalog_status'>Catalog</li>";
+        $('#catalog_status').replaceWith(content);
+        
+        content = "<li class='status_"+data.postprocess_status.reduction+"' id='reduction_status'>Reduction</li>";
+        $('#reduction_status').replaceWith(content);
+        
+        for (var i=0; i<data.instruments.length; i++)
+        {
+           global_system_status_update(data, i);
+           var content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
+           $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
+        }
+        {% for item in data %}
+        instrument_rates.{{ item|lower }} = data.instrument_rates.{{ item|lower }};{% endfor %}
+        plot_rates();
+    }, dataType: "json", timeout: 30000, cache: true,
+        statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
+  };
+</script>
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 20000);
+</script>
+{% endblock %}
+
+{% block summary %}
+<div class='status_box'>
+<div class='diagnostics'>
+  <a href='{{ central_services_url|safe }}'>
+    <ul>
+      <li class='status_text'>Central systems:</li>
+      <li class='status_{{ postprocess_status.workflow }}' id='workflow_status'>Workflow</li>
+      <li class='status_{{ postprocess_status.catalog }}' id='catalog_status'>Catalog</li>
+      <li class='status_{{ postprocess_status.reduction }}' id='reduction_status'>Reduction</li>
+    </ul>
+  </a>
+</div>
+</div>
+
+<p>
+List of instruments:<br>
+  <table cellspacing="0" class="message_table">
+    <thead>
+      <tr>
+        <th style="min-width:75px">Instrument</th> 
+        <th>Sub-systems</th> <th>Processing</th>
+      </tr>
+    </thead>
+    <tbody class='status_box'>
+    {% for item in instruments %}
+      <tr>
+        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a><br>
+            <span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
+        <td class='diagnostics'>
+          <a href='{{ item.diagnostics_url|safe }}'>
+            <ul>
+              <li class='status_{{ item.dasmon_status }}' id='{{ item.name }}_dasmon_status'>DASMON</li>
+              <li class='status_{{ item.pvstreamer_status }}' id='{{ item.name }}_pvstreamer_status'>PVStreamer</li> 
+            </ul>
+          </a>
+        </td>
+        <td>
+          <div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <script id="source" language="javascript" type="text/javascript">plot_rates();</script>
+  {% endblock %}
+{% block nocontent %}{% endblock %}
