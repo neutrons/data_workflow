@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',
     url(r'^$', 'dasmon.views.dashboard'),
+    url(r'^summary/$', 'dasmon.views.summary'),
     url(r'^dashboard/$', 'dasmon.views.dashboard'),
     url(r'^dashboard/update/$', 'dasmon.views.dashboard_update'),
     url(r'^update/', 'dasmon.views.summary_update'),
