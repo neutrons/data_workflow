@@ -145,7 +145,7 @@ ALLOWED_HOSTS = [ '.ornl.gov', '.sns.gov', 'localhost']
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
 LOGIN_URL = '/workflow/users/login'
-LANDING_VIEW = 'dasmon.views.summary'
+LANDING_VIEW = 'dasmon.views.dashboard'
 
 LOGGING = {
     'version': 1,
