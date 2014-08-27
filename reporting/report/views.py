@@ -24,7 +24,7 @@ def summary(request):
     # Get base URL
     base_url = reverse('report.views.instrument_summary',args=['aaaa'])
     base_url = base_url.replace('/aaaa','')
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse('dasmon.views.summary')
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse(settings.LANDING_VIEW)
 
     # Number of runs as a function of time
     max_date = datetime.datetime.now().replace(day=1).replace(tzinfo=timezone.get_current_timezone())
@@ -88,7 +88,7 @@ def detail(request, instrument, run_id):
     icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse('dasmon.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse(settings.LANDING_VIEW),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),  
             run_id          
@@ -209,7 +209,7 @@ def instrument_summary(request, instrument):
         last_expt_created = None
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
                                                          instrument.lower()
                                                          ) 
 
@@ -267,7 +267,7 @@ def ipts_summary(request, instrument, ipts):
         first_run_id = run_list[len(run_list)-1].id
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             str(ipts_id).lower()
             ) 
@@ -317,7 +317,7 @@ def live_errors(request, instrument):
     update_url = reverse('report.views.get_error_update',args=[instrument])
     
     # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
             reverse('report.views.instrument_summary',args=[instrument]), instrument, "errors"
             )
 

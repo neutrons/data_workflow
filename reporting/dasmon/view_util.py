@@ -26,7 +26,7 @@ def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
         @param instrument_id: Instrument object
         @param current_view: name to give this view
     """
-    breadcrumbs = "<a href='%s'>home</a>" % reverse('dasmon.views.summary')
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     if ActiveInstrument.objects.is_alive(instrument_id):
         breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',
                                                                  args=[instrument_id.name]),

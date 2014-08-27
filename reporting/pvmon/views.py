@@ -29,7 +29,7 @@ def pv_monitor(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
     # DASMON Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse('dasmon.views.summary'),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
             reverse('report.views.instrument_summary',args=[instrument]), instrument.lower(), "monitor"
             ) 
     template_values = {'instrument':instrument.upper(),

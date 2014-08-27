@@ -52,7 +52,7 @@ def dashboard(request):
         Dashboard view showing available instruments
     """
     # Get the system health status
-    global_status_url = reverse('dasmon.views.summary',args=[])
+    global_status_url = reverse(settings.LANDING_VIEW,args=[])
     template_values = {'instruments': view_util.get_instrument_status_summary(),
                        'data': view_util.get_dashboard_data(),
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
@@ -90,7 +90,7 @@ def activity_summary(request):
     """
         Run rates for all instruments
     """
-    global_status_url = reverse('dasmon.views.summary',args=[])
+    global_status_url = reverse(settings.LANDING_VIEW,args=[])
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; activity" % global_status_url
     
     template_values = {'breadcrumbs': breadcrumbs,
@@ -275,7 +275,7 @@ def live_runs(request, instrument):
 @users.view_util.monitor
 def help(request):
     
-    global_status_url = reverse('dasmon.views.summary',args=[])
+    global_status_url = reverse(settings.LANDING_VIEW,args=[])
     hysa_live_monitor_url = reverse('dasmon.views.live_monitor', args=['hysa'])
     hysa_live_runs_url = reverse('dasmon.views.live_runs', args=['hysa'])
 
