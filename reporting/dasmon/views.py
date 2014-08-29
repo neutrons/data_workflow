@@ -100,8 +100,8 @@ def run_summary(request):
     if len(runs)==0:
         runs = DataRun.objects.order_by('created_on').reverse()[:25]
     if len(runs)>0:
-        first_run = runs[len(runs)-1].id
-        last_run = runs[0].id
+        last_run = runs[len(runs)-1].id
+        first_run = runs[0].id
     else:
         first_run = 0
         last_run = 0
