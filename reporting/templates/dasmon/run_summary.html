@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}{{ instrument }} {{ ipts_number|upper }} {% endblock %}
+{% block header %}
+
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+
+<script>
+var last_run_id = '{{ last_run_id }}';
+
+function poll(){
+    $.ajax({ url: "{% url 'dasmon_summary_update' %}?since="+last_run_id+"&complete_since="+{{ first_run_id }}, success: function(data){
+        if (data.refresh_needed.localeCompare('1')==0){
+            for (var i=0;i<data.run_list.length;i++)
+            { 
+                var new_entry = "<tr class='highlight_row'>";
+                new_entry += "<td><a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/'>"+data.run_list[i].instrument_id+"</a></td>";
+                new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
+                new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
+                new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'></td>";
+                new_entry += "</tr>";
+                $('#run_table tbody').prepend(new_entry);
+            }
+        }
+    }, dataType: "json", timeout: 30000, cache: true,
+    statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
+};
+
+</script>
+{% endblock %}
+
+{% block banner %}Latest Runs{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 10000);
+</script>
+{% endblock %}
+    
+{% block content %}
+List of latest runs:<br>
+      <table cellspacing="0" class="message_table" id="run_table">
+      <thead>
+      <tr>
+      {% for item in run_list_header %}
+          <th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
+      {% endfor %}
+      </tr>
+      </thead>
+      <tbody>
+      {% for item in run_list %}
+          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+          <td><a href="{% url 'dasmon_live_runs' item.instrument_id %}">{{ item.instrument_id }}</a></td>
+          <td><a href="{% url 'report_detail' item.instrument_id item.run_number %}">{{ item.run_number }}</a></td>
+          <td>{{ item.created_on }}</td>
+          {% if item.is_complete %}
+          <td><span id='run_id_{{ item.id }}' class='green'>complete</span></td>
+          {% elif item.last_error %} 
+          <td><span id='run_id_{{ item.id }}' class="red">{{ item.last_error|safe }}</span></td>
+          {% else %}
+          <td><span id='run_id_{{ item.id }}' class='red'>incomplete</span></td>
+          {% endif %}
+          </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+{% endblock %}

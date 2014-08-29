@@ -788,9 +788,11 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 run_list = DataRun.objects.filter(instrument_id=instrument_id,
                                                   ipts_id=ipts_id,
                                                   id__gte=complete_since).order_by('created_on').reverse()
-            else:
+            elif instrument_id is not None:
                 run_list = DataRun.objects.filter(instrument_id=instrument_id,
                                                   id__gte=complete_since).order_by('created_on').reverse()
+            else:
+                run_list = DataRun.objects.filter(id__gte=complete_since).order_by('created_on').reverse()
         except:
             # Invalid value for complete_since
             pass
@@ -811,10 +813,11 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 localtime = timezone.localtime(r.created_on)
                 df = dateformat.DateFormat(localtime)
                 expt_dict = {"run":r.run_number,
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
-                            "last_error":status,
-                            "run_id":str(r.id),
-                            }
+                             "timestamp":df.format(settings.DATETIME_FORMAT),
+                             "last_error":status,
+                             "run_id":str(r.id),
+                             "instrument_id":str(r.instrument_id)
+                             }
                 update_list.append(expt_dict)
     data_dict['run_list'] = update_list
     data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'

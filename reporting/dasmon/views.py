@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
+import datetime
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
@@ -76,6 +77,61 @@ def dashboard_update(request):
                  'postprocess_status':view_util.get_system_health(),
                  'instrument_rates': view_util.get_dashboard_data()
                  }
+    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response['Connection'] = 'close'
+    response['Content-Length'] = len(response.content)
+    return response
+
+@users.view_util.login_or_local_required
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@users.view_util.monitor
+@vary_on_cookie
+def run_summary(request):
+    """
+        Dashboard view showing available instruments
+    """
+    # Get the system health status
+    global_status_url = reverse(settings.LANDING_VIEW,args=[])
+    
+    delta_time = datetime.timedelta(hours=12)
+    oldest_time = timezone.now() - delta_time
+    runs = DataRun.objects.filter(created_on__gte=oldest_time).reverse()
+    if len(runs)==0:
+        runs = DataRun.objects.order_by('created_on').reverse()[:25]
+    if len(runs)>0:
+        first_run = runs[len(runs)-1].id
+        last_run = runs[0].id
+    else:
+        first_run = 0
+        last_run = 0
+
+    run_headers = [{'name': 'Instr.', 'style': "min-width: 50px;"},
+                   {'name': 'Run', 'style': "min-width: 50px;"},
+                   {'name': 'Created on'}, {'name': 'Status'}]
+    
+    base_instr_url = reverse('report.views.instrument_summary',args=['aaaa'])
+    base_instr_url = base_instr_url.replace('/aaaa','')
+    
+    template_values = {'run_list': runs,
+                       'run_list_header': run_headers,
+                       'first_run_id': first_run,
+                       'last_run_id': last_run,
+                       'base_instrument_url': base_instr_url,
+                       'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
+                       }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('dasmon/run_summary.html',
+                              template_values)
+
+@users.view_util.login_or_local_required_401
+def run_summary_update(request):
+    """
+         Ajax call to get updates behind the scenes
+    """ 
+    # Recent run info
+    data_dict = {}
+    data_dict = view_util.get_live_runs_update(request, None, None, **data_dict)
     response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
