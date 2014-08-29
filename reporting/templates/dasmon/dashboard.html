@@ -50,6 +50,12 @@
 </script>
 {% endblock %}
 
+{% block right_side_links %}
+    <span style="float:right">
+    <b>dashboard</b> | <a href="{% url 'dasmon_summary' %}">latest runs</a>
+    </span>
+{% endblock %}
+
 {% block summary %}
 <div class='status_box'>
 <div class='diagnostics'>

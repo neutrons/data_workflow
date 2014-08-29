@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
-{% block title %}{{ instrument }} {{ ipts_number|upper }} {% endblock %}
+{% block title %}Latest Runs{% endblock %}
 {% block header %}
 
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
@@ -44,7 +44,13 @@ function poll(){
     setInterval(poll, 10000);
 </script>
 {% endblock %}
-    
+
+{% block right_side_links %}
+    <span style="float:right">
+    <a href="{% url 'dasmon_dashboard' %}">dashboard</a> | <b>latest runs</b>
+    </span>
+{% endblock %}
+
 {% block content %}
 List of latest runs:<br>
       <table cellspacing="0" class="message_table" id="run_table">
