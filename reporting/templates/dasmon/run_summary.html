@@ -18,12 +18,13 @@ function poll(){
             { 
                 var new_entry = "<tr class='highlight_row'>";
                 new_entry += "<td><a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/'>"+data.run_list[i].instrument_id+"</a></td>";
-                new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
+                new_entry += "<td><a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
                 new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
-                new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'></td>";
+                new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span></td>";
                 new_entry += "</tr>";
                 $('#run_table tbody').prepend(new_entry);
             }
+            last_run_id = data.last_run_id;
         }
     }, dataType: "json", timeout: 30000, cache: true,
     statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
