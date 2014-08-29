@@ -795,7 +795,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 run_list = DataRun.objects.filter(id__gte=complete_since).order_by('created_on').reverse()
         except:
             # Invalid value for complete_since
-            pass
+            logging.error("get_live_runs_update: %s" % sys.exc_value)
 
     status_list = []
     update_list = []
