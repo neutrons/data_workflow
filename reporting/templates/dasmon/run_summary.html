@@ -52,7 +52,7 @@ List of latest runs:<br>
       </tr>
       </thead>
       <tbody>
-      {% for item in run_list %}
+      {% for item in run_list|dictsortreversed:'id' %}
           <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
           <td><a href="{% url 'dasmon_live_runs' item.instrument_id %}">{{ item.instrument_id }}</a></td>
           <td><a href="{% url 'report_detail' item.instrument_id item.run_number %}">{{ item.run_number }}</a></td>
