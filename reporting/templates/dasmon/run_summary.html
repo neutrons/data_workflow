@@ -70,7 +70,7 @@ List of latest runs:<br>
           {% if item.is_complete %}
           <td><span id='run_id_{{ item.id }}' class='green'>complete</span></td>
           {% elif item.last_error %} 
-          <td><span id='run_id_{{ item.id }}' class="red">{{ item.last_error|safe }}</span></td>
+          <td><span id='run_id_{{ item.id }}' class="red">error</span></td>
           {% else %}
           <td><span id='run_id_{{ item.id }}' class='red'>incomplete</span></td>
           {% endif %}
