@@ -268,13 +268,12 @@ class Client(object):
             conn = stomp.Connection(host_and_ports=self._brokers, 
                                     user=self._user,
                                     passcode=self._passcode, 
-                                    wait_on_receipt=True,
-                                    keepalive=True)
+                                    wait_on_receipt=True)
             conn.set_listener(self._consumer_name, listener)
             conn.start()
             conn.connect()
         else:
-            conn = stomp.Connection(host_and_ports=self._brokers)
+            conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
             conn.set_listener(self._consumer_name, listener)
             conn.start()
             conn.connect(self._user, self._passcode, wait=True)
