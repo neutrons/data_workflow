@@ -109,10 +109,15 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
 
     data = json.dumps(data_dict)
     if stomp.__version__[0]<4:
+        # Shuffle the brokers so that we make sure we never get stuck
+        # regardless of configuration and network problem.
+        import random
+        random.shuffle(brokers)
         conn = stomp.Connection(host_and_ports=brokers, 
                                 user=icat_user, 
                                 passcode=icat_passcode, 
-                                wait_on_receipt=True)
+                                wait_on_receipt=True,
+                                timeout=10.0)
         conn.start()
         conn.connect()
         conn.send(destination=destination, message=data, persistent='true')
