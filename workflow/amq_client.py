@@ -100,7 +100,7 @@ class Client(object):
             conn.start()
             conn.connect()
         else:
-            conn = stomp.Connection(host_and_ports=self._brokers)
+            conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
             conn.set_listener(consumer_name, self._listener)
             conn.start()
             conn.connect(self._user, self._passcode, wait=True)

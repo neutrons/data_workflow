@@ -75,7 +75,7 @@ class Listener(stomp.ConnectionListener):
                 conn.start()
                 conn.connect()
             else:
-                conn = stomp.Connection(host_and_ports=self._brokers)
+                conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
                 conn.start()
                 conn.connect(self._user, self._passcode, wait=True)
             self._send_connection = conn
