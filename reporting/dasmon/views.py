@@ -91,8 +91,8 @@ def run_summary(request):
     """
         Dashboard view showing available instruments
     """
-    global_status_url = reverse(settings.LANDING_VIEW,args=[])
-    base_instr_url = reverse('report.views.instrument_summary',args=['aaaa'])
+    global_status_url = reverse(settings.LANDING_VIEW, args=[])
+    base_instr_url = reverse('dasmon.views.live_runs', args=['aaaa'])
     base_instr_url = base_instr_url.replace('/aaaa','')
     
     runs, first_run, last_run =  view_util.get_live_runs()
