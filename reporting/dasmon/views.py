@@ -91,30 +91,12 @@ def run_summary(request):
     """
         Dashboard view showing available instruments
     """
-    # Get the system health status
     global_status_url = reverse(settings.LANDING_VIEW,args=[])
-    
-    delta_time = datetime.timedelta(hours=12)
-    oldest_time = timezone.now() - delta_time
-    runs = DataRun.objects.filter(created_on__gte=oldest_time).reverse()
-    if len(runs)==0:
-        runs = DataRun.objects.order_by('created_on').reverse()[:25]
-    if len(runs)>0:
-        last_run = runs[len(runs)-1].id
-        first_run = runs[0].id
-    else:
-        first_run = 0
-        last_run = 0
-
-    run_headers = [{'name': 'Instr.', 'style': "min-width: 50px;"},
-                   {'name': 'Run', 'style': "min-width: 50px;"},
-                   {'name': 'Created on'}, {'name': 'Status'}]
-    
     base_instr_url = reverse('report.views.instrument_summary',args=['aaaa'])
     base_instr_url = base_instr_url.replace('/aaaa','')
     
+    runs, first_run, last_run =  view_util.get_live_runs()
     template_values = {'run_list': runs,
-                       'run_list_header': run_headers,
                        'first_run_id': first_run,
                        'last_run_id': last_run,
                        'base_instrument_url': base_instr_url,

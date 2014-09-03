@@ -7,8 +7,30 @@
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
+<script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
 
 <script>
+var records = {% autoescape off %}{{ run_list }}{% endautoescape %};
+var dynatable = null;
+
+$(document).ready( function() {
+  $('#run_table').dynatable({ dataset: { records: records,
+                              perPageOptions: [50, 100, 500, 1000],
+                              perPageDefault: 500 },
+  });
+  $('#search-status').change( function() {
+    var value = $(this).val();
+    if (value === "") {
+      dynatable.queries.remove("search");
+    } else {
+      dynatable.queries.add("search",value);
+    }
+    dynatable.process();
+  });
+  dynatable = $('#run_table').data('dynatable');
+});
+
 var last_run_id = '{{ last_run_id }}';
 
 function poll(){
@@ -16,16 +38,15 @@ function poll(){
         if (data.refresh_needed.localeCompare('1')==0){
             for (var i=0;i<data.run_list.length;i++) {
                 if (!$('#run_id_'+data.run_list[i].run_id).length) {
-                    var new_entry = "<tr class='highlight_row'>";
-                    new_entry += "<td><a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/'>"+data.run_list[i].instrument_id+"</a></td>";
-                    new_entry += "<td><a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
-                    new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
-                    new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span></td>";
-                    new_entry += "</tr>";
-                    $('#run_table tbody').prepend(new_entry);
+                  records.push({'instrument_id': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/'>"+data.run_list[i].instrument_id+"</a>",
+                                'run': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a>",
+                                'timestamp': data.run_list[i].timestamp,
+                                'status': "<span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span>"});
                 }
             }
             last_run_id = data.last_run_id;
+            dynatable.settings.dataset.originalRecords = records;
+            dynatable.process();
         }
         for (var i=0; i<data.status_list.length; i++) {
             $('#'+data.status_list[i].key).replaceWith("<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>");
@@ -53,29 +74,27 @@ function poll(){
 
 {% block content %}
 List of latest runs:<br>
-      <table cellspacing="0" class="message_table" id="run_table">
-      <thead>
+  <div style="float: right; margin-left:15px;">
+    Status: <select id="search-status" name="status">
+      <option></option>
+      <option>complete</option>
+      <option>incomplete</option>
+      <option>error</option>
+    </select>
+  </div>
+  <div>
+  <table cellspacing="0" class="message_table" id="run_table">
+    <thead>
       <tr>
-      {% for item in run_list_header %}
-          <th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
-      {% endfor %}
+        <th data-dynatable-column="instrument_id" style="min-width: 50px;">Instr.</th>
+        <th data-dynatable-column="run" style="min-width: 50px;">Run</th>
+        <th data-dynatable-column="timestamp">Created on</th>
+        <th data-dynatable-column="status">Status</th>
       </tr>
-      </thead>
-      <tbody>
-      {% for item in run_list|dictsortreversed:'id' %}
-          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-          <td><a href="{% url 'dasmon_live_runs' item.instrument_id %}">{{ item.instrument_id }}</a></td>
-          <td><a href="{% url 'report_detail' item.instrument_id item.run_number %}">{{ item.run_number }}</a></td>
-          <td>{{ item.created_on }}</td>
-          {% if item.is_complete %}
-          <td><span id='run_id_{{ item.id }}' class='green'>complete</span></td>
-          {% elif item.last_error %} 
-          <td><span id='run_id_{{ item.id }}' class="red"><b>error</b></span></td>
-          {% else %}
-          <td><span id='run_id_{{ item.id }}' class='red'>incomplete</span></td>
-          {% endif %}
-          </tr>
-      {% endfor %}
-      </tbody>
-      </table>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  </div>
+  <br>
 {% endblock %}
