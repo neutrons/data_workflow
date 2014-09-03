@@ -43,6 +43,7 @@ function poll(){
                   records.push({'instrument_id': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/'>"+data.run_list[i].instrument_id+"</a>",
                                 'run': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a>",
                                 'timestamp': data.run_list[i].timestamp,
+                                'run_id': data.run_list[i].run_id,
                                 'status': "<span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span>"});
                 }
             }
