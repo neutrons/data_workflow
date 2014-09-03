@@ -78,8 +78,8 @@ function poll(){
     </span>
 {% endblock %}
 
-{% block content %}
-List of latest runs:<br>
+{% block summary %}
+  List of latest runs:<br><br>
   <div style="float: right; margin-left:15px;">
     Status: <select id="search-status" name="status">
       <option></option>
@@ -104,3 +104,4 @@ List of latest runs:<br>
   </div>
   <br>
 {% endblock %}
+{% block nocontent %}{% endblock %}
