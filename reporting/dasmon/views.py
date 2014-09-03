@@ -94,12 +94,15 @@ def run_summary(request):
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
     base_instr_url = reverse('dasmon.views.live_runs', args=['aaaa'])
     base_instr_url = base_instr_url.replace('/aaaa','')
+    base_run_url = reverse('report.views.instrument_summary',args=['aaaa'])
+    base_run_url = base_run_url.replace('/aaaa','')
     
     runs, first_run, last_run =  view_util.get_live_runs()
     template_values = {'run_list': runs,
                        'first_run_id': first_run,
                        'last_run_id': last_run,
                        'base_instrument_url': base_instr_url,
+                       'base_run_url': base_run_url,
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
                        }
     template_values = users.view_util.fill_template_values(request, **template_values)
