@@ -19,6 +19,9 @@ $(document).ready( function() {
                               perPageOptions: [50, 100, 500, 1000],
                               perPageDefault: 500 },
   });
+  dynatable = $('#run_table').data('dynatable');
+  dynatable.sorts.add('run_id', -1)
+  dynatable.process();
   $('#search-status').change( function() {
     var value = $(this).val();
     if (value === "") {
@@ -28,7 +31,6 @@ $(document).ready( function() {
     }
     dynatable.process();
   });
-  dynatable = $('#run_table').data('dynatable');
 });
 
 var last_run_id = '{{ last_run_id }}';
@@ -88,7 +90,7 @@ List of latest runs:<br>
       <tr>
         <th data-dynatable-column="instrument_id" style="min-width: 50px;">Instr.</th>
         <th data-dynatable-column="run" style="min-width: 50px;">Run</th>
-        <th data-dynatable-column="timestamp">Created on</th>
+        <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
         <th data-dynatable-column="status">Status</th>
       </tr>
     </thead>
