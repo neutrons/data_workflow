@@ -48,12 +48,15 @@ function poll(){
                 }
             }
             last_run_id = data.last_run_id;
-            dynatable.settings.dataset.originalRecords = records;
-            dynatable.process();
         }
         for (var i=0; i<data.status_list.length; i++) {
-            $('#'+data.status_list[i].key).replaceWith("<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>");
+            for (var j=0; j<records.length; j++) {
+              if (data.status_list[i].key == 'run_id_'+records[j].run_id)
+                records[j].status = "<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>";
+            }
         }
+        dynatable.settings.dataset.originalRecords = records;
+        dynatable.process();
     }, dataType: "json", timeout: 30000, cache: true,
     statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
 };
