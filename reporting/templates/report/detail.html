@@ -68,13 +68,14 @@
   <table cellspacing="0" class="message_table fixed_table">
     <thead>
       <tr>
-      {% for item in status_header %}<th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}"{% endif %}>{% if item.url %}<a href={{ item.url|safe }}>{% endif %}{{ item.name|safe }}{% if item.url %}</a>{% endif %}</th>
-      {% endfor %}
+        <th style="width: 170px;">Message</th>
+        <th>Information</th>
+        <th style="width: 90px;">Time</th>
       </tr>
     </thead>
     <tbody>
       {% for item in status %}
-      <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+      <tr>
         <td>{{ item.queue_id.name|lower }}</td>
         {% if item.last_error %}<td class="error">{{ item.last_error.description }}</td>{% else %}<td>{{ item.last_info.description }}</td>{% endif %}
         <td>{{ item.created_on }}</td>

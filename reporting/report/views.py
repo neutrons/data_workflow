@@ -8,7 +8,7 @@ import logging
 import sys
 import os
 
-from report.models import DataRun, IPTS, Instrument, Error
+from report.models import DataRun, IPTS, Instrument, Error, RunStatus
 from icat_server_communication import get_run_info
 import datetime
 import view_util
@@ -100,8 +100,8 @@ def detail(request, instrument, run_id):
         reduce_url = 'reduce'
     
     # Find status entries
-    status_objects, status_header = view_util.ActivitySorter(request)(run_object)
-    
+    status_objects = RunStatus.objects.filter(run_id=run_id).order_by('created_on').reverse()
+
     # Look for an image of the reduction
     image_url = None
     try:
@@ -137,7 +137,6 @@ def detail(request, instrument, run_id):
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
-                       'status_header':status_header,
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,

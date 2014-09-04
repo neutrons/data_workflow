@@ -279,37 +279,6 @@ class ExperimentSorter(DataSorter):
             return IPTS.objects.filter(instruments=instrument_id).order_by(self.sort_item)
 
 
-class ActivitySorter(DataSorter):
-    # Sort item
-    KEY_MOD     = 'time'
-    KEY_NAME    = 'name'
-    DEFAULT_ITEM = KEY_MOD
-    ITEM_CHOICES = [KEY_MOD, KEY_NAME]
-    COLUMN_DICT = {KEY_MOD: 'created_on',
-                   KEY_NAME: 'name'}
-            
-    def __call__(self, run_id):
-        """
-            Returns the data and header to populate a data grid
-        """
-        # Query the database
-        data = self._retrieve_data(run_id)
-            
-        # Create the header dictionary    
-        header = []
-        header.append(self._create_header_dict("Message", None, min_width=170))
-        header.append(self._create_header_dict("Information", None))
-        header.append(self._create_header_dict("Time", self.KEY_MOD, min_width=90))
-        
-        return data, header
-    
-    def _retrieve_data(self, run_id): 
-        # Query the database
-        if self.sort_dir==self.KEY_DESC:
-            return RunStatus.objects.filter(run_id=run_id).order_by(self.sort_item).reverse()
-        else:
-            return RunStatus.objects.filter(run_id=run_id).order_by(self.sort_item)
-
 class ErrorSorter(DataSorter):
     """
         Sorter object to organize data in a sorted grid
