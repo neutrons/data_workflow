@@ -584,7 +584,7 @@ def get_run_list_dict(run_list):
                              "run": "<a href='%s'>%s</a>" % (run_url, r.run_number),
                              "run_id": str(r.id),
                              "timestamp": str(df.format(settings.DATETIME_FORMAT)),
-                             "status": get_run_status_text(r, False, True)
+                             "status": get_run_status_text(r, use_element_id=True)
                              })
     except:
         logging.error("report.view_util.get_run_list_dict: %s" % sys.exc_value)

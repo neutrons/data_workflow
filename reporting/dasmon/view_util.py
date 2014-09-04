@@ -776,7 +776,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
         for r in run_list:
-            status = report.view_util.get_run_status_text(r, ipts_id is not None)
+            status = report.view_util.get_run_status_text(r)
             
             run_dict = {"key": "run_id_%s" % str(r.id),
                         "value": status,
