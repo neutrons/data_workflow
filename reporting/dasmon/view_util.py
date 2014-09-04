@@ -828,7 +828,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     data_dict['status_list'] = status_list
     return data_dict
 
-def get_live_runs(timeframe=12, number_of_entries=25):
+def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None):
     """
         Get recent runs for all instruments.
         If no run is found in the last few hours (defined by the timeframe parameter),
@@ -836,6 +836,7 @@ def get_live_runs(timeframe=12, number_of_entries=25):
         
         @param timeframe: number of hours going back from now, defining the period of time for the runs
         @param number_of_entries: number of entries to return if we didn't find any run in the defined period
+        @param instrument_id: if provided, results will be limited to the given instrument
     """
     run_list = []
     first_run = 0
@@ -843,9 +844,16 @@ def get_live_runs(timeframe=12, number_of_entries=25):
     try:
         delta_time = datetime.timedelta(hours=timeframe)
         oldest_time = timezone.now() - delta_time
-        runs = DataRun.objects.filter(created_on__gte=oldest_time).reverse()
+        if instrument_id is not None:
+            runs = DataRun.objects.filter(instrument_id=instrument_id,
+                                          created_on__gte=oldest_time).reverse()
+        else:
+            runs = DataRun.objects.filter(created_on__gte=oldest_time).reverse()
         if len(runs)==0:
-            runs = DataRun.objects.order_by('created_on').reverse()[:number_of_entries]
+            if instrument_id is not None:
+                runs = DataRun.objects.filter(instrument_id=instrument_id).order_by('created_on').reverse()[:number_of_entries]
+            else:
+                runs = DataRun.objects.order_by('created_on').reverse()[:number_of_entries]
         if len(runs)>0:
             last_run = runs[len(runs)-1].id
             first_run = runs[0].id

@@ -278,32 +278,15 @@ def live_runs(request, instrument):
     # Update URL
     update_url = reverse('dasmon.views.get_update',args=[instrument])
 
-    # Get the latest runs
-    runs = DataRun.objects.filter(instrument_id=instrument_id).order_by("id").reverse()[:20]
-    if len(runs)>0:
-        first_run = runs[len(runs)-1].id
-    else:
-        first_run = 0
-        
-    run_list = []
-    for r in runs:
-        status = view_util.get_run_status_text(r)
-        run_list.append({'run_number':r.run_number,
-                         'created_on':r.created_on,
-                         'last_error':status,
-                         'id':r.id})
-    
-    run_list_header = [{'name': 'Run', 'style':"min-width: 50px"},
-                       {'name': 'Created on'},
-                       {'name': 'Status'}]
+    run_list, first_run, last_run = view_util.get_live_runs(instrument_id=instrument_id)
     
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument':instrument.upper(),
                        'breadcrumbs':breadcrumbs,
                        'update_url':update_url,
                        'run_list':run_list,
-                       'run_list_header':run_list_header,
-                       'first_run_id':first_run
+                       'first_run_id':first_run,
+                       'last_run_id': last_run
                        }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
