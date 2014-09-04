@@ -181,7 +181,7 @@ def submit_for_cataloging(request, instrument, run_id):
         @param run_id: run number
     """
     return view_util.processing_request(request, instrument, run_id,
-                                        destination='/queue/CATALOG.REQUEST')        
+                                        destination='/queue/CATALOG.REQUEST')
 
 @users.view_util.login_or_local_required
 @users.view_util.monitor
@@ -240,14 +240,6 @@ def ipts_summary(request, instrument, ipts):
     # Get experiment
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
     
-    query_filter = request.GET.get('show', 'recent').lower()
-    show_all = query_filter=='all'
-    try:
-        n_max = int(query_filter)
-    except:
-        n_max = 20
-    number_of_runs = ipts_id.number_of_runs(instrument_id)
-    
     # Get IPTS URL
     ipts_url = reverse('report.views.ipts_summary',args=[instrument,ipts])
     update_url = reverse('report.views.get_experiment_update',args=[instrument,ipts])
@@ -256,33 +248,29 @@ def ipts_summary(request, instrument, ipts):
     # whether the user should refresh the page
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
-    run_list, run_list_header = view_util.RunSorter(request)(ipts_id, 
-                                                             show_all=show_all,
-                                                             n_shown=n_max,
-                                                             instrument_id=instrument_id)
+    runs = DataRun.objects.filter(instrument_id=instrument_id,
+                                  ipts_id=ipts_id).order_by('created_on')
+    run_list = view_util.get_run_list_dict(runs)
+
     # Get the ID of the first displayed run so that we can update the
     # status of runs that are displayed
     first_run_id = 0
-    if len(run_list)>0:
-        first_run_id = run_list[len(run_list)-1].id
-    
+    if len(runs)>0:
+        first_run_id = runs[0].id
+
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
             str(ipts_id).lower()
             ) 
 
-    template_values = {'instrument':instrument.upper(),
-                       'ipts_number':ipts,
-                       'run_list':run_list,
-                       'run_list_header':run_list_header,
-                       'breadcrumbs':breadcrumbs,
-                       'all_shown':show_all,
-                       'number_shown':len(run_list),
-                       'number_of_runs':number_of_runs,
-                       'ipts_url':ipts_url,
-                       'update_url':update_url,
-                       'first_run_id':first_run_id,
+    template_values = {'instrument': instrument.upper(),
+                       'ipts_number': ipts,
+                       'run_list': run_list,
+                       'breadcrumbs': breadcrumbs,
+                       'ipts_url': ipts_url,
+                       'update_url': update_url,
+                       'first_run_id': first_run_id,
                        }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)

@@ -6,52 +6,59 @@
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
+<script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
 
 <script>
+var records = {% autoescape off %}{{ run_list }}{% endautoescape %};
+var dynatable = null;
 var last_run_id = '{{ last_run.id }}';
 var run_data = {{ run_rate|safe }};
 var error_data = {{ error_rate|safe }};
-var num_shown = {{ number_shown }};
-var num_total = {{ number_of_runs }};
+
+$(document).ready( function() {
+  $('#run_table').dynatable({ dataset: { records: records,
+                              perPageOptions: [50, 100, 500],
+                              perPageDefault: 50 },
+                              features: { pushState: false }
+  });
+  dynatable = $('#run_table').data('dynatable');
+  dynatable.sorts.add('run_id', -1)
+  dynatable.process();
+});
 
 function poll(){
     $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&complete_since="+{{ first_run_id }}, success: function(data){
-        if (data.refresh_needed.localeCompare('1')==0){
-          	for (var i=0;i<data.run_list.length;i++)
-			{ 
-                var new_entry = "<tr class='highlight_row'>";
-                new_entry += "<td><a href='{{ base_run_url }}"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a></td>";
-                new_entry += "<td>"+data.run_list[i].timestamp+"</td>";
-                new_entry += "<td><span id='run_id_"+data.run_list[i].run_id+"'></td>";
-                new_entry += "</tr>";
-                $('#run_table tbody').prepend(new_entry);
-                num_shown += 1;
-                num_total += 1;
-                //The following would keep the number of rows constant
-                //if ($('#run_table tr').length > num_shown+1){ $('#run_table tr:last').remove();}
+        if (data.refresh_needed.localeCompare('1')==0) {
+            for (var i=0;i<data.run_list.length;i++) { 
+                records.push({'instrument_id': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/runs/'>"+data.run_list[i].instrument_id+"</a>",
+                    'run': "<a href='{{ base_run_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a>",
+                    'timestamp': data.run_list[i].timestamp,
+                    'run_id': data.run_list[i].run_id,
+                    'status': "<span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span>"});
             }
-          	last_run_id = data.last_run_id;
+            last_run_id = data.last_run_id;
         }
-        
-        for (var i=0; i<data.status_list.length; i++)
-        { 
-            $('#'+data.status_list[i].key).replaceWith("<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>");
-        }            
-
+        for (var i=0; i<data.status_list.length; i++) { 
+            for (var j=0; j<records.length; j++) {
+                if (data.status_list[i].key == 'run_id_'+records[j].run_id)
+                  records[j].status = "<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>";
+            }
+        }
+        dynatable.settings.dataset.originalRecords = records;
+        dynatable.process();
         $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
         $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
         $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
-        $('#info_number_shown').replaceWith("<span id='info_number_shown'>"+num_shown+"</span>");
-        $('#info_number_total').replaceWith("<span id='info_number_total'>"+num_total+"</span>");        
         
         run_data = data.run_rate;
         error_data = data.error_rate;
         plot_combined_rates(run_data, error_data);
     }, dataType: "json", timeout: 30000, cache: true,
     statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
-};    
+};
 
-</script>   
+</script>
 {% endblock %}
 
 {% block banner %}{{ instrument }} {{ ipts_number|upper }} {% endblock %}
@@ -77,41 +84,23 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
     setInterval(poll, 10000);
 </script>
 {% endblock %}
-    
+
 {% block content %}
-List of {{ instrument }} runs for {{ ipts_number|upper }}:<br>
-
+List of {{ instrument }} runs for {{ ipts_number|upper }}:<br><br>
       <table cellspacing="0" class="message_table" id="run_table">
-      <thead>
-      <tr>
-      {% for item in run_list_header %}
-          <th {% if item.style %} style="{{item.style}}" {% endif %} {% if item.class %} class="{{item.class}}" {% endif %}> {% if item.url %}<a href={{ item.url|safe }}> {% endif %} {{ item.name|safe }} {% if item.url %}</a>{% endif %}</th>
-      {% endfor %}
-      </tr>
-      </thead>
-      <tbody>
-      {% for item in run_list %}
-          <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
-          <td><a href='{{ base_run_url }}{{ item.run_number }}/'>{{ item.run_number }}</a></td>
-          <td>{{ item.created_on }}</td>
-          {% if item.is_complete %}
-          <td><span id='run_id_{{ item.id }}' class='green'>complete</span></td>
-          {% elif item.last_error %} 
-          <td><span id='run_id_{{ item.id }}' class="red">{{ item.last_error|safe }}</span></td>
-          {% else %}
-          <td><span id='run_id_{{ item.id }}' class='red'>incomplete</span></td>
-          {% endif %}
+        <thead>
+          <tr>
+            <th data-dynatable-column="run" style="min-width: 50px;">Run</th>
+            <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
+            <th data-dynatable-column="status">Status</th>
           </tr>
-      {% endfor %}
-      </tbody>
+        </thead>
+        <tbody>
+        </tbody>
       </table>
-
       <br>
-      {% if not all_shown %}
-      <span id='info_number_shown'>{{ number_shown }}</span> of <span id='info_number_total'>{{ number_of_runs }}</span> runs shown - <a href='{{ ipts_url }}?show=all'>show all runs</a>
-      {% endif %}
-      
+
 <script id="source" language="javascript" type="text/javascript">
-	plot_combined_rates(run_data, error_data);
+    plot_combined_rates(run_data, error_data);
 </script>
 {% endblock %}

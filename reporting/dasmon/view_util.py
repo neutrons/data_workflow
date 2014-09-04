@@ -733,36 +733,6 @@ def get_completeness_status(instrument_id):
         logging.error(sys.exc_value)
         return STATUS_UNKNOWN
 
-def get_run_status_text(run_id, show_error=False, use_element_id=False):
-    """
-        Get a textual description of the current status
-        for a given run
-        @param run_id: run object
-        @param show_error: if true, the last error will be whow, otherwise "error"
-    """
-    status = 'unknown'
-    try:
-        if use_element_id:
-            element_id = "id='run_id_%s'" % run_id.id
-        else:
-            element_id = ''
-        s = WorkflowSummary.objects.get(run_id=run_id)
-        if s.complete is True:
-            status = "<span %s class='green'>complete</span>" % element_id
-        else:
-            last_error = run_id.last_error()
-            if last_error is not None:
-                if show_error:
-                    status = "<span %s class='red'>%s</span>" % (element_id, last_error)
-                else:
-                    status = "<span %s class='red'><b>error</b></span>" % element_id
-            else:
-                status = "<span %s class='red'>incomplete</span>" % element_id
-    except:
-        # No entry for this run
-        pass
-    return status
-
 def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     """
          Get updated information about the latest runs
@@ -806,7 +776,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     if since_run_id is not None and len(run_list)>0:
         data_dict['last_run_id'] = run_list[0].id
         for r in run_list:
-            status = get_run_status_text(r, ipts_id is not None)
+            status = report.view_util.get_run_status_text(r, ipts_id is not None)
             
             run_dict = {"key": "run_id_%s" % str(r.id),
                         "value": status,
@@ -846,32 +816,20 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None):
         oldest_time = timezone.now() - delta_time
         if instrument_id is not None:
             runs = DataRun.objects.filter(instrument_id=instrument_id,
-                                          created_on__gte=oldest_time).reverse()
+                                          created_on__gte=oldest_time).order_by('created_on').reverse()
         else:
-            runs = DataRun.objects.filter(created_on__gte=oldest_time).reverse()
+            runs = DataRun.objects.filter(created_on__gte=oldest_time).order_by('created_on').reverse()
         if len(runs)==0:
             if instrument_id is not None:
                 runs = DataRun.objects.filter(instrument_id=instrument_id).order_by('created_on').reverse()[:number_of_entries]
             else:
                 runs = DataRun.objects.order_by('created_on').reverse()[:number_of_entries]
         if len(runs)>0:
-            last_run = runs[len(runs)-1].id
-            first_run = runs[0].id
+            first_run = runs[len(runs)-1].id
+            last_run = runs[0].id
             
         # Create dictionary for each run
-        for r in runs:
-            localtime = timezone.localtime(r.created_on)
-            df = dateformat.DateFormat(localtime)
-            
-            run_url = reverse('report.views.detail', args=[str(r.instrument_id), r.run_number])
-            instr_url = reverse('dasmon.views.live_runs', args=[str(r.instrument_id)])
-            
-            run_list.append({"instrument_id": "<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id)),
-                             "run": "<a href='%s'>%s</a>" % (run_url, r.run_number),
-                             "run_id": str(r.id),
-                             "timestamp": str(df.format(settings.DATETIME_FORMAT)),
-                             "status": get_run_status_text(r, False, True)
-                             })
+        run_list = report.view_util.get_run_list_dict(runs)
     except:
         logging.error("get_live_runs: %s" % sys.exc_value)
     return run_list, first_run, last_run

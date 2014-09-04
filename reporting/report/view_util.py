@@ -4,7 +4,7 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus
+from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
@@ -278,48 +278,6 @@ class ExperimentSorter(DataSorter):
         else:
             return IPTS.objects.filter(instruments=instrument_id).order_by(self.sort_item)
 
-        
-class RunSorter(DataSorter):
-    # Sort item
-    KEY_MOD     = 'time'
-    KEY_NAME    = 'run'
-    DEFAULT_ITEM = KEY_MOD
-    ITEM_CHOICES = [KEY_MOD, KEY_NAME]
-    COLUMN_DICT = {KEY_MOD: 'created_on',
-                   KEY_NAME: 'run_number'}
-    N_RECENT = 20
-            
-    def __call__(self, ipts_id, show_all=False, n_shown=20, instrument_id=None):
-        """
-            Returns the data and header to populate a data grid
-        """
-        self.N_RECENT = n_shown
-        # Query the database
-        data = self._retrieve_data(ipts_id, show_all=show_all, instrument_id=instrument_id)
-            
-        # Create the header dictionary    
-        header = []
-        header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
-        header.append(self._create_header_dict("Created on", self.KEY_MOD))
-        header.append(self._create_header_dict("Status", None))
-        
-        return data, header
-    
-    def _retrieve_data(self, ipts_id, show_all=False, instrument_id=None): 
-        # Query the database
-        if self.sort_dir==self.KEY_DESC:
-            if instrument_id is None:
-                runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item).reverse()
-            else:
-                runs = DataRun.objects.filter(ipts_id=ipts_id, instrument_id=instrument_id).order_by(self.sort_item).reverse()
-        else:
-            if instrument_id is None:
-                runs = DataRun.objects.filter(ipts_id=ipts_id).order_by(self.sort_item)
-            else:
-                runs = DataRun.objects.filter(ipts_id=ipts_id, instrument_id=instrument_id).order_by(self.sort_item)
-        if not show_all and len(runs)>self.N_RECENT:
-            return runs[:self.N_RECENT]
-        return runs
 
 class ActivitySorter(DataSorter):
     # Sort item
@@ -577,3 +535,57 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
     
     return status_dict
     
+def get_run_status_text(run_id, show_error=False, use_element_id=False):
+    """
+        Get a textual description of the current status
+        for a given run
+        @param run_id: run object
+        @param show_error: if true, the last error will be whow, otherwise "error"
+    """
+    status = 'unknown'
+    try:
+        if use_element_id:
+            element_id = "id='run_id_%s'" % run_id.id
+        else:
+            element_id = ''
+        s = WorkflowSummary.objects.get(run_id=run_id)
+        if s.complete is True:
+            status = "<span %s class='green'>complete</span>" % element_id
+        else:
+            last_error = run_id.last_error()
+            if last_error is not None:
+                if show_error:
+                    status = "<span %s class='red'>%s</span>" % (element_id, last_error)
+                else:
+                    status = "<span %s class='red'><b>error</b></span>" % element_id
+            else:
+                status = "<span %s class='red'>incomplete</span>" % element_id
+    except:
+        logging.error("report.view_util.get_run_status_text: %s" % sys.exc_value)
+    return status
+
+def get_run_list_dict(run_list):
+    """
+        Get a list of run object and transform it into a list of
+        dictionaries that can be used to fill a table.
+        
+        @param run_list: list of run object (usually a QuerySet)
+    """
+    run_dicts = []
+    try:
+        for r in run_list:
+            localtime = timezone.localtime(r.created_on)
+            df = dateformat.DateFormat(localtime)
+            
+            run_url = reverse('report.views.detail', args=[str(r.instrument_id), r.run_number])
+            instr_url = reverse('dasmon.views.live_runs', args=[str(r.instrument_id)])
+            
+            run_dicts.append({"instrument_id": "<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id)),
+                             "run": "<a href='%s'>%s</a>" % (run_url, r.run_number),
+                             "run_id": str(r.id),
+                             "timestamp": str(df.format(settings.DATETIME_FORMAT)),
+                             "status": get_run_status_text(r, False, True)
+                             })
+    except:
+        logging.error("report.view_util.get_run_list_dict: %s" % sys.exc_value)
+    return run_dicts
