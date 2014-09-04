@@ -100,7 +100,7 @@ def detail(request, instrument, run_id):
         reduce_url = 'reduce'
     
     # Find status entries
-    status_objects = RunStatus.objects.filter(run_id=run_id).order_by('created_on').reverse()
+    status_objects = RunStatus.objects.filter(run_id=run_object).order_by('created_on').reverse()
 
     # Look for an image of the reduction
     image_url = None
