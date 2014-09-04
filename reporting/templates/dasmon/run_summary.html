@@ -18,6 +18,7 @@ $(document).ready( function() {
   $('#run_table').dynatable({ dataset: { records: records,
                               perPageOptions: [50, 100, 500, 1000],
                               perPageDefault: 500 },
+                              features: { pushState: false }
   });
   dynatable = $('#run_table').data('dynatable');
   dynatable.sorts.add('run_id', -1)

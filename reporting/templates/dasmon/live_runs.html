@@ -21,6 +21,7 @@
       $('#run_table').dynatable({ dataset: { records: records,
                                              perPageOptions: [25, 50, 100],
                                              perPageDefault: 25 },
+                                  features: { pushState: false }
                                 });
       dynatable = $('#run_table').data('dynatable');
       dynatable.sorts.add('run_id', -1)
