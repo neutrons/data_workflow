@@ -84,7 +84,6 @@ def needs_reduction(request, run_id):
        
     return True
     
-    
 def send_processing_request(instrument_id, run_id, user=None, destination=None):
     """
         Send an AMQ message to the workflow manager to reprocess
@@ -128,8 +127,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
         conn.send(destination, data, persistent='true')
     conn.disconnect()
     logging.info("Reduction requested: %s" % str(data))
-        
-        
+    
 def processing_request(request, instrument, run_id, destination):
     """
         Process a request for post-processing
@@ -149,135 +147,6 @@ def processing_request(request, instrument, run_id, destination):
         return HttpResponseServerError()
     return redirect(reverse('report.views.detail',args=[instrument, run_id]))
     
-    
-class DataSorter(object):
-    """
-        Sorter object to organize data in a sorted grid
-    """
-    ## Sort item query string
-    SORT_ITEM_QUERY_STRING = 'ds'
-    ## Sort direction query string
-    SORT_DIRECTION_QUERY_STRING = 'dd'
-    
-    # Sort direction information
-    KEY_ASC     = 'asc'
-    KEY_DESC    = 'desc'
-    DEFAULT_DIR = KEY_DESC
-    DIR_CHOICES = [KEY_ASC, KEY_DESC]
-    
-    # Sort item
-    KEY_MOD     = 'time'
-    KEY_NAME    = 'name'
-    DEFAULT_ITEM = KEY_MOD
-    ITEM_CHOICES = [KEY_MOD, KEY_NAME]
-    COLUMN_DICT = {KEY_MOD: 'time',
-                   KEY_NAME: 'name'}
-    
-    def __init__(self, request):
-        """
-            Initialize the sorting parameters
-            @param request: get the sorting information from the HTTP request
-        """
-        # Get the default from the user session
-        #default_dir = request.session.get(self.SORT_DIRECTION_QUERY_STRING, default=self.DEFAULT_DIR)
-        #default_item = request.session.get(self.SORT_ITEM_QUERY_STRING, default=self.DEFAULT_ITEM)
-        
-        # Get the sorting options from the query parameters
-        self.sort_dir = request.GET.get(self.SORT_DIRECTION_QUERY_STRING, self.DEFAULT_DIR)
-        self.sort_key = request.GET.get(self.SORT_ITEM_QUERY_STRING, self.DEFAULT_ITEM)
-        
-        # Clean up sort direction
-        self.sort_dir = self.sort_dir.lower().strip()
-        if self.sort_dir not in self.DIR_CHOICES:
-            self.sort_dir = self.DEFAULT_DIR
-        
-        # Clean up sort column
-        self.sort_key = self.sort_key.lower().strip()
-        if self.sort_key not in self.ITEM_CHOICES:
-            self.sort_key = self.DEFAULT_ITEM        
-        self.sort_item = self.COLUMN_DICT[self.sort_key]
-        
-        # Store sorting parameters in session
-        #request.session[self.SORT_DIRECTION_QUERY_STRING] = self.sort_dir
-        #request.session[self.SORT_ITEM_QUERY_STRING] = self.sort_item
-        
-        ## User ID
-        self.user = request.user
-
-    def _create_header_dict(self, long_name, url_name, min_width=None):
-        """
-            Creates column header, the following classes have to
-            be define in the CSS style sheet
-
-            "sorted descending"
-            "sorted ascending"
-            
-            @param long_name: name that will appear in the table header
-            @param url_name: URL query field
-        """
-        if url_name is None:
-            url = None
-        else:
-            url = "?%s=%s&amp;%s=%s" % (self.SORT_DIRECTION_QUERY_STRING,
-                                        self.KEY_ASC, self.SORT_ITEM_QUERY_STRING, url_name)
-            
-        d = {'name': long_name,
-             'url': url}
-        if self.sort_key == url_name:
-            if self.sort_dir == self.KEY_DESC:
-                d['class'] = "sorted descending"
-            else:
-                d['class'] = "sorted ascending"
-                if url_name is None:
-                    url = None
-                else:
-                    url = "?%s=%s&amp;%s=%s" % (self.SORT_DIRECTION_QUERY_STRING, 
-                                                 self.KEY_DESC, self.SORT_ITEM_QUERY_STRING, url_name)
-                d['url'] = url
-                
-        if min_width is not None:
-            d['style'] = "width: %dpx;" % min_width
-        return d
-
-    def __call__(self, instrument_id=None): return NotImplemented
-    def _retrieve_data(self, instrument_id): return NotImplemented
-
-
-class ErrorSorter(DataSorter):
-    """
-        Sorter object to organize data in a sorted grid
-    """
-    # Sort item
-    KEY_MOD     = 'time'
-    KEY_NAME    = 'name'
-    DEFAULT_ITEM = KEY_MOD
-    ITEM_CHOICES = [KEY_MOD, KEY_NAME]
-    COLUMN_DICT = {KEY_MOD: 'run_status_id__created_on',
-                   KEY_NAME: 'run_status_id__run_id__run_number'}
-            
-    def __call__(self, instrument_id):
-        """
-            Returns the data and header to populate a data grid
-        """
-        # Query the database
-        data = self._retrieve_data(instrument_id)
-            
-        # Create the header dictionary    
-        header = []
-        header.append(self._create_header_dict("Experiment", None, min_width=70))
-        header.append(self._create_header_dict("Run", self.KEY_NAME, min_width=50))
-        header.append(self._create_header_dict("Error", None))
-        header.append(self._create_header_dict("Time", self.KEY_MOD, min_width=90))
-        
-        return data, header
-    
-    def _retrieve_data(self, instrument_id): 
-        # Query the database
-        if self.sort_dir==self.KEY_DESC:
-            return Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by(self.sort_item).reverse()
-        else:
-            return Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by(self.sort_item)
-
 def retrieve_rates(instrument_id, last_run_id):
     """
         Retrieve the run rate and error rate for an instrument.

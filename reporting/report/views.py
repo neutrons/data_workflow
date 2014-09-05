@@ -291,20 +291,27 @@ def live_errors(request, instrument):
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-        
-    query_filter = request.GET.get('show', 'recent').lower()
-    show_all = query_filter=='all'
-    try:
-        n_max = int(query_filter)
-    except:
-        n_max = 20
-
-    # Get list of errors
-    errors, errors_header = view_util.ErrorSorter(request)(instrument_id)
-    number_of_errors = len(errors)
-    if not show_all and len(errors)>n_max:
-        errors = errors[:n_max]
     
+    error_query = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('id')
+    last_error_id = 0
+    if len(error_query)>0:
+        last_error_id = error_query[len(error_query)-1].id
+    error_list = []
+    for err in error_query:
+        localtime = timezone.localtime(err.run_status_id.created_on)
+        df = dateformat.DateFormat(localtime)
+        error_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report.views.ipts_summary',
+                                                                              args=[instrument,
+                                                                                    err.run_status_id.run_id.ipts_id.expt_name]),
+                                                                      err.run_status_id.run_id.ipts_id.expt_name)),
+                          'run': str("<a href='%s'>%s</a>" % (reverse('report.views.detail',
+                                                                      args=[instrument,
+                                                                            err.run_status_id.run_id.run_number]),
+                                                              err.run_status_id.run_id.run_number)),
+                          'info': str(err.description),
+                          'timestamp': err.run_status_id.created_on.isoformat(),
+                          'created_on': str(df.format(settings.DATETIME_FORMAT))})
+
     # Instrument reporting URL
     instrument_url = reverse('report.views.instrument_summary',args=[instrument])
     error_url = reverse('report.views.live_errors',args=[instrument])
@@ -317,14 +324,10 @@ def live_errors(request, instrument):
             )
 
     template_values = {'instrument':instrument.upper(),
-                       'error_list':errors,
-                       'error_header':errors_header,
+                       'error_list':error_list,
+                       'last_error_id': last_error_id,
                        'breadcrumbs':breadcrumbs,
-                       'all_shown':show_all,
-                       'number_shown':len(errors),
-                       'number_of_errors':number_of_errors,
                        'instrument_url':instrument_url,
-                       'error_url':error_url,
                        'update_url':update_url,
                        }
     template_values = view_util.fill_template_values(request, **template_values)
@@ -412,10 +415,10 @@ def get_error_update(request, instrument):
     except:
         last_error_id = None
     
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())    
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
     # Get last experiment and last run
-    data_dict = view_util.get_current_status(instrument_id)    
+    data_dict = view_util.get_current_status(instrument_id)
     
     err_list = []
     if last_error_id is not None:
@@ -433,7 +436,8 @@ def get_error_update(request, instrument):
                     err_dict = {"run":e.run_status_id.run_id.run_number,
                                 "ipts":e.run_status_id.run_id.ipts_id.expt_name,
                                 "description":e.description,
-                                "timestamp":df.format(settings.DATETIME_FORMAT),
+                                "created_on":df.format(settings.DATETIME_FORMAT),
+                                "timestamp":e.run_status_id.created_on.isoformat(),
                                 "error_id":e.id,
                                 }
                     err_list.append(err_dict)
