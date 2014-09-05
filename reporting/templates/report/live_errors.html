@@ -65,7 +65,7 @@
 {% endblock %}
 
 {% block content %}
-List of {{ instrument }} errors {% if instrument_url %}(view <a href='{{ instrument_url }}'>experiments</a>){% endif %}<br><br>
+List of {{ instrument }} errors in the last {{ time_period }} days {% if instrument_url %}(view <a href='{{ instrument_url }}'>experiments</a>){% endif %}<br><br>
 <table cellspacing="0" class="message_table fixed_table" id="error_table">
   <thead>
     <tr>

@@ -86,7 +86,7 @@
       perPageTarget: null,
       perPagePlacement: 'before',
       perPageText: 'Show: ',
-      pageText: 'Pages: ',
+      pageText: '',
       recordCountPageBoundTemplate: '{pageLowerBound} to {pageUpperBound} of',
       recordCountPageUnboundedTemplate: '{recordsShown} of',
       recordCountTotalTemplate: '{recordsQueryCount} {collectionName}',

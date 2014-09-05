@@ -2,7 +2,8 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import simplejson, dateformat, timezone
-from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page, cache_control
+from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 import logging
 import sys
@@ -284,7 +285,10 @@ def ipts_summary(request, instrument, ipts):
     return render_to_response('report/ipts_summary.html', template_values)
     
 @users.view_util.login_or_local_required
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
 @users.view_util.monitor
+@vary_on_cookie
 def live_errors(request, instrument):
     """
         Display the list of latest errors
@@ -292,7 +296,13 @@ def live_errors(request, instrument):
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
-    error_query = Error.objects.filter(run_status_id__run_id__instrument_id=instrument_id).order_by('id')
+    #TODO: let the user pick the timeframe for the errors.
+    # Pick 30 days for now.
+    time_period = 30
+    delta_time = datetime.timedelta(days=time_period)
+    oldest_time = timezone.now() - delta_time
+    error_query = Error.objects.filter(run_status_id__created_on__gte=oldest_time,
+                                       run_status_id__run_id__instrument_id=instrument_id).order_by('id')
     last_error_id = 0
     if len(error_query)>0:
         last_error_id = error_query[len(error_query)-1].id
@@ -329,6 +339,7 @@ def live_errors(request, instrument):
                        'breadcrumbs':breadcrumbs,
                        'instrument_url':instrument_url,
                        'update_url':update_url,
+                       'time_period':time_period
                        }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
