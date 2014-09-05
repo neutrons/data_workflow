@@ -193,7 +193,17 @@ def instrument_summary(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
     # Get list of IPTS
-    ipts, ipts_header = view_util.ExperimentSorter(request)(instrument_id)    
+    ipts = IPTS.objects.filter(instruments=instrument_id).order_by('created_on').reverse()
+    expt_list = []
+    for expt in ipts:
+        localtime = timezone.localtime(expt.created_on)
+        df = dateformat.DateFormat(localtime)
+        expt_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report.views.ipts_summary',
+                                                                             args=[instrument, expt.expt_name]),
+                                                                     expt.expt_name)),
+                          'total': expt.number_of_runs(),
+                          'timestamp': expt.created_on.isoformat(),
+                          'created_on': str(df.format(settings.DATETIME_FORMAT))})
     
     # Instrument error URL
     error_url = reverse('report.views.live_errors',args=[instrument])
@@ -209,12 +219,10 @@ def instrument_summary(request, instrument):
     
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
-                                                         instrument.lower()
-                                                         ) 
+                                                         instrument.lower())
 
     template_values = {'instrument':instrument.upper(),
-                       'ipts':ipts,
-                       'ipts_header':ipts_header,
+                       'expt_list': expt_list,
                        'breadcrumbs':breadcrumbs,
                        'error_url': error_url,
                        'update_url':update_url,
@@ -337,7 +345,7 @@ def get_experiment_update(request, instrument, ipts):
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
     
     # Get last experiment and last run
-    data_dict = view_util.get_current_status(instrument_id)    
+    data_dict = view_util.get_current_status(instrument_id)
     data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
     
     response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
@@ -376,7 +384,8 @@ def get_instrument_update(request, instrument):
                 df = dateformat.DateFormat(localtime)
                 expt_dict = {"ipts":e.expt_name.upper(),
                             "n_runs":e.number_of_runs(),
-                            "timestamp":df.format(settings.DATETIME_FORMAT),
+                            "created_on":df.format(settings.DATETIME_FORMAT),
+                            "timestamp": e.created_on.isoformat(),
                             "ipts_id":e.id,
                             }
                 update_list.append(expt_dict)
