@@ -963,3 +963,41 @@ def get_dashboard_data():
         r_rate, e_rate = report.view_util.retrieve_rates(i, last_run_id)
         data_dict[i.name] = { 'run_rate':r_rate, 'error_rate':e_rate }
     return data_dict
+
+def get_latest_updates(instrument_id, message_channel,
+                       timeframe=2.0, number_of_entries=10):
+    """
+        Return a list of recent status messages received on a given channel.
+        
+        @param instrument_id: Instrument object
+        @param message_channel: name of the AMQ channel used to report updates
+        @param timeframe: number of days to report on
+        @param number_of_entries: number of recent entries to return if nothing was found in the desired time frame
+    """
+    # Find the parameter used to report updates
+    try:
+        key_id = Parameter.objects.get(name=message_channel)
+    except:
+        logging.error("get_latest_updates: could not find parameter for %s" % message_channel)
+        return []
+    
+    # Determine what's the oldest time stamp we'll report
+    delta_time = datetime.timedelta(days=timeframe)
+    oldest_time = timezone.now() - delta_time
+    
+    update_list = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id,
+                                                timestamp__gte=oldest_time)
+    
+    # If we don't have any entry in the desired time frame, return the last few
+    if len(update_list)==0:
+        update_list = StatusVariable.objects.filter(instrument_id=instrument_id, 
+                                                    key_id=key_id).order_by('timestamp').reverse()[:number_of_entries]
+
+    template_data = []
+    for item in update_list:
+        localtime = timezone.localtime(item.timestamp)
+        df = dateformat.DateFormat(localtime)
+        template_data.append({'info': str(item.value),
+                              'time': str(df.format(settings.DATETIME_FORMAT)),
+                              'timestamp': item.timestamp.isoformat()})
+    return template_data

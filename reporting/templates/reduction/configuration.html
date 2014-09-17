@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} Configuration {% endblock %}
+
+{% block banner %}{{ instrument }} Configuration {% endblock %}
+
+{% block header %}
+<link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
+<script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
+
+<script>
+  var records = {% autoescape off %}{{ params_list }}{% endautoescape %};
+  var action_records = {% autoescape off %}{{ action_list }}{% endautoescape %};
+  var dynatable = null;
+  var action_dynatable = null;
+  $(document).ready( function() {
+      $('#params_table').dynatable({ dataset: { records: records },
+                                     features: { pushState: false, search: false }
+      });
+      dynatable = $('#params_table').data('dynatable');
+      dynatable.sorts.add('key', 1)
+      dynatable.process();
+
+      $('#action_table').dynatable({ dataset: { records: action_records },
+                                     features: { pushState: false, search: false }
+      });
+      action_dynatable = $('#action_table').data('dynatable');
+      action_dynatable.sorts.add('timestamp', -1)
+      action_dynatable.process();
+      $( "#edit_form" ).submit(function( event ) {
+        event.preventDefault();
+        var template_data = [];
+        for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++)
+          template_data.push({'key': dynatable.settings.dataset.originalRecords[i].key,
+                              'value': dynatable.settings.dataset.originalRecords[i].raw_value});
+        $.post( "{% url 'reduction_configuration_change' instrument %}", { data: JSON.stringify(template_data) } );
+      });
+  });
+  
+  function update(data) {
+    for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++) { 
+        if (dynatable.settings.dataset.originalRecords[i].key == data.key.value) {
+            dynatable.settings.dataset.originalRecords[i].value = "<form action='javascript:void(0);' onsubmit='update(this);'><input type='hidden' name='key' value='"+data.key.value+"'><input type='text' name='value' value='"+data.value.value+"'></form>";
+            dynatable.settings.dataset.originalRecords[i].raw_value = data.value.value;
+        }
+    }
+    dynatable.process();
+    return true;
+  }
+</script>
+{% endblock %}
+    
+{% block summary %}
+List of parameters for {{ instrument }} reduction template:<br><br>
+
+{% if is_instrument_staff %}
+  <div style="float: right; margin-left:15px;">
+    <form id='edit_form' action='#'>Create new script: <input title="Click to generate a new reduction script" type="submit"></form>
+  </div>
+{% endif %}
+<table cellspacing="0" class="message_table fixed_table" id="params_table">
+  <thead>
+    <tr>
+      <th data-dynatable-column="key" style="width: 100px;">Parameter</th>
+      <th data-dynatable-column="value">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<br>
+{% endblock %}
+
+{% block content %}
+Latest post-processing log entries for {{ instrument }}:<br><br>
+<table cellspacing="0" class="message_table fixed_table" id="action_table">
+  <thead>
+    <tr>
+      <th data-dynatable-column="info">Information</th>
+      <th data-dynatable-column="time" data-dynatable-sorts="timestamp" style="width: 90px;">Time</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<br>
+
+{% endblock %}

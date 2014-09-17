@@ -26,6 +26,8 @@
 	table-layout: fixed;
 	width:530px;
 }
+
+.fixed_table input { min-width: 400px; }
 .fixed_table td, th { overflow:hidden; }
 
 td, th {
