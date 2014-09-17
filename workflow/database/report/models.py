@@ -71,6 +71,9 @@ class IPTS(models.Model):
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = IPTSManager()
     
+    class Meta:
+        verbose_name_plural = "IPTS"
+        
     def __unicode__(self):
         return self.expt_name
     
@@ -251,6 +254,9 @@ class RunStatus(models.Model):
     
     objects = RunStatusManager()
     
+    class Meta:
+        verbose_name_plural = "Run status"
+        
     def __unicode__(self):
         return "%s: %s" % (str(self.run_id), str(self.queue_id))
     
@@ -315,6 +321,9 @@ class WorkflowSummary(models.Model):
     
     objects = WorkflowSummaryManager()
     
+    class Meta:
+        verbose_name_plural = "Workflow summaries"
+        
     def __unicode__(self):
         if self.complete is True:
             return "%s: complete" % str(self.run_id)
@@ -460,3 +469,5 @@ class InstrumentStatus(models.Model):
     instrument_id = models.ForeignKey(Instrument, unique=True)
     last_run_id = models.ForeignKey(DataRun, null=True)
     
+    class Meta:
+        verbose_name_plural = "Instrument status"

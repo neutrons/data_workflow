@@ -22,6 +22,9 @@ class PV(models.Model):
     status = models.IntegerField()
     update_time = models.IntegerField()
     
+    class Meta:
+        verbose_name_plural = "PVs"
+    
 
 class PVCache(models.Model):
     """
@@ -33,6 +36,8 @@ class PVCache(models.Model):
     status = models.IntegerField()
     update_time = models.IntegerField()
     
+    class Meta:
+        verbose_name_plural = "PV cache"
 
 class PVString(models.Model):
     """
@@ -44,6 +49,8 @@ class PVString(models.Model):
     status = models.IntegerField()
     update_time = models.IntegerField()
     
+    class Meta:
+        verbose_name_plural = "PV strings"
 
 class PVStringCache(models.Model):
     """
@@ -55,6 +62,8 @@ class PVStringCache(models.Model):
     status = models.IntegerField()
     update_time = models.IntegerField()
     
+    class Meta:
+        verbose_name_plural = "PV string cache"
 
 class MonitoredVariable(models.Model):
     """
