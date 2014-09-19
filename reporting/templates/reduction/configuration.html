@@ -51,7 +51,21 @@
 {% endblock %}
     
 {% block summary %}
-List of parameters for {{ instrument }} reduction template:<br><br>
+<div class='section_divider'>Configuring the automated reduction</div>
+<div class='narrow_section'>
+Instrument team members can use this page to generate a new automated reduction script.
+<ul>
+<li>A default script must be placed in <i>/SNS/{{ instrument }}/shared/autoreduce/reduce_{{ instrument }}_default.py</i></li>
+<li>A script template must be placed in <i>/SNS/{{ instrument }}/shared/autoreduce/reduce_{{ instrument }}.py.template</i></li>
+<li>Review the parameters below and modify as needed. Hit enter to apply your changes before clicking the submit button.</li>
+<li>The <i>reduce_{{ instrument }}.py</i> will automatically be overwritten once you click the submit button.</li>
+
+</ul>
+
+
+</div>
+List of parameters for {{ instrument }} reduction template:
+<br>
 
 {% if is_instrument_staff %}
   <div style="float: right; margin-left:15px;">
