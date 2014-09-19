@@ -218,6 +218,36 @@ header {
 	font-weight: bold;
 }
 
+.section_divider {
+    width:70%;
+    font-weight: bold;
+    margin:20px auto;
+    overflow:hidden;
+    text-align:center;
+    line-height:1.2em;
+}
+
+.section_divider:before, .section_divider:after {
+    content:"";
+    vertical-align:top;
+    display:inline-block;
+    width:50%;
+    height:0.65em;
+    border-bottom:1px solid #CDC0B0;
+    margin:0 2% 0 -55%;
+}
+.section_divider:after {
+    margin:0 -55% 0 2%;
+}
+
+.narrow_section {
+    width:80%; 
+    margin-top:20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom:40px;
+}
+
 body {
 	margin: 0 auto;
 	padding: 10px 10px 10px 10px;

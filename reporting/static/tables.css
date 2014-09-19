@@ -30,6 +30,8 @@
 .fixed_table input { min-width: 400px; }
 .fixed_table td, th { overflow:hidden; }
 
+table { border-collapse: collapse; border-spacing: 0; }
+
 td, th {
     line-height: 13px;
     vertical-align: middle;
