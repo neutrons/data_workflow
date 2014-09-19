@@ -964,6 +964,24 @@ def get_dashboard_data():
         data_dict[i.name] = { 'run_rate':r_rate, 'error_rate':e_rate }
     return data_dict
 
+def add_status_entry(instrument_id, message_channel, value):
+    """
+        Add a status message for a given instrument.
+        
+        @param instrument_id: Instrument object
+        @param message_channel: name of the AMQ channel used to report updates
+        @param value: value for the entry (string)
+    """
+    # Find the parameter used to report updates
+    try:
+        key_id = Parameter.objects.get(name=message_channel)
+        update = StatusVariable(instrument_id=instrument_id,
+                                key_id=key_id,
+                                value=str(value))
+        update.save()
+    except:
+        logging.error("add_status_entry: could add parameter for %s" % message_channel)
+
 def get_latest_updates(instrument_id, message_channel,
                        timeframe=2.0, number_of_entries=10):
     """

@@ -18,6 +18,7 @@ import sys
 
 import users.view_util
 import dasmon.view_util
+import reporting_app.view_util
 
 @users.view_util.login_or_local_required
 def configuration(request, instrument):
@@ -39,12 +40,13 @@ def configuration(request, instrument):
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
                                                       message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
     
-        # Breadcrumbs
+    # Breadcrumbs
     breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
+                       'helpline': settings.HELPLINE_EMAIL,
                        'params_list': params_list,
                        'action_list': action_list ,
                        'breadcrumbs': breadcrumbs}
@@ -66,8 +68,10 @@ def configuration_change(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     if 'data' in request.POST:
         template_data = json.loads(request.POST['data'])
+        template_dict = {}
         for item in template_data:
             try:
+                template_dict[item['key']] = item['value']
                 props = ReductionProperty.objects.filter(instrument=instrument_id, key=item['key'])
                 if len(props)==1:
                     if not props[0].value == item['value']:
@@ -84,6 +88,22 @@ def configuration_change(request, instrument):
             except:
                 logging.error("config_change: %s" % sys.exc_value)
         
+        # Send ActiveMQ request
+        try:
+            dasmon.view_util.add_status_entry(instrument_id,
+                                              settings.SYSTEM_STATUS_PREFIX+'postprocessing',
+                                              "Script requested by %s" % request.user)
+            data_dict = {"instrument": instrument.upper(),
+                         "use_default": False,
+                         "template_data": template_dict,
+                         "information": "Requested by %s" % str(request.user)}
+            data = json.dumps(data_dict)
+            reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
+            logging.info("Reduction script requested: %s" % str(data))
+        except:
+            logging.error("Error sending AMQ script request: %s" % sys.exc_value)
+            return HttpResponse("Error processing request", status=500)
+            
     data_dict = {}
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'

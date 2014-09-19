@@ -33,7 +33,8 @@
         for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++)
           template_data.push({'key': dynatable.settings.dataset.originalRecords[i].key,
                               'value': dynatable.settings.dataset.originalRecords[i].raw_value});
-        $.post( "{% url 'reduction_configuration_change' instrument %}", { data: JSON.stringify(template_data) } );
+        $.post( "{% url 'reduction_configuration_change' instrument %}", { data: JSON.stringify(template_data) } )
+            .fail(function() { new_alert( "Error processing request: contact {{ helpline }}" ); show_alert(); });
       });
   });
   
@@ -59,7 +60,7 @@ Instrument team members can use this page to generate a new automated reduction 
 <li>A script template must be placed in <i>/SNS/{{ instrument }}/shared/autoreduce/reduce_{{ instrument }}.py.template</i></li>
 <li>Review the parameters below and modify as needed. Hit enter to apply your changes before clicking the submit button.</li>
 <li>The <i>reduce_{{ instrument }}.py</i> will automatically be overwritten once you click the submit button.</li>
-
+<li>Make sure <b>all</b> your template properties appear below: if not, contact NDAV.</li>
 </ul>
 
 

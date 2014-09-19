@@ -237,6 +237,11 @@ INSTRUMENT_TEAM_SUFFIX = 'InstrumentTeam'
 ## Post-processing node prefix values (autoreduction and cataloging)
 POSTPROCESS_NODE_PREFIX = ['autoreducer', 'fermi']
 
+## ActiveMQ queue for generating a new reduction script
+REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT'
+
+HELPLINE_EMAIL = 'adara_support@ornl.gov'
+
 # Import local settings if available
 try:
     from local_settings import *
