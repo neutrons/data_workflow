@@ -30,7 +30,7 @@
 {% block summary %}
   <span style='float:right'>{% if prev_url %}<a href='{{ prev_url|safe }}'>previous</a>{% else %}previous{% endif %} | {% if next_url %}<a href='{{ next_url|safe }}'>next</a>{% else %}next{% endif %}</span>
   <br><br>
-  <table cellspacing="0" class='info_display'>
+  <table class='info_display'>
     <tbody>
         <tr><td>Run title</td><td>{{ icat_info.title|default:"unknown" }}</td></tr>
         <tr><td>Run start</td><td>{{ icat_info.startTime|default:"unknown" }}</td></tr>
@@ -65,7 +65,7 @@
 {% endblock %}
 
 {% block content %}
-  <table cellspacing="0" class="message_table fixed_table">
+  <table class="message_table fixed_table">
     <thead>
       <tr>
         <th style="width: 170px;">Message</th>

@@ -99,7 +99,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% block content %}
   {% for group in key_value_pairs %}
   <h3 class='table_title'>{{ group.group }}</h3>
-  <table cellspacing="0" class="message_table">
+  <table class="message_table">
     <thead>
       <tr>
         <th> Key </th> <th> Value </th>
@@ -107,7 +107,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
     </thead>
     <tbody>
     {% for item in group.data %}
-      <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+      <tr>
         <td>{{ item.key|strip }}</td>
         <td><span id="{{ item.key }}">{{ item.value|safe }}</span></td>
       </tr>

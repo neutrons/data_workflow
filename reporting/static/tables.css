@@ -94,13 +94,6 @@ tr.alt {
 }
 
 .message_table tr:nth-child(even) {background: #f5ede3;}
-.even {
-    background: #f5ede3;
-}
-
-.odd {
-    background: none;
-}
 
 .error_row {
     background: #f8bdb7;
@@ -110,40 +103,4 @@ tr.alt {
     background: #f8e7b3;
 }
 
-/* SORTABLE TABLES */
-
-thead th a:link, thead th a:visited {
-	color: #5B4729;
-    display: block;
-}
-
-table thead th.sorted {
-    background-position: bottom left !important;
-}
-
-table thead th.sorted a {
-    padding-right: 0px;
-}
-
-table thead th.ascending a {
-    background: url(/static/arrow-down.gif) right .4em no-repeat;
-}
-
-table thead th.descending a {
-    background: url(/static/arrow-up.gif) right .4em no-repeat;
-}
-
-/* ORDERABLE TABLES */
-
-table.orderable tbody tr td:hover {
-    cursor: move;
-}
-
-table.orderable tbody tr td:first-child {
-    padding-left: 14px;
-    background-repeat: repeat-y;
-}
-
-table.orderable-initalized .order-cell, body>tr>td.order-cell {
-    display: none;
-}
+thead th a:link, thead th a:visited { color: #5B4729; display: block; }

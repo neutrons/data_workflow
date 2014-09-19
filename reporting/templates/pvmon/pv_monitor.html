@@ -104,7 +104,7 @@
 {% endblock %}
 
 {% block content %}
-  <table cellspacing="0" class="message_table" id="error_table">
+  <table class="message_table" id="error_table">
     <thead>
       <tr>
         <th> Key </th> <th> Value </th> <th> Last Updated </th>
@@ -112,7 +112,7 @@
     </thead>
     <tbody>
       {% for item in key_value_pairs %}
-      <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+      <tr>
         {% if item.value|is_number %}<td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}');"> {{ item.key }} </a></td>{% else %}<td>{{ item.key }}</td>{% endif %}
         <td><span id="{{ item.key }}">{{ item.value }}</span></td>
         <td><span id="{{ item.key }}_timestamp">{{ item.timestamp }}</span></td>

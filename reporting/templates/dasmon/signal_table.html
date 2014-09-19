@@ -9,7 +9,7 @@
                                                    highlightSpotColor: 'undefined'} ); });
    </script>
    <div class="box">
-      <table cellspacing="0" class="message_table fixed_table" id="alert_table">
+      <table class="message_table fixed_table" id="alert_table">
       <thead>
       <tr>
           <th> Signal/PV </th> <th> Value </th> <th style="width: 50px;" > History </th> <th> Last Updated </th>
@@ -17,7 +17,7 @@
       </thead>
       <tbody>
       {% for item in signals %}
-          <tr id='signal_{{ item.name }}' class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+          <tr>
           {% if item.key %}
           {% if item.data %}<td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>{% else %}<td>{{ item.name|safe }}</td>{% endif %}
           <td>{{ item.status|safe }}</td><td><span class="inlinesparkline">{{ item.data }}</span></td>

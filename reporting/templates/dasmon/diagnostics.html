@@ -35,20 +35,12 @@ The following items should be considered while interpreting the diagnostics belo
 <p>
 <b>DASMON diagnostics:</b>
 <div style="margin-left:20px">
-<table cellspacing="0">
+<table>
   <tbody>
-    <tr class="even">
-      <td>Last status: </td><td>{{dasmon_diagnostics.status}}</td>
-    </tr>
-    <tr class="odd">
-      <td>Last status update: </td><td>{{dasmon_diagnostics.status_time}}</td>
-    </tr>
-    <tr class="even">
-      <td>Last PV update: </td><td>{{dasmon_diagnostics.pv_time}}</td>
-    </tr>
-    <tr class="odd">
-      <td>Last AMQ update: </td><td>{{dasmon_diagnostics.amq_time}}</td>
-    </tr>
+    <tr><td>Last status: </td><td>{{dasmon_diagnostics.status}}</td></tr>
+    <tr><td>Last status update: </td><td>{{dasmon_diagnostics.status_time}}</td></tr>
+    <tr><td>Last PV update: </td><td>{{dasmon_diagnostics.pv_time}}</td></tr>
+    <tr><td>Last AMQ update: </td><td>{{dasmon_diagnostics.amq_time}}</td></tr>
   </tbody>
 </table>
 <p>
@@ -66,14 +58,10 @@ Reported conditions:<br>
 <p>
 <b>PVStreamer diagnostics:</b>
 <div style="margin-left:20px">
-<table cellspacing="0">
+<table>
   <tbody>
-    <tr class="even">
-      <td>Last status: </td><td>{{pv_diagnostics.status}}</td>
-    </tr>
-    <tr class="odd">
-      <td>Last status update: </td><td>{{pv_diagnostics.status_time}}</td>
-    </tr>
+    <tr><td>Last status: </td><td>{{pv_diagnostics.status}}</td></tr>
+    <tr><td>Last status update: </td><td>{{pv_diagnostics.status_time}}</td></tr>
   </tbody>
 </table>
 <p>
@@ -92,14 +80,10 @@ Reported conditions:<br>
 <p>
 <b>PVSD diagnostics:</b>
 <div style="margin-left:20px">
-<table cellspacing="0">
+<table>
   <tbody>
-    <tr class="even">
-      <td>Last status: </td><td>{{pvsd_diagnostics.status}}</td>
-    </tr>
-    <tr class="odd">
-      <td>Last status update: </td><td>{{pvsd_diagnostics.status_time}}</td>
-    </tr>
+    <tr><td>Last status: </td><td>{{pvsd_diagnostics.status}}</td></tr>
+    <tr><td>Last status update: </td><td>{{pvsd_diagnostics.status_time}}</td></tr>
   </tbody>
 </table>
 <p>
@@ -118,23 +102,15 @@ Reported conditions:<br>
 <p>
 <b>Workflow diagnostics:</b>
 <div style="margin-left:20px">
-<table cellspacing="0">
+<table>
   <tbody>
-    <tr class="even">
-      <td>Last status: </td><td>{{wf_diagnostics.status}}</td>
-    </tr>
-    <tr class="odd">
-      <td>Last status update: </td><td>{{wf_diagnostics.status_time}}</td>
-    </tr>
+    <tr><td>Last status: </td><td>{{wf_diagnostics.status}}</td></tr>
+    <tr><td>Last status update: </td><td>{{wf_diagnostics.status_time}}</td></tr>
 {% for item in wf_diagnostics.processes %}
-    <tr class="{% if forloop.counter|divisibleby:2 %}odd{% else %}even{% endif %}">
-      <td>PID {{ item.pid }}: </td><td>{{ item.time }}</td>
-    </tr>
+    <tr><td>PID {{ item.pid }}: </td><td>{{ item.time }}</td></tr>
 {% endfor %}
 {% for item in wf_diagnostics.dasmon_listener %}
-    <tr class="{% if forloop.counter|divisibleby:2 %}odd{% else %}even{% endif %}">
-      <td>Dasmon listener PID {{ item.pid }}: </td><td>{{ item.time }}</td>
-    </tr>
+    <tr><td>Dasmon listener PID {{ item.pid }}: </td><td>{{ item.time }}</td></tr>
 {% endfor %}
   </tbody>
 </table>
@@ -152,18 +128,12 @@ Reported conditions:<br>
 <p>
 <b>Cataloging & Reduction diagnostics:</b>
 <div style="margin-left:20px">
-<table cellspacing="0">
+<table>
   <tbody>
-    <tr class="even">
-      <td>Last cataloging status: </td><td>{{post_diagnostics.catalog_status}}</td>
-    </tr>
-    <tr class="odd">
-      <td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td>
-    </tr>
+    <tr><td>Last cataloging status: </td><td>{{post_diagnostics.catalog_status}}</td></tr>
+    <tr><td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td></tr>
 {% for item in post_diagnostics.ar_nodes %}
-    <tr class="{% if forloop.counter|divisibleby:2 %}odd{% else %}even{% endif %}">
-      <td>{{ item.node }}: </td><td>{{ item.time }}</td>
-    </tr>
+    <tr><td>{{ item.node }}: </td><td>{{ item.time }}</td></tr>
 {% endfor %}
   </tbody>
 </table>
