@@ -983,7 +983,8 @@ def add_status_entry(instrument_id, message_channel, value):
         logging.error("add_status_entry: could add parameter for %s" % message_channel)
 
 def get_latest_updates(instrument_id, message_channel,
-                       timeframe=2.0, number_of_entries=10):
+                       timeframe=2.0, number_of_entries=10,
+                       start_time=None):
     """
         Return a list of recent status messages received on a given channel.
         
@@ -991,6 +992,7 @@ def get_latest_updates(instrument_id, message_channel,
         @param message_channel: name of the AMQ channel used to report updates
         @param timeframe: number of days to report on
         @param number_of_entries: number of recent entries to return if nothing was found in the desired time frame
+        @param start_time: earliest time of returned entries. Takes precedence over timeframe and number.
     """
     # Find the parameter used to report updates
     try:
@@ -1000,14 +1002,19 @@ def get_latest_updates(instrument_id, message_channel,
         return []
     
     # Determine what's the oldest time stamp we'll report
-    delta_time = datetime.timedelta(days=timeframe)
-    oldest_time = timezone.now() - delta_time
+    if start_time is not None:
+        oldest_time = start_time
+    else:
+        delta_time = datetime.timedelta(days=timeframe)
+        oldest_time = timezone.now() - delta_time
     
     update_list = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id,
-                                                timestamp__gte=oldest_time)
+                                                timestamp__gt=oldest_time)
     
     # If we don't have any entry in the desired time frame, return the last few
-    if len(update_list)==0:
+    if len(update_list)>0:
+        update_list = update_list.order_by('timestamp')
+    elif start_time is None:
         update_list = StatusVariable.objects.filter(instrument_id=instrument_id, 
                                                     key_id=key_id).order_by('timestamp').reverse()[:number_of_entries]
 
@@ -1017,5 +1024,5 @@ def get_latest_updates(instrument_id, message_channel,
         df = dateformat.DateFormat(localtime)
         template_data.append({'info': str(item.value),
                               'time': str(df.format(settings.DATETIME_FORMAT)),
-                              'timestamp': item.timestamp.isoformat()})
+                              'timestamp': timezone.make_naive(item.timestamp, timezone.utc).isoformat()})
     return template_data

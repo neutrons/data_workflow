@@ -10,11 +10,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
+from django.utils import dateparse, timezone
 from models import ReductionProperty, PropertyModification
 from report.models import Instrument
 import logging
 import json
 import sys
+import datetime
 
 import users.view_util
 import dasmon.view_util
@@ -36,10 +38,13 @@ def configuration(request, instrument):
         params_list.append({"key": str(item.key),
                             "raw_value": str(item.value),
                             "value": "<form action='javascript:void(0);' onsubmit='update(this);'><input type='hidden' name='key' value='%s'><input title='Hit enter to apply changes to your local session' type='text' name='value' value='%s'></form>" % (str(item.key), str(item.value))})
-    
+
+    last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
                                                       message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
-    
+    if len(action_list)>0:
+        last_action = action_list[len(action_list)-1]['timestamp']
+
     # Breadcrumbs
     breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
@@ -49,6 +54,7 @@ def configuration(request, instrument):
                        'helpline': settings.HELPLINE_EMAIL,
                        'params_list': params_list,
                        'action_list': action_list ,
+                       'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
@@ -126,7 +132,20 @@ def configuration_update(request, instrument):
         @param request: request object
         @param instrument: instrument name
     """
-    data_dict = {}
+    last_action = request.GET.get('since', '0')
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    action_list = []
+    if last_action is not '0':
+        start_time = dateparse.parse_datetime(last_action)
+        start_time = timezone.make_aware(start_time, timezone.utc)
+        action_list = dasmon.view_util.get_latest_updates(instrument_id,
+                                                          message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing',
+                                                          start_time=start_time)
+    data_dict = {'last_action_time': last_action, 'refresh_needed': '0'}
+    if len(action_list)>0:
+        data_dict['last_action_time'] = action_list[len(action_list)-1]['timestamp']
+        data_dict['refresh_needed'] = '1'
+    data_dict['actions'] = action_list
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
