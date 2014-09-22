@@ -248,6 +248,9 @@ header {
     margin-bottom:40px;
 }
 
+.form_submit_button { display: inline; border: 1px solid silver;}
+input[disabled] { background-color: rgb(240,240,240); }
+
 body {
 	margin: 0 auto;
 	padding: 10px 10px 10px 10px;

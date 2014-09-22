@@ -88,13 +88,20 @@ def configuration_change(request, instrument):
             except:
                 logging.error("config_change: %s" % sys.exc_value)
         
+        # Check whether the user wants to install the default script
+        use_default = False
+        if 'use_default' in request.POST:
+            try:
+                use_default = int(request.POST['use_default'])==1
+            except:
+                logging.error("Error parsing use_default parameter: %s" % sys.exc_value)
         # Send ActiveMQ request
         try:
             dasmon.view_util.add_status_entry(instrument_id,
                                               settings.SYSTEM_STATUS_PREFIX+'postprocessing',
                                               "Script requested by %s" % request.user)
             data_dict = {"instrument": instrument.upper(),
-                         "use_default": False,
+                         "use_default": use_default,
                          "template_data": template_dict,
                          "information": "Requested by %s" % str(request.user)}
             data = json.dumps(data_dict)
