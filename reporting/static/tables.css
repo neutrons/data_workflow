@@ -104,3 +104,13 @@ tr.alt {
 }
 
 thead th a:link, thead th a:visited { color: #5B4729; display: block; }
+
+
+.property_table {
+    font-size:inherit;
+    margin-left: 10px;
+}
+.property_table input { width:300px; }
+.property_table th { width: 100px; vertical-align:middle;}
+.short_input input { min-width:80px; width:150px; }
+.icon_input { min-width:10px; width:20px; }

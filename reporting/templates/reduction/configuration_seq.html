@@ -9,9 +9,7 @@
 <script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
 
 <script>
-  var records = {% autoescape off %}{{ params_list|safe }}{% endautoescape %};
   var action_records = {% autoescape off %}{{ action_list }}{% endautoescape %};
-  var dynatable = null;
   var action_dynatable = null;
   var default_requested = 0;
   var last_action = '{{ last_action_time }}';
@@ -29,14 +27,8 @@
       statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
   };
   $(document).ready( function() {
-      $('#params_table').dynatable({ dataset: { records: records },
-                                     features: { pushState: false, search: false }
-      });
-      dynatable = $('#params_table').data('dynatable');
-      dynatable.sorts.add('key', 1)
-      dynatable.process();
-
-      $('#action_table').dynatable({ dataset: { records: action_records },
+      $('#action_table').dynatable({ dataset: { records: action_records,
+                                                perPageOptions: [5, 10, 50, 100], perPageDefault: 5},
                                      features: { pushState: false, search: false }
       });
       action_dynatable = $('#action_table').data('dynatable');
@@ -53,18 +45,12 @@
       });
       setInterval(poll, 10000);
   });
-  function update(data) {
-    for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++) { 
-        if (dynatable.settings.dataset.originalRecords[i].key == data.key.value) {
-            dynatable.settings.dataset.originalRecords[i].value = "<form action='javascript:void(0);' onsubmit='update(this);'><input type='hidden' name='key' value='"+data.key.value+"'><input type='text' name='value' value='"+data.value.value+"'></form>";
-            dynatable.settings.dataset.originalRecords[i].raw_value = data.value.value;
-        }
-    }
-    dynatable.process();
-    return true;
+  function remove_entry(id, bank_id, tube_id, pixel_id) { 
+      $(id).prop('checked', !$(id).prop('checked')); 
+      $(bank_id).prop('disabled', $(id).prop('checked'));
+      $(tube_id).prop('disabled', $(id).prop('checked'));
+      $(pixel_id).prop('disabled', $(id).prop('checked'));
   }
-  function check_default_script() { $("#params_table input").attr("disabled", "disabled"); default_requested = 1;}
-  function check_new_script() { $("#params_table input").removeAttr("disabled"); default_requested = 0;}
 </script>
 {% endblock %}
     
@@ -80,34 +66,44 @@ Instrument team members can use this page to generate a new automated reduction 
 <li>Make sure <b>all</b> your template properties appear below: if not, contact 
 <a href="mailto:{{ helpline }}" target="_top">{{ helpline }}</a>.</li>
 </ul>
-
-
 </div>
-List of parameters for {{ instrument }} reduction template:
-<br>
 
+<div>
 {% if is_instrument_staff %}
-  <div style="float: right; margin-left:15px;">
-    <form id='edit_form' action='#'>Create new script: <input id="submit_button" title="Click to generate a new reduction script" type="submit"></form>
-    <form id='default_form' action='#'>
-    <div id="radio">
-      <input type="radio" id="new" name="radio" checked="checked" onclick="check_new_script()"><label for="new">New script</label>
-      <input type="radio" id="default" name="radio" onclick="check_default_script()"><label for="default">Restore default script</label>
-    </div>
-    </form>
-  </div>
+<p>List of parameters for {{ instrument }} reduction template:</p>
+<form action="" method="POST">{% csrf_token %}
+  <table class="property_table  fixed_table" >
+    <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
+    <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
+    <tr><th>Grouping file</th> <td {% if options_form.groupingerrors %}class='highlight_row' title='{{ options_form.grouping.errors }}'{% endif %}>{{options_form.grouping }} </td></tr>
+  </table>
+
+  {{ mask_form.management_form }}
+  <table class="property_table">
+    <thead>
+      <tr><th>Bank</th> <th>Tube</th> <th>Pixel</th></tr>
+    </thead>
+    <tbody>
+    {% for form in mask_form %}
+      <tr class='short_input'>
+        {{ form.id }}<span style='display:none;'>{{ form.remove }}</span>
+        <td {% if form.bank.errors %}class='highlight_row' title='{{ form.bank.errors }}'{% endif %}>{{ form.bank }}</td>
+        <td {% if form.tube.errors %}class='highlight_row' title='{{ form.tube.errors }}'{% endif %}>{{ form.tube }}</td>
+        <td {% if form.pixel.errors %}class='highlight_row' title='{{ form.pixel.errors }}'{% endif %}>{{ form.pixel }}</td>
+        <td class='icon_input' title='Click to remove this entry'> <span title='{{ form.remove.id_for_label}}' class="ui-icon ui-icon-trash" onclick="remove_entry('#{{ form.remove.id_for_label }}', '#{{ form.bank.id_for_label }}', '#{{ form.tube.id_for_label }}', '#{{ form.pixel.id_for_label }}')"></span></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+
+<p>
+{{ options_form.use_default }} Install default reduction script
+<span style="float: right; margin-left:15px;" >
+<input title="Click to create new reduction script" type="submit" value="submit"/>
+</span>
+</form>
 {% endif %}
-<table class="message_table fixed_table" id="params_table">
-  <thead>
-    <tr>
-      <th data-dynatable-column="key" style="width: 100px;">Parameter</th>
-      <th data-dynatable-column="value">Value</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<br>
+</div>
+<p>
 {% endblock %}
 
 {% block content %}

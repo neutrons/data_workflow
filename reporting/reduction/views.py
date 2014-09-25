@@ -7,20 +7,23 @@
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.conf import settings
 from django.utils import dateparse, timezone
-from models import ReductionProperty, PropertyModification
+from models import ReductionProperty
 from report.models import Instrument
 import logging
 import json
 import sys
 import datetime
+from . import forms
+from django.forms.formsets import formset_factory
 
 import users.view_util
 import dasmon.view_util
-import reporting_app.view_util
+import view_util
 
 @users.view_util.login_or_local_required
 def configuration(request, instrument):
@@ -28,9 +31,14 @@ def configuration(request, instrument):
         View current automated reduction configuration and modification history
         for a given instrument
         
+        #TODO: redirect to another page if you are not part of the instrument team
+        
         @param request: request object
         @param instrument: instrument name
     """
+    if instrument.lower()=='seq':
+        return configuration_seq(request, instrument)
+    
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     props_list = ReductionProperty.objects.filter(instrument=instrument_id)
     params_list = []
@@ -56,11 +64,85 @@ def configuration(request, instrument):
                        'action_list': action_list ,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs}
+    template_values.update(csrf(request))
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render_to_response('reduction/configuration.html',
                               template_values)
 
+@users.view_util.login_or_local_required
+def configuration_seq(request, instrument):
+    """
+        View current automated reduction configuration and modification history
+        for a given instrument
+        
+        #TODO: redirect to another page if you are not part of the instrument team
+        
+        @param request: request object
+        @param instrument: instrument name
+    """
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    
+    default_extra = 1
+    try:
+        extra = int(request.GET.get('extra', default_extra))
+    except:
+        extra = default_extra
+    MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
+
+    props_list = ReductionProperty.objects.filter(instrument=instrument_id)
+    params_dict = {}
+    for item in props_list:
+        params_dict[str(item.key)] = str(item.value)
+
+    error_msg = []
+    if request.method == 'POST':
+        options_form = forms.ReductionConfigurationSEQForm(request.POST)
+        mask_form = MaskFormSet(request.POST)
+        if options_form.is_valid() and mask_form.is_valid():
+            mask_block = forms.MaskForm.to_python(mask_form)
+            options_form.cleaned_data['mask'] = mask_block
+            options_form.to_db(instrument_id, request.user)
+            # Send ActiveMQ request
+            try:
+                view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
+                return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            except:
+                logging.error("Error sending AMQ script request: %s" % sys.exc_value)
+                error_msg.append("Error processing request: %s" % sys.exc_value)
+        else:
+            logging.error("Invalid form %s %s" % (options_form.errors, mask_form.errors))
+    else:
+        options_form = forms.ReductionConfigurationSEQForm(initial=params_dict)
+        mask_list = []
+        if 'mask' in params_dict:
+            mask_list = forms.MaskForm.to_tokens(params_dict['mask'])
+        mask_form = MaskFormSet(initial=mask_list)
+
+    last_action = datetime.datetime.now().isoformat()
+    action_list = dasmon.view_util.get_latest_updates(instrument_id,
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
+    if len(action_list)>0:
+        last_action = action_list[len(action_list)-1]['timestamp']
+
+    # Breadcrumbs
+    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
+    breadcrumbs += " &rsaquo; configuration"
+
+    template_values = {'instrument': instrument.upper(),
+                       'helpline': settings.HELPLINE_EMAIL,
+                       'options_form': options_form,
+                       'mask_form': mask_form,
+                       'action_list': action_list ,
+                       'last_action_time': last_action,
+                       'breadcrumbs': breadcrumbs,
+                       'user_alert':error_msg}
+    template_values.update(csrf(request))
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    return render_to_response('reduction/configuration_seq.html',
+                              template_values)
 
 @csrf_exempt
 @users.view_util.login_or_local_required_401
@@ -78,41 +160,19 @@ def configuration_change(request, instrument):
         for item in template_data:
             try:
                 template_dict[item['key']] = item['value']
-                props = ReductionProperty.objects.filter(instrument=instrument_id, key=item['key'])
-                if len(props)==1:
-                    if not props[0].value == item['value']:
-                        props[0].value = item['value']
-                        props[0].save()
-                        modif = PropertyModification(property=props[0], 
-                                                     value=props[0].value,
-                                                     user=request.user)
-                        modif.save()
-                elif len(props)>1:
-                    logging.error("config_change: more than one property named %s" % item['key'])
-                else:
-                    logging.error("config_change: could not find %s" % item['key'])
+                view_util.store_property(instrument_id, item['key'], item['value'], user=request.user)
             except:
                 logging.error("config_change: %s" % sys.exc_value)
         
         # Check whether the user wants to install the default script
-        use_default = False
         if 'use_default' in request.POST:
             try:
-                use_default = int(request.POST['use_default'])==1
+                template_dict['use_default'] = int(request.POST['use_default'])==1
             except:
                 logging.error("Error parsing use_default parameter: %s" % sys.exc_value)
         # Send ActiveMQ request
         try:
-            dasmon.view_util.add_status_entry(instrument_id,
-                                              settings.SYSTEM_STATUS_PREFIX+'postprocessing',
-                                              "Script requested by %s" % request.user)
-            data_dict = {"instrument": instrument.upper(),
-                         "use_default": use_default,
-                         "template_data": template_dict,
-                         "information": "Requested by %s" % str(request.user)}
-            data = json.dumps(data_dict)
-            reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
-            logging.info("Reduction script requested: %s" % str(data))
+            view_util.send_template_request(instrument_id, template_dict, user=request.user)
         except:
             logging.error("Error sending AMQ script request: %s" % sys.exc_value)
             return HttpResponse("Error processing request", status=500)
