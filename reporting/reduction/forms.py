@@ -21,6 +21,13 @@ class ReductionConfigurationSEQForm(forms.Form):
     raw_vanadium = forms.CharField(required=False, initial='')
     processed_vanadium = forms.CharField(required=False, initial='')
     grouping = forms.CharField(required=False, initial='')
+    e_min = forms.FloatField(required=True, initial=-0.2)
+    e_step = forms.FloatField(required=True, initial=0.015)
+    e_max = forms.FloatField(required=True, initial=0.95)
+    
+    ## List of field that are used in the template
+    _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
+                      'e_min', 'e_step', 'e_max']
     
     def to_db(self, instrument_id, user=None):
         """
@@ -29,21 +36,21 @@ class ReductionConfigurationSEQForm(forms.Form):
             @param instrument_id: Instrument object
             @param user: user that made the change
         """
-        for key in ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping']:
+        for key in self._template_list:
             try:
                 if key in self.cleaned_data:
-                    value = self.cleaned_data[key]
+                    value = str(self.cleaned_data[key])
                 else:
                     value = ''
                 view_util.store_property(instrument_id, key, value, user=user)
             except:
-                logging.error("forms.ReductionConfigurationSEQForm: %s" % sys.exc_value)
+                logging.error("ReductionConfigurationSEQForm.to_db: %s" % sys.exc_value)
 
     def to_template(self):
         template_dict = {}
-        for key in ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping']:
+        for key in self._template_list:
             if key in self.cleaned_data:
-                template_dict[key] = self.cleaned_data[key]
+                template_dict[key] = str(self.cleaned_data[key])
             else:
                 template_dict[key] = ''
         return template_dict

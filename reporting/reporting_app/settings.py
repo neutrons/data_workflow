@@ -243,6 +243,8 @@ REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT'
 
 HELPLINE_EMAIL = 'adara_support@ornl.gov'
 
+INSTRUMENT_REDUCTION_SETUP = ('seq',)
+
 # Import local settings if available
 try:
     from local_settings import *

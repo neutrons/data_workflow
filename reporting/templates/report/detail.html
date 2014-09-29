@@ -87,5 +87,6 @@
   {% if is_instrument_staff %}
   Submit for post-processing: <a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>
   {% if reduce_url %} | <a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a> | <a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>{% endif %} 
+  {% if reduction_setup_url %} | <a href='{{ reduction_setup_url }}'>setup</a>{% endif %} 
   {% endif %}
 {% endblock %}

@@ -5,12 +5,23 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 from django.conf import settings
+from django.core.urlresolvers import reverse
 import logging
 import json
 from models import ReductionProperty, PropertyModification
 import reporting_app.view_util
 import dasmon.view_util
 import urllib
+
+def reduction_setup_url(instrument):
+    """
+        Return a URL for the reduction setup if it's enabled 
+        for the given instrument
+        @param instrument: instrument name
+    """
+    if instrument.lower() in settings.INSTRUMENT_REDUCTION_SETUP:
+        return reverse('reduction.views.configuration', args=[instrument])
+    return None
 
 def store_property(instrument_id, key, value, user=None):
     """
@@ -22,19 +33,22 @@ def store_property(instrument_id, key, value, user=None):
         @param user: user that created the change
     """
     props = ReductionProperty.objects.filter(instrument=instrument_id, key=key)
+    changed_prop = None
     if len(props)==1:
         if not props[0].value == value:
             props[0].value = value
             props[0].save()
-            if user is not None:
-                modif = PropertyModification(property=props[0], 
-                                             value=props[0].value,
-                                             user=user)
-                modif.save()
+            changed_prop = props[0]
     elif len(props)>1:
-        logging.error("forms.ReductionConfigurationSEQForm: more than one property named %s" % key)
+        logging.error("store_property: more than one property named %s" % key)
     else:
-        logging.error("forms.ReductionConfigurationSEQForm: could not find %s" % key)
+        changed_prop = ReductionProperty(instrument=instrument_id, key=str(key), value=str(value))
+        changed_prop.save()
+    if user is not None and changed_prop is not None:
+        modif = PropertyModification(property=changed_prop, 
+                                     value=value,
+                                     user=user)
+        modif.save()
 
 def send_template_request(instrument_id, template_dict, user='unknown'):
     """

@@ -34,15 +34,10 @@
       action_dynatable = $('#action_table').data('dynatable');
       action_dynatable.sorts.add('timestamp', -1)
       action_dynatable.process();
-      $( "#edit_form" ).submit(function( event ) {
-        event.preventDefault();
-        var template_data = [];
-        for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++)
-          template_data.push({'key': dynatable.settings.dataset.originalRecords[i].key,
-                              'value': dynatable.settings.dataset.originalRecords[i].raw_value});
-        $.post( "{% url 'reduction_configuration_change' instrument %}", {use_default: default_requested, data: JSON.stringify(template_data) } )
-            .fail(function() { new_alert( "Error processing request: contact {{ helpline }}" ); show_alert(); });
-      });
+      {% if not is_instrument_staff %}
+      $('#submit_button').prop('disabled', 'disabled');
+      new_alert( "Only instrument team members can use this form: contact {{ helpline }}" ); show_alert();
+      {% endif %}
       setInterval(poll, 10000);
   });
   function remove_entry(id, bank_id, tube_id, pixel_id) { 
@@ -69,19 +64,22 @@ Instrument team members can use this page to generate a new automated reduction 
 </div>
 
 <div>
-{% if is_instrument_staff %}
 <p>List of parameters for {{ instrument }} reduction template:</p>
 <form action="" method="POST">{% csrf_token %}
   <table class="property_table  fixed_table" >
     <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
     <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
-    <tr><th>Grouping file</th> <td {% if options_form.groupingerrors %}class='highlight_row' title='{{ options_form.grouping.errors }}'{% endif %}>{{options_form.grouping }} </td></tr>
+    <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{ options_form.grouping.errors }}'{% endif %}>{{options_form.grouping }} </td></tr>
+    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td> 
+      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors }}'{% endif %}>E<sub>min</sub> {{options_form.e_min }} </span> 
+      E<sub>step</sub> {{options_form.e_step }} 
+      E<sub>max</sub> {{options_form.e_max }} </td></tr>
   </table>
-
+  <p>
   {{ mask_form.management_form }}
   <table class="property_table">
     <thead>
-      <tr><th>Bank</th> <th>Tube</th> <th>Pixel</th></tr>
+      <tr><th>Masked Bank</th> <th>Masked Tube</th> <th>Masked Pixel</th></tr>
     </thead>
     <tbody>
     {% for form in mask_form %}
@@ -98,10 +96,9 @@ Instrument team members can use this page to generate a new automated reduction 
 <p>
 {{ options_form.use_default }} Install default reduction script
 <span style="float: right; margin-left:15px;" >
-<input title="Click to create new reduction script" type="submit" value="submit"/>
+<input id="submit_button" title="Click to create new reduction script" type="submit" value="submit"/>
 </span>
 </form>
-{% endif %}
 </div>
 <p>
 {% endblock %}

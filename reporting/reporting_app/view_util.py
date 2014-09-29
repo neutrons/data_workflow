@@ -3,6 +3,10 @@
     
     @copyright: 2014 Oak Ridge National Laboratory
 """
+from django.conf import settings
+import sys
+import logging
+
 def send_activemq_message(destination, data):
     """
         Send an AMQ message to the workflow manager.
@@ -31,3 +35,18 @@ def send_activemq_message(destination, data):
         conn.connect(icat_user, icat_passcode, wait=True)
         conn.send(destination, data, persistent='true')
     conn.disconnect()
+
+def reduction_setup_url(instrument):
+    """
+        Check whether the reduction app is installed, and if so
+        return a URL for the reduction setup if it's enabled 
+        for the given instrument
+        @param instrument: instrument name
+    """
+    try:
+        if 'reduction' in settings.INSTALLED_APPS:
+            import reduction.view_util
+            return reduction.view_util.reduction_setup_url(instrument)
+    except:
+        logging.error("Error getting reduction setup url: %s" % sys.exc_value)
+    return None

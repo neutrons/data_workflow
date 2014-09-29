@@ -15,6 +15,7 @@ import datetime
 import view_util
 import users.view_util
 import dasmon.view_util
+import reporting_app.view_util
 
 @users.view_util.login_or_local_required
 def summary(request):
@@ -141,6 +142,7 @@ def detail(request, instrument, run_id):
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
+                       'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
                        'image_url':image_url,
                        'prev_url': prev_url,
                        'next_url': next_url,
