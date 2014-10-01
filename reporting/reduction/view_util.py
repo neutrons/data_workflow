@@ -60,7 +60,7 @@ def send_template_request(instrument_id, template_dict, user='unknown'):
     """
     use_default = False
     if 'use_default' in template_dict:
-        use_default = template_dict['use_default']
+        use_default = template_dict['use_default'].lower()=='true'
         
     encoded_dict = {}
     for key, value in template_dict.items():

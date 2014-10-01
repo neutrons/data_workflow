@@ -27,7 +27,7 @@ class ReductionConfigurationSEQForm(forms.Form):
     
     ## List of field that are used in the template
     _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
-                      'e_min', 'e_step', 'e_max']
+                      'e_min', 'e_step', 'e_max', 'use_default']
     
     def to_db(self, instrument_id, user=None):
         """
