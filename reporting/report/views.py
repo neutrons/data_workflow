@@ -1,13 +1,14 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.utils import simplejson, dateformat, timezone
+from django.utils import dateformat, timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 import logging
 import sys
 import os
+import json
 
 from report.models import DataRun, IPTS, Instrument, Error, RunStatus
 from icat_server_communication import get_run_info
@@ -364,7 +365,7 @@ def get_experiment_update(request, instrument, ipts):
     data_dict = view_util.get_current_status(instrument_id)
     data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
     
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
 
@@ -408,7 +409,7 @@ def get_instrument_update(request, instrument):
     data_dict['expt_list'] = update_list
     data_dict['refresh_needed'] = '1' if len(update_list)>0 else '0'
     
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
 
@@ -458,7 +459,7 @@ def get_error_update(request, instrument):
     data_dict['errors'] = err_list
     data_dict['refresh_needed'] = '1' if len(err_list)>0 else '0'
     
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
 

@@ -4,12 +4,13 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.utils import simplejson, dateformat, timezone
+from django.utils import dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from report.models import Instrument
 
+import json
 import view_util
 import report.view_util
 import users.view_util
@@ -75,6 +76,6 @@ def get_update(request, instrument):
     data_dict['das_status'] = das_status
     data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
     
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response

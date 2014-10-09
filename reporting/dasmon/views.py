@@ -4,7 +4,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.utils import simplejson, dateformat, timezone
+from django.utils import dateformat, timezone
 import datetime
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
@@ -19,7 +19,7 @@ import view_util
 import report.view_util
 import users.view_util
 import legacy_status
-
+import json
 import sys
 import logging
 
@@ -77,7 +77,7 @@ def dashboard_update(request):
                  'postprocess_status':view_util.get_system_health(),
                  'instrument_rates': view_util.get_dashboard_data()
                  }
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
@@ -117,7 +117,7 @@ def run_summary_update(request):
     # Recent run info
     data_dict = {}
     data_dict = view_util.get_live_runs_update(request, None, None, **data_dict)
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
@@ -182,7 +182,7 @@ def activity_update(request):
                             'stack': 0,
                             'bars': {'fill': 0}})
         
-    response = HttpResponse(simplejson.dumps({'run_rate':instrument_list}), content_type="application/json")
+    response = HttpResponse(json.dumps({'run_rate':instrument_list}), content_type="application/json")
     response['Connection'] = 'close'
     return response
     
@@ -227,7 +227,7 @@ def get_legacy_data(request, instrument):
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     data_dict = legacy_status.get_ops_status(instrument_id)
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
 
@@ -400,7 +400,7 @@ def get_update(request, instrument):
     
     # Recent run info
     data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
@@ -415,7 +415,7 @@ def summary_update(request):
     data_dict = {'instruments':view_util.get_instrument_status_summary(),
                  'postprocess_status':view_util.get_system_health()
                  }
-    response = HttpResponse(simplejson.dumps(data_dict), content_type="application/json")
+    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
