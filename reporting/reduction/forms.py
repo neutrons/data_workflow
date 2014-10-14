@@ -6,11 +6,28 @@
 """
 from django import forms
 from django.core.exceptions import ValidationError
-from models import ReductionProperty, PropertyModification
+from models import ReductionProperty, PropertyModification, Choice
+from report.models import Instrument
 import sys
 import re
 import logging
 import view_util
+
+def _get_choices():
+    """
+        Pull the grouping choices from the database
+    """
+    form_choices = []
+    try:
+        instrument = Instrument.objects.get(name='seq')
+        property = ReductionProperty.objects.get(key='grouping')
+        choices = Choice.objects.filter(instrument=instrument,
+                                        property=property)
+        for item in choices:
+            form_choices.append( (item.value, item.description) )
+    except:
+        logging.error("_get_choices: SEQ instrument or grouping does not exist\n %s" % sys.exc_value)
+    return form_choices
 
 class ReductionConfigurationSEQForm(forms.Form):
     """
@@ -20,7 +37,7 @@ class ReductionConfigurationSEQForm(forms.Form):
     mask = forms.CharField(required=False, initial='')
     raw_vanadium = forms.CharField(required=False, initial='')
     processed_vanadium = forms.CharField(required=False, initial='')
-    grouping = forms.CharField(required=False, initial='')
+    grouping = forms.ChoiceField(choices=[])
     e_min = forms.FloatField(required=True, initial=-0.2)
     e_step = forms.FloatField(required=True, initial=0.015)
     e_max = forms.FloatField(required=True, initial=0.95)
@@ -29,6 +46,10 @@ class ReductionConfigurationSEQForm(forms.Form):
     _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
                       'e_min', 'e_step', 'e_max', 'use_default']
     
+    def __init__(self, *args, **kwargs):
+        super(ReductionConfigurationSEQForm, self).__init__(*args, **kwargs)
+        self.fields['grouping'].choices = _get_choices()
+        
     def to_db(self, instrument_id, user=None):
         """
             Store the form data

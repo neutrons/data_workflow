@@ -27,3 +27,14 @@ class PropertyModification(models.Model):
     user      = models.ForeignKey(User)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
 
+class Choice(models.Model):
+    """
+        Table of choices for forms
+    """
+    instrument  = models.ForeignKey(Instrument)
+    property    = models.ForeignKey(ReductionProperty)
+    description = models.TextField()
+    value       = models.TextField()
+
+    def __unicode__(self):
+        return "%s.%s[%s]" % (self.instrument, self.property, self.description)
