@@ -27,7 +27,7 @@ def _get_choices():
             form_choices.append( (item.value, item.description) )
     except:
         logging.error("_get_choices: SEQ instrument or grouping does not exist\n %s" % sys.exc_value)
-    return form_choices
+    return sorted(form_choices, cmp=lambda x,y:cmp(x[0], y[0]))
 
 class ReductionConfigurationSEQForm(forms.Form):
     """
