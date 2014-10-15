@@ -8,7 +8,7 @@ class ReductionProperty(models.Model):
     """
     instrument = models.ForeignKey(Instrument)
     key        = models.TextField()
-    value      = models.TextField()
+    value      = models.TextField(blank=True)
     timestamp  = models.DateTimeField('timestamp', auto_now=True)
     
     class Meta:
@@ -23,7 +23,7 @@ class PropertyModification(models.Model):
         property table.
     """
     property  = models.ForeignKey(ReductionProperty)
-    value     = models.TextField()
+    value     = models.TextField(blank=True)
     user      = models.ForeignKey(User)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
 

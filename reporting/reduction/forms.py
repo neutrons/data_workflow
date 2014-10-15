@@ -60,7 +60,11 @@ class ReductionConfigurationSEQForm(forms.Form):
         for key in self._template_list:
             try:
                 if key in self.cleaned_data:
-                    value = str(self.cleaned_data[key])
+                    # Make sure we treat booleans properly
+                    if type(self.cleaned_data[key])==bool and self.cleaned_data[key] is False:
+                        value = ''
+                    else:
+                        value = str(self.cleaned_data[key])
                 else:
                     value = ''
                 view_util.store_property(instrument_id, key, value, user=user)
