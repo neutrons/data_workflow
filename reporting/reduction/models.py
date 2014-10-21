@@ -27,6 +27,14 @@ class PropertyModification(models.Model):
     user      = models.ForeignKey(User)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
 
+class PropertyDefault(models.Model):
+    """
+        Table of default values
+    """
+    property  = models.ForeignKey(ReductionProperty, unique=True)
+    value     = models.TextField(blank=True)
+    timestamp = models.DateTimeField('timestamp', auto_now=True)
+
 class Choice(models.Model):
     """
         Table of choices for forms

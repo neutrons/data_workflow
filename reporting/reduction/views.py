@@ -90,13 +90,16 @@ def configuration_seq(request, instrument):
         extra = default_extra
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
 
-    props_list = ReductionProperty.objects.filter(instrument=instrument_id)
-    params_dict = {}
-    for item in props_list:
-        params_dict[str(item.key)] = str(item.value)
-
     error_msg = []
     if request.method == 'POST':
+        if "button_choice" not in request.POST:
+            logging.error("Received incomplete POST request without a button_choice")
+            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+        elif request.POST["button_choice"]=="reset":
+            # Reset form parameters with default
+            view_util.reset_to_default(instrument_id)
+            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+        
         options_form = forms.ReductionConfigurationSEQForm(request.POST)
         mask_form = MaskFormSet(request.POST)
         if options_form.is_valid() and mask_form.is_valid():
@@ -113,6 +116,10 @@ def configuration_seq(request, instrument):
         else:
             logging.error("Invalid form %s %s" % (options_form.errors, mask_form.errors))
     else:
+        params_dict = {}
+        props_list = ReductionProperty.objects.filter(instrument=instrument_id)
+        for item in props_list:
+            params_dict[str(item.key)] = str(item.value)
         options_form = forms.ReductionConfigurationSEQForm(initial=params_dict)
         mask_list = []
         if 'mask' in params_dict:

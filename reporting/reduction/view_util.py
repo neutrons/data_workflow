@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 import logging
 import json
-from models import ReductionProperty, PropertyModification
+from models import ReductionProperty, PropertyModification, PropertyDefault
 import reporting_app.view_util
 import dasmon.view_util
 import urllib
@@ -50,6 +50,20 @@ def store_property(instrument_id, key, value, user=None):
                                      user=user)
         modif.save()
 
+def reset_to_default(instrument_id):
+    """
+        Reset reduction properties for a given instrument to their default value.
+        If no default has been set for a property, it will not be changed.
+        
+        @param instrument_id: Instrument object
+    """
+    props_list = ReductionProperty.objects.filter(instrument=instrument_id)
+    for item in props_list:
+        default_list = PropertyDefault.objects.filter(property=item)
+        if len(default_list)>0:
+            item.value = default_list[0].value
+            item.save()
+    
 def send_template_request(instrument_id, template_dict, user='unknown'):
     """
         Send an ActiveMQ message to request a new script

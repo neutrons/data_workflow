@@ -36,6 +36,7 @@
       action_dynatable.process();
       {% if not is_instrument_staff %}
       $('#submit_button').prop('disabled', 'disabled');
+      $('#reset_button').prop('disabled', 'disabled');
       new_alert( "Only instrument team members can use this form: contact {{ helpline }}" ); show_alert();
       {% endif %}
       setInterval(poll, 10000);
@@ -54,16 +55,13 @@
 <div class='narrow_section'>
 Instrument team members can use this page to generate a new automated reduction script.
 <ul>
-<li>A default script must be placed in <i>/SNS/{{ instrument }}/shared/autoreduce/reduce_{{ instrument }}_default.py</i></li>
-<li>A script template must be placed in <i>/SNS/{{ instrument }}/shared/autoreduce/reduce_{{ instrument }}.py.template</i></li>
-<li>Review the parameters below and modify as needed. Hit enter to apply your changes before clicking the submit button.</li>
+<li>Click the submit button to create a new automated reduction script.</li>
+<li>Click the reset to populate the form with default values.</li>
 <li>The <i>reduce_{{ instrument }}.py</i> will automatically be overwritten once you click the submit button.</li>
-<li>Make sure <b>all</b> your template properties appear below: if not, contact 
-<a href="mailto:{{ helpline }}" target="_top">{{ helpline }}</a>.</li>
 </ul>
 </div>
 
-<div>
+<div style="margin-bottom:60px;">
 <p>List of parameters for {{ instrument }} reduction template:</p>
 <form action="" method="POST">{% csrf_token %}
   <table class="property_table  fixed_table" >
@@ -92,11 +90,10 @@ Instrument team members can use this page to generate a new automated reduction 
       </tr>{% endfor %}
     </tbody>
   </table>
-
 <p>
-{{ options_form.use_default }} Install default reduction script
 <span style="float: right; margin-left:15px;" >
-<input id="submit_button" title="Click to create new reduction script" type="submit" value="submit"/>
+<input id="submit_button" title="Click to create new reduction script" type="submit" name="button_choice" value="submit"/>
+<input id="reset_button" title="Click to populate the form with default values" type="submit" name="button_choice" value="reset"/>
 </span>
 </form>
 </div>

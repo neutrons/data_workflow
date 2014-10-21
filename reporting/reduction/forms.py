@@ -33,7 +33,6 @@ class ReductionConfigurationSEQForm(forms.Form):
     """
         Configuration form for SEQ reduction
     """
-    use_default = forms.BooleanField(required=False, initial=False)
     mask = forms.CharField(required=False, initial='')
     raw_vanadium = forms.CharField(required=False, initial='')
     processed_vanadium = forms.CharField(required=False, initial='')
@@ -44,7 +43,7 @@ class ReductionConfigurationSEQForm(forms.Form):
     
     ## List of field that are used in the template
     _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
-                      'e_min', 'e_step', 'e_max', 'use_default']
+                      'e_min', 'e_step', 'e_max']
     
     def __init__(self, *args, **kwargs):
         super(ReductionConfigurationSEQForm, self).__init__(*args, **kwargs)
