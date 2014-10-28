@@ -16,6 +16,10 @@ def reduction_incomplete(modeladmin, request, queryset):
     queryset.update(complete=False)
 reduction_incomplete.short_description = "Mark selected runs as incomplete"
 
+def reduction_complete(modeladmin, request, queryset):
+    queryset.update(complete=True)
+reduction_complete.short_description = "Mark selected runs as complete"
+
 class DataRunAdmin(admin.ModelAdmin):
     list_filter = ('instrument_id', 'ipts_id')
     list_display = ('id', 'run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')
@@ -65,8 +69,8 @@ class WorkflowSummaryAdmin(admin.ModelAdmin):
                     'reduction_needed', 'reduction_started', 'reduced', 
                     'reduction_cataloged', 'reduction_catalog_started')
     search_fields = ['run_id__run_number']
-    actions = [reduction_not_needed, reduction_needed, reduction_incomplete]
-    list_editable = ('reduction_needed', 'complete')
+    actions = [reduction_not_needed, reduction_needed, reduction_complete, reduction_incomplete]
+    list_editable = ('reduction_needed',)
     
     def date(self, summary):
         return summary.run_id.created_on.strftime("%y-%m-%d")
