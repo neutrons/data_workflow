@@ -12,6 +12,10 @@ def reduction_needed(modeladmin, request, queryset):
     queryset.update(reduction_needed=True)
 reduction_needed.short_description = "Mark selected runs needing reduction"
 
+def reduction_incomplete(modeladmin, request, queryset):
+    queryset.update(complete=False)
+reduction_incomplete.short_description = "Mark selected runs as incomplete"
+
 class DataRunAdmin(admin.ModelAdmin):
     list_filter = ('instrument_id', 'ipts_id')
     list_display = ('id', 'run_number', 'instrument_id', 'ipts_id', 'file', 'created_on')

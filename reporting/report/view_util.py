@@ -361,10 +361,12 @@ def get_run_list_dict(run_list):
             df = dateformat.DateFormat(localtime)
             
             run_url = reverse('report.views.detail', args=[str(r.instrument_id), r.run_number])
+            reduce_url = reverse('report.views.submit_for_reduction', args=[str(r.instrument_id), r.run_number])
             instr_url = reverse('dasmon.views.live_runs', args=[str(r.instrument_id)])
             
             run_dicts.append({"instrument_id": "<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id)),
                              "run": "<a href='%s'>%s</a>" % (run_url, r.run_number),
+                             "reduce_url": "<a href='%s'>reduce</a>" % reduce_url,
                              "run_id": str(r.id),
                              "timestamp": str(df.format(settings.DATETIME_FORMAT)),
                              "status": get_run_status_text(r, use_element_id=True)

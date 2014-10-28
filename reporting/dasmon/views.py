@@ -278,7 +278,14 @@ def live_runs(request, instrument):
     # Update URL
     update_url = reverse('dasmon.views.get_update',args=[instrument])
 
-    run_list, first_run, last_run = view_util.get_live_runs(instrument_id=instrument_id)
+    timeframe=12
+    if 'days' in request.GET:
+        try:
+            timeframe = int(request.GET['days'])*24
+        except:
+            pass
+    run_list, first_run, last_run = view_util.get_live_runs(instrument_id=instrument_id,
+                                                            timeframe=timeframe)
     
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument':instrument.upper(),
