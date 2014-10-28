@@ -91,7 +91,7 @@
         <th data-dynatable-column="run" style="min-width: 50px;">Run</th>
         <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
         <th data-dynatable-column="status">Status</th>
-        {% if is_instrument_staff %}
+        {% if user.is_staff %}
             <th data-dynatable-column="reduce_url" style="min-width: 50px;">Reduce</th>
         {% endif %}
       </tr>
