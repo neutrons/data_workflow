@@ -786,10 +786,12 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
             if since_run_id.created_on < r.created_on:
                 localtime = timezone.localtime(r.created_on)
                 df = dateformat.DateFormat(localtime)
+                reduce_url = reverse('report.views.submit_for_reduction', args=[str(r.instrument_id), r.run_number])
                 expt_dict = {"run":r.run_number,
                              "timestamp":df.format(settings.DATETIME_FORMAT),
                              "last_error":status,
                              "run_id":str(r.id),
+                             "reduce_url": "<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>" % (r.run_number, reduce_url, r.run_number),
                              "instrument_id":str(r.instrument_id)
                              }
                 update_list.append(expt_dict)
