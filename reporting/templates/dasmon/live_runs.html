@@ -36,6 +36,7 @@
                             'run': "<a href='{{ base_run_url }}/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a>",
                             'timestamp': data.run_list[i].timestamp,
                             'run_id': data.run_list[i].run_id,
+                            'reduce_url': data.run_list[i].reduce_url,
                             'status': "<span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span>"});
                     }
                 }
