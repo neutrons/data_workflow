@@ -6,8 +6,12 @@
 
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
-<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<!-- <script language="javascript" type="text/javascript" src="/static/live_update.js"></script> -->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/plotting_line.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/plotting.css" title="no title" charset="utf-8">
 
 <script>
     var last_run_id = '{{ last_run.id }}';
@@ -33,10 +37,12 @@
             plotted_data = data.live_plot_data;
             plot_combined_rates(run_data, error_data);
             
+    	    test_options = {};
+
             for (var i=0; i<plotted_vars.length; i++) {
                 for (var j=0; j<plotted_data.length; j++) {
                     if (plotted_data[j][0]==plotted_vars[i][0]) {
-                        plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_plot", plotted_vars[i][0]);
+                        plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_dialog", test_options);
                     }
                 }
             }
@@ -50,12 +56,18 @@
         if (pv_query_str.length>0) {
             $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
                 plotted_data = data.live_plot_data;
-                
+
+                // alert("plotted_vars: " + plotted_vars);
+		var test_data = [[1, 2], [1.5, 3], [2, 4], [3, 3], [5, 4]];
+
                 for (var i=0; i<plotted_vars.length; i++) {
                     for (var j=0; j<plotted_data.length; j++) {
                         if (plotted_data[j][0]==plotted_vars[i][0]) {
                             var plot_id = "#"+plotted_vars[i][0].replace(/:/g, '_')+"_plot";
-                            plot_monitor(plotted_data[j][1], plot_id, plotted_vars[i][0]);
+                            plot_1d(plotted_data[j][1], plot_id, plotted_vars[i][0]);
+			    // alert(plotted_data[j][1]);
+			    // alert(plot_id);
+			    // alert(plotted_vars[i][0]);
                         }
                     }
                 }
@@ -80,20 +92,23 @@
         {
             var plot_content = "<div id='"+dialog_name+"' title='"+element_id+"'>";
             plot_content    += "  <div class='live_plots'>";
+	    plot_content    += "    <div class='options' style='float:right'>";
+	    plot_content    += "      <a style='outline:none' href='javascript:void(0);'>";
+	    plot_content    += "        <span class='ui-icon ui-icon-gear' style='opacity:0.6'></span></a>";
+	    plot_content    += "    </div><br><br>";
             plot_content    += "    <div class='plot_timeframe'>";
             plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"900\");'>15m</a> | ";
             plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"7200\");'>2h</a> | ";
-            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"86400\");'>max</a>";
+            plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"86400\");'>max</a> ";
             plot_content    += "    </div><br>";
-            plot_content    += "    <div style='height:150px' id='"+clean_name+"_plot'><span class='waiting'>Working... this will take a second or two.</span></div>";
-            plot_content    += "    <div class='plot_timeframe'>time elapsed [minutes]</div><br>";
+            plot_content    += "    <div style='height:380px' id='"+clean_name+"_plot'></div>";
             plot_content    += "  </div>";
             plot_content    += "</div>";
             $('#dialog_placeholder').append(plot_content);
             $( "#"+dialog_name ).dialog({
-                width: 400,
-                height: 230,
-                resizable: false,
+                width: 670,
+                height: 480,
+                resizable: true,
                 closeOnEscape: true,
                 close: function( event, ui )
                 {
