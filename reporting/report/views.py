@@ -93,9 +93,17 @@ def detail(request, instrument, run_id):
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; run %s" % (reverse(settings.LANDING_VIEW),
             reverse('report.views.instrument_summary',args=[instrument]), instrument,
-            reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),  
-            run_id          
+            reverse('report.views.ipts_summary',args=[instrument, run_object.ipts_id.expt_name]), str(run_object.ipts_id).lower(),
+            run_id
             ) 
+    if users.view_util.is_experiment_member(request, instrument_id, run_object.ipts_id) is False:
+        template_values = {'instrument':instrument.upper(),
+                           'run_object':run_object,
+                           'helpline': settings.HELPLINE_EMAIL,
+                           'breadcrumbs':breadcrumbs}
+        template_values = users.view_util.fill_template_values(request, **template_values)
+        template_values = dasmon.view_util.fill_template_values(request, **template_values)
+        return render_to_response('report/private_data.html', template_values)
     
     # Check whether we need a re-reduce link
     reduce_url = None

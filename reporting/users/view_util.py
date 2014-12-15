@@ -110,6 +110,28 @@ def is_instrument_staff(request, instrument_id):
         pass
     return request.user.is_staff
         
+def is_experiment_member(request, instrument_id, experiment_id):
+    """
+        Determine whether a user is part of the given experiment.
+        
+        @param request: request object
+        @param instrument_id: Instrument object
+        @param experiment_id: IPTS object
+    """
+    if hasattr(settings, 'HIDE_RUN_DETAILS') and settings.HIDE_RUN_DETAILS is False:
+        return True
+    
+    try:
+        if request.user is not None and hasattr(request.user, "ldap_user"):
+            groups = request.user.ldap_user.group_names
+            return u'sns_%s_team' % str(instrument_id).lower() in groups \
+            or u'sns-ihc' in groups \
+            or u'%s' % experiment_id.expt_name.upper() in groups \
+            or is_instrument_staff(request, instrument_id)
+    except:
+        logging.error("Error determining whether user %s is part of %s" % (str(request.user), str(experiment_id)))
+    return request.user.is_staff
+    
 def monitor(fn):
     """
         Function decorator to monitor page usage

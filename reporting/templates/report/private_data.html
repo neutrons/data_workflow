@@ -1,0 +1,38 @@
+{% extends "report/base_instrument.html" %}
+
+{% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
+{% block banner %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
+
+{% block header %}
+
+<div id="dialog-confirm" title="Submit for post-processing" style="display:none">
+   <p><span class="ui-icon ui-icon-alert" style="float: left"></span>
+   Confirm submission?</p>
+</div>
+<script>
+    function confirm(action) {
+        $( "#dialog-confirm" ).dialog({
+            resizable: false,
+            modal: true,
+            buttons: {
+                "Submit": function() {
+                    window.location.href = action;
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                        }
+                    }
+        });
+    };
+</script>   
+{% endblock %}
+
+{% block summary %}
+<p>
+You do not have access to data for this experiment. If you need access, please contact the {{ instrument }} instrument team.
+
+<p>
+For questions regarding data access, please contact {{ helpline }}.
+
+{% endblock %}
+{% block nocontent %}{% endblock %}
