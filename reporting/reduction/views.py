@@ -36,8 +36,8 @@ def configuration(request, instrument):
         @param request: request object
         @param instrument: instrument name
     """
-    if instrument.lower()=='seq':
-        return configuration_seq(request, instrument)
+    if instrument.lower() in ['seq', 'arcs']:
+        return configuration_dgs(request, instrument)
     
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     props_list = ReductionProperty.objects.filter(instrument=instrument_id)
@@ -71,7 +71,7 @@ def configuration(request, instrument):
                               template_values)
 
 @users.view_util.login_or_local_required
-def configuration_seq(request, instrument):
+def configuration_dgs(request, instrument):
     """
         View current automated reduction configuration and modification history
         for a given instrument
@@ -100,7 +100,8 @@ def configuration_seq(request, instrument):
             view_util.reset_to_default(instrument_id)
             return redirect(reverse('reduction.views.configuration', args=[instrument]))
         
-        options_form = forms.ReductionConfigurationSEQForm(request.POST)
+        options_form = forms.ReductionConfigurationDGSForm(request.POST)
+        options_form.set_instrument(instrument.lower())
         mask_form = MaskFormSet(request.POST)
         if options_form.is_valid() and mask_form.is_valid():
             mask_block = forms.MaskForm.to_python(mask_form)
@@ -120,7 +121,8 @@ def configuration_seq(request, instrument):
         props_list = ReductionProperty.objects.filter(instrument=instrument_id)
         for item in props_list:
             params_dict[str(item.key)] = str(item.value)
-        options_form = forms.ReductionConfigurationSEQForm(initial=params_dict)
+        options_form = forms.ReductionConfigurationDGSForm(initial=params_dict)
+        options_form.set_instrument(instrument.lower())
         mask_list = []
         if 'mask' in params_dict:
             mask_list = forms.MaskForm.to_tokens(params_dict['mask'])
@@ -148,7 +150,7 @@ def configuration_seq(request, instrument):
     template_values.update(csrf(request))
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render_to_response('reduction/configuration_seq.html',
+    return render_to_response('reduction/configuration_dgs.html',
                               template_values)
 
 @csrf_exempt

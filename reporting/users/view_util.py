@@ -126,6 +126,7 @@ def is_experiment_member(request, instrument_id, experiment_id):
             groups = request.user.ldap_user.group_names
             return u'sns_%s_team' % str(instrument_id).lower() in groups \
             or u'sns-ihc' in groups \
+            or u'snsadmin' in groups \
             or u'%s' % experiment_id.expt_name.upper() in groups \
             or is_instrument_staff(request, instrument_id)
     except:

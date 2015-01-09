@@ -86,7 +86,7 @@ Instrument team members can use this page to generate a new automated reduction 
         <td {% if form.bank.errors %}class='highlight_row' title='{{ form.bank.errors }}'{% endif %}>{{ form.bank }}</td>
         <td {% if form.tube.errors %}class='highlight_row' title='{{ form.tube.errors }}'{% endif %}>{{ form.tube }}</td>
         <td {% if form.pixel.errors %}class='highlight_row' title='{{ form.pixel.errors }}'{% endif %}>{{ form.pixel }}</td>
-        <td class='icon_input' title='Click to remove this entry'> <span title='{{ form.remove.id_for_label}}' class="ui-icon ui-icon-trash" onclick="remove_entry('#{{ form.remove.id_for_label }}', '#{{ form.bank.id_for_label }}', '#{{ form.tube.id_for_label }}', '#{{ form.pixel.id_for_label }}')"></span></td>
+        <td class='icon_input'> <span title='Click to remove this entry' class="ui-icon ui-icon-trash" onclick="remove_entry('#{{ form.remove.id_for_label }}', '#{{ form.bank.id_for_label }}', '#{{ form.tube.id_for_label }}', '#{{ form.pixel.id_for_label }}')"></span></td>
       </tr>{% endfor %}
     </tbody>
   </table>

@@ -13,25 +13,26 @@ import re
 import logging
 import view_util
 
-def _get_choices():
+def _get_choices(instrument):
     """
         Pull the grouping choices from the database
+        @param instrument: short name of the instrument
     """
     form_choices = []
     try:
-        instrument = Instrument.objects.get(name='seq')
-        property = ReductionProperty.objects.get(key='grouping')
-        choices = Choice.objects.filter(instrument=instrument,
+        instrument_id = Instrument.objects.get(name=instrument.lower())
+        property = ReductionProperty.objects.get(key='grouping', instrument=instrument_id)
+        choices = Choice.objects.filter(instrument=instrument_id,
                                         property=property)
         for item in choices:
             form_choices.append( (item.value, item.description) )
     except:
-        logging.error("_get_choices: SEQ instrument or grouping does not exist\n %s" % sys.exc_value)
+        logging.error("_get_choices: %s instrument or grouping does not exist\n %s" % (instrument.upper(), sys.exc_value))
     return sorted(form_choices, cmp=lambda x,y:cmp(x[0], y[0]))
 
-class ReductionConfigurationSEQForm(forms.Form):
+class ReductionConfigurationDGSForm(forms.Form):
     """
-        Configuration form for SEQ reduction
+        Generic form for DGS reduction instruments
     """
     mask = forms.CharField(required=False, initial='')
     raw_vanadium = forms.CharField(required=False, initial='')
@@ -46,8 +47,14 @@ class ReductionConfigurationSEQForm(forms.Form):
                       'e_min', 'e_step', 'e_max']
     
     def __init__(self, *args, **kwargs):
-        super(ReductionConfigurationSEQForm, self).__init__(*args, **kwargs)
-        self.fields['grouping'].choices = _get_choices()
+        super(ReductionConfigurationDGSForm, self).__init__(*args, **kwargs)
+        
+    def set_instrument(self, instrument):
+        """
+            Populate instrument-specific options.
+            @param instrument: instrument short name
+        """
+        self.fields['grouping'].choices = _get_choices(instrument)
         
     def to_db(self, instrument_id, user=None):
         """
@@ -68,7 +75,7 @@ class ReductionConfigurationSEQForm(forms.Form):
                     value = ''
                 view_util.store_property(instrument_id, key, value, user=user)
             except:
-                logging.error("ReductionConfigurationSEQForm.to_db: %s" % sys.exc_value)
+                logging.error("ReductionConfigurationDGSForm.to_db: %s" % sys.exc_value)
 
     def to_template(self):
         template_dict = {}
