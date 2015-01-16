@@ -58,7 +58,15 @@ def _check_credentials(request):
                 return True
         except:
             logging.error("Error processing IP address: %s" % str(ip_addr))
-            
+    elif len(settings.ALLOWED_HOSTS)>0:
+        try:
+            ip_addr =  request.META['REMOTE_ADDR']
+            host_name = socket.gethostbyaddr(ip_addr)[0]
+            for item in settings.ALLOWED_HOSTS:
+                if host_name.endswith(item):
+                    return True
+        except:
+            logging.error("Error processing IP address: %s" % str(ip_addr))
     return False
     
 def login_or_local_required(fn):
