@@ -12,16 +12,23 @@
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/plotting_line.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/plotting.css" title="no title" charset="utf-8">
+<link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css"> 
 
 <script>
+
     var last_run_id = '{{ last_run.id }}';
     var run_data = {{ run_rate|safe }};
     var error_data = {{ error_rate|safe }};
     var plotted_vars = [];
     var plotted_data = [];
     var plot_timeframe = '7200';
+    var loc_options = [[],[]];
+    var options = {
+		log_scale: false
+	};
+	var plot_id = "";
 
-    function poll() {
+    function poll(plot_id) {
         query_str = "";
         for (var i=0;i<plotted_vars.length; i++) {
             if (plotted_vars[i][1]=="1") query_str += plotted_vars[i][0]+',';
@@ -39,13 +46,6 @@
             
     	    test_options = {};
 
-            for (var i=0; i<plotted_vars.length; i++) {
-                for (var j=0; j<plotted_data.length; j++) {
-                    if (plotted_data[j][0]==plotted_vars[i][0]) {
-                        plot_monitor(plotted_data[j][1], "#"+plotted_vars[i][0]+"_dialog", test_options);
-                    }
-                }
-            }
         }, dataType: "json", timeout: 2000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
 
@@ -57,17 +57,20 @@
             $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
                 plotted_data = data.live_plot_data;
 
-                // alert("plotted_vars: " + plotted_vars);
-		var test_data = [[1, 2], [1.5, 3], [2, 4], [3, 3], [5, 4]];
-
+				
                 for (var i=0; i<plotted_vars.length; i++) {
                     for (var j=0; j<plotted_data.length; j++) {
                         if (plotted_data[j][0]==plotted_vars[i][0]) {
-                            var plot_id = "#"+plotted_vars[i][0].replace(/:/g, '_')+"_plot";
-                            plot_1d(plotted_data[j][1], plot_id, plotted_vars[i][0]);
-			    // alert(plotted_data[j][1]);
-			    // alert(plot_id);
-			    // alert(plotted_vars[i][0]);
+							//loc_options[0][loc_options[0].length] = plotted_vars[i][0];
+							//if (loc_options[0].length+1 == loc_options[1].length){
+								//loc_options[1][loc_options[0].length] = 'log_scale: false';
+							//}
+							//if (plot_id === ""){
+								//alert(loc_options);
+								//alert("plotted_data: " + plotted_data[j][0] + ", plotted_vars: " + plotted_vars[i][0]);
+								plot_id = plotted_vars[i][0].replace(/:/g, '_')+"_plot";
+							//}
+                            plot_1d(plotted_data[j][1], plot_id, options);
                         }
                     }
                 }
@@ -87,15 +90,17 @@
     function pop_monitor_plot(element_id, option)
     {
         var clean_name = element_id.replace(/:/g, '_');
-        var dialog_name = clean_name+"_dialog"
+        var dialog_name = clean_name + "_dialog";
+        plot_id = clean_name + "_plot";
         if (!$("#"+dialog_name).length)
         {
             var plot_content = "<div id='"+dialog_name+"' title='"+element_id+"'>";
             plot_content    += "  <div class='live_plots'>";
-	    plot_content    += "    <div class='options' style='float:right'>";
-	    plot_content    += "      <a style='outline:none' href='javascript:void(0);'>";
-	    plot_content    += "        <span class='ui-icon ui-icon-gear' style='opacity:0.6'></span></a>";
-	    plot_content    += "    </div><br><br>";
+			plot_content    += "    <div class='options' style='float:left'>";
+			plot_content	+= "    <a class='flaticon_link' onclick='prepare_menu(\"" + dialog_name + "\")'>"
+			plot_content	+= "		<span class='flaticon flaticon-settings22'></span></a>";
+			plot_content    += "    </div>";
+			plot_content    += "    </div><br><br>";
             plot_content    += "    <div class='plot_timeframe'>";
             plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"900\");'>15m</a> | ";
             plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"7200\");'>2h</a> | ";
@@ -110,18 +115,28 @@
                 height: 480,
                 resizable: true,
                 closeOnEscape: true,
-                close: function( event, ui )
+                close: function(event, ui)
                 {
                     $( "#"+dialog_name ).remove();
+                    if($("#" + dialog_name + "_submenu").length > 0){
+						$("#" + dialog_name + "_submenu").remove();
+					}
                     for (var i = 0; i < plotted_vars.length; i++) {
                         if (plotted_vars[i][0]==element_id) plotted_vars[i][1]="0";
                     };
-                }
+                },
+				open: function (event, ui) {
+					$("#"+dialog_name).css('overflow', 'hidden'); //this line does the actual hiding
+				}
             });
             plotted_vars.push([element_id, option]);
-            poll();
+            poll(plot_id);
         }
     }
+    
+    $( document ).tooltip({
+	  items: '*:not(.ui-dialog-titlebar-close)'
+	});
     
     function get_alarms()
     {
@@ -135,6 +150,86 @@
         $.ajax({ url: ack_url, cache: false });
         $(id).remove();
     }
+
+	
+			
+	function prepare_menu(dialog_name){
+		if($("#" + dialog_name + "_submenu").length === 0){
+			var submenu = '<div id="' + dialog_name + '_submenu" class="submenu"><a id="local_options_link" ' + 
+						  'class="ui-button" onclick="local_options(\'' + dialog_name + '\')" style="width:88px">Local options</a><br>' + 
+						  '<a id="global_options_link" class="ui-button" ' + 
+						  'onclick="global_options(\'' + dialog_name + '\')" style="width:88px">Global options</a></div>';
+			$("#" + dialog_name + " .options").append(submenu);
+		}
+		else if($("#" + dialog_name + "_submenu").length > 0){
+			$("#" + dialog_name + "_submenu").remove();
+		}
+	}
+
+	function global_options(dialog_name){
+		if($("#" + dialog_name + "_submenu").length > 0){
+			$("#" + dialog_name + "_submenu").remove();
+		}
+		var g_opt_win = "<div id='global_options' title='Global options'>" + 
+						"<h3>Global options</h3>" + 
+						"Global options settings</div>";
+		$("#dialog_placeholder").append(g_opt_win);
+		$("#global_options").dialog({
+			width: 400,
+			height: 280,
+			resizable: true,
+			closeOnEscape: true,
+			close: function( event, ui ){
+				$("#global_options").remove();
+			}
+		});
+	}	
+	
+	function local_options(dialog_name){
+		//alert(dialog_name);
+		var this_dialog = $("#" + dialog_name).parent()
+		var cur_height = this_dialog.height();
+		if($("#" + dialog_name + "_submenu").length > 0){
+			$("#" + dialog_name + "_submenu").remove();
+		}
+		var new_height = cur_height + 100;
+		this_dialog.css("height", new_height);
+		var l_opt = "<div id='local_options_" + dialog_name + "' style='height:200px;border-top:1px solid lightgrey;padding:5px'>" + 
+					"<a class='flaticon_link' onclick='close_l_opt(\"local_options_" + dialog_name + "\")'>" + 
+					"<span class='flaticon flaticon-close19' style='float:right'></span></a>" + 
+					"<h3>Local Options</h3>" +
+					"<form name='form_" + dialog_name + "'>" + 
+					"<div id='radio_" + dialog_name + "'>y scale: <input type='radio' class='check_scale' id='scale_log_" + dialog_name + "' name='radio' onclick='check_scale(&apos;" + dialog_name + "&apos;)'>" +
+					"<label for='scale_log_" + dialog_name + "' id='scale_log_label_" + dialog_name + "'>log</label>" +
+					"<input type='radio' class='check_scale' id='scale_lin_" + dialog_name + "' name='radio' checked='checked' onclick='check_scale(&apos;" + dialog_name + "&apos;)'>" +
+					"<label for='scale_lin_" + dialog_name + "' id='scale_lin_label_" + dialog_name + "'>linear</label></div></form></div>";
+		$("#" + dialog_name).after(l_opt);
+		$(function() {
+			$("#radio_" + dialog_name + "").buttonset();
+		});
+		
+	}
+	function check_scale(name){
+		//alert(name);
+		if ($("#scale_log_label_" + name).hasClass("ui-state-active")){
+			options.log_scale = true;
+			poll();
+		}
+		else if ($("#scale_lin_label_" + name).hasClass("ui-state-active")){
+			options.log_scale = false;
+			poll();
+		}
+	}
+	function close_l_opt(s){
+		var this_dialog = $("#" + s).parent()
+		var cur_height = this_dialog.height();
+		var new_height = cur_height - 100;
+		$("#" + s).parent().css("height", new_height);
+		$("#" + s).remove();
+	}
+	
+	
+
 </script>
 {% endblock %}
 
@@ -172,9 +267,15 @@
   </table>
   <br>
 
-  <div id="dialog_placeholder"></div>
+
+	<div id="dialog_placeholder">
+
+	</div>
+
 
   <script id="source" language="javascript" type="text/javascript">
     plot_combined_rates(run_data, error_data);
   </script>
+  <script language="javascript" type="text/javascript" src="/static/thirdparty/resize/ResizeSensor.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/thirdparty/resize/ElementQueries.js"></script>
 {% endblock%}
