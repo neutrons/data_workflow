@@ -45,7 +45,7 @@
 
 .default_1d { 
     margin: 5px 5px 5px 5px; 
-    padding-right: 10px;
+    padding-right: 5px;
     /* padding: 50px 50px 50px 50px; */
 }
 
@@ -85,3 +85,4 @@ padding: 3px 3px;
     right: 10px;
     top: 10px;
 }
+
