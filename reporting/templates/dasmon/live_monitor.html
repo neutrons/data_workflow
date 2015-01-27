@@ -143,36 +143,38 @@
 			// plot options here!
 			log_scale: false
 		}
-		this.local_options = function(){	
-			var cur_height = $(this.dialog_win).height();
-			var new_height = cur_height + 100;	
-			var lin_radio;
-			var log_radio;
-			var html;
-			if (this.plot_options.log_scale === false){
-				lin_radio = "checked='checked'"; log_radio = "";
-			}
-			else{
-				log_radio = "checked='checked'"; lin_radio = "";
-			}
+		this.local_options = function(){
 			if($("#" + this.dialog_name + "_submenu").length > 0){
 				// Remove submenu if it's open
 				$("#" + this.dialog_name + "_submenu").remove();
+			}	
+			if ($("#local_options_" + this.dialog_name).length === 0){
+				var cur_height = $(this.dialog_win).height();
+				var new_height = cur_height + 100;	
+				var lin_radio;
+				var log_radio;
+				var html;
+				if (this.plot_options.log_scale === false){
+					lin_radio = "checked='checked'"; log_radio = "";
+				}
+				else{
+					log_radio = "checked='checked'"; lin_radio = "";
+				}
+				html = "<div id='local_options_" + this.dialog_name + "' style='height:100px;border-top:1px solid lightgrey;padding:5px'>" + 
+						"<a class='flaticon_link' onclick='Plots[" + nid + "].close_l_opt(\"local_options_" + this.dialog_name + "\")'>" + 
+						"<span class='flaticon flaticon-close19' style='float:right'></span></a>" + 
+						"<h3>Local Options</h3>" +
+						"<form name='form_" + this.dialog_name + "'>" + 
+						"<div id='radio_" + this.dialog_name + "'>y scale: <input type='radio' class='check_scale' " + 
+						"id='scale_log_" + this.dialog_name + "' name='radio' " + log_radio + "onclick='Plots[" + nid + "].check_scale()'>" +
+						"<label for='scale_log_" + this.dialog_name + "' id='scale_log_label_" + this.clean_name + "'>log</label>" +
+						"<input type='radio' class='check_scale' id='scale_lin_" + this.dialog_name + "' name='radio' " + lin_radio +  
+						"onclick='Plots[" + nid + "].check_scale()'>" +
+						"<label for='scale_lin_" + this.dialog_name + "' id='scale_lin_label_" + this.clean_name + "'>linear</label></div></form></div>";
+				this.dialog_win.css("height", new_height);
+				$("#" + this.dialog_name).after(html);
+				$("#radio_" + this.dialog_name).buttonset();
 			}
-			html = "<div id='local_options_" + this.dialog_name + "' style='height:100px;border-top:1px solid lightgrey;padding:5px'>" + 
-					"<a class='flaticon_link' onclick='Plots[" + nid + "].close_l_opt(\"local_options_" + this.dialog_name + "\")'>" + 
-					"<span class='flaticon flaticon-close19' style='float:right'></span></a>" + 
-					"<h3>Local Options</h3>" +
-					"<form name='form_" + this.dialog_name + "'>" + 
-					"<div id='radio_" + this.dialog_name + "'>y scale: <input type='radio' class='check_scale' " + 
-					"id='scale_log_" + this.dialog_name + "' name='radio' " + log_radio + "onclick='Plots[" + nid + "].check_scale()'>" +
-					"<label for='scale_log_" + this.dialog_name + "' id='scale_log_label_" + this.clean_name + "'>log</label>" +
-					"<input type='radio' class='check_scale' id='scale_lin_" + this.dialog_name + "' name='radio' " + lin_radio +  
-					"onclick='Plots[" + nid + "].check_scale()'>" +
-					"<label for='scale_lin_" + this.dialog_name + "' id='scale_lin_label_" + this.clean_name + "'>linear</label></div></form></div>";
-			this.dialog_win.css("height", new_height);
-			$("#" + this.dialog_name).after(html);
-			$("#radio_" + this.dialog_name).buttonset();
 		}
 		this.check_scale = function(){
 			// Change scale
