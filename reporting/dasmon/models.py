@@ -35,7 +35,7 @@ class ActiveInstrumentManager(models.Manager):
         """
             Returns True if the instrument should be presented as part of the suite of instruments
         """
-        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        instrument_list = super(ActiveInstrumentManager, self).get_queryset().filter(instrument_id=instrument_id)
         if len(instrument_list)>0:
             return instrument_list[0].is_alive
         else:
@@ -45,7 +45,7 @@ class ActiveInstrumentManager(models.Manager):
         """
             Returns True if the instrument is running ADARA
         """
-        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        instrument_list = super(ActiveInstrumentManager, self).get_queryset().filter(instrument_id=instrument_id)
         if len(instrument_list)>0:
             return instrument_list[0].is_adara
         else:
@@ -56,7 +56,7 @@ class ActiveInstrumentManager(models.Manager):
             Returns True if the instrument is running pvsd
             Defaults to False
         """
-        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        instrument_list = super(ActiveInstrumentManager, self).get_queryset().filter(instrument_id=instrument_id)
         if len(instrument_list)>0:
             return instrument_list[0].has_pvsd
         else:
@@ -67,7 +67,7 @@ class ActiveInstrumentManager(models.Manager):
             Returns True if the instrument is running PVStreamer
             Defaults to True
         """
-        instrument_list = super(ActiveInstrumentManager, self).get_query_set().filter(instrument_id=instrument_id)
+        instrument_list = super(ActiveInstrumentManager, self).get_queryset().filter(instrument_id=instrument_id)
         if len(instrument_list)>0:
             return instrument_list[0].has_pvstreamer
         else:

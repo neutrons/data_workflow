@@ -7,14 +7,14 @@ class InstrumentManager(models.Manager):
         """
             Get the object associated to an instrument name
         """
-        instrument_ids = super(InstrumentManager, self).get_query_set().filter(name=instrument.lower())
+        instrument_ids = super(InstrumentManager, self).get_queryset().filter(name=instrument.lower())
         if len(instrument_ids) > 0:
             return instrument_ids[0]
         return None
     
     def sql_dump(self):
         sql = ''
-        instrument_ids = super(InstrumentManager, self).get_query_set()
+        instrument_ids = super(InstrumentManager, self).get_queryset()
         max_instr_id = 1
         for item in instrument_ids:
             max_instr_id = max(max_instr_id, item.id)
@@ -49,7 +49,7 @@ class Instrument(models.Model):
 class IPTSManager(models.Manager):
     
     def ipts_for_instrument(self, instrument_id):
-        return super(IPTSManager, self).get_query_set().filter(instruments=instrument_id)
+        return super(IPTSManager, self).get_queryset().filter(instruments=instrument_id)
         
     def get_last_ipts(self, instrument_id):
         """
@@ -57,7 +57,7 @@ class IPTSManager(models.Manager):
             Returns None if nothing was found.
             @param instrument_id: Instrument object 
         """
-        ipts_query = super(IPTSManager, self).get_query_set().filter(instruments=instrument_id).order_by('created_on').reverse()
+        ipts_query = super(IPTSManager, self).get_queryset().filter(instruments=instrument_id).order_by('created_on').reverse()
         if len(ipts_query)>0:
             return ipts_query[0]
         return None
@@ -97,9 +97,9 @@ class DataRunManager(models.Manager):
             @param ipts_id: IPTS object
         """
         if ipts_id is None:
-            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id)
+            last_run_query = super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id)
         else:
-            last_run_query = super(DataRunManager, self).get_query_set().filter(instrument_id=instrument_id, ipts_id=ipts_id)
+            last_run_query = super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id, ipts_id=ipts_id)
         if len(last_run_query)>0:
             last_run_query = last_run_query.order_by('created_on').reverse()
             return last_run_query[0]
@@ -216,7 +216,7 @@ class RunStatusManager(models.Manager):
         status_ids = StatusQueue.objects.filter(name__startswith=status_description)
         if len(status_ids)>0:
             status_id = status_ids[0]
-            return super(RunStatusManager, self).get_query_set().filter(run_id=run_id, queue_id=status_id)
+            return super(RunStatusManager, self).get_queryset().filter(run_id=run_id, queue_id=status_id)
         return []
 
     def last_timestamp(self, run_id):
@@ -224,13 +224,13 @@ class RunStatusManager(models.Manager):
             Returns the last timestamp for this run
             @param run_id: DataRun object
         """
-        timestamps = super(RunStatusManager, self).get_query_set().filter(run_id=run_id).order_by('-created_on')
+        timestamps = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by('-created_on')
         if len(timestamps)>0:
             return timestamps[0].created_on
         return None
     
     def get_last_error(self, run_id):
-        errors = super(RunStatusManager, self).get_query_set().filter(run_id=run_id).order_by('-created_on')
+        errors = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by('-created_on')
         for item in errors:
             if item.has_errors():
                 return item.last_error()
@@ -287,14 +287,14 @@ class WorkflowSummaryManager(models.Manager):
         """
             Returns the query set of all incomplete runs
         """
-        return super(WorkflowSummaryManager, self).get_query_set().filter(complete=False)
+        return super(WorkflowSummaryManager, self).get_queryset().filter(complete=False)
     
     def get_summary(self, run_id):
         """
             Get the run summary for a given DataRun object
             @param run_id: DataRun object
         """
-        run_list = super(WorkflowSummaryManager, self).get_query_set().filter(run_id=run_id)
+        run_list = super(WorkflowSummaryManager, self).get_queryset().filter(run_id=run_id)
         if len(run_list)>0:
             return run_list[0]
         return None
@@ -394,7 +394,7 @@ class TaskManager(models.Manager):
         """
             Get the object associated to an instrument name
         """
-        task_ids = super(TaskManager, self).get_query_set()
+        task_ids = super(TaskManager, self).get_queryset()
         sql = ''
         max_task_id = 1
         for item in task_ids:

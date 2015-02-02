@@ -8,14 +8,12 @@ import logging
 import traceback
 # The workflow modules must be on the python path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "workflow.database.settings")
+import django
+if django.VERSION[1]>=7:
+    django.setup()
+from workflow.database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
+from workflow.database.report.models import IPTS, Instrument, Error, Information, Task
 from django.db import transaction
-
-# The report database module must be on the python path for Django to find it 
-sys.path.append(os.path.dirname(__file__))
-
-# Import your models for use in your script
-from report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
-from report.models import IPTS, Instrument, Error, Information, Task
 
 @transaction.commit_on_success
 def add_status_entry(headers, data):

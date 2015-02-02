@@ -1,4 +1,5 @@
 prefix := /var/www/workflow
+HAS_MIGRATIONS:=$(shell python -c "import django;t=0 if django.VERSION[1]>=7 else 1; print t")
 
 all:
 
@@ -66,7 +67,17 @@ webapp: webapp/core
 
 	# Create the database tables. The database itself must have been
 	# created on the server already
+ifeq ($(HAS_MIGRATIONS),1)
+	@echo "Detected Django >= 1.7: Using migrations"
+	# The following call only needs to be done once to create the migrations if the tables already exist
+	#cd $(prefix)/app; python manage.py makemigrations report reduction dasmon pvmon file_handling users
+
+	# Create migrations and apply them
+	cd $(prefix)/app; python manage.py makemigrations
+	cd $(prefix)/app; python manage.py migrate
+else
 	cd $(prefix)/app; python manage.py syncdb
+endif
 	
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
 	#cd $(prefix)/app; python manage.py createcachetable webcache

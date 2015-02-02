@@ -27,7 +27,7 @@ logging.getLogger('stomp.py').setLevel(logging.WARNING)
 # Formatter
 ft = logging.Formatter('%(levelname)s:%(asctime)-15s %(message)s')
 # Create a log file handler
-fh = logging.FileHandler('workflow.log')
+fh = logging.handlers.TimedRotatingFileHandler('workflow.log', when='midnight')
 fh.setLevel(LOGGING_LEVEL)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)

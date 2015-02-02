@@ -11,7 +11,6 @@ import json
 import os
 import sys
 import datetime
-from django.utils import timezone
 
 if os.path.isfile("settings.py"):
     logging.warning("Using local settings.py file")
@@ -23,6 +22,11 @@ from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 from settings import TOPIC_PREFIX
 sys.path.append(INSTALLATION_DIR)
+
+import django
+if django.VERSION[1]>=7:
+    django.setup()
+from django.utils import timezone
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
 from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable

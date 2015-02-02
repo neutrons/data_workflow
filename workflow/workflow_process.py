@@ -2,8 +2,11 @@
     Actual process that each data run must go through.
 """
 from database import transactions
-from database.report.models import WorkflowSummary, RunStatus
 from django.utils.timezone import utc
+import django
+if django.VERSION[1]>=7:
+    import django
+from workflow.database.report.models import WorkflowSummary, RunStatus
 from states import StateAction
 import json
 import logging
