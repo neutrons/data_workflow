@@ -5,6 +5,7 @@ import sys
 import argparse
 
 import logging
+import logging.handlers
 # Set log level
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger('stomp.py').setLevel(logging.WARNING)
@@ -12,7 +13,7 @@ logging.getLogger('stomp.py').setLevel(logging.WARNING)
 # Formatter
 ft = logging.Formatter('%(asctime)-15s %(message)s')
 # Create a log file handler
-fh = logging.FileHandler('dasmon_listener.log')
+fh = logging.handlers.TimedRotatingFileHandler('dasmon_listener.log', when='midnight', backupCount=15)
 fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
