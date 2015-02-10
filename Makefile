@@ -1,5 +1,5 @@
 prefix := /var/www/workflow
-HAS_MIGRATIONS:=$(shell python -c "import django;t=0 if django.VERSION[1]>=7 else 1; print t")
+HAS_MIGRATIONS:=$(shell python -c "import django;t=0 if django.VERSION[1]<7 else 1; print t")
 
 all:
 
