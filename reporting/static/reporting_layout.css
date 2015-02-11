@@ -392,3 +392,8 @@ img {border: 0;}
 	text-decoration: underline;
 	color: #006633;
 }
+
+.font_resize {
+    line-height: 13px;
+    font-size:11px;
+}

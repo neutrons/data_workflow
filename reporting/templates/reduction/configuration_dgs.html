@@ -114,4 +114,13 @@ Latest post-processing log entries for {{ instrument }}:<br><br>
 </table>
 <br>
 
+<script>
+$('.font_resize').keyup(function(ev) {
+    if($(this).val().length > 30) {
+        var len = ($(this).val().length-30)/15;
+        size = 11-Math.round(len); 
+        if(size >= 8) $(this).css("font-size",size + "px")
+    } else $(this).css("font-size","11px");
+});
+</script>
 {% endblock %}
