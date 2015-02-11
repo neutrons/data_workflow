@@ -35,8 +35,8 @@ class ReductionConfigurationDGSForm(forms.Form):
         Generic form for DGS reduction instruments
     """
     mask = forms.CharField(required=False, initial='')
-    raw_vanadium = forms.CharField(required=False, initial='')
-    processed_vanadium = forms.CharField(required=False, initial='')
+    raw_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
+    processed_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
     grouping = forms.ChoiceField(choices=[])
     e_min = forms.FloatField(required=True, initial=-0.2)
     e_step = forms.FloatField(required=True, initial=0.015)
