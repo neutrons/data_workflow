@@ -115,12 +115,17 @@ Latest post-processing log entries for {{ instrument }}:<br><br>
 <br>
 
 <script>
-$('.font_resize').keyup(function(ev) {
-    if($(this).val().length > 30) {
-        var len = ($(this).val().length-30)/15;
+function compute_size(id) { 
+    if($(id).val().length > 30) {
+        var len = ($(id).val().length-30)/15;
         size = 11-Math.round(len); 
-        if(size >= 8) $(this).css("font-size",size + "px")
-    } else $(this).css("font-size","11px");
+        if(size >= 8) $(id).css("font-size",size + "px")
+    } else $(id).css("font-size","11px");
+}
+compute_size('#id_processed_vanadium');
+compute_size('#id_raw_vanadium');
+$('.font_resize').keyup(function(ev) {
+  compute_size(this);
 });
 </script>
 {% endblock %}
