@@ -141,7 +141,7 @@ def process_ack(data=None):
         Process a ping request ack
         @param data: data that came in with the ack
     """
-    timeout = 10
+    timeout = 15
     try:
         if data is None:
             for proc_name in acks:
@@ -160,9 +160,10 @@ def process_ack(data=None):
             proc_name = data['src_name']
             if 'pid' in data:
                 proc_name = '%s:%s' % (proc_name, data['pid'])
-                
             if 'request_time' in data and time.time()-data['request_time']>10:
                 logging.error("Client %s took more than 10 secs to answer" % proc_name)
+            if proc_name in acks and acks[proc_name] is None:
+                logging.error("Client %s reappeared" % proc_name)
             acks[proc_name] = time.time()
     except:
         logging.error("Error processing ack: %s" % sys.exc_value)
