@@ -11,13 +11,16 @@ import json
 import os
 import sys
 import datetime
+import smtplib
+from email.mime.text import MIMEText
 
 if os.path.isfile("settings.py"):
     logging.warning("Using local settings.py file")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
-    
+
+import settings
 from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 from settings import TOPIC_PREFIX
@@ -31,6 +34,9 @@ from django.utils import timezone
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
 from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
 from report.models import Instrument
+
+# ACK data
+acks = {}
 
 class Listener(stomp.ConnectionListener):
     """
@@ -47,6 +53,19 @@ class Listener(stomp.ConnectionListener):
             @param message: JSON-encoded message content
         """
         destination = headers["destination"]
+        # Load the JSON message into a dictionary
+        try:
+            data_dict = json.loads(message)
+        except:
+            logging.error("Could not decode message from %s" % destination)
+            logging.error(sys.exc_value)
+            return
+        
+        # If we get a STATUS message, store it as such
+        if "ACK" in destination:
+            process_ack(data_dict)
+            return
+
         # Extract the instrument name
         instrument = None
         try:
@@ -69,15 +88,6 @@ class Listener(stomp.ConnectionListener):
             logging.error(str(sys.exc_value))
             return
             
-        # Load the JSON message into a dictionary
-        try:
-            data_dict = json.loads(message)
-        except:
-            logging.error("Could not decode message from %s" % destination)
-            logging.error(sys.exc_value)
-            return
-        
-        # If we get a STATUS message, store it as such
         if "STATUS" in destination:
             if "STS" in destination:
                 store_and_cache(instrument, "system_sts", data_dict["status"])
@@ -126,6 +136,37 @@ class Listener(stomp.ConnectionListener):
                 else:
                     store_and_cache(instrument, key, data_dict[key])
             
+def process_ack(data=None):
+    """
+        Process a ping request ack
+        @param data: data that came in with the ack
+    """
+    timeout = 10
+    try:
+        if data is None:
+            for proc_name in acks:
+                if time.time()-acks[proc_name]>timeout:
+                    logging.error("Client %s disappeared" % proc_name)
+                    from settings import ALERT_EMAIL
+                    del acks[proc_name]
+                    msg = MIMEText("test")
+                    msg['Subject'] = "Client %s disappeared" % proc_name
+                    msg['From'] = ALERT_EMAIL
+                    msg['To'] = ALERT_EMAIL
+                    s = smtplib.SMTP('localhost')
+                    s.sendmail(ALERT_EMAIL, [ALERT_EMAIL], msg.as_string())
+                    s.quit()
+        elif 'src_name' in data:
+            proc_name = data['src_name']
+            if 'pid' in data:
+                proc_name = '%s:%s' % (proc_name, data['pid'])
+                
+            if 'request_time' in data and time.time()-data['request_time']>10:
+                logging.error("Client %s took more than 10 secs to answer" % proc_name)
+            acks[proc_name] = time.time()
+    except:
+        logging.error("Error processing ack: %s" % sys.exc_value)
+
 def process_signal(instrument_id, data):
     """
         Process and store signal messages.
@@ -365,6 +406,15 @@ class Client(object):
                     if time.time()-last_heartbeat>5:
                         last_heartbeat = time.time()
                         store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
+                        # Send ping request
+                        if hasattr(settings, "PING_TOPIC"):
+                            from settings import PING_TOPIC, ACK_TOPIC
+                            payload = {"reply_to": ACK_TOPIC,
+                                       "request_time": time.time()}
+                            self.send(PING_TOPIC, json.dumps(payload))
+                            process_ack()
+                        else:
+                            logging.error("settings.PING_TOPIC is not defined")
                 except:
                     logging.error("Problem writing heartbeat %s" % sys.exc_value)
             except:

@@ -25,6 +25,9 @@ from workflow.database.settings import brokers
 from workflow.database.settings import icat_user as amq_user
 from workflow.database.settings import icat_passcode as amq_pwd
 
+PING_TOPIC = "/topic/SNS.COMMON.STATUS.PING"
+ACK_TOPIC = "/topic/SNS.COMMON.STATUS.ACK"
+ALERT_EMAIL = ""
 queues = ["/topic/ADARA.APP.DASMON.0",
           "/topic/ADARA.STATUS.DASMON.0",
           "/topic/ADARA.SIGNAL.DASMON.0"]
