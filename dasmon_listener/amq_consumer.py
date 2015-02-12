@@ -149,7 +149,7 @@ def process_ack(data=None):
                     logging.error("Client %s disappeared" % proc_name)
                     from settings import ALERT_EMAIL
                     acks[proc_name] = None
-                    msg = MIMEText("test")
+                    msg = MIMEText("An AMQ client disappeared")
                     msg['Subject'] = "Client %s disappeared" % proc_name
                     msg['From'] = ALERT_EMAIL
                     msg['To'] = ALERT_EMAIL
