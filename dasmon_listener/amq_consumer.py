@@ -145,10 +145,10 @@ def process_ack(data=None):
     try:
         if data is None:
             for proc_name in acks:
-                if time.time()-acks[proc_name]>timeout:
+                if acks[proc_name] is not None and time.time()-acks[proc_name]>timeout:
                     logging.error("Client %s disappeared" % proc_name)
                     from settings import ALERT_EMAIL
-                    del acks[proc_name]
+                    acks[proc_name] = None
                     msg = MIMEText("test")
                     msg['Subject'] = "Client %s disappeared" % proc_name
                     msg['From'] = ALERT_EMAIL
