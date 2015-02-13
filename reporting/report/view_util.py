@@ -266,7 +266,7 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
         @param red_timeout: number of hours before declaring a process dead
         @param yellow_timeout: number of seconds before declaring a process slow
     """
-    status_dict = {}
+    status_dict = {"catalog":2, "reduction":2}
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
  
