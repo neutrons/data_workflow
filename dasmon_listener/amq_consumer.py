@@ -147,14 +147,14 @@ def process_ack(data=None):
             for proc_name in acks:
                 if acks[proc_name] is not None and time.time()-acks[proc_name]>timeout:
                     logging.error("Client %s disappeared" % proc_name)
-                    from settings import ALERT_EMAIL
+                    from settings import ALERT_EMAIL, FROM_EMAIL
                     acks[proc_name] = None
                     msg = MIMEText("An AMQ client disappeared")
                     msg['Subject'] = "Client %s disappeared" % proc_name
-                    msg['From'] = ALERT_EMAIL
-                    msg['To'] = ALERT_EMAIL
+                    msg['From'] = FROM_EMAIL
+                    msg['To'] = ';'.join(ALERT_EMAIL)
                     s = smtplib.SMTP('localhost')
-                    s.sendmail(ALERT_EMAIL, [ALERT_EMAIL], msg.as_string())
+                    s.sendmail(FROM_EMAIL, ALERT_EMAIL, msg.as_string())
                     s.quit()
         elif 'src_name' in data:
             proc_name = data['src_name']
