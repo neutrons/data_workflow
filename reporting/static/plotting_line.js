@@ -1,20 +1,31 @@
 // ********************************************** //
 // ********* code for line plots **************** //
 // ********************************************** //
+
 function plot_1d(raw_data, anchor, options) {
     // Raw_data is fed in, 
     // anchor is the dialog box, and options
     // are plot options.
 
-    color = '#0077cc';
-    marker_size = 2;
-    height = 350;
-    width = 630;
-    log_scale = options.log_scale;
-    grid = true;
-    x_label = "time elapsed [minutes]";
-    y_label = "";
-    title = "";
+    var color = '#0077cc';
+    var marker_size = 2;
+    var w;
+    var h;
+    var mod_psize;
+    var margin = {top: 30, right: 15, bottom: 50, left: 65};
+    var log_scale = options.log_scale;
+    var grid = true;
+    var x_label = "time elapsed [minutes]";
+    var y_label = "";
+    var title = "";
+	var x;
+	var y;
+	var y_min;
+	var y_max;
+	var xAxis;
+	var xAxisMinor;
+	var yAxis;
+	var yAxisMinor;
 
     var data = [];
     for (var i=0; i<raw_data.length; i++) {
@@ -23,14 +34,17 @@ function plot_1d(raw_data, anchor, options) {
     
     var tid = $(".live_plots").parent().attr("id");
 
-    var margin = {top: 30, right: 15, bottom: 50, left: 65},
-    width = width - margin.left - margin.right,
-    height = height - margin.top - margin.bottom;
-
-    var x = d3.scale.linear().range([0, width]);
-    var y = log_scale ? d3.scale.log().range([height, 0]) : d3.scale.linear().range([height, 0]);
-    var y_min = d3.min(data, function(d) { return d[1]; }) // for a better display of a constant function
-    var y_max = d3.max(data, function(d) { return d[1]; })
+	w = options.psize.width;
+	h = options.psize.height;
+	w = w - margin.left - margin.right;
+	h = h - margin.top - margin.bottom;
+	mod_psize = {height: h, width: w};
+	x = d3.scale.linear().range([0, mod_psize.width]);
+	y = log_scale ? d3.scale.log().range([mod_psize.height, 0]) : d3.scale.linear().range([mod_psize.height, 0]);
+	
+	
+    y_min = d3.min(data, function(d) { return d[1]; }) // for a better display of a constant function
+    y_max = d3.max(data, function(d) { return d[1]; })
     
     x.domain(d3.extent(data, function(d) { return d[0]; }));
     if ( y_min === y_max ){
@@ -40,31 +54,35 @@ function plot_1d(raw_data, anchor, options) {
 		y.domain([y_min, y_max]);
     }
 
-    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.7g"));
-    var xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
-    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.9g"));    
-    var yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
+	xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.7g"));
+	xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
+	yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.9g"));    
+	yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
+
     
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
     
+	console.log("DEFAULT 1D: mod_psize.width: " + mod_psize.width + ", mod_psize.height: " + mod_psize.height);
     // Create svg element
     var svg = d3.select("#" + anchor).append("svg")
 		.attr("class", "default_1d")
-		.attr("width", width + margin.left + margin.right)
-		.attr("height", height + margin.top + margin.bottom)
+		.attr("id", anchor + "_svg")
+		.attr("width", mod_psize.width + margin.left + margin.right)
+		.attr("height", mod_psize.height + margin.top + margin.bottom)
 		.append("g")
 		.attr("id", anchor + "_g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
-    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxisMinor);
+		
+    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + mod_psize.height + ")").call(xAxis);
+    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + mod_psize.height + ")").call(xAxisMinor);
     svg.append("g").attr("class", "y axis").call(yAxis)
     svg.append("g").attr("class", "y axis").call(yAxisMinor)
     
     // Create X axis label   
     svg.append("text")
-		.attr("x", width)
-		.attr("y",  height+40)
+		.attr("x", mod_psize.width)
+		.attr("y",  mod_psize.height+40)
 		.attr("font-size", "11px")
 		.style("text-anchor", "end")
 		.text(x_label);
@@ -80,7 +98,7 @@ function plot_1d(raw_data, anchor, options) {
 
     // Create title
     svg.append("text")
-		.attr("x", width/2.0 )
+		.attr("x", mod_psize.width/2.0 )
 		.attr("y",  -10)
 		.attr("font-size", "16px")
 		.style("text-anchor", "middle")
@@ -91,15 +109,15 @@ function plot_1d(raw_data, anchor, options) {
 		// If grid checkbox is checked, add grid
 		xGrid = svg.append("g")
 			.attr("class", "grid")
-			.attr("transform", "translate(0," + height + ")")
+			.attr("transform", "translate(0," + mod_psize.height + ")")
 			.call(xAxis
-				.tickSize(-height, 0, 0)
+				.tickSize(-mod_psize.height, 0, 0)
 				.tickFormat("")
 			)
 		yGrid = svg.append("g")
 			.attr("class", "grid")
 			.call(yAxis
-				.tickSize(-width, 0, 0)
+				.tickSize(-mod_psize.width, 0, 0)
 				.tickFormat("")
 			)
     }
@@ -119,7 +137,8 @@ function plot_1d(raw_data, anchor, options) {
 	    .attr("d", interp_line(data))
 	    .attr("fill", "none")
 	    .attr("stroke", "grey")
-	    .attr("stroke-width", 1);
+	    .attr("stroke-width", 3)
+	    .style("opacity", 0.4);
 
     // Tooltip obj
     var tooltip = d3.select("body")
@@ -184,6 +203,7 @@ function plot_1d(raw_data, anchor, options) {
 		circle_ol.style("visibility", "hidden");
 		return tooltip.style("visibility", "hidden");
     }
+    
 }
 
 function get_color(i, n_max) {
