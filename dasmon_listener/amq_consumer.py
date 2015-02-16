@@ -23,6 +23,7 @@ else:
 import settings
 from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
+from settings import IMAGE_PURGE_TIMEOUT
 from settings import TOPIC_PREFIX
 sys.path.append(INSTALLATION_DIR)
 
@@ -34,6 +35,7 @@ from django.utils import timezone
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
 from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
 from report.models import Instrument
+from file_handling.models import ReducedImage
 
 # ACK data
 acks = {}
@@ -402,6 +404,10 @@ class Client(object):
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument,
                                                                 pv_name=item.name))==0:
                             item.delete()
+                    # Remove old images
+                    delta_time = datetime.timedelta(days=IMAGE_PURGE_TIMEOUT)
+                    cutoff = timezone.now()-delta_time
+                    ReducedImage.objects.filter(created_on__lte=cutoff).delete()
                 time.sleep(waiting_period)
                 try:
                     if time.time()-last_heartbeat>5:

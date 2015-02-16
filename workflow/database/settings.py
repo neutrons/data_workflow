@@ -16,6 +16,7 @@ TIME_ZONE = 'America/New_York'
 
 USE_TZ = True
 
+#Note: Django > 1.7 requires full package path 'workflow.database.report'
 INSTALLED_APPS = (
     'report',
     )

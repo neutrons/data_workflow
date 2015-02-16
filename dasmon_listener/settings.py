@@ -36,6 +36,7 @@ queues = ["/topic/ADARA.APP.DASMON.0",
 INSTALLATION_DIR = "/var/www/workflow/app"
 
 PURGE_TIMEOUT = 7
+IMAGE_PURGE_TIMEOUT = 360
 
 LEGACY_PREFIX = "ADARA"
 LEGACY_INSTRUMENT = "hysa"
