@@ -1,0 +1,44 @@
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges; 
+}
+.axis text,
+.label{
+	color: #555;
+    font-family: sans-serif;
+    padding: 3px;
+}
+.tooltip {
+	color: #555;
+    font-family: sans-serif;
+    padding: 3px;
+    background-color: #fff;
+    border: 1px solid #333;
+    opacity: 0.9;
+}
+.x.axis path { fill: none; }
+.y.axis path { fill: none; }
+
+
+.bar_group{
+
+}
+
+.grid .tick{
+	stroke: grey;
+	opacity: 0.4;
+	stroke-width: .2;
+	shape-rendering: auto;
+}
+
+.y .tick{
+	stroke-width: 1;
+}
+
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;}
