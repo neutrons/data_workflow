@@ -1,10 +1,13 @@
 .axis path,
 .axis line {
   fill: none;
-  stroke: #000;
+  stroke: #555;
   shape-rendering: crispEdges; }
+  
 .axis text,
+text,
 .tooltip {
+	color: #555;
     font-family: sans-serif;
     font-size: 10px;
 }
