@@ -10,8 +10,10 @@
 <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
 <script language="javascript" type="text/javascript" src="/static/plotting_line.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/plotting.css" title="no title" charset="utf-8">
+<link rel="stylesheet" type="text/css" href="/static/bar_chart.css" />
 <link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css"> 
 
 <script>
@@ -78,6 +80,7 @@
 		this.dialog_name = this.clean_name + "_dialog";
 		this.dialog_win;
 		this.plot_id = this.clean_name + "_plot";
+		this.plotted_data = [];
 		this.plot_content = 
 			"<div id='" + this.dialog_name + "' title='" + this.element_id + "' name='" + this.element_id + "'>" + 
 			"	<div class='live_plots'>" +
@@ -91,24 +94,34 @@
 			"		<a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"7200\");'>2h</a> | " +
 			"		<a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"86400\");'>max</a> " +
 			"	</div><br>" +
-			"	<div style='height:380px' id='" + this.clean_name + "_plot'></div>" +
+			"	<div id='" + this.clean_name + "_plot'></div>" +
 			"	</div>" +
 			"</div>";
-            
+		this.plot_options = {
+			// plot options here!
+			log_scale: false,
+			psize: {width: 620, height: 350}
+		}
 		this.pop_monitor_plot = function(){
 			// Create dialog box for plot and call poll
 			if ($("#" + this.dialog_name).length === 0){
 				var element_id = this.element_id;
 				var dialog_name = this.dialog_name;
 				var nid = this.nid;
+				var plot_id = this.plot_id;
 				$('#dialog_placeholder').append(this.plot_content);
 				$("#" + this.dialog_name).dialog({
 					width: 670,
 					height: 480,
+					dialogClass: "plot_class",
 					resizable: true,
 					closeOnEscape: true,
+					resize: function(event, ui){
+						dialog_resize(event, ui, nid, this);
+					},
 					close: function(event, ui) {
 						Plots[nid].option = "0";
+						Plots[nid].plot_options.psize = {width: 620, height: 350}; // restore default size
 						$("#" + dialog_name).remove();
 						if($("#" + dialog_name + "_submenu").length > 0){
 							$("#" + dialog_name + "_submenu").remove();
@@ -120,6 +133,7 @@
 				});
 				// Get dialog window DOM element
 				this.dialog_win = $("#" + this.dialog_name).parent();
+				//resize_dialog(element_id);
 			}
             poll();
 		}
@@ -138,10 +152,6 @@
 			else if($("#" + this.dialog_name + "_submenu").length > 0){
 				$("#" + this.dialog_name + "_submenu").remove();
 			}
-		}
-		this.plot_options = {
-			// plot options here!
-			log_scale: false
 		}
 		this.local_options = function(){
 			if($("#" + this.dialog_name + "_submenu").length > 0){
@@ -196,6 +206,12 @@
 		}
 	}
 	
+    function dialog_resize(event, ui, nid, s){
+		var adj_size = {width: $(s).width()-25, height: $(s).height()-80};
+		Plots[nid].plot_options.psize = adj_size;
+		plot_1d(Plots[nid].plotted_data, Plots[nid].plot_id, Plots[nid].plot_options)
+	}
+	
 	//************************************************************************80
 	// FUNCTION: poll
 		//
@@ -207,6 +223,7 @@
     function poll() {
         var query_str = "";
         var pv_query_str = "";
+        var options;
         for (var i=0; i<Plots.length; i++){
 			if (Plots[i].option === "1") query_str += Plots[i].element_id + ",";
 			else if (Plots[i].option === "2") pv_query_str += Plots[i].element_id + ",";
@@ -233,15 +250,15 @@
 		});
         if (pv_query_str.length>0) {
             $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
-                plotted_data = data.live_plot_data;
-
-                for (var i=0; i<Plots.length; i++) {
-                    for (var j=0; j<plotted_data.length; j++) {
-                        if (plotted_data[j][0]==Plots[i].element_id) {
-                            plot_1d(plotted_data[j][1], Plots[i].plot_id, Plots[i].plot_options);
-                        }
-                    }
-                }
+                for (var i=0; i<data.live_plot_data.length; i++){
+					for (var j=0; j<Plots.length; j++){
+						if (data.live_plot_data[i][0] === Plots[j].element_id){
+							Plots[j].plotted_data = data.live_plot_data[i][1];
+							plot_1d(Plots[j].plotted_data, Plots[j].plot_id, Plots[j].plot_options)
+							break;
+						}
+					}
+				}
             }, dataType: "json", timeout: 2000, cache: true,
             statusCode: { 401: function() {
 						new_alert("Your session expired. Please log in again"); 
@@ -251,6 +268,18 @@
 			});
         }
         get_alarms();
+        
+		$(".tooltip").each(function(){
+			if ($(this).css("visibility") === "hidden"){
+				//console.log("this is hidden");
+				$(this).remove();
+			}
+			//else{
+				//$(this).css("visibility", "hidden");
+				//$(this).css("visibility", "visible");
+				////console.log("this is not hidden");
+			//}
+		});
     };
     
     function max_timeframe(time_period) 
@@ -302,7 +331,8 @@
 				position: 'top'
 			});
 		}
-	}	
+	}
+		
 	
 </script>
 {% endblock %}
