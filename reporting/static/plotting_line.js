@@ -12,7 +12,7 @@ function plot_1d(raw_data, anchor, options) {
     var w;
     var h;
     var mod_psize;
-    var margin = {top: 30, right: 15, bottom: 50, left: 65};
+    var margin = {top: 30, right: 15, bottom: 50, left: 45};
     var log_scale = options.log_scale;
     var grid = true;
     var x_label = "time elapsed [minutes]";
@@ -54,9 +54,9 @@ function plot_1d(raw_data, anchor, options) {
 		y.domain([y_min, y_max]);
     }
 
-	xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.7g"));
+	xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.4g"));
 	xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
-	yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.9g"));    
+	yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.5g"));    
 	yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
 
     
