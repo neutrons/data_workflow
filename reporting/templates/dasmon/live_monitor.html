@@ -100,7 +100,7 @@
 		this.plot_options = {
 			// plot options here!
 			log_scale: false,
-			psize: {width: 620, height: 350}
+			psize: {width: 485, height: 250}
 		}
 		this.pop_monitor_plot = function(){
 			// Create dialog box for plot and call poll
@@ -111,8 +111,8 @@
 				var plot_id = this.plot_id;
 				$('#dialog_placeholder').append(this.plot_content);
 				$("#" + this.dialog_name).dialog({
-					width: 670,
-					height: 480,
+					width: 535,
+					height: 380,
 					dialogClass: "plot_class",
 					resizable: true,
 					closeOnEscape: true,
@@ -121,7 +121,7 @@
 					},
 					close: function(event, ui) {
 						Plots[nid].option = "0";
-						Plots[nid].plot_options.psize = {width: 620, height: 350}; // restore default size
+						Plots[nid].plot_options.psize = {width: 485, height: 250}; // restore default size
 						$("#" + dialog_name).remove();
 						if($("#" + dialog_name + "_submenu").length > 0){
 							$("#" + dialog_name + "_submenu").remove();
