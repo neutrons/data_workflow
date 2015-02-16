@@ -19,6 +19,7 @@ function BarGraph(run_data, error_data, anchor, type){
 	var x;
 	var y;
 	var x_ticks;
+	var y_ticks_div;
 	var xAxis;
 	var yAxis;
 	var yAxisMinor;
@@ -35,7 +36,7 @@ function BarGraph(run_data, error_data, anchor, type){
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_data = [formatted_runs_data, formatted_error_data];
 	
-	//error_data = [[-21,11],[0,1]];
+	//error_data = [[-21,10],[0,1]];
 
 	// Format data
 	function formatData(){
@@ -75,7 +76,7 @@ function BarGraph(run_data, error_data, anchor, type){
 			padding = {left: 16, right: 0, top: 4, bottom: 0};
 			trans = {w: 18, h: 5}
 			x_ticks = 0;
-			y_ticks_div = 5;
+			y_ticks_div;
 			xts = 1;
 			yts = 2;
 			right_label_text = "";
@@ -84,12 +85,25 @@ function BarGraph(run_data, error_data, anchor, type){
 		}
 	}		
 	// Calculate bar height factor
-	function calcBarHeightFactor(){
+	function calcBarHeightFactor(type){
 		var max_run = Math.max.apply(Math, formatted_runs_data);
 		var max_error = Math.max.apply(Math, formatted_error_data);
 		max_val = Math.max(max_run, max_error);
 		max_val += 1;		// ******************* buffer for nice look??????????????????????????
 		barHeightFactor = (h) / max_val;
+		
+		if (type === "summary"){
+			if (max_val >= 0 && max_val <= 5) y_ticks_div = 1;
+			else if (max_val >= 6 && max_val <= 10) y_ticks_div = 2;
+			else if (max_val >= 11 && max_val <= 30) y_ticks_div = 5;
+			else y_ticks_div = 10;
+		}
+		else if (type === "detailed"){
+			if (max_val >= 0 && max_val <= 10) y_ticks_div = 1;
+			else if (max_val >= 11 && max_val <= 20) y_ticks_div = 2;
+			else if (max_val >= 11 && max_val <= 40) y_ticks_div = 5;
+			else y_ticks_div = 10;
+		}
 	}
 	// Calculate bar width
 	function calcBarWidth(){
@@ -98,7 +112,7 @@ function BarGraph(run_data, error_data, anchor, type){
 
 	formatData();
 	getTypeParameters(type);
-	calcBarHeightFactor();
+	calcBarHeightFactor(type);
 	calcBarWidth();
     
 	chartContainer = d3.select("#" + anchor).append("svg")
