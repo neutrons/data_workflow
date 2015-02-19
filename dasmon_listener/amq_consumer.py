@@ -181,6 +181,9 @@ def process_ack(data=None):
                 logging.error("Client %s took more than 10 secs to answer" % proc_name)
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared" % proc_name)
+                send_message(sender = FROM_EMAIL, recipients = ALERT_EMAIL,
+                             subject = "Client %s reappeared" % proc_name,
+                             message = "An AMQ client reappeared")
             acks[proc_name] = time.time()
     except:
         logging.error("Error processing ack: %s" % sys.exc_value)
