@@ -108,6 +108,7 @@ def is_instrument_staff(request, instrument_id):
         @param request: HTTP request object
         @param instrument_id: Instrument object
     """
+    # Look for Django group
     try:
         instrument_name = str(instrument_id).upper()
         instr_group = Group.objects.get(name="%s%s" % (instrument_name,
@@ -115,6 +116,17 @@ def is_instrument_staff(request, instrument_id):
         if instr_group in request.user.groups.all():
             return True
     except Group.DoesNotExist:
+        # The group doesn't exist, carry on
+        pass
+    # Look for LDAP group
+    try:
+        if request.user is not None and hasattr(request.user, "ldap_user"):
+            groups = request.user.ldap_user.group_names
+            if u'sns_%s_team' % str(instrument_id).lower() in groups \
+            or u'snsadmin' in groups:
+                return True
+    except:
+        # Couldn't find the user in the instrument LDAP group
         pass
     return request.user.is_staff
         
