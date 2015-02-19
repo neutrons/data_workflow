@@ -6,7 +6,7 @@
 """
 from django import forms
 from django.core.exceptions import ValidationError
-from models import ReductionProperty, PropertyModification, Choice
+from models import ReductionProperty, Choice
 from report.models import Instrument
 import sys
 import re
@@ -21,9 +21,9 @@ def _get_choices(instrument):
     form_choices = []
     try:
         instrument_id = Instrument.objects.get(name=instrument.lower())
-        property = ReductionProperty.objects.get(key='grouping', instrument=instrument_id)
+        grp_property = ReductionProperty.objects.get(key='grouping', instrument=instrument_id)
         choices = Choice.objects.filter(instrument=instrument_id,
-                                        property=property)
+                                        property=grp_property)
         for item in choices:
             form_choices.append( (item.value, item.description) )
     except:
