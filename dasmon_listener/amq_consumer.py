@@ -32,7 +32,7 @@ if django.VERSION[1]>=7:
     django.setup()
 from django.utils import timezone
 
-from dasmon.models import StatusVariable, Parameter, StatusCache, Signal
+from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification
 from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
 from report.models import Instrument
 from file_handling.models import ReducedImage
@@ -138,6 +138,25 @@ class Listener(stomp.ConnectionListener):
                 else:
                     store_and_cache(instrument, key, data_dict[key])
             
+def send_message(sender, recipients, subject, message):
+    """
+        Send an email message
+        @param sender: email of the sender
+        @param recipients: list of recipient emails
+        @param subject: subject of the message
+        @param message: content of the message
+    """
+    try:
+        msg = MIMEText(message)
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = ';'.join(recipients)
+        s = smtplib.SMTP('localhost')
+        s.sendmail(sender, recipients, msg.as_string())
+        s.quit()
+    except:
+        logging.error("Could not send message: %s" % sys.exc_value)
+        
 def process_ack(data=None):
     """
         Process a ping request ack
@@ -145,19 +164,15 @@ def process_ack(data=None):
     """
     timeout = 15
     try:
+        from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
                 if acks[proc_name] is not None and time.time()-acks[proc_name]>timeout:
                     logging.error("Client %s disappeared" % proc_name)
-                    from settings import ALERT_EMAIL, FROM_EMAIL
                     acks[proc_name] = None
-                    msg = MIMEText("An AMQ client disappeared")
-                    msg['Subject'] = "Client %s disappeared" % proc_name
-                    msg['From'] = FROM_EMAIL
-                    msg['To'] = ';'.join(ALERT_EMAIL)
-                    s = smtplib.SMTP('localhost')
-                    s.sendmail(FROM_EMAIL, ALERT_EMAIL, msg.as_string())
-                    s.quit()
+                    send_message(sender = FROM_EMAIL, recipients = ALERT_EMAIL,
+                                 subject = "Client %s disappeared" % proc_name,
+                                 message = "An AMQ client disappeared")
         elif 'src_name' in data:
             proc_name = data['src_name']
             if 'pid' in data:
@@ -169,6 +184,27 @@ def process_ack(data=None):
             acks[proc_name] = time.time()
     except:
         logging.error("Error processing ack: %s" % sys.exc_value)
+
+def notify_users(instrument_id, signal):
+    """
+        Find users who need to be notified and send them a message
+        @param instrument_id: Instrument object
+        @param signal: Signal object
+    """
+    try:
+        from settings import FROM_EMAIL
+        for item in UserNotification.objects.filter(instruments__in=[instrument_id], registered=True):
+            message = "A new alert signal was set on %s\n\n" % str(instrument_id).upper()
+            message += "    Name:    %s\n" % signal.name
+            message += "    Source:  %s\n" % signal.source
+            message += "    Message: %s\n" % signal.message
+            message += "    Level:   %s\n" % signal.level
+            message += "    Time:    %s\n" % signal.timestamp.ctime()
+            send_message(sender = FROM_EMAIL, recipients = [item.email],
+                         subject = "New alert on %s" % str(instrument_id).upper(),
+                         message = message)
+    except:
+        logging.error("Failed to notify users: %s" % sys.exc_value)
 
 def process_signal(instrument_id, data):
     """
@@ -223,7 +259,7 @@ def process_signal(instrument_id, data):
                 signal.level = level
                 signal.timestamp = timestamp
                 signal.save()
-    
+            notify_users(instrument_id, signal)
         # Retract a signal
         else:
             for item in asserted_sig:
