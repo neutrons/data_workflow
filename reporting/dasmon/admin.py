@@ -1,4 +1,4 @@
-from dasmon.models import StatusVariable, Parameter, StatusCache, ActiveInstrument, Signal, LegacyURL
+from dasmon.models import StatusVariable, Parameter, StatusCache, ActiveInstrument, Signal, LegacyURL, UserNotification
 from django.contrib import admin
 import datetime
 import sys
@@ -30,9 +30,13 @@ class SignalAdmin(admin.ModelAdmin):
 class LegacyURLAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'url', 'long_name')
     
+class UserNotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'email')
+    
 admin.site.register(StatusVariable, StatusVariableAdmin)
 admin.site.register(Parameter, ParameterAdmin)
 admin.site.register(StatusCache, StatusVariableAdmin)
 admin.site.register(ActiveInstrument, ActiveInstrumentAdmin)
 admin.site.register(Signal, SignalAdmin)
 admin.site.register(LegacyURL, LegacyURLAdmin)
+admin.site.register(UserNotification, UserNotificationAdmin)

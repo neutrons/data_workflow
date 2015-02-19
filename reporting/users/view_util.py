@@ -8,7 +8,7 @@ import hashlib
 import socket
 import logging
 import sys
-from reporting_app import settings
+from django.conf import settings
 
 from users.models import PageView
 

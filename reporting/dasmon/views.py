@@ -5,14 +5,16 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
-import datetime
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.template import Context, loader
+from django.contrib.auth.decorators import login_required
+from django.core.context_processors import csrf
+from django import forms
 
 from report.models import Instrument, DataRun
-from dasmon.models import ActiveInstrument, Signal
+from dasmon.models import ActiveInstrument, Signal, UserNotification
 from users.models import SiteNotification
 
 import view_util
@@ -464,3 +466,89 @@ def acknowledge_signal(request, instrument, sig_id):
     except:
         logging.error("ACK signal %s/%s: %s" % (instrument, sig_id, sys.exc_value))
     return HttpResponse()
+
+@login_required
+def notifications(request):
+    """
+        Let an instrument team member register for a DASMON signal
+    """
+    instrument_list = view_util.get_instruments_for_user(request)
+    
+    class NotificationForm(forms.Form):
+        """
+            Form for notification registration
+        """
+        email = forms.EmailField(required=False, initial='')
+        register = forms.BooleanField(required=False, initial=False)
+        instruments = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+        
+        def __init__(self, *args, **kwargs):
+            super(NotificationForm, self).__init__(*args, **kwargs)
+            options = ()
+            for i in instrument_list:
+                options += ( (i,i), )
+            self.fields['instruments'] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
+                                                                   choices=options )
+
+    # Process request
+    alert_list = []
+    if request.method == 'POST':
+        options_form = NotificationForm(request.POST)
+        if options_form.is_valid():
+            email_address = options_form.cleaned_data['email']
+            registered = options_form.cleaned_data['register']
+            instruments = options_form.cleaned_data['instruments']
+            try:
+                user_options_list = UserNotification.objects.filter(user=request.user)
+                if len(user_options_list)==0:
+                    user_options = UserNotification(user=request.user, 
+                                                    email=email_address,
+                                                    registered = registered)
+                    user_options.save()
+                else:
+                    user_options = user_options_list[0]
+                    user_options.email = email_address
+                    user_options.registered = registered
+                # Add the instruments
+                user_options.instruments.clear()
+                for item in instruments:
+                    try:
+                        inst_entry = Instrument.objects.get(name=item.lower())
+                        user_options.instruments.add(inst_entry)
+                        user_options.save()
+                    except:
+                        alert_list.append("Could not find instrument %s" % item)
+                        logging.error("Notification registration failed: %s" % sys.exc_value)
+                alert_list.append("Your changes have been saved.")
+                    
+            except:
+                logging.error("Error processing notification settings: %s" % sys.exc_value)
+        else:
+            alert_list.append("Your form is invalid. Please modify your entries and re-submit.")
+            logging.error("Invalid form %s" % options_form.errors)
+    else:
+        params_dict = {}
+        try:
+            user_options = UserNotification.objects.get(user=request.user)
+            params_dict['email'] = user_options.email
+            params_dict['register'] = user_options.registered
+            params_dict['instruments'] = []
+            for item in user_options.instruments.all():
+                params_dict['instruments'].append(item.name.upper())
+        except:
+            # No entry found for this user. Use a blank form.
+            pass
+        options_form = NotificationForm(initial=params_dict)
+
+    # Breadcrumbs
+    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; notifications"
+
+    template_values = {'helpline': settings.HELPLINE_EMAIL,
+                       'options_form': options_form,
+                       'user_alert': alert_list,
+                       'breadcrumbs': breadcrumbs}
+    template_values.update(csrf(request))
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render_to_response('dasmon/notifications.html',
+                              template_values)

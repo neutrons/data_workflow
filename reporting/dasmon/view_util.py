@@ -10,6 +10,7 @@ from pvmon.models import PVCache, PVStringCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
+from django.contrib.auth.models import Group
 import datetime
 from django.conf import settings
 import logging
@@ -1028,3 +1029,39 @@ def get_latest_updates(instrument_id, message_channel,
                               'time': str(df.format(settings.DATETIME_FORMAT)),
                               'timestamp': timezone.make_naive(item.timestamp, timezone.utc).isoformat()})
     return template_data
+
+def get_instruments_for_user(request):
+    """
+        Get the list of instruments for a given user
+    """
+    # Get the full list of instruments
+    instrument_list = []
+    for instrument_id in Instrument.objects.all().order_by('name'):
+        if not ActiveInstrument.objects.is_alive(instrument_id):
+            continue
+        instrument_name = str(instrument_id).upper()
+
+        # Django groups
+        try:
+            instr_group = Group.objects.get(name="%s%s" % (instrument_name,
+                                                           settings.INSTRUMENT_TEAM_SUFFIX))
+            if instr_group in request.user.groups.all():
+                instrument_list.append(instrument_name)
+                continue
+        except Group.DoesNotExist:
+            # The group doesn't exist, carry on
+            pass
+
+        # LDAP groups
+        try:
+            if request.user is not None and hasattr(request.user, "ldap_user"):
+                groups = request.user.ldap_user.group_names
+                if u'sns_%s_team' % instrument_name.lower() in groups \
+                or u'snsadmin' in groups:
+                    instrument_list.append(instrument_name)
+        except:
+            # Couldn't find the user in the instrument LDAP group
+            pass
+    
+    return instrument_list
+

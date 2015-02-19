@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} Notifications {% endblock %}
+
+{% block banner %}{{ instrument }} Notifications {% endblock %}
+    
+{% block summary %}
+<div class='section_divider'>Notification registration</div>
+<div class='narrow_section'>
+Instrument team members can use this page to register for email notification.
+Select the instrument(s) you want notification for, and an email will be sent to you in case of a DASMON alarm.
+</div>
+
+<div style="margin-bottom:60px;">
+<form action="" method="POST">{% csrf_token %}
+  <table class="property_table  fixed_table" >
+    <tr><th>Instrument(s)</th> <td> {{ options_form.instruments }} </td></tr>
+    <tr><th>Email</th> <td {% if options_form.email.errors %}class='highlight_row' title='{{ options_form.email.errors }}'{% endif %}>{{options_form.email }} </td></tr>
+    <tr><th>Register</th> <td> {{ options_form.register }} </td></tr>
+  </table>
+<p>
+<span style="float: right; margin-left:15px;" >
+<input id="submit_button" title="Submit to change your registration" type="submit" value="submit"/>
+</span>
+</form>
+</div>
+<p>
+{% endblock %}
+{% block nocontent %}{% endblock %}

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from report.models import Instrument
     
 class Parameter(models.Model):
@@ -107,3 +108,11 @@ class LegacyURL(models.Model):
     long_name = models.CharField(max_length=40)
     
     
+class UserNotification(models.Model):
+    """
+        Table of users to notify
+    """
+    user        = models.ForeignKey(User, unique=True)
+    instruments = models.ManyToManyField(Instrument, related_name='_usernotification_instruments+')
+    email       = models.EmailField(max_length=254)
+    registered  = models.BooleanField(default=False)
