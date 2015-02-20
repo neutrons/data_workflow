@@ -162,11 +162,11 @@ def process_ack(data=None):
         Process a ping request ack
         @param data: data that came in with the ack
     """
-    timeout = 15
     try:
         from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
+                timeout = data['timeout'] if 'timeout' in data else 15
                 if acks[proc_name] is not None and time.time()-acks[proc_name]>timeout:
                     logging.error("Client %s disappeared" % proc_name)
                     acks[proc_name] = None
