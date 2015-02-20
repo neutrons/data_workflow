@@ -41,4 +41,10 @@ worker_passcode = "worker"
 ICAT_DOMAIN = 'icat.sns.gov'
 ICAT_PORT = 2080
 
+# Import local settings if available
+try:
+    from local_settings import *
+except ImportError, e:
+    LOCAL_SETTINGS = False
+    pass
 
