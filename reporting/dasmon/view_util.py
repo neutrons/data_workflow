@@ -196,6 +196,8 @@ def fill_template_values(request, **template_args):
     is_alive = ActiveInstrument.objects.is_alive(instrument_id)
     template_args['is_adara'] = is_adara
     template_args['is_alive'] = is_alive
+    if template_args['is_instrument_staff'] and is_adara:
+        template_args['profile_url'] = reverse('dasmon.views.notifications')
 
     # Get live monitoring URLs
     template_args['live_monitor_url'] = reverse('dasmon.views.live_monitor', args=[instr])
@@ -1037,7 +1039,8 @@ def get_instruments_for_user(request):
     # Get the full list of instruments
     instrument_list = []
     for instrument_id in Instrument.objects.all().order_by('name'):
-        if not ActiveInstrument.objects.is_alive(instrument_id):
+        if not ActiveInstrument.objects.is_alive(instrument_id) or \
+            not ActiveInstrument.objects.is_adara(instrument_id):
             continue
         instrument_name = str(instrument_id).upper()
 
