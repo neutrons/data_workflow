@@ -111,7 +111,7 @@ class UserNotification(models.Model):
     """
         Table of users to notify
     """
-    user_id     = models.IntegerField(default=0, unique=True)
+    user_id     = models.IntegerField(unique=True)
     instruments = models.ManyToManyField(Instrument, related_name='_usernotification_instruments+')
     email       = models.EmailField(max_length=254)
     registered  = models.BooleanField(default=False)

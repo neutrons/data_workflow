@@ -522,6 +522,7 @@ def notifications(request):
                 alert_list.append("Your changes have been saved.")
                     
             except:
+                alert_list.append("There was a problem processing your request.")
                 logging.error("Error processing notification settings: %s" % sys.exc_value)
         else:
             alert_list.append("Your form is invalid. Please modify your entries and re-submit.")
