@@ -64,7 +64,7 @@ class Listener(stomp.ConnectionListener):
             return
         
         # If we get a STATUS message, store it as such
-        if "ACK" in destination:
+        if destination.endswith(".ACK"):
             process_ack(data_dict)
             return
 
@@ -166,8 +166,7 @@ def process_ack(data=None):
         from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
-                timeout = data['timeout'] if 'timeout' in data else 15
-                if acks[proc_name] is not None and time.time()-acks[proc_name]>timeout:
+                if acks[proc_name] is not None and time.time()-acks[proc_name]>15:
                     logging.error("Client %s disappeared" % proc_name)
                     acks[proc_name] = None
                     send_message(sender = FROM_EMAIL, recipients = ALERT_EMAIL,
