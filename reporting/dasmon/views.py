@@ -499,9 +499,9 @@ def notifications(request):
             registered = options_form.cleaned_data['register']
             instruments = options_form.cleaned_data['instruments']
             try:
-                user_options_list = UserNotification.objects.filter(user=request.user)
+                user_options_list = UserNotification.objects.filter(user_id=request.user.id)
                 if len(user_options_list)==0:
-                    user_options = UserNotification(user=request.user, 
+                    user_options = UserNotification(user_id=request.user.id, 
                                                     email=email_address,
                                                     registered = registered)
                     user_options.save()
@@ -529,7 +529,7 @@ def notifications(request):
     else:
         params_dict = {}
         try:
-            user_options = UserNotification.objects.get(user=request.user)
+            user_options = UserNotification.objects.get(user_id=request.user.id)
             params_dict['email'] = user_options.email
             params_dict['register'] = user_options.registered
             params_dict['instruments'] = []

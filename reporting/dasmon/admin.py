@@ -31,7 +31,7 @@ class LegacyURLAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'url', 'long_name')
     
 class UserNotificationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'email')
+    list_display = ('id', 'user_id', 'email')
     
 admin.site.register(StatusVariable, StatusVariableAdmin)
 admin.site.register(Parameter, ParameterAdmin)
