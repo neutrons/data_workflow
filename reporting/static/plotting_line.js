@@ -136,9 +136,9 @@ function plot_1d(raw_data, anchor, options) {
 	svg.append("path")
 	    .attr("d", interp_line(data))
 	    .attr("fill", "none")
-	    .attr("stroke", "grey")
-	    .attr("stroke-width", 3)
-	    .style("opacity", 0.4);
+	    .attr("stroke", "#0077cc")
+	    .attr("stroke-width", 2.5)
+	    .style("opacity", 0.5);
 
     // Tooltip obj
     var tooltip = d3.select("body")
