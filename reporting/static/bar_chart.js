@@ -36,7 +36,7 @@ function BarGraph(run_data, error_data, anchor, type){
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_data = [formatted_runs_data, formatted_error_data];
 	
-	//error_data = [[-21,10],[0,1]];
+	//error_data = [[-21,4],[-6,1]];
 
 	// Format data
 	function formatData(){
@@ -163,10 +163,10 @@ function BarGraph(run_data, error_data, anchor, type){
 			.attr("height", function(d){
 				return d * barHeightFactor;
 			})
-			.style("stroke", "#74c1d5")
+			.style("stroke", "#2f859b")
 			.style("stroke-width", "none")
 			.style("shape-rendering", "crispEdges")
-			.attr("fill", "#AFDBE7")
+			.attr("fill", "#4dafc9")
 			.attr("opacity", "0.4");
 
 	var errors = barsContainer.append("g")
