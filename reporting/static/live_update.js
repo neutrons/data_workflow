@@ -32,13 +32,12 @@ function plot_combined_rates(run_data, error_data, anchor, parameters){
 	anchor = (typeof anchor === "undefined") ? "runs_per_hour" : anchor;
 
 	$(".tooltip").each(function(){
-		if ($(this).css("visibility") === "hidden"){
-			//console.log("this is hidden");
+		//if ($(this).css("visibility") === "hidden"){
 			$(this).remove();
-		}
-		else if ($(this).css("visibility") === "visible"){
-			throw new Error("");
-		}
+		//}
+		//else if ($(this).css("visibility") === "visible"){
+			//throw new Error("");
+		//}
 	});
 	BarGraph(run_data, error_data, anchor, type);
 }
