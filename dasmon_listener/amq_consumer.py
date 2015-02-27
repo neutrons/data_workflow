@@ -194,7 +194,6 @@ def notify_users(instrument_id, signal):
         @param signal: Signal object
     """
     try:
-        from settings import FROM_EMAIL
         for item in UserNotification.objects.filter(instruments__in=[instrument_id], registered=True):
             message = "A new alert signal was set on %s\n\n" % str(instrument_id).upper()
             message += "    Name:    %s\n" % signal.name
@@ -202,7 +201,7 @@ def notify_users(instrument_id, signal):
             message += "    Message: %s\n" % signal.message
             message += "    Level:   %s\n" % signal.level
             message += "    Time:    %s\n" % signal.timestamp.ctime()
-            send_message(sender = FROM_EMAIL, recipients = [item.email],
+            send_message(sender = item.email, recipients = [item.email],
                          subject = "New alert on %s" % str(instrument_id).upper(),
                          message = message)
     except:
