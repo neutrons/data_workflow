@@ -36,7 +36,7 @@ function BarGraph(run_data, error_data, anchor, type){
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_data = [formatted_runs_data, formatted_error_data];
 	
-	//error_data = [[-21,4],[-6,1]];
+	error_data = [[-21,530],[-6,1]];
 
 	// Format data
 	function formatData(){
@@ -71,10 +71,10 @@ function BarGraph(run_data, error_data, anchor, type){
 		else if (type === "summary"){
 			svg_w = 200;
 			svg_h = 50;
-			w = svg_w - 18;
+			w = svg_w - 16;
 			h = svg_h - 10;
-			padding = {left: 16, right: 0, top: 4, bottom: 0};
-			trans = {w: 18, h: 5}
+			padding = {left: 22, right: 6, top: 4, bottom: 0};
+			trans = {w: 24, h: 5}
 			x_ticks = 0;
 			y_ticks_div;
 			xts = 1;
@@ -93,16 +93,32 @@ function BarGraph(run_data, error_data, anchor, type){
 		barHeightFactor = (h) / max_val;
 		
 		if (type === "summary"){
-			if (max_val >= 0 && max_val <= 5) y_ticks_div = 1;
-			else if (max_val >= 6 && max_val <= 10) y_ticks_div = 2;
-			else if (max_val >= 11 && max_val <= 30) y_ticks_div = 5;
-			else y_ticks_div = 10;
+			var y_ticks_div_n = [1, 2, 5];
+			y_ticks_div = y_ticks_div_n[i];
+			do {
+				for (var i=0; i<y_ticks_div_n.length; i++){
+					y_ticks_div = y_ticks_div_n[i];
+					if (max_val/y_ticks_div > 5){
+						y_ticks_div_n[i] = y_ticks_div_n[i] * 10;
+					}
+					else break;
+				}
+			}
+			while (max_val/y_ticks_div > 5);
 		}
 		else if (type === "detailed"){
-			if (max_val >= 0 && max_val <= 10) y_ticks_div = 1;
-			else if (max_val >= 11 && max_val <= 20) y_ticks_div = 2;
-			else if (max_val >= 11 && max_val <= 40) y_ticks_div = 5;
-			else y_ticks_div = 10;
+			var y_ticks_div_n = [1, 2, 5];
+			y_ticks_div = y_ticks_div_n[i];
+			do {
+				for (var i=0; i<y_ticks_div_n.length; i++){
+					y_ticks_div = y_ticks_div_n[i];
+					if (max_val/y_ticks_div > 10){
+						y_ticks_div_n[i] = y_ticks_div_n[i] * 10;
+					}
+					else break;
+				}
+			}
+			while (max_val/y_ticks_div > 10);
 		}
 	}
 	// Calculate bar width
@@ -146,6 +162,7 @@ function BarGraph(run_data, error_data, anchor, type){
 			.tickFormat("")
 		)
 		 
+	// Create run bars 
 	var runs = barsContainer.append("g")
 			.attr("class", anchor + "_run_bars")
 			.selectAll(".bars")
@@ -169,6 +186,7 @@ function BarGraph(run_data, error_data, anchor, type){
 			.attr("fill", "#4dafc9")
 			.attr("opacity", "0.4");
 
+	// Create error bars
 	var errors = barsContainer.append("g")
 			.attr("class", anchor + "_error_bars")
 			.selectAll(".bars")
@@ -191,7 +209,8 @@ function BarGraph(run_data, error_data, anchor, type){
 			.style("shape-rendering", "crispEdges")
 			.attr("fill", "#ED5B4B")
 			.attr("opacity", "0.4");
-			 
+			
+	// Create bars that cover the 		 
 	var placeholders = barsContainer.append("g")
 			.attr("class", anchor + "_placeholder_bars")
 			.selectAll(".bars")
