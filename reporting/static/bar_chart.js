@@ -36,8 +36,6 @@ function BarGraph(run_data, error_data, anchor, type){
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_data = [formatted_runs_data, formatted_error_data];
 	
-	error_data = [[-21,530],[-6,1]];
-
 	// Format data
 	function formatData(){
 		for (var i=0; i<run_data.length; i++){
@@ -71,10 +69,10 @@ function BarGraph(run_data, error_data, anchor, type){
 		else if (type === "summary"){
 			svg_w = 200;
 			svg_h = 50;
-			w = svg_w - 16;
+			w = svg_w - 25;
 			h = svg_h - 10;
-			padding = {left: 22, right: 6, top: 4, bottom: 0};
-			trans = {w: 24, h: 5}
+			padding = {left: 0, right: 2, top: 4, bottom: 0};
+			trans = {w: 25, h: 5}
 			x_ticks = 0;
 			y_ticks_div;
 			xts = 1;
@@ -131,15 +129,17 @@ function BarGraph(run_data, error_data, anchor, type){
 	calcBarHeightFactor(type);
 	calcBarWidth();
     
-	chartContainer = d3.select("#" + anchor).append("svg")
+	chart = d3.select("#" + anchor).append("svg")
 			.attr("id", anchor + "_svg")
 			.attr("width", svg_w)
 			.attr("height", svg_h)
-			.attr("transform", "translate(" + trans.w + "," + trans.h + ")")
 			.style("padding-left", padding.left + "px")
 			.style("padding-right", padding.right + "px")
 			.style("padding-top", padding.top + "px")
 			.style("padding-bottom", padding.bottom + "px");
+			
+	chartContainer = chart.append("g")
+			.attr("transform", "translate(" + trans.w + "," + trans.h + ")");
 			
 
 	barsContainer = chartContainer.append("g")
@@ -227,11 +227,11 @@ function BarGraph(run_data, error_data, anchor, type){
 			.attr("fill", "#888")
 			.attr("opacity", "0");
 
-	d3.select("#" + anchor + "_svg").append("g")
+	d3.select("#" + anchor + "_svg g").append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + h + ")")
 			.call(xAxis);
-	d3.select("#" + anchor + "_svg").append("g")
+	d3.select("#" + anchor + "_svg g").append("g")
 			.attr("class", "y axis")
 			.call(yAxis);
 			
