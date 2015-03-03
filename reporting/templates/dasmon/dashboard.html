@@ -22,7 +22,6 @@
     plot_combined_rates(instrument_rates.{{ item.name|lower }}.run_rate, instrument_rates.{{ item.name|lower }}.error_rate, "runs_per_hour_{{ item.name|lower }}", "summary");{% endfor %}
   }
   function poll() {
-	  
     $.ajax({ url: "{{ update_url }}", success: function(data) {
         content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
         $('#workflow_status').replaceWith(content);
