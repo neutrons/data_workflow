@@ -54,9 +54,9 @@ function plot_1d(raw_data, anchor, options) {
 		y.domain([y_min, y_max]);
     }
 
-	xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(8).tickFormat(d3.format("5.4g"));
-	xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
-	yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.5g"));    
+	xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("5.2g"));
+	xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(0).tickFormat('');
+	yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.2g"));    
 	yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
 
     
@@ -192,17 +192,39 @@ function plot_1d(raw_data, anchor, options) {
 		circle_ol.attr("cx", x(d[0]))
 			.attr("cy", y(d[1]))
 			.style("visibility", "visible");
-		return tooltip.style("visibility", "visible");
+		tooltip.style("visibility", "visible");
+		if(window.Event && document.captureEvents)
+		document.captureEvents(Event.MOUSEOVER);
+		document.onmouseover = getMousePos;
+		tooltip.text(d[0] + ", " + d[1]); 
+		tooltip.style("top", (mouseY-10)+"px")
+			   .style("left",(mouseX+10)+"px");
     }
     function mousemove(d){
+		if(window.Event && document.captureEvents)
+		document.captureEvents(Event.MOUSEMOVE);
+		document.onmousemove = getMousePos;
 		tooltip.text(d[0] + ", " + d[1]); 
-		return tooltip.style("top", (event.pageY-10)+"px")
-						.style("left",(event.pageX+10)+"px");
+		tooltip.style("top", (mouseY-10)+"px")
+			   .style("left",(mouseX+10)+"px");
     }
     function mouseout(d){
 		circle_ol.style("visibility", "hidden");
 		return tooltip.style("visibility", "hidden");
     }
+    
+    function getMousePos(e){
+		if (!e) var e = window.event||window.Event;
+
+		if('undefined'!=typeof e.pageX) {
+			mouseX = e.pageX;
+			mouseY = e.pageY;
+		}
+		else {
+			mouseX = e.clientX + document.body.scrollLeft;
+			mouseY = e.clientY + document.body.scrollTop;
+		}
+	}
     
 }
 
