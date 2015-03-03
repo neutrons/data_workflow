@@ -85,7 +85,8 @@
 			"<div id='" + this.dialog_name + "' title='" + this.element_id + "' name='" + this.element_id + "'>" + 
 			"	<div class='live_plots'>" +
 			"		<div class='options' style='float:left'>" +
-			"			<a class='flaticon_link' onclick='Plots[" + nid + "].local_options(\"" + this.dialog_name + "\")'>" + // change onclick function to Plots.prepare_menu if adding global options capability
+			"			<a class='flaticon_link' title='Local Options' " + 
+			"				onclick='Plots[" + nid + "].local_options(\"" + this.dialog_name + "\")'>" + // change onclick function to Plots.prepare_menu if adding global options capability
 			"			<span class='flaticon flaticon-settings22'></span></a>" +
 			"		</div>" +
 			"	</div><br><br>" +
