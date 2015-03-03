@@ -34,8 +34,10 @@ function BarGraph(run_data, error_data, anchor, type){
 
 	var formatted_runs_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
-	var formatted_data = [formatted_runs_data, formatted_error_data];
+	//var formatted_data = [formatted_runs_data, formatted_error_data];
 	
+	//error_data = [[-21,2],[-6,1]];
+
 	// Format data
 	function formatData(){
 		for (var i=0; i<run_data.length; i++){
@@ -52,11 +54,11 @@ function BarGraph(run_data, error_data, anchor, type){
 	// Check for type of graph to generate
 	function getTypeParameters(type){
 		if (type === "detailed"){
-			svg_w = 500;
+			svg_w = 510;
 			svg_h = 150;
 			w = svg_w - 40;
 			h = svg_h - 30;
-			padding = {left: 30, right: 0, top: 10, bottom: 0};
+			padding = {left: 15, right: 0, top: 10, bottom: 0};
 			trans = {w: 25, h: 5}
 			x_ticks = 12;
 			y_ticks_div = 2;
@@ -83,13 +85,16 @@ function BarGraph(run_data, error_data, anchor, type){
 		}
 	}		
 	// Calculate bar height factor
-	function calcBarHeightFactor(type){
+	function calcBarHeightFactor(){
 		var max_run = Math.max.apply(Math, formatted_runs_data);
 		var max_error = Math.max.apply(Math, formatted_error_data);
 		max_val = Math.max(max_run, max_error);
-		max_val += 1;		// ******************* buffer for nice look??????????????????????????
+		if (max_val === 0) max_val = 1;
+		max_val = max_val * 1.1;		// buffer for nice look
 		barHeightFactor = (h) / max_val;
-		
+	}
+	// Calculate num y ticks
+	function calcYticks(type){
 		if (type === "summary"){
 			var y_ticks_div_n = [1, 2, 5];
 			y_ticks_div = y_ticks_div_n[i];
@@ -126,7 +131,8 @@ function BarGraph(run_data, error_data, anchor, type){
 
 	formatData();
 	getTypeParameters(type);
-	calcBarHeightFactor(type);
+	calcBarHeightFactor();
+	calcYticks(type);
 	calcBarWidth();
     
 	chart = d3.select("#" + anchor).append("svg")
@@ -138,10 +144,9 @@ function BarGraph(run_data, error_data, anchor, type){
 			.style("padding-top", padding.top + "px")
 			.style("padding-bottom", padding.bottom + "px");
 			
-	chartContainer = chart.append("g")
+	chartContainer = chart.append("g") // because svg won't take transform attribute
 			.attr("transform", "translate(" + trans.w + "," + trans.h + ")");
 			
-
 	barsContainer = chartContainer.append("g")
 			.attr("class", anchor + "_bar_group");
 			
@@ -161,30 +166,6 @@ function BarGraph(run_data, error_data, anchor, type){
 			.tickSize(-w + barPadding, 0, 0)
 			.tickFormat("")
 		)
-		 
-	// Create run bars 
-	var runs = barsContainer.append("g")
-			.attr("class", anchor + "_run_bars")
-			.selectAll(".bars")
-			.data(formatted_runs_data)
-			.enter()
-			.append("rect")
-			.attr("class", anchor + "_runs_rect")
-			.attr("x", function(d, i){
-				return w - ((i+1) * barWidth); // start from the right
-			})
-			.attr("y", function(d){
-				return h - (d * barHeightFactor)
-			})
-			.attr("width", barWidth - barPadding)
-			.attr("height", function(d){
-				return d * barHeightFactor;
-			})
-			.style("stroke", "#2f859b")
-			.style("stroke-width", "none")
-			.style("shape-rendering", "crispEdges")
-			.attr("fill", "#4dafc9")
-			.attr("opacity", "0.4");
 
 	// Create error bars
 	var errors = barsContainer.append("g")
@@ -208,6 +189,30 @@ function BarGraph(run_data, error_data, anchor, type){
 			.style("stroke-width", "none")
 			.style("shape-rendering", "crispEdges")
 			.attr("fill", "#ED5B4B")
+			.attr("opacity", "0.4");
+		 
+	// Create run bars 
+	var runs = barsContainer.append("g")
+			.attr("class", anchor + "_run_bars")
+			.selectAll(".bars")
+			.data(formatted_runs_data)
+			.enter()
+			.append("rect")
+			.attr("class", anchor + "_runs_rect")
+			.attr("x", function(d, i){
+				return w - ((i+1) * barWidth); // start from the right
+			})
+			.attr("y", function(d){
+				return h - (d * barHeightFactor)
+			})
+			.attr("width", barWidth - barPadding)
+			.attr("height", function(d){
+				return d * barHeightFactor;
+			})
+			.style("stroke", "#2f859b")
+			.style("stroke-width", "none")
+			.style("shape-rendering", "crispEdges")
+			.attr("fill", "#4dafc9")
 			.attr("opacity", "0.4");
 			
 	// Create bars that cover the 		 
