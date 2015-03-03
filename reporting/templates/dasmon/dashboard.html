@@ -8,6 +8,9 @@
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 
 <script>
   var instrument_rates = {
@@ -16,9 +19,10 @@
   };
   function plot_rates() {
     {% for item in instruments %}
-    plot_combined_rates(instrument_rates.{{ item.name|lower }}.run_rate, instrument_rates.{{ item.name|lower }}.error_rate, "#runs_per_hour_{{ item.name|lower }}", {use_labels: false, show_ticks: false});{% endfor %}
+    plot_combined_rates(instrument_rates.{{ item.name|lower }}.run_rate, instrument_rates.{{ item.name|lower }}.error_rate, "runs_per_hour_{{ item.name|lower }}", "summary");{% endfor %}
   }
   function poll() {
+	  
     $.ajax({ url: "{{ update_url }}", success: function(data) {
         content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
         $('#workflow_status').replaceWith(content);

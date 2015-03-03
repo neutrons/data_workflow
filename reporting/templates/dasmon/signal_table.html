@@ -19,7 +19,7 @@
       {% for item in signals %}
           <tr>
           {% if item.key %}
-          {% if item.data %}<td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>{% else %}<td>{{ item.name|safe }}</td>{% endif %}
+          {% if item.data %}<td><a href='javascript:void(0);' onClick="new_monitor('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>{% else %}<td>{{ item.name|safe }}</td>{% endif %}
           <td>{{ item.status|safe }}</td><td><span class="inlinesparkline">{{ item.data }}</span></td>
           {% else %}
           <td> {{ item.name|safe }}{% if is_instrument_staff %} (<a href='javascript:void(0);' title="Click to remove signal (instrument team only)" onClick="ack_alarm('{{ item.ack_url }}?info={{ item.name }}', '#signal_{{ item.name }}');">clear</a>){% endif %}</td>
