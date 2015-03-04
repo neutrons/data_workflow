@@ -34,9 +34,6 @@ function BarGraph(run_data, error_data, anchor, type){
 
 	var formatted_runs_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
-	//var formatted_data = [formatted_runs_data, formatted_error_data];
-	
-	//error_data = [[-21,2],[-6,1]];
 
 	// Format data
 	function formatData(){
@@ -189,7 +186,7 @@ function BarGraph(run_data, error_data, anchor, type){
 			.style("stroke-width", "none")
 			.style("shape-rendering", "crispEdges")
 			.attr("fill", "#ED5B4B")
-			.attr("opacity", "0.4");
+			.attr("opacity", "0.6");
 		 
 	// Create run bars 
 	var runs = barsContainer.append("g")
@@ -213,7 +210,7 @@ function BarGraph(run_data, error_data, anchor, type){
 			.style("stroke-width", "none")
 			.style("shape-rendering", "crispEdges")
 			.attr("fill", "#4dafc9")
-			.attr("opacity", "0.4");
+			.attr("opacity", "0.6");
 			
 	// Create bars that cover the 		 
 	var placeholders = barsContainer.append("g")
@@ -309,8 +306,8 @@ function BarGraph(run_data, error_data, anchor, type){
 	}
 	function mouseout(d, i, t){
 		ith_child = parseInt(i+1); // iterator to start at 1 for css-type selector
-		d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("opacity", "0.4");
-		d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("opacity", "0.4");
+		d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("opacity", "0.6");
+		d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("opacity", "0.6");
 		return tooltip.style("visibility", "hidden");
 	}
 }
