@@ -248,6 +248,17 @@
 				plotted_data = data.live_plot_data;
 				plot_combined_rates(run_data, error_data);
 				
+				//console.log("plotted_data: " + data.live_plot_data);
+				for (var i=0; i<data.live_plot_data.length; i++){
+					for (var j=0; j<Plots.length; j++){
+						if (data.live_plot_data[i][0] === Plots[j].element_id){
+							Plots[j].plotted_data = data.live_plot_data[i][1];
+							plot_1d(Plots[j].plotted_data, Plots[j].plot_id, Plots[j].plot_options)
+							break;
+						}
+					}
+				}
+				
 			}, dataType: "json", timeout: 2000, cache: true,
         statusCode: { 401: function(){
 				new_alert("Your session expired. Please log in again"); 
@@ -257,6 +268,8 @@
 		});
         if (pv_query_str.length>0) {
             $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
+				
+				//console.log("plotted_data: " + data.live_plot_data);
                 for (var i=0; i<data.live_plot_data.length; i++){
 					for (var j=0; j<Plots.length; j++){
 						if (data.live_plot_data[i][0] === Plots[j].element_id){
