@@ -4,9 +4,7 @@
 {% block title %}{{ instrument }} Monitor {% endblock %}
 {% block header %}
 
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
-<!-- <script language="javascript" type="text/javascript" src="/static/live_update.js"></script> -->
+<!-- script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script -->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
@@ -114,6 +112,8 @@
 				$("#" + this.dialog_name).dialog({
 					width: 535,
 					height: 380,
+					minWidth: 265,
+					minHeight: 250,
 					dialogClass: "plot_class",
 					resizable: true,
 					closeOnEscape: true,
@@ -188,7 +188,7 @@
 				$("#" + this.dialog_name).after(html);
 				$("#radio_" + this.dialog_name).buttonset();
 			}
-			// Remove lines 191 to 193 if adding global options capability
+			// Remove lines 194 to 196 if adding global options capability
 			else if ($("#local_options_" + this.dialog_name).length > 0){
 				Plots[nid].close_l_opt("local_options_" + this.dialog_name)
 			}
@@ -248,6 +248,17 @@
 				plotted_data = data.live_plot_data;
 				plot_combined_rates(run_data, error_data);
 				
+				//console.log("plotted_data: " + data.live_plot_data);
+				for (var i=0; i<data.live_plot_data.length; i++){
+					for (var j=0; j<Plots.length; j++){
+						if (data.live_plot_data[i][0] === Plots[j].element_id){
+							Plots[j].plotted_data = data.live_plot_data[i][1];
+							plot_1d(Plots[j].plotted_data, Plots[j].plot_id, Plots[j].plot_options)
+							break;
+						}
+					}
+				}
+				
 			}, dataType: "json", timeout: 2000, cache: true,
         statusCode: { 401: function(){
 				new_alert("Your session expired. Please log in again"); 
@@ -257,6 +268,8 @@
 		});
         if (pv_query_str.length>0) {
             $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
+				
+				//console.log("plotted_data: " + data.live_plot_data);
                 for (var i=0; i<data.live_plot_data.length; i++){
 					for (var j=0; j<Plots.length; j++){
 						if (data.live_plot_data[i][0] === Plots[j].element_id){
@@ -276,17 +289,6 @@
         }
         get_alarms();
         
-		$(".tooltip").each(function(){
-			//if ($(this).css("visibility") === "hidden"){
-				//console.log("this is hidden");
-				//$(this).remove();
-			//}
-			//else{
-				//$(this).css("visibility", "hidden");
-				//$(this).css("visibility", "visible");
-				////console.log("this is not hidden");
-			//}
-		});
     };
     
     function max_timeframe(time_period) 
