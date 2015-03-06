@@ -34,8 +34,6 @@ function BarGraph(run_data, error_data, anchor, type){
 
 	var formatted_runs_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
 	var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
-	
-	//error_data = [[-21,2],[-7,1],[-6,1]];
 
 	// Format data
 	function formatData(){
