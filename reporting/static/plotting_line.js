@@ -131,8 +131,8 @@ function plot_1d(raw_data, anchor, options) {
 	svg.select("path").remove();
 	var interp_line = d3.svg.line()
 	    .interpolate("step-before")
-	    .x(function(d) { console.log(d[0]); return x(d[0]); })
-	    .y(function(d) { console.log(d[1]); return y(d[1]); });
+	    .x(function(d) { return x(d[0]); })
+	    .y(function(d) { return y(d[1]); });
 	svg.append("path")
 	    .attr("d", interp_line(data))
 	    .attr("fill", "none")
@@ -196,7 +196,7 @@ function plot_1d(raw_data, anchor, options) {
 		if(window.Event && document.captureEvents)
 		document.captureEvents(Event.MOUSEOVER);
 		document.onmouseover = getMousePos;
-		tooltip.text(d[0] + ", " + d[1]); 
+		tooltip.text(d3.round(d[0],1) + ", " + d[1]); 
 		tooltip.style("top", (mouseY-10)+"px")
 			   .style("left",(mouseX+10)+"px");
     }
@@ -204,7 +204,7 @@ function plot_1d(raw_data, anchor, options) {
 		if(window.Event && document.captureEvents)
 		document.captureEvents(Event.MOUSEMOVE);
 		document.onmousemove = getMousePos;
-		tooltip.text(d[0] + ", " + d[1]); 
+		tooltip.text(d3.round(d[0],1) + ", " + d[1]); 
 		tooltip.style("top", (mouseY-10)+"px")
 			   .style("left",(mouseX+10)+"px");
     }
@@ -254,98 +254,3 @@ function get_color(i, n_max) {
     return 'rgb('+r+','+g+','+b+')';
 }
 
-function plot_2d(data, qx, qy, max_iq, options) {
-    options = (typeof options === "undefined") ? {} : options;
-    height = (typeof options.height === "undefined") ? 400 : options.height;
-    width = (typeof options.width === "undefined") ? 400 : options.width;
-    log_scale = (typeof options.log_scale === "undefined") ? false : options.log_scale;
-    x_label = (typeof options.x_label === "undefined") ? "Qx [1/\u00C5]" : options.x_label;
-    y_label = (typeof options.y_label === "undefined") ? "Qy [1/\u00C5]" : options.y_label;
-    title = (typeof options.title === "undefined") ? "what" : options.title;
-
-    var margin = {top: 20, right: 20, bottom: 60, left: 60},
-    width = width - margin.left - margin.right,
-    height = height - margin.top - margin.bottom;
-
-    var x = d3.scale.linear().range([0, width]);
-    var y = d3.scale.linear().range([height, 0]);
-    x.domain(d3.extent(qx, function(d) { return d; }));
-    y.domain(d3.extent(qy, function(d) { return d; }));
-
-    var xAxis = d3.svg.axis().scale(x).orient("bottom");
-    var yAxis = d3.svg.axis().scale(y).orient("left");
-
-    // Remove old plot
-    d3.select("plot_anchor_2d").select("svg").remove();
-    var svg = d3.select("plot_anchor_2d").append("svg")
-      .attr("class", "Spectral")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Scale up the calculated pixel width so that we don't produce visual artifacts
-    var pixel_h = 1.5*(y(qy[0])-y(qy[1]));
-    var pixel_w = 1.5*(x(qx[1])-x(qx[0]));
-
-    var n_colors = 64;
-    var quantize;
-    if (log_scale) {
-      var bins = [];
-      var step = Math.log(max_iq+1.0)/(n_colors-1);
-      for (i=0; i<n_colors-1; i++) {
-        bins.push(Math.exp(step*i)-1.0);
-      }
-      quantize = d3.scale.threshold()
-      .domain(bins)
-      .range(d3.range(n_colors).map(function(i) { return get_color(i, n_colors); }));
-    } else {
-        var quantize = d3.scale.quantize()
-        .domain([0.,max_iq])
-        .range(d3.range(n_colors).map(function(i) { return get_color(i, n_colors); }));
-    };
-
-    // Create X axis label   
-    svg.append("text")
-    .attr("x", width )
-    .attr("y", height+margin.top+15)
-    .attr("font-size", "12px")
-    .style("text-anchor", "end")
-    .text(x_label);
-
-    // Create Y axis label
-    svg.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 0-margin.left)
-    .attr("x", 0-margin.top)
-    .attr("dy", "1em")
-    .style("text-anchor", "end")
-    .text(y_label);
-
-    // Create title
-    svg.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 0-margin.left)
-    .attr("x", 0-margin.top)
-    .attr("dy", "1em")
-    .style("text-anchor", "end")
-    .text(title);
-
-    svg.selectAll('g')
-    .data(data)
-    .enter()
-    .append('g')
-    .attr("transform", function(d,i) { var trans = y(qy[i])-pixel_h; return "translate(0,"+ trans + ")"; })
-    .selectAll('rect')
-    .data(function(d) { return d; })
-    .enter()
-    .append('rect')
-    .attr('x', function(d,i) { return x( qx[i] ); })
-    .attr('y', function(d,i) { return 0; })
-    .attr('width', function(d,i) { return pixel_w; })
-    .attr('height', function(d,i) { return pixel_h; })
-    .style('fill', function(d) { return quantize(d); })
-    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
-    svg.append("g").attr("class", "y axis").call(yAxis)
-
-}
