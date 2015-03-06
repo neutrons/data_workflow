@@ -8,7 +8,7 @@
 {% block header %}
 
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<!-- script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script -->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
@@ -86,7 +86,8 @@
 			"<div id='" + this.dialog_name + "' title='" + this.element_id + "' name='" + this.element_id + "'>" + 
 			"	<div class='live_plots'>" +
 			"		<div class='options' style='float:left'>" +
-			"			<a class='flaticon_link' onclick='Plots[" + nid + "].prepare_menu(\"" + this.dialog_name + "\")'>" +
+			"			<a class='flaticon_link' title='Local Options' " + 
+			"				onclick='Plots[" + nid + "].local_options(\"" + this.dialog_name + "\")'>" + // change onclick function to Plots.prepare_menu if adding global options capability
 			"			<span class='flaticon flaticon-settings22'></span></a>" +
 			"		</div>" +
 			"	</div><br><br>" +
@@ -114,6 +115,8 @@
 				$("#" + this.dialog_name).dialog({
 					width: 535,
 					height: 380,
+					minWidth: 265,
+					minHeight: 250,
 					dialogClass: "plot_class",
 					resizable: true,
 					closeOnEscape: true,
@@ -138,27 +141,29 @@
 			}
             poll();
 		}
-		this.submenu = '<div id="' + this.dialog_name + 
-						'_submenu" class="submenu"><a id="local_options_link" ' + 
-						'class="ui-button" onclick="Plots[' + nid + '].local_options(\'' +
-						 this.dialog_name + '\')" style="width:88px">Local options</a><br>' + 
-						'<a id="global_options_link" class="ui-button" ' + 
-						'onclick="global_options(\'' + this.dialog_name + 
-						'\')" style="width:88px">Global options</a></div>';
-		this.prepare_menu = function(){
-			// Toggle submenu (for plot options)
-			if($("#" + this.dialog_name + "_submenu").length === 0){
-				$("#" + this.dialog_name + " .options").append(this.submenu);
-			}
-			else if($("#" + this.dialog_name + "_submenu").length > 0){
-				$("#" + this.dialog_name + "_submenu").remove();
-			}
-		}
+		// Uncomment lines 145 to 160 if adding global options capability
+		//this.submenu = '<div id="' + this.dialog_name + 
+						//'_submenu" class="submenu"><a id="local_options_link" ' + 
+						//'class="ui-button" onclick="Plots[' + nid + '].local_options(\'' +
+						 //this.dialog_name + '\')" style="width:88px">Local options</a><br>' + 
+						//'<a id="global_options_link" class="ui-button" ' + 
+						//'onclick="global_options(\'' + this.dialog_name + 
+						//'\')" style="width:88px">Global options</a></div>';
+		//this.prepare_menu = function(){
+			//// Toggle submenu (for plot options)
+			//if($("#" + this.dialog_name + "_submenu").length === 0){
+				//$("#" + this.dialog_name + " .options").append(this.submenu);
+			//}
+			//else if($("#" + this.dialog_name + "_submenu").length > 0){
+				//$("#" + this.dialog_name + "_submenu").remove();
+			//}
+		//}
 		this.local_options = function(){
-			if($("#" + this.dialog_name + "_submenu").length > 0){
-				// Remove submenu if it's open
-				$("#" + this.dialog_name + "_submenu").remove();
-			}	
+			// Uncomment lines 163 to 166 if adding global options capability
+			//if($("#" + this.dialog_name + "_submenu").length > 0){
+				//// Remove submenu if it's open
+				//$("#" + this.dialog_name + "_submenu").remove();
+			//}	
 			if ($("#local_options_" + this.dialog_name).length === 0){
 				var cur_height = $(this.dialog_win).height();
 				var new_height = cur_height + 100;	
@@ -185,6 +190,10 @@
 				this.dialog_win.css("height", new_height);
 				$("#" + this.dialog_name).after(html);
 				$("#radio_" + this.dialog_name).buttonset();
+			}
+			// Remove lines 194 to 196 if adding global options capability
+			else if ($("#local_options_" + this.dialog_name).length > 0){
+				Plots[nid].close_l_opt("local_options_" + this.dialog_name)
 			}
 		}
 		this.check_scale = function(){
