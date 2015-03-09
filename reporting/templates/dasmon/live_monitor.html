@@ -4,7 +4,7 @@
 {% block title %}{{ instrument }} Monitor {% endblock %}
 {% block header %}
 
-<!-- script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script -->
+
 <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
@@ -25,12 +25,12 @@
 
     //************************************************************************80
     // FUNCTION: new_monitor
-        //
-        // Desc: creates an instance of MonitorPlot onclick and stores
-        //       in Plots array
-        //
-        // Variables: dialog_win_generated, nid
-        //
+    //
+    // Desc: creates an instance of MonitorPlot onclick and stores
+    //       in Plots array
+    //
+    // Variables: dialog_win_generated, nid
+    //
     //************************************************************************80
     function new_monitor(element_id, option){
         var dialog_win_generated = false;   // dialog_win already exists? flag
@@ -58,16 +58,16 @@
 
     //************************************************************************80
     // OBJECT: MonitorPlot
-        //
-        // Desc: handles each plot on monitor page
-        //
-        // Variables: element_id, nid, clean_name, dialog_name
-        //            dialog_win, plot_id, plot_content, submenu, 
-        //            plot_options{}, 
-        //
-        // Methods: pop_monitor_plot, prepare_menu, local_options, 
-        //          check_scale, close_l_opt
-        //
+    //
+    // Desc: handles each plot on monitor page
+    //
+    // Variables: element_id, nid, clean_name, dialog_name
+    //            dialog_win, plot_id, plot_content, submenu, 
+    //            plot_options{}, 
+    //
+    // Methods: pop_monitor_plot, prepare_menu, local_options, 
+    //          check_scale, close_l_opt
+    //
     //************************************************************************80
     function MonitorPlot(element_id, nid, option){
 
@@ -140,26 +140,25 @@
         }
         // Uncomment lines 141 to 156 if adding global options capability
         //this.submenu = '<div id="' + this.dialog_name +
-                        //'_submenu" class="submenu"><a id="local_options_link" ' +
-                        //'class="ui-button" onclick="Plots[' + nid + '].local_options(\'' +
-                         //this.dialog_name + '\')" style="width:88px">Local options</a><br>' +
-                        //'<a id="global_options_link" class="ui-button" ' +
-                        //'onclick="global_options(\'' + this.dialog_name +
-                        //'\')" style="width:88px">Global options</a></div>';
+        //               '_submenu" class="submenu"><a id="local_options_link" ' +
+        //               'class="ui-button" onclick="Plots[' + nid + '].local_options(\'' +
+        //               this.dialog_name + '\')" style="width:88px">Local options</a><br>' +
+        //               '<a id="global_options_link" class="ui-button" ' +
+        //               'onclick="global_options(\'' + this.dialog_name +
+        //               '\')" style="width:88px">Global options</a></div>';
         //this.prepare_menu = function(){
-            //// Toggle submenu (for plot options)
-            //if($("#" + this.dialog_name + "_submenu").length === 0){
-                //$("#" + this.dialog_name + " .options").append(this.submenu);
-            //}
-            //else if($("#" + this.dialog_name + "_submenu").length > 0){
-                //$("#" + this.dialog_name + "_submenu").remove();
-            //}
+        //    // Toggle submenu (for plot options)
+        //    if($("#" + this.dialog_name + "_submenu").length === 0){
+        //        $("#" + this.dialog_name + " .options").append(this.submenu);
+        //    } else if($("#" + this.dialog_name + "_submenu").length > 0){
+        //        $("#" + this.dialog_name + "_submenu").remove();
+        //    }
         //}
         this.local_options = function(){
-            // Uncomment lines 159 to 162 if adding global options capability
+            // Uncomment the following block if adding global options capability
             //if($("#" + this.dialog_name + "_submenu").length > 0){
-                //// Remove submenu if it's open
-                //$("#" + this.dialog_name + "_submenu").remove();
+            //    // Remove submenu if it's open
+            //    $("#" + this.dialog_name + "_submenu").remove();
             //}
             if ($("#local_options_" + this.dialog_name).length === 0){
                 var cur_height = $(this.dialog_win).height();
@@ -188,7 +187,7 @@
                 $("#" + this.dialog_name).after(html);
                 $("#radio_" + this.dialog_name).buttonset();
             }
-            // Remove lines 194 to 196 if adding global options capability
+            // Remove the following block if adding global options capability
             else if ($("#local_options_" + this.dialog_name).length > 0){
                 Plots[nid].close_l_opt("local_options_" + this.dialog_name)
             }
@@ -221,11 +220,11 @@
 
     //************************************************************************80
     // FUNCTION: poll
-        //
-        // Desc: polls for new data
-        //
-        // Variables: query_str, pv_query_str
-        //
+    //
+    // Desc: polls for new data
+    //
+    // Variables: query_str, pv_query_str
+    //
     //************************************************************************80
     function poll() {
         var query_str = "";
@@ -341,14 +340,6 @@
             });
         }
     }
-
-    //$(document).on("click", function(){
-        //console.log("you clicked on the page");
-        //if($(".submenu").length > 0){
-            //$(".submenu").remove();
-        //}
-    //});
-
 </script>
 {% endblock %}
 

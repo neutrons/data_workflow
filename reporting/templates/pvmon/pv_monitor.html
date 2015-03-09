@@ -3,12 +3,9 @@
 
 {% block title %}{{ instrument }} Process Variables {% endblock %}
 
-{% block banner %}{{ instrument }} Process Variables {% endblock %}    
+{% block banner %}{{ instrument }} Process Variables {% endblock %}
 
 {% block header %}
-
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
-<!-- script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script -->
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
@@ -27,12 +24,12 @@
 
     //************************************************************************80
     // FUNCTION: new_monitor
-        //
-        // Desc: creates an instance of MonitorPlot onclick and stores
-        //       in Plots array
-        // 
-        // Variables: dialog_win_generated, nid
-        //
+    //
+    // Desc: creates an instance of MonitorPlot onclick and stores
+    //       in Plots array
+    // 
+    // Variables: dialog_win_generated, nid
+    //
     //************************************************************************80
     function new_monitor(element_id){
         var option = '1';
@@ -61,16 +58,16 @@
 
     //************************************************************************80
     // OBJECT: MonitorPlot
-        //
-        // Desc: handles each plot on monitor page
-        //
-        // Variables: element_id, nid, clean_name, dialog_name
-        //            dialog_win, plot_id, plot_content, submenu, 
-        //            plot_options{}, 
-        // 
-        // Methods: pop_monitor_plot, prepare_menu, local_options, 
-        //          check_scale, close_l_opt
-        // 
+    //
+    // Desc: handles each plot on monitor page
+    //
+    // Variables: element_id, nid, clean_name, dialog_name
+    //            dialog_win, plot_id, plot_content, submenu, 
+    //            plot_options{}, 
+    // 
+    // Methods: pop_monitor_plot, prepare_menu, local_options, 
+    //          check_scale, close_l_opt
+    // 
     //************************************************************************80
     function MonitorPlot(element_id, nid, option){
 
@@ -141,29 +138,7 @@
             }
             poll();
         }
-        // Uncomment lines 145 to 160 if adding global options capability
-        //this.submenu = '<div id="' + this.dialog_name + 
-                        //'_submenu" class="submenu"><a id="local_options_link" ' +
-                        //'class="ui-button" onclick="Plots[' + nid + '].local_options(\'' +
-                         //this.dialog_name + '\')" style="width:88px">Local options</a><br>' +
-                        //'<a id="global_options_link" class="ui-button" ' +
-                        //'onclick="global_options(\'' + this.dialog_name +
-                        //'\')" style="width:88px">Global options</a></div>';
-        //this.prepare_menu = function(){
-            //// Toggle submenu (for plot options)
-            //if($("#" + this.dialog_name + "_submenu").length === 0){
-                //$("#" + this.dialog_name + " .options").append(this.submenu);
-            //}
-            //else if($("#" + this.dialog_name + "_submenu").length > 0){
-                //$("#" + this.dialog_name + "_submenu").remove();
-            //}
-        //}
         this.local_options = function(){
-            // Uncomment lines 163 to 166 if adding global options capability
-            //if($("#" + this.dialog_name + "_submenu").length > 0){
-                //// Remove submenu if it's open
-                //$("#" + this.dialog_name + "_submenu").remove();
-            //}
             if ($("#local_options_" + this.dialog_name).length === 0){
                 var cur_height = $(this.dialog_win).height();
                 var new_height = cur_height + 100;
@@ -191,7 +166,7 @@
                 $("#" + this.dialog_name).after(html);
                 $("#radio_" + this.dialog_name).buttonset();
             }
-            // Remove lines 194 to 196 if adding global options capability
+            // Remove following block if adding global options capability
             else if ($("#local_options_" + this.dialog_name).length > 0){
                 Plots[nid].close_l_opt("local_options_" + this.dialog_name)
             }
@@ -238,14 +213,6 @@
             plotted_data = data.live_plot_data;
             plot_combined_rates(run_data, error_data);
 
-            //for (var i=0; i<plotted_vars.length; i++) {
-                //for (var j=0; j<plotted_data.length; j++) {
-                    //if (plotted_data[j][0]==plotted_vars[i][0]) {
-                        //var plot_id = "#"+plotted_vars[i][0].replace(/:/g, '_')+"_plot";
-                        //plot_monitor(plotted_data[j][1], plot_id, plotted_vars[i][0]);
-                    //}
-                //}
-            //}
             for (var i=0; i<data.live_plot_data.length; i++){
                 for (var j=0; j<Plots.length; j++){
                     if (data.live_plot_data[i][0] === Plots[j].element_id){
@@ -292,45 +259,6 @@
             });
         }
     }
-
-    //function pop_monitor_plot(element_id)
-    //{
-        //var clean_name = element_id.replace(/:/g, '_');
-        //var dialog_name = clean_name+"_dialog"
-        //if (!$("#"+dialog_name).length)
-        //{
-            //var plot_content = "<div id='"+dialog_name+"' title='"+element_id+"'>";
-            //plot_content    += "  <div class='live_plots'>";
-            //plot_content    += "    <div class='options'>";
-            //plot_content    += "      <span class='ui-icon ui-icon-gear'></span>";
-            //plot_content    += "    </div>";
-            //plot_content    += "    <div class='plot_timeframe'>";
-            //plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"900\");'>15m</a> | ";
-            //plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"7200\");'>2h</a> | ";
-            //plot_content    += "      <a style='outline:none;' href='javascript:void(0);' onClick='max_timeframe(\"86400\");'>max</a>";
-            //plot_content    += "    </div><br>";
-            //plot_content    += "    <div style='height:150px' id='"+clean_name+"_plot'><span class='waiting'>Working... this will take a second or two.</span></div>";
-            //plot_content    += "    <span style='float:right'>time elapsed [minutes]</span><br>";
-            //plot_content    += "  </div>";
-            //plot_content    += "</div>";
-            //$('#dialog_placeholder').append(plot_content);
-            //$( "#"+dialog_name ).dialog({
-                //width: 400,
-                //height: 230,
-                //resizable: false,
-                //closeOnEscape: true,
-                //close: function( event, ui ) 
-                //{ 
-                    //$( "#"+dialog_name ).remove(); 
-                    //for (var i = 0; i < plotted_vars.length; i++) {
-                        //if (plotted_vars[i][0]==element_id) plotted_vars[i][1]="0";
-                    //};
-                //}
-            //});
-            //plotted_vars.push([element_id, "1"]);
-            //poll();
-        //}
-    //}
 </script> 
 {% endblock %}
 

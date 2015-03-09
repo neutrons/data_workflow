@@ -26,26 +26,6 @@ import sys
 import logging
 
 @users.view_util.login_or_local_required
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-@users.view_util.monitor
-@vary_on_cookie
-def summary(request):
-    """
-        List of available instruments
-    """
-    # Get the system health status
-    template_values = {'instruments': view_util.get_instrument_status_summary(),
-                       'breadcrumbs': "home",
-                       'postprocess_status': view_util.get_system_health(),
-                       'update_url': reverse('dasmon.views.summary_update'),
-                       'central_services_url': reverse('dasmon.views.diagnostics', args=['common'])
-                       }
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    return render_to_response('dasmon/global_summary.html',
-                              template_values)
-
-@users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users.view_util.monitor
