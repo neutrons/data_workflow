@@ -303,7 +303,6 @@ function BarGraph(run_data, error_data, anchor, type){
                         .style("left",(d3.event.pageX+10)+"px");
     }
     function mouseout(d, i, t){
-        console.log("this is mouseout from bar");
         ith_child = parseInt(i+1); // iterator to start at 1 for css-type selector
         d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("opacity", "0.6");
         d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("opacity", "0.6");

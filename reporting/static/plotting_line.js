@@ -194,9 +194,11 @@ function plot_1d(raw_data, anchor, options) {
        .on("mouseout", function(d){ mouseout(d); });
     
     function mouseover(d){
+        mouseY = 0;
+        mouseX = 0;
         circle_ol.attr("cx", x(d[0]))
-            .attr("cy", y(d[1]))
-            .style("visibility", "visible");
+                 .attr("cy", y(d[1]))
+                 .style("visibility", "visible");
         tooltip.style("visibility", "visible");
         if(window.Event && document.captureEvents)
         document.captureEvents(Event.MOUSEOVER);
@@ -207,8 +209,8 @@ function plot_1d(raw_data, anchor, options) {
     }
     function mousemove(d){
         circle_ol.attr("cx", x(d[0]))
-        .attr("cy", y(d[1]))
-        .style("visibility", "visible");
+                 .attr("cy", y(d[1]))
+                 .style("visibility", "visible");
         tooltip.style("visibility", "visible");
         if(window.Event && document.captureEvents)
         document.captureEvents(Event.MOUSEMOVE);
