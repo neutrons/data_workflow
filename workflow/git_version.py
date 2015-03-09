@@ -1,2 +1,2 @@
 # Git revision information
-__git_version__ = "2.6.0-81-g19012b8035f179cf2cbd87cba5ac70a22eeac4b7"
+__git_version__ = "2.6.0-90-g99d6491bf60549287c21baea3b031a573d25d389"

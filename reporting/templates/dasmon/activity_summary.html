@@ -41,7 +41,7 @@
             },
         };
         $.plot($("#runs_per_hour"), run_data, options);
-        
+
         function showTooltip(x, y, contents) {
             $("<div id='tooltip'>" + contents + "</div>").css({
                 position: "absolute",
@@ -83,8 +83,8 @@
         $.ajax({ url: "{{ update_url }}", success: function(data){
             plot_activity(data.run_rate);
         }, dataType: "json", timeout: 30000, cache: true });
-    };    
-</script>   
+    };
+</script>
 {% endblock %}
 
 {% block summary %}

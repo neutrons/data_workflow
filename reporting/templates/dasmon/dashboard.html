@@ -25,13 +25,13 @@
     $.ajax({ url: "{{ update_url }}", success: function(data) {
         content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
         $('#workflow_status').replaceWith(content);
-        
+
         content = "<li class='status_"+data.postprocess_status.catalog+"' id='catalog_status'>Catalog</li>";
         $('#catalog_status').replaceWith(content);
-        
+
         content = "<li class='status_"+data.postprocess_status.reduction+"' id='reduction_status'>Reduction</li>";
         $('#reduction_status').replaceWith(content);
-        
+
         for (var i=0; i<data.instruments.length; i++)
         {
            global_system_status_update(data, i);
