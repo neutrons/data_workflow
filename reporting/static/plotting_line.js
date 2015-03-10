@@ -55,8 +55,12 @@ function plot_1d(raw_data, anchor, options) {
     xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("6d"));
     xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(0).tickFormat('');
     
-    yAxis = d3.svg.axis().scale(y).orient("left").ticks(4, function(d) { if(d<1000000.0 && d>1e-3) {return d3.format("5.3g")(d);} else {return d3.format("5.1e")(d);}});
-
+    formatter = function(d) { if(d<1000000.0 && d>1e-3) {return d3.format("5.3g")(d);} else {return d3.format("5.1e")(d);}};
+    if (log_scale == false) {
+        yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(formatter);
+    } else {
+        yAxis = d3.svg.axis().scale(y).orient("left").ticks(4, formatter);
+    }
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
     
