@@ -33,6 +33,7 @@ function BarGraph(run_data, error_data, anchor, type){
 
     var formatted_runs_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
     var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
+   
 
     // Format data
     function formatData(){
@@ -164,30 +165,6 @@ function BarGraph(run_data, error_data, anchor, type){
                             .tickFormat("")
                           )
 
-    // Create error bars
-    var errors = barsContainer.append("g")
-            .attr("class", anchor + "_error_bars")
-            .selectAll(".bars")
-            .data(formatted_error_data)
-            .enter()
-            .append("rect")
-            .attr("class", anchor + "_error_rect")
-            .attr("x", function(d, i){
-                return w - ((i+1) * barWidth); // start from the right
-            })
-            .attr("y", function(d){
-                return h - (d * barHeightFactor);
-            })
-            .attr("width", barWidth - barPadding)
-            .attr("height", function(d){
-                return d * barHeightFactor;
-            })
-            .style("stroke", "#d62815")
-            .style("stroke-width", "none")
-            .style("shape-rendering", "crispEdges")
-            .attr("fill", "#ED5B4B")
-            .attr("opacity", "0.6");
-
     // Create run bars 
     var runs = barsContainer.append("g")
             .attr("class", anchor + "_run_bars")
@@ -206,11 +183,37 @@ function BarGraph(run_data, error_data, anchor, type){
             .attr("height", function(d){
                 return d * barHeightFactor;
             })
-            .style("stroke", "#2f859b")
-            .style("stroke-width", "none")
+            .style("stroke", "#0C519D")
+            .style("stroke-width", "0")
+            .style("stroke-opacity", "0.75")
             .style("shape-rendering", "crispEdges")
-            .attr("fill", "#4dafc9")
-            .attr("opacity", "0.6");
+            .attr("fill", "#0C519D")
+            .attr("fill-opacity", "0.45");
+
+    // Create error bars
+    var errors = barsContainer.append("g")
+            .attr("class", anchor + "_error_bars")
+            .selectAll(".bars")
+            .data(formatted_error_data)
+            .enter()
+            .append("rect")
+            .attr("class", anchor + "_error_rect")
+            .attr("x", function(d, i){
+                return w - ((i+1) * barWidth); // start from the right
+            })
+            .attr("y", function(d){
+                return h - (d * barHeightFactor);
+            })
+            .attr("width", barWidth - barPadding)
+            .attr("height", function(d){
+                return d * barHeightFactor;
+            })
+            .style("stroke", "#F10000")
+            .style("stroke-width", "0")
+            .style("stroke-opacity", "0.55")
+            .style("shape-rendering", "crispEdges")
+            .attr("fill", "#F10000")
+            .attr("fill-opacity", "0.25");
 
     // Create transparent bars that cover the error and run bars
     var placeholders = barsContainer.append("g")
@@ -286,8 +289,10 @@ function BarGraph(run_data, error_data, anchor, type){
         
     function mouseover(d, i, t){
         ith_child = parseInt(i+1); // iterator to start at 1 for css-type selector
-        d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("opacity", "0.9");
-        d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("opacity", "0.7");
+        d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("fill-opacity", "0.9");
+        d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("fill-opacity", "0.6");
+        d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").style("stroke-opacity", "0.9");
+        d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").style("stroke-opacity", "0.6");
         return tooltip.style("visibility", "visible");
     }
     function mousemove(d, i, t){
@@ -304,8 +309,10 @@ function BarGraph(run_data, error_data, anchor, type){
     }
     function mouseout(d, i, t){
         ith_child = parseInt(i+1); // iterator to start at 1 for css-type selector
-        d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("opacity", "0.6");
-        d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("opacity", "0.6");
+        d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("fill-opacity", "0.45");
+        d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").attr("fill-opacity", "0.25");
+        d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").style("stroke-opacity", "0.75");
+        d3.select("." + anchor + "_error_rect:nth-child(" + ith_child + ")").style("stroke-opacity", "0.55");
                 return tooltip.style("visibility", "hidden");
     }
 }
