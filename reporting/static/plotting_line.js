@@ -40,8 +40,7 @@ function plot_1d(raw_data, anchor, options) {
     h = h - margin.top - margin.bottom;
     mod_psize = {height: h, width: w};
     x = d3.scale.linear().range([0, mod_psize.width]);
-    y = log_scale ? d3.scale.log().range([mod_psize.height, 0]) : d3.scale.linear().range([mod_psize.height, 0]);
-    
+    y = log_scale ? d3.scale.log().range([mod_psize.height, 0]).nice() : d3.scale.linear().range([mod_psize.height, 0]);
     
     y_min = d3.min(data, function(d) { return d[1]; }) // for a better display of a constant function
     y_max = d3.max(data, function(d) { return d[1]; })
@@ -53,13 +52,15 @@ function plot_1d(raw_data, anchor, options) {
     else{
         y.domain([y_min, y_max]);
     }
-
-    xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("5.2g"));
+    xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("6d"));
     xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(0).tickFormat('');
-    yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(d3.format("5.2g"));
-    yAxisMinor = d3.svg.axis().scale(y).orient("left").ticks(4).tickSize(3,3).tickSubdivide(4).tickFormat('');
-
     
+    formatter = function(d) { if(d<1000000.0 && d>1e-3) {return d3.format("5.3g")(d);} else {return d3.format("5.1e")(d);}};
+    if (log_scale == false) {
+        yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(formatter);
+    } else {
+        yAxis = d3.svg.axis().scale(y).orient("left").ticks(4, formatter);
+    }
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
     
@@ -81,9 +82,8 @@ function plot_1d(raw_data, anchor, options) {
                    .attr("transform", "translate(0," + mod_psize.height + ")")
                    .call(xAxisMinor);
     svg.append("g").attr("class", "y axis").call(yAxis)
-    svg.append("g").attr("class", "y axis").call(yAxisMinor)
     
-    // Create X axis label   
+    // Create X axis label
     svg.append("text")
        .attr("x", mod_psize.width)
        .attr("y",  mod_psize.height+40)
@@ -203,7 +203,7 @@ function plot_1d(raw_data, anchor, options) {
         if(window.Event && document.captureEvents)
         document.captureEvents(Event.MOUSEOVER);
         document.onmouseover = getMousePos;
-        tooltip.text(d3.round(d[0],1) + ", " + d[1]);
+        tooltip.text(d3.round(d[0],1) + ", " + d3.format("6.3g")(d[1]));
         tooltip.style("top", (mouseY-10)+"px")
                .style("left",(mouseX+10)+"px");
     }
@@ -215,7 +215,7 @@ function plot_1d(raw_data, anchor, options) {
         if(window.Event && document.captureEvents)
         document.captureEvents(Event.MOUSEMOVE);
         document.onmousemove = getMousePos;
-        tooltip.text(d3.round(d[0],1) + ", " + d[1]);
+        tooltip.text(d3.round(d[0],1) + ", " + d3.format("6.3g")(d[1]));
         tooltip.style("top", (mouseY-10)+"px")
                .style("left",(mouseX+10)+"px");
     }
