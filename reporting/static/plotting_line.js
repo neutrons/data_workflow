@@ -29,7 +29,7 @@ function plot_1d(raw_data, anchor, options) {
 
     var data = [];
     for (var i=0; i<raw_data.length; i++){
-        data.push(raw_data[i]);
+        if (log_scale == false || raw_data[i][1]>0 ) data.push(raw_data[i]);
     }
     
     var tid = $(".live_plots").parent().attr("id");
