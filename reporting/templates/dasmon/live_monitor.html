@@ -136,6 +136,17 @@
                 this.dialog_win = $("#" + this.dialog_name).parent();
                 //resize_dialog(element_id);
             }
+            else{ // Move dialog box to the top if it is already open
+                var hi_z = 100;
+			    $("#" + this.dialog_name).parent().siblings(".ui-dialog").addBack().each(function(){
+                    if (hi_z < $(this).css("z-index")){
+                        hi_z = $(this).css("z-index");
+                    }
+                });
+                hi_z = parseInt(hi_z) + 1;
+                console.log(hi_z);
+                $("#" + this.dialog_name).parent().css("z-index", hi_z);
+			}
             poll();
         }
         // Uncomment lines 141 to 156 if adding global options capability
