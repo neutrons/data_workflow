@@ -37,7 +37,7 @@ function plot_combined_rates(run_data, error_data, anchor, parameters){
         }
     });
     if ($(".tooltip").length > 5){
-        $("text.tooltip:lt(2)").remove();
+        $("text.tooltip:lt(-5)").remove();
     }
     BarGraph(run_data, error_data, anchor, type);
 }
