@@ -4,7 +4,7 @@ import logging
 import sys
 from dasmon.models import LegacyURL
 
-STATUS_HOST = 'neutrons.ornl.gov'
+STATUS_HOST = 'neutrons2.ornl.gov'
 def get_ops_status(instrument_id):
     """
         Pull the legacy status information
