@@ -35,14 +35,14 @@ def dashboard(request):
         Dashboard view showing available instruments
     """
     # Get the system health status
-    global_status_url = reverse(settings.LANDING_VIEW,args=[])
+    global_status_url = reverse(settings.LANDING_VIEW, args=[])
     template_values = {'instruments': view_util.get_instrument_status_summary(),
                        'data': view_util.get_dashboard_data(),
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
                        'postprocess_status': view_util.get_system_health(),
                        'update_url': reverse('dasmon.views.dashboard_update'),
                        'central_services_url': reverse('dasmon.views.diagnostics', args=['common'])
-                       }
+                      }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('dasmon/dashboard.html',
                               template_values)
@@ -58,7 +58,7 @@ def dashboard_update(request):
     data_dict = {'instruments':view_util.get_instrument_status_summary(),
                  'postprocess_status':view_util.get_system_health(),
                  'instrument_rates': view_util.get_dashboard_data()
-                 }
+                }
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
@@ -75,18 +75,18 @@ def run_summary(request):
     """
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
     base_instr_url = reverse('dasmon.views.live_monitor', args=['aaaa'])
-    base_instr_url = base_instr_url.replace('/aaaa','')
-    base_run_url = reverse('report.views.instrument_summary',args=['aaaa'])
-    base_run_url = base_run_url.replace('/aaaa','')
-    
-    runs, first_run, last_run =  view_util.get_live_runs()
+    base_instr_url = base_instr_url.replace('/aaaa', '')
+    base_run_url = reverse('report.views.instrument_summary', args=['aaaa'])
+    base_run_url = base_run_url.replace('/aaaa', '')
+
+    runs, first_run, last_run = view_util.get_live_runs()
     template_values = {'run_list': runs,
                        'first_run_id': first_run,
                        'last_run_id': last_run,
                        'base_instrument_url': base_instr_url,
                        'base_run_url': base_run_url,
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
-                       }
+                      }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render_to_response('dasmon/run_summary.html',
                               template_values)
@@ -95,7 +95,7 @@ def run_summary(request):
 def run_summary_update(request):
     """
          Ajax call to get updates behind the scenes
-    """ 
+    """
     # Recent run info
     data_dict = {}
     data_dict = view_util.get_live_runs_update(request, None, None, **data_dict)
@@ -115,8 +115,8 @@ def legacy_monitor(request, instrument):
         @param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    update_url = reverse('dasmon.views.get_update',args=[instrument])
-    legacy_update_url = reverse('dasmon.views.get_legacy_data',args=[instrument])
+    update_url = reverse('dasmon.views.get_update', args=[instrument])
+    legacy_update_url = reverse('dasmon.views.get_legacy_data', args=[instrument])
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     kvp = legacy_status.get_ops_status(instrument_id)
     template_values = {'instrument': instrument.upper(),
@@ -124,7 +124,7 @@ def legacy_monitor(request, instrument):
                        'update_url': update_url,
                        'legacy_update_url': legacy_update_url,
                        'key_value_pairs':kvp}
-    if len(kvp)==0:
+    if len(kvp) == 0:
         inst_url = legacy_status.get_legacy_url(instrument_id)
         template_values['user_alert'] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
     for group in kvp:
@@ -162,8 +162,8 @@ def live_monitor(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
     # Update URL
-    update_url = reverse('dasmon.views.get_update',args=[instrument])
-    pv_url = reverse('pvmon.views.get_update',args=[instrument])
+    update_url = reverse('dasmon.views.get_update', args=[instrument])
+    pv_url = reverse('pvmon.views.get_update', args=[instrument])
 
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument': instrument.upper(),
@@ -171,15 +171,15 @@ def live_monitor(request, instrument):
                        'update_url': update_url,
                        'pv_url': pv_url,
                        'key_value_pairs': view_util.get_cached_variables(instrument_id, monitored_only=True),
-                       }
+                      }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
-    
-    template_values['signals_url'] = reverse('dasmon.views.get_signal_table',args=[instrument])
-    
+
+    template_values['signals_url'] = reverse('dasmon.views.get_signal_table', args=[instrument])
+
     return render_to_response('dasmon/live_monitor.html', template_values)
-    
+
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
@@ -192,19 +192,21 @@ def live_runs(request, instrument):
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    
-    # Update URL
-    update_url = reverse('dasmon.views.get_update',args=[instrument])
 
-    timeframe=12
+    # Update URL
+    update_url = reverse('dasmon.views.get_update', args=[instrument])
+
+    timeframe = 12
     if 'days' in request.GET:
         try:
-            timeframe = int(request.GET['days'])*24
+            timeframe = int(request.GET['days']) * 24
         except:
+            # If we can't cast to an integer, use default
+            # pylint: disable=pointless-except
             pass
     run_list, first_run, last_run = view_util.get_live_runs(instrument_id=instrument_id,
                                                             timeframe=timeframe)
-    
+
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument':instrument.upper(),
                        'breadcrumbs':breadcrumbs,
@@ -212,34 +214,36 @@ def live_runs(request, instrument):
                        'run_list':run_list,
                        'first_run_id':first_run,
                        'last_run_id': last_run
-                       }
+                      }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
-    
+
     return render_to_response('dasmon/live_runs.html', template_values)
-    
-    
+
+
 @users.view_util.login_or_local_required
 @users.view_util.monitor
-def help(request):
-    
-    global_status_url = reverse(settings.LANDING_VIEW,args=[])
+def user_help(request):
+    """
+        Help request
+    """
+    global_status_url = reverse(settings.LANDING_VIEW, args=[])
     hysa_live_monitor_url = reverse('dasmon.views.live_monitor', args=['hysa'])
     hysa_live_runs_url = reverse('dasmon.views.live_runs', args=['hysa'])
 
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; help" % global_status_url
-    
+
     template_values = {'global_status_url': global_status_url,
                        'hysa_live_monitor_url': hysa_live_monitor_url,
                        'hysa_live_runs_url': hysa_live_runs_url,
                        'breadcrumbs': breadcrumbs,
-                       }
+                      }
     template_values = users.view_util.fill_template_values(request, **template_values)
-    
+
     return render_to_response('dasmon/help.html', template_values)
 
-    
+
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
@@ -257,15 +261,15 @@ def diagnostics(request, instrument):
     wf_diag = view_util.workflow_diagnostics()
     # Post-processing
     red_diag = view_util.postprocessing_diagnostics()
-    
+
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id, 'diagnostics')
     template_values = {'instrument':instrument.upper(),
                        'breadcrumbs':breadcrumbs,
-                       }
+                      }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
-    
+
     actions = []
     if ActiveInstrument.objects.is_adara(instrument_id):
         # DASMON
@@ -285,11 +289,11 @@ def diagnostics(request, instrument):
     template_values['wf_diagnostics'] = wf_diag
     template_values['post_diagnostics'] = red_diag
     template_values['action_messages'] = actions
-    
+
     notices = []
     for item in SiteNotification.objects.filter(is_active=True):
         notices.append(item.message)
-    if len(notices)>0:
+    if len(notices) > 0:
         template_values['user_alert'] = notices
 
     return render_to_response('dasmon/diagnostics.html', template_values)
@@ -302,12 +306,12 @@ def get_update(request, instrument):
     """
          Ajax call to get updates behind the scenes
          @param instrument: instrument name
-    """ 
+    """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    
+
     # Get last experiment and last run
-    data_dict = report.view_util.get_current_status(instrument_id)      
+    data_dict = report.view_util.get_current_status(instrument_id)
     data_dict['variables'] = view_util.get_cached_variables(instrument_id, monitored_only=False)
 
     localtime = timezone.now()
@@ -315,14 +319,14 @@ def get_update(request, instrument):
     recording_status = {"key": "recording_status",
                         "value": view_util.is_running(instrument_id),
                         "timestamp": df.format(settings.DATETIME_FORMAT),
-                        }
+                       }
     data_dict['variables'].append(recording_status)
-    
+
     # Get current DAS health status
     das_status = view_util.get_system_health(instrument_id)
     data_dict['das_status'] = das_status
-    data_dict['live_plot_data']=view_util.get_live_variables(request, instrument_id)
-    
+    data_dict['live_plot_data'] = view_util.get_live_variables(request, instrument_id)
+
     # Recent run info
     data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
@@ -339,7 +343,7 @@ def summary_update(request):
     # Get the system health status
     data_dict = {'instruments':view_util.get_instrument_status_summary(),
                  'postprocess_status':view_util.get_system_health()
-                 }
+                }
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
@@ -350,9 +354,9 @@ def summary_update(request):
 def get_signal_table(request, instrument):
     """
         Ajax call to get the signal table
-        
+
         Note: Since users can interact with this table, we are not caching it.
-        That avoids seeing cleared entries momentarily reappearing in the case 
+        That avoids seeing cleared entries momentarily reappearing in the case
         where the page requests a refresh while the cache hasn't yet been updated.
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -389,7 +393,7 @@ def notifications(request):
         Let an instrument team member register for a DASMON signal
     """
     instrument_list = view_util.get_instruments_for_user(request)
-    
+
     class NotificationForm(forms.Form):
         """
             Form for notification registration
@@ -397,14 +401,14 @@ def notifications(request):
         email = forms.EmailField(required=False, initial='')
         register = forms.BooleanField(required=False, initial=False)
         instruments = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
-        
+
         def __init__(self, *args, **kwargs):
             super(NotificationForm, self).__init__(*args, **kwargs)
             options = ()
             for i in instrument_list:
-                options += ( (i,i), )
+                options += ((i, i),)
             self.fields['instruments'] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
-                                                                   choices=options )
+                                                                   choices=options)
 
     # Process request
     alert_list = []
@@ -416,10 +420,10 @@ def notifications(request):
             instruments = options_form.cleaned_data['instruments']
             try:
                 user_options_list = UserNotification.objects.filter(user_id=request.user.id)
-                if len(user_options_list)==0:
-                    user_options = UserNotification(user_id=request.user.id, 
+                if len(user_options_list) == 0:
+                    user_options = UserNotification(user_id=request.user.id,
                                                     email=email_address,
-                                                    registered = registered)
+                                                    registered=registered)
                     user_options.save()
                 else:
                     user_options = user_options_list[0]
@@ -436,7 +440,7 @@ def notifications(request):
                         alert_list.append("Could not find instrument %s" % item)
                         logging.error("Notification registration failed: %s" % sys.exc_value)
                 alert_list.append("Your changes have been saved.")
-                    
+
             except:
                 alert_list.append("There was a problem processing your request.")
                 logging.error("Error processing notification settings: %s" % sys.exc_value)
@@ -454,11 +458,12 @@ def notifications(request):
                 params_dict['instruments'].append(item.name.upper())
         except:
             # No entry found for this user. Use a blank form.
+            # pylint: disable=pointless-except
             pass
         options_form = NotificationForm(initial=params_dict)
 
     # Breadcrumbs
-    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     breadcrumbs += " &rsaquo; notifications"
 
     template_values = {'helpline': settings.HELPLINE_EMAIL,
