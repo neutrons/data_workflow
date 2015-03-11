@@ -5,8 +5,9 @@
 {% block banner %} Data Processing Report {% endblock %}
 
 {% block header %}
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/static/thirdparty/flot/excanvas.min.js"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="/static/thirdparty/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/monthly_chart.js"></script>
+<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 {% endblock %}
 
 {% block summary %}
@@ -55,29 +56,7 @@
     
     <script id="source" language="javascript" type="text/javascript">
       var run_data = {{ run_rate|safe }};
-      var options = {
-              xaxis: {
-                  mode: "time",
-                  minTickSize: [1, "month"],
-              },
-              yaxis: { minTickSize:1 },
-              shadowSize: 0,
-              lines: {
-                  fill: true,
-                  show: true,
-                  steps: true
-              },
-              grid: { 
-                  color: "#5e5e5e",
-                  borderWidth: 1
-              },
-              legend: {
-                  show: true,
-                  position: 'nw'
-              }
-      };                  
-
-      $.plot($("#runs_per_month"), [ {label:"Number of runs [#/month]", 
-            data:run_data, color: "#777777", lines: {fillColor: "#eeeeee"}} ], options);
+      MonthlyGraph(run_data, "runs_per_month", "detailed");
+            
     </script>
 {% endblock %}

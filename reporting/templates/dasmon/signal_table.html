@@ -12,14 +12,14 @@
       <table class="message_table fixed_table" id="alert_table">
       <thead>
       <tr>
-          <th> Signal/PV </th> <th> Value </th> <th style="width: 50px;" > History </th> <th> Last Updated </th>
+          <th> Signal/PV </th> <th> Value </ith> <th style="width:50px;min-width:50px;" > History </th> <th style="width:170px;min-width:170px;"> Last Updated </th>
       </tr>
       </thead>
       <tbody>
       {% for item in signals %}
           <tr>
           {% if item.key %}
-          {% if item.data %}<td><a href='javascript:void(0);' onClick="pop_monitor_plot('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>{% else %}<td>{{ item.name|safe }}</td>{% endif %}
+          {% if item.data %}<td><a href='javascript:void(0);' onClick="new_monitor('{{ item.key }}', '2');"> {{ item.name|safe }} </a></td>{% else %}<td>{{ item.name|safe }}</td>{% endif %}
           <td>{{ item.status|safe }}</td><td><span class="inlinesparkline">{{ item.data }}</span></td>
           {% else %}
           <td> {{ item.name|safe }}{% if is_instrument_staff %} (<a href='javascript:void(0);' title="Click to remove signal (instrument team only)" onClick="ack_alarm('{{ item.ack_url }}?info={{ item.name }}', '#signal_{{ item.name }}');">clear</a>){% endif %}</td>

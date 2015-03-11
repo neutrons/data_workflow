@@ -310,7 +310,7 @@ def get_live_variables(request, instrument_id):
             else:
                 for v in values:
                     delta_t = now-v.timestamp
-                    data_list.append([-delta_t.total_seconds()/60.0, v.value])
+                    data_list.append([-delta_t.total_seconds()/60.0, float(v.value)])
             data_dict.append([key,data_list])
         except:
             # Could not find data for this key

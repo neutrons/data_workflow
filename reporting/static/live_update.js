@@ -28,128 +28,16 @@ function update_from_ajax_data(data){
 }
 
 function plot_combined_rates(run_data, error_data, anchor, parameters){
-	parameters = (typeof parameters === "undefined") ? {} : parameters;
-	use_labels = (typeof parameters.use_labels === "undefined") ? true : parameters.use_labels;
-	show_ticks = (typeof parameters.show_ticks === "undefined") ? true : parameters.show_ticks;
-	anchor = (typeof anchor === "undefined") ? "#runs_per_hour" : anchor;
-	ticks_option = [[-24, "-24 hrs"], [1, "last hour"]];
-	if (!show_ticks) { ticks_option = 0; };
-	var options = {
-			xaxis: {
-				show: true,
-				min: -24,
-				max: 1,
-				ticks: ticks_option
-			},
-			yaxis: { minTickSize:1 },
-			shadowSize: 0,
-			bars: {
-				show: true,
-				lineWidth: 1
-			},
-			grid: { 
-				color: "#5e5e5e",
-				borderWidth: 1
-			},
-			legend: {
-				show: true,
-				position: 'nw'
-			}
-	};
-	if (use_labels) {
-		$.plot($(anchor), [ {label:"Number of runs [#/hr]", data:run_data},
-		                    {label:"Number of errors [#/hr]", data:error_data, color:"#ED5B4B"} ],
-		                    options);
-	} else {
-		$.plot($(anchor), [ {data:run_data},
-		                    {data:error_data, color:"#ED5B4B"} ],
-		                    options);
-	}
+    type = (typeof parameters === "undefined") ? "detailed" : parameters;
+    anchor = (typeof anchor === "undefined") ? "runs_per_hour" : anchor;
+
+    $(".tooltip").each(function(){
+        if ($(this).css("visibility") === "visible"){
+            $(this).css("visibility", "hidden");
+        }
+    });
+    if ($(".tooltip").length > 5){
+        $("text.tooltip:lt(-5)").remove();
+    }
+    BarGraph(run_data, error_data, anchor, type);
 }
-
-function plot_monitor(monitor_data, element_id, label_text){
-	var options = {
-			xaxis: {
-				minTickSize:0.01,
-				show: true,
-				tickFormatter: function (val, axis) { 
-					if (val==0) {
-						return "now";
-					} else {
-						return val.toFixed(1);
-					}
-				},
-			},
-			yaxis: { 
-				minTickSize:0.0001,
-				tickFormatter: function (val, axis) { 
-					if (val>10000 || (val<0.0001&&val>0)) {
-						return val.toExponential(4); 
-					} else {
-						return val.toPrecision(4);
-					}
-				},
-			},
-			shadowSize: 0,
-			lines: {
-				show: true,
-				steps: true
-			},
-			grid: { 
-				color: "#5e5e5e",
-				borderWidth: 1
-			},
-			legend: {
-				show: true,
-				position: 'nw'
-			}
-	};
-	
-	if (window.plotted_monitor_vars == null)
-		window.plotted_monitor_vars = [];
-	
-	if ($.inArray(element_id, window.plotted_monitor_vars)>=0) { 
-		options.yaxis.transform = function (v) { return Math.log(v); };
-		options.yaxis.inverseTransform = function (v) { return Math.exp(v); };
-		
-		var ymin = -1.0;
-		for (i=0; i<monitor_data.length; i++) {
-			val = +monitor_data[i][1];
-			if (val>0.0 && val<ymin) ymin = val;
-			if (ymin<0.0 && val>0.0) ymin = val;
-		}
-		options.yaxis.min = ymin;
-	};
-	
-	var plot = $.plot($(element_id), [ {label:label_text, data:monitor_data} ],
-	                              options);
-	$.each(plot.getAxes(), function (i, axis) {
-		if (!axis.show)
-			return;
-		
-		if (axis.direction != "y")
-			return;
-
-		var box = axis.box;
-
-		$("<div class='axisTarget' style='position:absolute; left:" + box.left + "px; top:" + box.top + "px; width:" + box.width +  "px; height:" + box.height + "px'></div>")
-			.data("axis.direction", axis.direction)
-			.data("axis.n", axis.n)
-			.css({ backgroundColor: "#f00", opacity: 0, cursor: "pointer" })
-			.appendTo(plot.getPlaceholder())
-			.hover(
-				function () { $(this).css({ opacity: 0.10 }) },
-				function () { $(this).css({ opacity: 0 }) }
-			)
-			.click(function () {
-				if ($.inArray(element_id, window.plotted_monitor_vars)>=0) { 
-					var var_index = window.plotted_monitor_vars.indexOf(element_id);
-					window.plotted_monitor_vars.splice(var_index, 1);
-				} else {
-					window.plotted_monitor_vars.push(element_id); 
-				};
-				plot_monitor(monitor_data, element_id, label_text);
-			});
-	});
-}
-
