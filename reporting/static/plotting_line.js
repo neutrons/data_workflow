@@ -26,6 +26,8 @@ function plot_1d(raw_data, anchor, options) {
     var xAxisMinor;
     var yAxis;
     var yAxisMinor;
+    var mouseY;
+    var mouseX;
 
     var data = [];
     for (var i=0; i<raw_data.length; i++){
