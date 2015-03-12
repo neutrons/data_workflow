@@ -21,6 +21,33 @@
     var plotted_data = [];
     var plot_timeframe = '7200';
     var Plots = new Array();
+    var ie = ie_flag();
+	
+    //************************************************************************80
+    // FUNCTION: ie_flag
+    //
+    //
+    //************************************************************************80
+    function ie_flag(){
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf('MSIE ');
+        if (msie > 0){
+            // IE 10 or older
+            return true;
+        }
+        var trident = ua.indexOf('Trident/');
+        if (trident > 0){
+            // IE 11 => 
+            return true;
+        }
+        var edge = ua.indexOf('Edge/');
+        if (edge > 0){
+           // IE 12 => 
+            return true;
+        }
+        // other browser
+        return false;
+    }
 
     //************************************************************************80
     // FUNCTION: new_monitor
@@ -71,6 +98,16 @@
     //************************************************************************80
     function MonitorPlot(element_id, nid, option){
 
+        var options_icon;
+        var close_icon;
+        if (ie === true){
+            options_icon = "<span class='flaticon'><img src='/static/thirdparty/flaticon/icons/options.png' width='16' height='15'></span>";
+            close_icon = "<span class='flaticon' style='float:right'><img src='/static/thirdparty/flaticon/icons/close.png' width='11' height='11'></span>";
+        }
+        else{
+            options_icon = "<span class='flaticon flaticon-settings22'></span>";
+            close_icon = "<span class='flaticon flaticon-close19' style='float:right'></span>";
+        }
         this.element_id = element_id;
         this.nid = nid;
         this.option = option;
@@ -84,8 +121,8 @@
             "    <div class='live_plots'>" +
             "        <div class='options' style='float:left'>" +
             "            <a class='flaticon_link' title='Local Options' " + 
-            "                onclick='Plots[" + nid + "].local_options(\"" + this.dialog_name + "\")'>" + // change onclick function to Plots.prepare_menu if adding global options capability
-            "            <span class='flaticon flaticon-settings22'></span></a>" +
+            "                onclick='Plots[" + nid + "].local_options(\"" + this.dialog_name + "\")'>" + options_icon + // change onclick function to Plots.prepare_menu if adding global options capability
+	        "			</a>" +
             "        </div>" +
             "    </div><br><br>" +
             "    <div class='plot_timeframe'>" +
@@ -152,8 +189,8 @@
                     log_radio = "checked='checked'"; lin_radio = "";
                 }
                 html = "<div id='local_options_" + this.dialog_name + "' style='height:100px;border-top:1px solid lightgrey;padding:5px'>" +
-                       "<a class='flaticon_link' onclick='Plots[" + nid + "].close_l_opt(\"local_options_" + this.dialog_name + "\")'>" +
-                       "<span class='flaticon flaticon-close19' style='float:right'></span></a>" +
+                       "<a class='flaticon_link' onclick='Plots[" + nid + "].close_l_opt(\"local_options_" + this.dialog_name + "\")'>" + close_icon + 
+                       "</a>" + 
                        "<h3>Local Options</h3>" +
                        "<form name='form_" + this.dialog_name + "'>" +
                        "<div id='radio_" + this.dialog_name + "'>y scale: <input type='radio' class='check_scale' " + 
