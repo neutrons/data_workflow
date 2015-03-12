@@ -28,29 +28,34 @@ from settings import amq_pwd
 from settings import queues
 
 class DasMonListenerDaemon(Daemon):
-    
+    """
+        DASMON listener daemon
+    """
     def run(self):
         """
             Run the dasmon listener daemon
         """
-        c = Client(brokers, amq_user, amq_pwd, 
+        c = Client(brokers, amq_user, amq_pwd,
                    queues, "dasmon_listener")
         c.set_listener(Listener())
         c.listen_and_wait(0.01)
 
 def run():
+    """
+        Entry point for command line script
+    """
     parser = argparse.ArgumentParser(description='DASMON listener')
     subparsers = parser.add_subparsers(dest='command', help='available sub-commands')
     subparsers.add_parser('start', help='Start daemon [-h for help]')
     subparsers.add_parser('restart', help='Restart daemon [-h for help]')
     subparsers.add_parser('stop', help='Stop daemon')
     namespace = parser.parse_args()
-    
+
     # Start the daemon
     daemon = DasMonListenerDaemon('/tmp/dasmon_listener.pid',
                                   stdout=None,
                                   stderr=None)
-        
+
     if namespace.command == 'start':
         daemon.start()
     elif namespace.command == 'stop':
@@ -59,6 +64,6 @@ def run():
         daemon.restart()
 
     sys.exit(0)
-    
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
     run()

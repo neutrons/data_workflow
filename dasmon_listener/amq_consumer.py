@@ -1,6 +1,6 @@
 """
     DASMON ActiveMQ consumer class
-    
+
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
@@ -28,7 +28,7 @@ from settings import TOPIC_PREFIX
 sys.path.append(INSTALLATION_DIR)
 
 import django
-if django.VERSION[1]>=7:
+if django.VERSION[1] >= 7:
     django.setup()
 from django.utils import timezone
 
@@ -62,7 +62,7 @@ class Listener(stomp.ConnectionListener):
             logging.error("Could not decode message from %s" % destination)
             logging.error(sys.exc_value)
             return
-        
+
         # If we get a STATUS message, store it as such
         if destination.endswith(".ACK"):
             process_ack(data_dict)
@@ -72,10 +72,10 @@ class Listener(stomp.ConnectionListener):
         instrument = None
         try:
             toks = destination.upper().split('.')
-            if len(toks)>1:
-                if toks[0]=="/TOPIC/%s" % TOPIC_PREFIX:  
+            if len(toks) > 1:
+                if toks[0] == "/TOPIC/%s" % TOPIC_PREFIX:
                     instrument_name = toks[1].lower()
-                    
+
                     # Get or create the instrument object from the DB
                     try:
                         instrument = Instrument.objects.get(name=instrument_name)
@@ -89,7 +89,7 @@ class Listener(stomp.ConnectionListener):
             logging.error("Could not extract instrument name from %s" % destination)
             logging.error(str(sys.exc_value))
             return
-            
+
         if "STATUS" in destination:
             if "STS" in destination:
                 store_and_cache(instrument, "system_sts", data_dict["status"])
@@ -101,9 +101,9 @@ class Listener(stomp.ConnectionListener):
                     key = "system_%s" % data_dict["src_name"].lower()
                 if key is not None:
                     if key.endswith(".0"):
-                        key = key[:len(key)-2]
+                        key = key[:len(key) - 2]
                     if key.endswith("_0"):
-                        key = key[:len(key)-2]
+                        key = key[:len(key) - 2]
                     store_and_cache(instrument, key, data_dict["status"])
                     if "pid" in data_dict:
                         store_and_cache(instrument, "%s_pid" % key, data_dict["pid"])
@@ -116,14 +116,14 @@ class Listener(stomp.ConnectionListener):
             except:
                 logging.error("Could not process signal: %s" % str(data_dict))
                 logging.error(sys.exc_value)
-            
+
         # For other status messages, store each entry
-        else:      
+        else:
             for key in data_dict:
-                if key=='monitors' and type(data_dict[key])==dict:
+                if key == 'monitors' and type(data_dict[key]) == dict:
                     for item in data_dict[key]:
                         # Protect against old API
-                        if not type(data_dict[key][item])==dict:
+                        if not type(data_dict[key][item]) == dict:
                             store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item])
                         else:
                             identifier = None
@@ -137,7 +137,7 @@ class Listener(stomp.ConnectionListener):
                                 store_and_cache(instrument, parameter_name, counts)
                 else:
                     store_and_cache(instrument, key, data_dict[key])
-            
+
 def send_message(sender, recipients, subject, message):
     """
         Send an email message
@@ -156,7 +156,7 @@ def send_message(sender, recipients, subject, message):
         s.quit()
     except:
         logging.error("Could not send message: %s" % sys.exc_value)
-        
+
 def process_ack(data=None):
     """
         Process a ping request ack
@@ -166,23 +166,23 @@ def process_ack(data=None):
         from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
-                if acks[proc_name] is not None and time.time()-acks[proc_name]>15:
+                if acks[proc_name] is not None and time.time() - acks[proc_name] > 15:
                     logging.error("Client %s disappeared" % proc_name)
                     acks[proc_name] = None
-                    send_message(sender = FROM_EMAIL, recipients = ALERT_EMAIL,
-                                 subject = "Client %s disappeared" % proc_name,
-                                 message = "An AMQ client disappeared")
+                    send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
+                                 subject="Client %s disappeared" % proc_name,
+                                 message="An AMQ client disappeared")
         elif 'src_name' in data:
             proc_name = data['src_name']
             if 'pid' in data:
                 proc_name = '%s:%s' % (proc_name, data['pid'])
-            if 'request_time' in data and time.time()-data['request_time']>10:
+            if 'request_time' in data and time.time() - data['request_time'] > 10:
                 logging.error("Client %s took more than 10 secs to answer" % proc_name)
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared" % proc_name)
-                send_message(sender = FROM_EMAIL, recipients = ALERT_EMAIL,
-                             subject = "Client %s reappeared" % proc_name,
-                             message = "An AMQ client reappeared")
+                send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
+                             subject="Client %s reappeared" % proc_name,
+                             message="An AMQ client reappeared")
             acks[proc_name] = time.time()
     except:
         logging.error("Error processing ack: %s" % sys.exc_value)
@@ -201,9 +201,9 @@ def notify_users(instrument_id, signal):
             message += "    Message: %s\n" % signal.message
             message += "    Level:   %s\n" % signal.level
             message += "    Time:    %s\n" % signal.timestamp.ctime()
-            send_message(sender = item.email, recipients = [item.email],
-                         subject = "New alert on %s" % str(instrument_id).upper(),
-                         message = message)
+            send_message(sender=item.email, recipients=[item.email],
+                         subject="New alert on %s" % str(instrument_id).upper(),
+                         message=message)
     except:
         logging.error("Failed to notify users: %s" % sys.exc_value)
 
@@ -212,7 +212,7 @@ def process_signal(instrument_id, data):
         Process and store signal messages.
         @param instrument_id: Instrument object
         @param data: data dictionary
-        
+
         Asserted signals look like this:
         {
             "msg_type": "2147483648",
@@ -223,7 +223,7 @@ def process_signal(instrument_id, data):
             "sig_message": "SV Pressure too high!",
             "sig_level": "3"
         }
-        
+
         Retracted signals look like this:
         {
             "msg_type": "2147483649",
@@ -242,16 +242,16 @@ def process_signal(instrument_id, data):
             message = data['sig_message'] if 'sig_message' in data else ''
             source = data['sig_source'] if 'sig_source' in data else ''
             timestamp = float(data['timestamp']) if 'timestamp' in data else time.time()
-            if time.time()-timestamp>3600:
+            if time.time() - timestamp > 3600:
                 return
             timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
             if len(asserted_sig) == 0:
                 signal = Signal(instrument_id=instrument_id,
-                             name=data['sig_name'],
-                             source=source,
-                             message=message,
-                             level=level,
-                             timestamp=timestamp)
+                                name=data['sig_name'],
+                                source=source,
+                                message=message,
+                                level=level,
+                                timestamp=timestamp)
                 signal.save()
             else:
                 signal = asserted_sig[0]
@@ -265,8 +265,8 @@ def process_signal(instrument_id, data):
         else:
             for item in asserted_sig:
                 item.delete()
-    
-    
+
+
 def store_and_cache(instrument_id, key, value):
     """
         Store and cache a DASMON parameter
@@ -279,24 +279,24 @@ def store_and_cache(instrument_id, key, value):
     except:
         key_id = Parameter(name=key)
         key_id.save()
-        
+
     # Do bother with parameter that are not monitored
     if key_id.monitored is False:
         return
-    
+
     # The longest allowable string is 128 characters
     value_string = str(value)
-    if len(value_string)>128:
+    if len(value_string) > 128:
         value_string = value_string[:128]
     status_entry = StatusVariable(instrument_id=instrument_id,
                                   key_id=key_id,
                                   value=value_string)
     status_entry.save()
-    
+
     # Update the latest value
     try:
         last_value = StatusCache.objects.filter(instrument_id=instrument_id,
-                                             key_id=key_id).latest('timestamp')
+                                                key_id=key_id).latest('timestamp')
         last_value.value = status_entry.value
         last_value.timestamp = status_entry.timestamp
         last_value.save()
@@ -306,17 +306,17 @@ def store_and_cache(instrument_id, key, value):
                                  value=status_entry.value,
                                  timestamp=status_entry.timestamp)
         last_value.save()
-    
+
 
 class Client(object):
     """
         ActiveMQ client
         Holds the connection to a broker
     """
-    
-    def __init__(self, brokers, user, passcode, 
+
+    def __init__(self, brokers, user, passcode,
                  queues=None, consumer_name="amq_consumer"):
-        """ 
+        """
             @param brokers: list of brokers we can connect to
             @param user: activemq user
             @param passcode: passcode for activemq user
@@ -330,7 +330,7 @@ class Client(object):
         self._queues = queues
         self._consumer_name = consumer_name
         self._listener = None
-        
+
     def set_listener(self, listener):
         """
             Set the listener object that will process each
@@ -338,7 +338,7 @@ class Client(object):
             @param listener: listener object
         """
         self._listener = listener
-        
+
     def get_connection(self, listener=None):
         """
             Establish and return a connection to ActiveMQ
@@ -351,10 +351,10 @@ class Client(object):
                 listener = self._listener
 
         logging.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
-        if stomp.__version__[0]<4:
-            conn = stomp.Connection(host_and_ports=self._brokers, 
+        if stomp.__version__[0] < 4:
+            conn = stomp.Connection(host_and_ports=self._brokers,
                                     user=self._user,
-                                    passcode=self._passcode, 
+                                    passcode=self._passcode,
                                     wait_on_receipt=True)
             conn.set_listener(self._consumer_name, listener)
             conn.start()
@@ -367,7 +367,7 @@ class Client(object):
         # Give the connection threads a little breather
         time.sleep(0.5)
         return conn
-            
+
     def connect(self):
         """
             Connect to a broker
@@ -375,12 +375,12 @@ class Client(object):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        
+
         logging.info("[%s] Subscribing to %s" % (self._consumer_name,
                                                  str(self._queues)))
         for q in self._queues:
             self._connection.subscribe(destination=q, id=1, ack='auto')
-    
+
     def _disconnect(self):
         """
             Clean disconnect
@@ -388,7 +388,7 @@ class Client(object):
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
         self._connection = None
-        
+
     def stop(self):
         """
             Disconnect and stop the client
@@ -397,7 +397,7 @@ class Client(object):
         if self._connection is not None:
             self._connection.stop()
         self._connection = None
-        
+
     def listen_and_wait(self, waiting_period=1.0):
         """
             Listen for the next message from the brokers.
@@ -412,42 +412,42 @@ class Client(object):
         except Instrument.DoesNotExist:
             common_instrument = Instrument(name='common')
             common_instrument.save()
-            
+
         last_purge_time = None
         last_heartbeat = 0
         while(True):
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
-                if last_purge_time is None or time.time()-last_purge_time>120:
+                if last_purge_time is None or time.time() - last_purge_time > 120:
                     last_purge_time = time.time()
                     # Remove old entries
                     delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
-                    cutoff = timezone.now()-delta_time
+                    cutoff = timezone.now() - delta_time
                     StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
                     StatusCache.objects.filter(timestamp__lte=cutoff).delete()
-                    
+
                     # Remove old PVMON entries: first, the float values
-                    PV.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-                    old_entries = PVCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
+                    PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
+                    old_entries = PVCache.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument,
-                                                                pv_name=item.name))==0:
+                                                                pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old PVMON entries: second, the string values
-                    PVString.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60).delete()
-                    old_entries = PVStringCache.objects.filter(update_time__lte=time.time()-PURGE_TIMEOUT*24*60*60)
+                    PVString.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
+                    old_entries = PVStringCache.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument,
-                                                                pv_name=item.name))==0:
+                                                                pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old images
                     delta_time = datetime.timedelta(days=IMAGE_PURGE_TIMEOUT)
-                    cutoff = timezone.now()-delta_time
+                    cutoff = timezone.now() - delta_time
                     ReducedImage.objects.filter(created_on__lte=cutoff).delete()
                 time.sleep(waiting_period)
                 try:
-                    if time.time()-last_heartbeat>5:
+                    if time.time() - last_heartbeat > 5:
                         last_heartbeat = time.time()
                         store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
                         # Send ping request
@@ -464,7 +464,7 @@ class Client(object):
             except:
                 logging.error("Problem connecting to AMQ broker %s" % sys.exc_value)
                 time.sleep(5.0)
-            
+
     def send(self, destination, message, persistent='true'):
         """
             Send a message to a queue
@@ -474,7 +474,7 @@ class Client(object):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        if stomp.__version__[0]<4:
+        if stomp.__version__[0] < 4:
             self._connection.send(destination=destination, message=message, persistent=persistent)
         else:
             self._connection.send(destination, message, persistent=persistent)
