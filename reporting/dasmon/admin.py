@@ -23,16 +23,16 @@ class ParameterAdmin(admin.ModelAdmin):
 class ActiveInstrumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'is_alive', 'is_adara')
     list_editable = ('is_alive', 'is_adara')
-    
+
 class SignalAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'name', 'message', 'level', 'timestamp')
-    
+
 class LegacyURLAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument_id', 'url', 'long_name')
-    
+
 class UserNotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'user_id', 'email')
-    
+
 admin.site.register(StatusVariable, StatusVariableAdmin)
 admin.site.register(Parameter, ParameterAdmin)
 admin.site.register(StatusCache, StatusVariableAdmin)

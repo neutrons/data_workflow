@@ -1,3 +1,9 @@
+"""
+    Handling of reduced data upload
+
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2015 Oak Ridge National Laboratory
+"""
 from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
@@ -19,7 +25,7 @@ class UploadFileForm(forms.Form):
     """
         Simple form to select a data file on the user's machine
     """
-    file  = forms.FileField(required=False)
+    file = forms.FileField(required=False)
     data_url = forms.URLField(required=False)
     username = forms.CharField()
     password = forms.CharField()
@@ -29,24 +35,24 @@ class UploadFileForm(forms.Form):
 @users.view_util.monitor
 def upload_image(request, instrument, run_id):
     """
-        Upload an image representing the reduced data 
+        Upload an image representing the reduced data
         for a given run
         @param instrument: instrument name
         @param run_id: run number
     """
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
-        
+
         if form.is_valid():
             user = authenticate(username=request.POST['username'],
                                 password=request.POST['password'])
             if user is not None and not user.is_anonymous():
-                login(request,user)
+                login(request, user)
             else:
                 return HttpResponse(status=401)
             if not request.user.is_authenticated():
                 return HttpResponse(status=401)
-            
+
             # Prepare to save data to disk
             if 'file' in request.FILES:
                 # A file is uploaded directly
@@ -69,23 +75,23 @@ def upload_image(request, instrument, run_id):
             # If it's not, just create a new file with the same name.
             # Get instrument
             instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-            run_object = get_object_or_404(DataRun, instrument_id=instrument_id,run_number=run_id)
+            run_object = get_object_or_404(DataRun, instrument_id=instrument_id, run_number=run_id)
 
             image_entries = ReducedImage.objects.filter(name__endswith=file_name, run_id=run_object)
-            if len(image_entries)>0:                
+            if len(image_entries) > 0:
                 image = image_entries[0]
                 image.file.delete(False)
             else:
                 # No entry was found, create one
                 image = ReducedImage()
-                image.name  = file_name
+                image.name = file_name
                 image.run_id = run_object
-            
+
             image.file.save(file_name, file_content)
-            
+
     else:
         form = UploadFileForm()
-        return render_to_response('file_handling/upload.html', 
+        return render_to_response('file_handling/upload.html',
                                   {'form': form,
                                    'upload_url': reverse('file_handling.views.upload_image',
                                                          args=[instrument, run_id])},

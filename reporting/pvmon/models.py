@@ -1,3 +1,9 @@
+"""
+    Models for PV monitor app
+
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2014 Oak Ridge National Laboratory
+"""
 from django.db import models
 from report.models import Instrument
 
@@ -7,10 +13,9 @@ class PVName(models.Model):
     """
     name = models.CharField(max_length=50, unique=True)
     monitored = models.BooleanField(default=True)
-    
+
     def __unicode__(self):
         return self.name
-    
 
 class PV(models.Model):
     """
@@ -21,10 +26,9 @@ class PV(models.Model):
     value = models.FloatField()
     status = models.IntegerField()
     update_time = models.IntegerField()
-    
+
     class Meta:
         verbose_name_plural = "PVs"
-    
 
 class PVCache(models.Model):
     """
@@ -35,7 +39,7 @@ class PVCache(models.Model):
     value = models.FloatField()
     status = models.IntegerField()
     update_time = models.IntegerField()
-    
+
     class Meta:
         verbose_name_plural = "PV cache"
 
@@ -48,7 +52,7 @@ class PVString(models.Model):
     value = models.TextField()
     status = models.IntegerField()
     update_time = models.IntegerField()
-    
+
     class Meta:
         verbose_name_plural = "PV strings"
 
@@ -61,7 +65,7 @@ class PVStringCache(models.Model):
     value = models.TextField()
     status = models.IntegerField()
     update_time = models.IntegerField()
-    
+
     class Meta:
         verbose_name_plural = "PV string cache"
 
@@ -73,4 +77,3 @@ class MonitoredVariable(models.Model):
     instrument = models.ForeignKey(Instrument)
     pv_name = models.ForeignKey(PVName, null=True, blank=True)
     rule_name = models.CharField(max_length=50, default='', blank=True)
-    

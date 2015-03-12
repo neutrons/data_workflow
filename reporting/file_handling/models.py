@@ -1,10 +1,16 @@
+"""
+    Models for data upload
+
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2015 Oak Ridge National Laboratory
+"""
 from django.db import models
 from report.models import DataRun
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.dispatch import receiver
 import os
-  
+
 class ReducedImage(models.Model):
     """
         Table of image files corresponding to plots of reduced
@@ -19,20 +25,26 @@ class ReducedImage(models.Model):
     created_on = models.DateTimeField('Timestamp', auto_now=True)
 
     def file_link(self):
+        """
+            Returns a link for a given image file
+        """
         if self.file:
             return "<a href='%s%s'>%s</a>" % (settings.MEDIA_URL, self.file.name, self.name)
         else:
             return "No attachment"
 
     file_link.allow_tags = True
-    
+
     def file_size(self):
+        """
+            Returns the file size of an image
+        """
         if self.file:
             return str(self.file.size)
         else:
             return "N/A"
     file_size.short_description = "Bytes"
-    
+
 # These two auto-delete files from filesystem when they are unneeded:
 @receiver(models.signals.post_delete, sender=ReducedImage)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
