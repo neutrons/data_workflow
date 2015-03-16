@@ -66,7 +66,6 @@ function plot_1d(raw_data, anchor, options) {
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
     
-    console.log("DEFAULT 1D: mod_psize.width: " + mod_psize.width + ", mod_psize.height: " + mod_psize.height);
     // Create svg element
     var svg = d3.select("#" + anchor).append("svg")
         .attr("class", "default_1d")

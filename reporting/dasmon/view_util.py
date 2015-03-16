@@ -206,7 +206,7 @@ def fill_template_values(request, **template_args):
     template_args['live_pv_url'] = reverse('pvmon.views.pv_monitor', args=[instr])
     template_args['legacy_url'] = reverse('dasmon.views.legacy_monitor', args=[instr])
 
-    #template_args["help_url"] = reverse('dasmon.views.help')
+    #template_args["help_url"] = reverse('dasmon.views.user_help')
 
     # The DAS monitor link is filled out by report.view_util but we don't need it here
     template_args['dasmon_url'] = None
