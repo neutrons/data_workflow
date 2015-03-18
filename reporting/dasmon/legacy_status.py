@@ -20,7 +20,7 @@ def get_ops_status(instrument_id):
         url = get_legacy_url(instrument_id, False)
         if url.startswith('http'):
             toks = url.split('/')
-            status_host = token[2]
+            status_host = toks[2]
         else:
             status_host = STATUS_HOST
         conn = httplib.HTTPConnection(status_host, timeout=0.5)
