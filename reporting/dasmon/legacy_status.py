@@ -17,8 +17,13 @@ def get_ops_status(instrument_id):
         @param instrument_id: Instrument object
     """
     try:
-        conn = httplib.HTTPConnection(STATUS_HOST, timeout=0.5)
         url = get_legacy_url(instrument_id, False)
+        if url.startswith('http'):
+            toks = url.split('/')
+            status_host = token[2]
+        else:
+            status_host = STATUS_HOST
+        conn = httplib.HTTPConnection(status_host, timeout=0.5)
         conn.request('GET', url)
         r = conn.getresponse()
         data = json.loads(r.read())
@@ -49,9 +54,8 @@ def get_legacy_url(instrument_id, include_domain=True):
         url_obj = LegacyURL.objects.get(instrument_id=instrument_id)
         url = url_obj.url
     except:
-        #url = '/%s/status/' % instrument_id.name
         url = '/sites/default/files/instruments/%s-data.json' % instrument_id.name
 
-    if include_domain:
+    if include_domain and not url.startswith('http'):
         url = 'http://%s%s' % (STATUS_HOST, url)
     return url
