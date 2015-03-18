@@ -10,7 +10,7 @@ import logging
 import sys
 from dasmon.models import LegacyURL
 
-STATUS_HOST = 'neutrons2.ornl.gov'
+STATUS_HOST = 'neutrons.ornl.gov'
 def get_ops_status(instrument_id):
     """
         Pull the legacy status information
@@ -19,7 +19,7 @@ def get_ops_status(instrument_id):
     try:
         conn = httplib.HTTPConnection(STATUS_HOST, timeout=0.5)
         url = get_legacy_url(instrument_id, False)
-        conn.request('GET', '%s/data.json' % url)
+        conn.request('GET', url)
         r = conn.getresponse()
         data = json.loads(r.read())
         organized_data = []
@@ -49,7 +49,8 @@ def get_legacy_url(instrument_id, include_domain=True):
         url_obj = LegacyURL.objects.get(instrument_id=instrument_id)
         url = url_obj.url
     except:
-        url = '/%s/status/' % instrument_id.name
+        #url = '/%s/status/' % instrument_id.name
+        url = '/sites/default/files/instruments/%s-data.json' % instrument_id.name
 
     if include_domain:
         url = 'http://%s%s' % (STATUS_HOST, url)
