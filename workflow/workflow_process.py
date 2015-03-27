@@ -6,7 +6,9 @@ from django.utils.timezone import utc
 import django
 if django.VERSION[1]>=7:
     import django
-from workflow.database.report.models import WorkflowSummary, RunStatus
+    from workflow.database.report.models import WorkflowSummary, RunStatus
+else:
+    from database.report.models import WorkflowSummary, RunStatus
 from states import StateAction
 import json
 import logging
