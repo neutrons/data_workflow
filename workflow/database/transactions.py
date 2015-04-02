@@ -14,12 +14,12 @@ if django.VERSION[1]>=7:
     from workflow.database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
     from workflow.database.report.models import IPTS, Instrument, Error, Information, Task
 else:
-    # The report database module must be on the python path for Django to find it 		
-    sys.path.append(os.path.dirname(__file__))		
+    # The report database module must be on the python path for Django to find it
+    sys.path.append(os.path.dirname(__file__))
 
     # Import your models for use in your script		
-    from report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary		
-    from report.models import IPTS, Instrument, Error, Information, Task		
+    from report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
+    from report.models import IPTS, Instrument, Error, Information, Task
 
 from django.db import transaction
 
