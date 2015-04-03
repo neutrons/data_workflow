@@ -164,7 +164,8 @@ def detail(request, instrument, run_id):
                        'prev_url': prev_url,
                        'next_url': next_url,
                       }
-
+    if icat_info == {}:
+        template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/detail.html', template_values)
