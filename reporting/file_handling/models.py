@@ -11,6 +11,19 @@ from django.conf import settings
 from django.dispatch import receiver
 import os
 
+class JsonData(models.Model):
+    """
+        Table of JSON data received from the reduction
+    """
+    ## DataRun this run status belongs to
+    run_id = models.ForeignKey(DataRun)
+    ## JSON data
+    data = models.TextField()
+    ## Original name
+    name = models.CharField(max_length=100)
+    created_on = models.DateTimeField('Timestamp', auto_now=True)
+
+
 class ReducedImage(models.Model):
     """
         Table of image files corresponding to plots of reduced
