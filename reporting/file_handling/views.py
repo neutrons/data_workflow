@@ -57,13 +57,14 @@ def upload_image(request, instrument, run_id):
             if 'file' in request.FILES:
                 # A file is uploaded directly
                 file_name = request.FILES['file'].name
-                file_content = ContentFile(request.FILES['file'].read())
+                raw_content = request.FILES['file'].read()
             else:
                 # A file URL is provided, fetch it from the URL
                 data_url = request.POST['data_url']
                 f = urllib2.urlopen(urllib2.Request(url=data_url))
                 file_name = data_url
-                file_content = ContentFile(f.read())
+                raw_content = f.read()
+            file_content = ContentFile(raw_content)
             # Sanity check
             _, ext = os.path.splitext(file_name)
             if ext.lower() not in ['.jpeg', '.jpg', '.png', '.gif', '.json', '.dat']:
@@ -87,7 +88,7 @@ def upload_image(request, instrument, run_id):
                     json_data = JsonData()
                     json_data.name = file_name
                     json_data.run_id = run_object
-                json_data.data = file_content
+                json_data.data = raw_content
                 json_data.save()
             else:
                 image_entries = ReducedImage.objects.filter(name__endswith=file_name, run_id=run_object)
