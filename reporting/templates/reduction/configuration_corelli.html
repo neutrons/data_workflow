@@ -50,13 +50,13 @@ Instrument team members can use this page to generate a new automated reduction 
 <p>List of parameters for {{ instrument }} reduction template:</p>
 <form action="" method="POST">{% csrf_token %}
   <table class="property_table  fixed_table" >
-    <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
-    <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
-    <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{ options_form.grouping.errors }}'{% endif %}>{{options_form.grouping }} </td></tr>
-    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td> 
-      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors }}'{% endif %}>E<sub>min</sub> {{options_form.e_min }} </span> 
-      E<sub>step</sub> {{options_form.e_step }} 
-      E<sub>max</sub> {{options_form.e_max }} </td></tr>
+    <tr><th>Vanadium flux file</th> <td {% if options_form.vanadium_flux_file.errors %}class='highlight_row' title='{{ options_form.vanadium_flux_file.errors }}'{% endif %}>{{options_form.vanadium_flux_file }} </td></tr>
+    <tr><th>Vanadium SA file</th> <td {% if options_form.vanadium_SA_file.errors %}class='highlight_row' title='{{ options_form.vanadium_SA_file.errors }}'{% endif %}>{{options_form.vanadium_SA_file }} </td></tr>
+    <tr><th>UB matrix file</th> <td {% if options_form.ub_matrix_file.errors %}class='highlight_row' title='{{ options_form.ub_matrix_file.errors }}'{% endif %}>{{options_form.ub_matrix_file }} </td></tr>
+    <tr><th>Plot options</th> <td {% if options_form.plot_requests.errors %}class='highlight_row' title='{{ options_form.plot_requests.errors }}'{% endif %}>{{options_form.plot_requests }} </td></tr>
+    <tr><th>Use CC</th> <td >{{options_form.useCC }} </td></tr>
+
+
   </table>
   <p>
   {{ mask_form.management_form }}
@@ -87,6 +87,7 @@ Instrument team members can use this page to generate a new automated reduction 
 
 {% block content %}
 Latest post-processing log entries for {{ instrument }}:<br><br>
+
 <span id='last_action'>
 {% if action_list and action_list|length > 0 %}{{ action_list.0.info }} on {{ action_list.0.time }}
 {% else %}No recent changes{% endif %}
@@ -94,15 +95,17 @@ Latest post-processing log entries for {{ instrument }}:<br><br>
 <br>
 
 <script>
-function compute_size(id) { 
+function compute_size(id) {
     if($(id).val().length > 30) {
         var len = ($(id).val().length-30)/15;
         size = 11-Math.round(len); 
         if(size >= 8) $(id).css("font-size",size + "px")
     } else $(id).css("font-size","11px");
 }
-compute_size('#id_processed_vanadium');
-compute_size('#id_raw_vanadium');
+compute_size('#id_vanadium_flux_file');
+compute_size('#id_vanadium_SA_file');
+compute_size('#id_ub_matrix_file');
+compute_size('#id_plot_requests');
 $('.font_resize').keyup(function(ev) {
   compute_size(this);
 });
