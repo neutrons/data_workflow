@@ -34,11 +34,13 @@ class IPTSAdmin(admin.ModelAdmin):
     show_instruments.short_description = "Instruments"
 
 class RunStatusAdmin(admin.ModelAdmin):
+    readonly_fields=('run_id',)
     list_filter = ('run_id__instrument_id', 'queue_id')
     list_display = ('id', 'run_id', 'queue_id', 'created_on')
     search_fields = ['run_id__run_number']
 
 class InformationAdmin(admin.ModelAdmin):
+    readonly_fields=('run_status_id',)
     list_display = ('id', 'run_status_id', 'time', 'description')
     search_fields = ['description']
 
@@ -48,6 +50,7 @@ class InformationAdmin(admin.ModelAdmin):
         return df.format(settings.DATETIME_FORMAT)
 
 class ErrorAdmin(admin.ModelAdmin):
+    readonly_fields=('run_status_id',)
     list_display = ('id', 'run_status_id', 'time', 'description')
     list_filter = ('run_status_id__run_id__instrument_id',)
     search_fields = ['description']
@@ -62,6 +65,7 @@ class StatusQueueAdmin(admin.ModelAdmin):
     list_filter = ('is_workflow_input',)
 
 class WorkflowSummaryAdmin(admin.ModelAdmin):
+    readonly_fields=('run_id',)
     list_filter = ('run_id__instrument_id', 'complete', 'catalog_started', 'cataloged',
                    'reduction_needed', 'reduction_started', 'reduced',
                    'reduction_cataloged', 'reduction_catalog_started')
@@ -82,6 +86,7 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ['instrument_id__name', 'input_queue_id__name']
 
 class InstrumentStatusAdmin(admin.ModelAdmin):
+    readonly_fields=('last_run_id',)
     list_display = ('id', 'instrument_id', 'last_run_id')
 
 admin.site.register(DataRun, DataRunAdmin)

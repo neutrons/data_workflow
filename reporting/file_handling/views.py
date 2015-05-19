@@ -14,7 +14,7 @@ import urllib2
 import os
 import logging
 from report.models import DataRun, Instrument
-from file_handling.models import ReducedImage
+from file_handling.models import ReducedImage, JsonData
 import users.view_util
 
 from django import forms
@@ -57,17 +57,18 @@ def upload_image(request, instrument, run_id):
             if 'file' in request.FILES:
                 # A file is uploaded directly
                 file_name = request.FILES['file'].name
-                file_content = ContentFile(request.FILES['file'].read())
+                raw_content = request.FILES['file'].read()
             else:
                 # A file URL is provided, fetch it from the URL
                 data_url = request.POST['data_url']
                 f = urllib2.urlopen(urllib2.Request(url=data_url))
                 file_name = data_url
-                file_content = ContentFile(f.read())
+                raw_content = f.read()
+            file_content = ContentFile(raw_content)
             # Sanity check
             _, ext = os.path.splitext(file_name)
-            if ext.lower() not in ['.jpeg', '.jpg', '.png', '.gif']:
-                logging.error("Uploaded file doesn't appear to be an image: %s" % file_name)
+            if ext.lower() not in ['.jpeg', '.jpg', '.png', '.gif', '.json', '.dat']:
+                logging.error("Uploaded file doesn't appear to be an image or json data: %s" % file_name)
                 return HttpResponse(status=400)
             # Store file info to DB
             # Search to see whether a file with that name exists.
@@ -77,17 +78,29 @@ def upload_image(request, instrument, run_id):
             instrument_id = get_object_or_404(Instrument, name=instrument.lower())
             run_object = get_object_or_404(DataRun, instrument_id=instrument_id, run_number=run_id)
 
-            image_entries = ReducedImage.objects.filter(name__endswith=file_name, run_id=run_object)
-            if len(image_entries) > 0:
-                image = image_entries[0]
-                image.file.delete(False)
+            # Look for a data file and treat it differently
+            if ext.lower() in ['.json', '.dat']:
+                json_data_entries = JsonData.objects.filter(name__endswith=file_name, run_id=run_object)
+                if len(json_data_entries) > 0:
+                    json_data = json_data_entries[0]
+                else:
+                    # No entry was found, create one
+                    json_data = JsonData()
+                    json_data.name = file_name
+                    json_data.run_id = run_object
+                json_data.data = raw_content
+                json_data.save()
             else:
-                # No entry was found, create one
-                image = ReducedImage()
-                image.name = file_name
-                image.run_id = run_object
-
-            image.file.save(file_name, file_content)
+                image_entries = ReducedImage.objects.filter(name__endswith=file_name, run_id=run_object)
+                if len(image_entries) > 0:
+                    image = image_entries[0]
+                    image.file.delete(False)
+                else:
+                    # No entry was found, create one
+                    image = ReducedImage()
+                    image.name = file_name
+                    image.run_id = run_object
+                image.file.save(file_name, file_content)
 
     else:
         form = UploadFileForm()
@@ -97,5 +110,3 @@ def upload_image(request, instrument, run_id):
                                                          args=[instrument, run_id])},
                                   context_instance=RequestContext(request))
     return HttpResponse()
-
-

@@ -269,7 +269,6 @@ function dialog_resize(event, ui, nid, s){
 
 
 function max_timeframe(time_period){
-	alert("in max_timeframe");
 	plot_timeframe = time_period;
 	poll();
 }

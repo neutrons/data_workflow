@@ -243,7 +243,7 @@ REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT'
 
 HELPLINE_EMAIL = 'adara_support@ornl.gov'
 
-INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs',)
+INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli')
 
 # Import local settings if available
 try:
