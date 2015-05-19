@@ -113,7 +113,7 @@ function MonitorPlot(element_id, nid, option){
 	this.element_id = element_id;
 	this.nid = nid;
 	this.option = option;
-	this.clean_name = element_id.replace(/:/g, '_');
+	this.clean_name = element_id.replace(/(:|\.)/g, '_');
 	this.dialog_name = this.clean_name + "_dialog";
 	this.dialog_win;
 	this.plot_id = this.clean_name + "_plot";

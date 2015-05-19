@@ -2,6 +2,13 @@
 
 {% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
 {% block banner %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/1d_plot/spectrum.css" />
+	<link rel="stylesheet" type="text/css" href="/static/1d_plot/1d_plots_v2.css" />
+	<link rel="stylesheet" type="text/css" href="/static/thirdparty/cssmenu/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/static/1d_plot/appstyles.css" />
+{% endblock %}
 
 {% block header %}
 
@@ -24,7 +31,8 @@
                     }
         });
     };
-</script>   
+</script>
+
 {% endblock %}
 
 {% block summary %}
@@ -41,12 +49,22 @@
     </tbody>
   </table>
   <p>
-  {% if image_url %}
+
+  {# {% if image_url %} #}
   <p>
-    <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">
+    <!-- <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data"> -->
+        <div id="main">
+            <div class='cssmenu'>
+        		</div>
+            <div class="graph" id="graph">
+            </div>
+            <div class="user-console">
+        		</div>
+        <div>
   <p>
-  {% endif %}
-  Data files: 
+  {# {% endif %} #}
+
+  Data files:
   <ul>
   {%if icat_info.data_files %}
     {% for item in icat_info.data_files %}<li>{{ item|default:"unknown" }}</li>
@@ -55,7 +73,7 @@
     {{ run_object.file|default:"unknown" }}
   {% endif %}
   </ul>
-  Reduced files: 
+  Reduced files:
   <ul>
   {%if icat_info.reduced_files %}
     {% for item in icat_info.reduced_files %}<li>{{ item|default:"unknown" }}</li>
@@ -86,7 +104,16 @@
   <br>
   {% if is_instrument_staff %}
   Submit for post-processing: <a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>
-  {% if reduce_url %} | <a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a> | <a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>{% endif %} 
-  {% if reduction_setup_url %} | <a href='{{ reduction_setup_url }}'>setup</a>{% endif %} 
+  {% if reduce_url %} | <a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a> | <a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>{% endif %}
+  {% if reduction_setup_url %} | <a href='{{ reduction_setup_url }}'>setup</a>{% endif %}
   {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script language="javascript" type="text/javascript" src="/static/thirdparty/mustache.js-master/mustache.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/1d_plot/spectrum.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/1d_plot/1d_plots_v2.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/1d_plot/mustachetemplates.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/1d_plot/appfunctions.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/thirdparty/cssmenu/script.js"></script>
 {% endblock %}

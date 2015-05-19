@@ -1,0 +1,3 @@
+[console_scripts]
+workflowmgr = workflow.sns_post_processing:run
+

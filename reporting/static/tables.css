@@ -25,7 +25,7 @@
 
 .fixed_table {
 	table-layout: fixed;
-	width:530px;
+	width:580px;
 }
 
 .fixed_table input { min-width: 400px; }

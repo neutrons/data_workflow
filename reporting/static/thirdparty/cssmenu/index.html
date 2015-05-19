@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang=''>
+<head>
+   <meta charset='utf-8'>
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="styles.css">
+   <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+   <script src="script.js"></script>
+   <title>CSS MenuMaker</title>
+</head>
+<body>
+
+<div class='cssmenu'>
+<ul>
+   <li class='has-sub'><a href='#'>Options</a>
+      <ul>
+		 <li><span><span class='checkmark-square'></span><span class='bool-false'></span></span><a id='log_scale' href='#'>Log Scale</a></li>
+		 <li><span><span class='checkmark-square'></span><span class='bool-true'></span></span><a id='view_grid' href='#'>View Grid</a></li>
+		 <li><a href='#'>Color</a></li>
+      </ul>
+   </li>
+   <li class='has-sub'><a href='#'>Modes</a>
+      <ul>
+         <li><span><span class='checkmark-square'></span><span class='bool-true'></span></span><a id='pan_and_zoom' href='#'>Pan and Zoom</a>
+            <!-- <ul>
+               <li><a href='#'>Sub Product</a></li>
+               <li><a href='#'>Sub Product</a></li>
+            </ul> -->
+         </li>
+         <li><span><span class='checkmark-square'></span><span class='bool-false'></span></span><a id='precision_zoom_snap' href='#'>Select Region</a></li>
+         <li><span><span class='checkmark-square'></span><span class='bool-false'></span></span><a id='get_data' href='#'>View Data Points</a></li>
+      </ul>
+   </li>
+   <li class='has-sub'><a href='#'>Export</a>
+      <ul>
+		 <li><a id='export_pdf' href='#'>PDF</a></li>
+		 <li><a id='export_png' href='#'>PNG</a></li>
+      </ul>
+   </li>
+   <li class='has-sub'><a href='#'>Help</a>
+      <ul>
+		 <li><a href='#'>Topics</a></li>
+		 <li><a href='#'>About</a></li>
+	  </ul>
+   </li>
+</ul>
+</div>
+
+</body>
+<html>
