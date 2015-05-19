@@ -175,6 +175,7 @@ def configuration_corelli(request, instrument):
     except:
         extra = default_extra
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
+    PlotFormSet = formset_factory(forms.PlottingForm, extra=extra)
 
     error_msg = []
     if request.method == 'POST':
@@ -188,9 +189,12 @@ def configuration_corelli(request, instrument):
         
         options_form = forms.ReductionConfigurationCorelliForm(request.POST)
         mask_form = MaskFormSet(request.POST)
-        if options_form.is_valid() and mask_form.is_valid():
+        plot_form = PlotFormSet(request.POST)
+        if options_form.is_valid() and mask_form.is_valid() and plot_form.is_valid():
             mask_block = forms.MaskForm.to_dict_list(mask_form)
             options_form.cleaned_data['mask'] = str(mask_block)
+            plot_block = forms.PlottingForm.to_dict_list(plot_form)
+            options_form.cleaned_data['plot_requests'] = str(plot_block)
             options_form.to_db(instrument_id, request.user)
             # Send ActiveMQ request
             try:
@@ -208,13 +212,19 @@ def configuration_corelli(request, instrument):
             params_dict[str(item.key)] = str(item.value)
         options_form = forms.ReductionConfigurationCorelliForm(initial=params_dict)
         mask_list = []
+        plot_list = []
         if 'mask' in params_dict:
             try:
                 mask_list = forms.MaskForm.from_dict_list(params_dict['mask'])
             except:
                 logging.error("Error evaluating the mask information: %s" % sys.exc_value)
-                mask_list = []
+        if 'plot_requests' in params_dict:
+            try:
+                plot_list = forms.PlottingForm.from_dict_list(params_dict['plot_requests'])
+            except:
+                logging.error("Error evaluating the plotting information: %s" % sys.exc_value)
         mask_form = MaskFormSet(initial=mask_list)
+        plot_form = PlotFormSet(initial=plot_list)
 
     last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
@@ -232,6 +242,7 @@ def configuration_corelli(request, instrument):
                        'helpline': settings.HELPLINE_EMAIL,
                        'options_form': options_form,
                        'mask_form': mask_form,
+                       'plot_form': plot_form,
                        'action_list': action_list ,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,

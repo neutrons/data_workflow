@@ -53,7 +53,6 @@ Instrument team members can use this page to generate a new automated reduction 
     <tr><th>Vanadium flux file</th> <td {% if options_form.vanadium_flux_file.errors %}class='highlight_row' title='{{ options_form.vanadium_flux_file.errors }}'{% endif %}>{{options_form.vanadium_flux_file }} </td></tr>
     <tr><th>Vanadium SA file</th> <td {% if options_form.vanadium_SA_file.errors %}class='highlight_row' title='{{ options_form.vanadium_SA_file.errors }}'{% endif %}>{{options_form.vanadium_SA_file }} </td></tr>
     <tr><th>UB matrix file</th> <td {% if options_form.ub_matrix_file.errors %}class='highlight_row' title='{{ options_form.ub_matrix_file.errors }}'{% endif %}>{{options_form.ub_matrix_file }} </td></tr>
-    <tr><th>Plot options</th> <td {% if options_form.plot_requests.errors %}class='highlight_row' title='{{ options_form.plot_requests.errors }}'{% endif %}>{{options_form.plot_requests }} </td></tr>
     <tr><th>Use CC</th> <td >{{options_form.useCC }} </td></tr>
 
 
@@ -75,6 +74,27 @@ Instrument team members can use this page to generate a new automated reduction 
       </tr>{% endfor %}
     </tbody>
   </table>
+<p>
+
+  </table>
+  <p>
+  {{ plot_form.management_form }}
+  <table class="property_table">
+    <thead>
+      <tr><th>Perpendicular To</th> <th>Minimum</th> <th>Maximum</th></tr>
+    </thead>
+    <tbody>
+    {% for form in plot_form %}
+      <tr class='short_input'>
+        {{ form.id }}<span style='display:none;'>{{ form.remove }}</span>
+        <td {% if form.perpendicular_to.errors %}class='highlight_row' title='{{ form.perpendicular_to.errors }}'{% endif %}>{{ form.perpendicular_to }}</td>
+        <td {% if form.minimum.errors %}class='highlight_row' title='{{ form.minimum.errors }}'{% endif %}>{{ form.minimum }}</td>
+        <td {% if form.maximum.errors %}class='highlight_row' title='{{ form.maximum.errors }}'{% endif %}>{{ form.maximum }}</td>
+        <td class='icon_input'> <span title='Click to remove this entry' class="ui-icon ui-icon-trash" onclick="remove_entry('#{{ form.remove.id_for_label }}', '#{{ form.perpendicular_to.id_for_label }}', '#{{ form.minimum.id_for_label }}', '#{{ form.maximum.id_for_label }}')"></span></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+  
 <p>
 <span style="float: right; margin-left:15px;" >
 <input id="submit_button" title="Click to create new reduction script" type="submit" name="button_choice" value="submit"/>

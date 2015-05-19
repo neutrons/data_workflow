@@ -234,3 +234,61 @@ class MaskForm(forms.Form):
             return ""
         return "MaskBTPParameters.append(%s)" % str(entry_dict)
 
+
+class PlottingForm(forms.Form):
+    """
+        Simple form for a mask entry.
+        A combination of banks, tubes, pixels can be specified.
+    """
+    perpendicular_to = forms.CharField(required=False, initial='')
+    minimum = forms.FloatField(required=False, initial=-0.05)
+    maximum = forms.FloatField(required=False, initial=0.05)
+    remove = forms.BooleanField(required=False, initial=False)
+
+    @classmethod
+    def to_dict_list(cls, opt_list):
+        """
+            Create a list of option dictionary from a set of plotting forms
+            @param optlist: list of PlottingForm objects
+        """
+        plot_info = []
+        for item in opt_list:
+            entry_dict = {}
+            if 'perpendicular_to' in item.cleaned_data and \
+                len(item.cleaned_data['perpendicular_to'].strip())>0 and \
+                'minimum' in item.cleaned_data and \
+                'maximum' in item.cleaned_data:
+                plot_info.append({'PerpendicularTo': str(item.cleaned_data['perpendicular_to']),
+                                  'Minimum': str(item.cleaned_data['minimum']),
+                                  'Maximum': str(item.cleaned_data['maximum'])})
+        return plot_info
+
+    @classmethod
+    def from_dict_list(cls, param_value):
+        """
+            Return a list of dictionaries that is compatible with our form
+            @param param_value: string representation of the dictionary
+        """
+        dict_list = eval(param_value)
+        # Protect against bad DB entry
+        if type(dict_list) == dict:
+            dict_list = [dict_list]
+
+        plot_info = []
+        for plot in dict_list:
+            entry_dict = {}
+            if 'PerpendicularTo' in plot and \
+                'Minimum' in plot and \
+                'Maximum' in plot:
+                entry_dict['perpendicular_to'] = plot['PerpendicularTo']
+                try:
+                    entry_dict['minimum'] = float(plot['Minimum'])
+                except:
+                    entry_dict['minimum'] = -0.05
+                try:
+                    entry_dict['maximum'] = float(plot['Maximum'])
+                except:
+                    entry_dict['maximum'] = -0.05
+                plot_info.append(entry_dict)
+        return plot_info
+
