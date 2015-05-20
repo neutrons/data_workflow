@@ -323,7 +323,7 @@ var data_about = {
 	  heading: "About"
 };
 var tplt_about = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
-    "<div class='modal-content'><img src='sns_logo_111x75.png' height='50%'><br>" +
+    "<div class='modal-content'><img src='/static/sns_logo_111x75.png' height='50%'><br>" +
 		"ORNL Spallation Neutron Source" +
     "</div>" + close_button;
 

@@ -11,8 +11,7 @@
 <link rel="stylesheet" href="/static/tables.css" type="text/css" title="no title" charset="utf-8">
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 
-
-  {% block extra_css %}{% endblock %}
+{% block extra_files_header %}{% endblock %}
 <!--[if !(IE)]>
 <style>
 .fixed_table td, th { overflow:scroll; }
@@ -119,6 +118,6 @@
     </table>
   </div>
 </footer>
-{% block extra_js %}{% endblock %}
+{% block extra_files_footer %}{% endblock %}
 </body>
 </html>

@@ -400,6 +400,7 @@ $(function() {
             add_region();
         }
         else {
+            console.log(val);
             $("#" + change_id).text(val);
         }
     }
@@ -407,7 +408,7 @@ $(function() {
     function activate_spectrum() {
         $("#color_test").spectrum({
             flat: true,
-            color: "#0077cc",
+            color: First_plot.user_options.color,
             clickoutFiresChange: true,
             showButtons: false,
             move: function(color) {

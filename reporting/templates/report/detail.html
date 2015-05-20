@@ -2,12 +2,14 @@
 
 {% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
 {% block banner %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
-{% block extra_css %}
+{% block extra_files_header %}
   <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="/static/1d_plot/spectrum.css" />
 	<link rel="stylesheet" type="text/css" href="/static/1d_plot/1d_plots_v2.css" />
-	<link rel="stylesheet" type="text/css" href="/static/thirdparty/cssmenu/styles.css" />
   <link rel="stylesheet" type="text/css" href="/static/1d_plot/appstyles.css" />
+	<link rel="stylesheet" type="text/css" href="/static/thirdparty/cssmenu/styles.css" />
+  <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery-1.11.2.min.js"></script>
+  <script language="javascript" type="text/javascript" src="/static/thirdparty/mustache.js-master/mustache.min.js"></script>
 {% endblock %}
 
 {% block header %}
@@ -31,6 +33,47 @@
                     }
         });
     };
+
+
+    var First_plot;
+    var user_options = {
+        color: "#0077cc",
+        marker_size: 1,
+        marker_size_focus: 6,
+        path_stroke_width: 1.5,
+        log_scale: false,
+        grid: false
+    }
+    var anchor = "graph";
+    var dim = 20;
+    var raw_data = [];
+    var step;
+    var qx = [parseFloat(-2.5)];
+
+    step = parseFloat(6) / dim;
+    for (var i = 0; i < dim - 1; i++) {
+        qx.push(qx[i] + step);
+    }
+
+
+    //////////////
+    // FOR PLOT //
+    //////////////
+
+    for (var i = 0; i < qx.length; i++) {
+        raw_data.push([]);
+        raw_data[i][0] = qx[i];
+        raw_data[i][1] = Math.random() * (qx.length - i) * parseFloat(5);
+    }
+
+
+
+    $(function() {
+
+    		First_plot = new Plot_1d(raw_data, anchor);
+
+    });
+
 </script>
 
 {% endblock %}
@@ -109,8 +152,7 @@
   {% endif %}
 {% endblock %}
 
-{% block extra_js %}
-  <script language="javascript" type="text/javascript" src="/static/thirdparty/mustache.js-master/mustache.js"></script>
+{% block extra_files_footer %}
   <script language="javascript" type="text/javascript" src="/static/1d_plot/spectrum.js"></script>
   <script language="javascript" type="text/javascript" src="/static/1d_plot/1d_plots_v2.js"></script>
   <script language="javascript" type="text/javascript" src="/static/1d_plot/mustachetemplates.js"></script>

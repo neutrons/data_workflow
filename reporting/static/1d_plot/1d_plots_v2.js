@@ -1,53 +1,5 @@
-//document.onmousedown=disableclick;
-//status="Right Click Disabled";
-//Function disableclick(event)
-//{
-//if(event.button==2)
-//{
-//alert(status);
-//return false;
-//}
-//}
-var First_plot;
-var user_options = {
-    color: "#0077cc",
-    marker_size: 1,
-    marker_size_focus: 6,
-    path_stroke_width: 1.5,
-    log_scale: false,
-    grid: false
-}
-var anchor = "graph";
-var dim = 20;
-var raw_data = [];
-var step;
-var qx = [parseFloat(-2.5)];
-
-step = parseFloat(6) / dim;
-for (var i = 0; i < dim - 1; i++) {
-    qx.push(qx[i] + step);
-}
 
 
-//////////////
-// FOR PLOT //
-//////////////
-
-for (var i = 0; i < qx.length; i++) {
-    raw_data.push([]);
-    raw_data[i][0] = qx[i];
-    raw_data[i][1] = Math.random() * (qx.length - i) * parseFloat(5);
-}
-
-
-
-$(function() {
-
-		First_plot = new Plot_1d(raw_data, anchor);
-		//First_plot.toggle_pan_and_zoom(true);
-
-
-});
 function Plot_1d(raw_data, anchor) {
 
 		//this.user_options = user_options;
@@ -190,8 +142,8 @@ function Plot_1d(raw_data, anchor) {
         scale_val = d3.event.scale;
 				self.translate_val = translate_val;
 				self.scale_val = scale_val;
-        console.log("translate_val: " + translate_val);
-        console.log("scale_val: " + scale_val);
+        // console.log("translate_val: " + translate_val);
+        // console.log("scale_val: " + scale_val);
         d3.select("path")
             .attr("transform", "translate(" + translate_val + ")scale(" + scale_val + ")");
         d3.selectAll(".datapt")
@@ -582,6 +534,7 @@ function Plot_1d(raw_data, anchor) {
 		this.change_color = function() {
 				d3.select("path").attr("stroke", self.user_options.color)
 				circle_ol.style("fill-opacity", "0").style("stroke", self.user_options.color);
+        d3.selectAll(".datapt").style("fill", self.user_options.color);
 				little_pt.style("fill", self.user_options.color);
 		}
 

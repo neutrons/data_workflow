@@ -52,6 +52,11 @@
 	bottom: 10px;
 	right: 4px;
 }
+.modal-buttons a{
+	color: #fff;
+	text-decoration: none;
+	font-family: 'Open Sans', sans-serif;
+}
 
 /**********************************************************/
 /**** SIDEBAR ELEMENTS ************************************/
