@@ -136,6 +136,14 @@ $(function() {
         add_change_label(label);
     });
 
+
+    $("#export_png").click(function() {
+      // encode_as_img_and_link();
+      test666();
+    });
+    $("#export_svg").click(function() {
+      test777();
+    });
 });
 
     function add_change_label(label) {
@@ -417,10 +425,10 @@ $(function() {
         });
     }
 
-    $("#export_svg").click(function() {
-      // encode_as_img_and_link();
-      test666();
-    })
+    // $("#export_svg").click(function() {
+    //   // encode_as_img_and_link();
+    //   test666();
+    // })
 
     // function encode_as_img_and_link(){
     //  // Add some critical information
@@ -438,14 +446,37 @@ $(function() {
     // }
 
     function test666(){
-      var html = d3.select("svg")
-              .attr("title", "test2")
-              .attr("version", 1.1)
-              .attr("xmlns", "http://www.w3.org/2000/svg")
-              .node().parentNode.innerHTML;
-      d3.select("body").append("div")
-              .attr("id", "download")
-              .html("Right-click on this preview and choose Save as<br />Left-Click to dismiss<br />")
-              .append("img")
-              .attr("src", "data:image/svg+xml;base64,"+ btoa(html));
+      // var html = d3.select("svg")
+      //         .attr("title", "test2")
+      //         .attr("version", 1.1)
+      //         .attr("xmlns", "http://www.w3.org/2000/svg")
+      //         .node().parentNode.innerHTML;
+      // d3.select("body").append("div")
+      //         .attr("id", "download")
+      //         .html("Right-click on this preview and choose Save as<br />Left-Click to dismiss<br />")
+      //         .append("img")
+      //         .attr("src", "data:image/svg+xml;base64,"+ btoa(html));
+
+
+      saveSvgAsPng(document.getElementById("graph_svg"), "diagram.png");
+    }
+
+    function test777(){
+      var svg_link = "";
+      svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
+        svg_link = uri;
+        // return uri;
+      });
+        console.log(svg_link);
+        var a = document.createElement('a');
+        $(a).attr("id", "test_link");
+        // a.download = svg_link;
+        a.href = svg_link;
+        document.body.appendChild(a);
+        // a.addEventListener("click", function(e) {
+          // a.parentNode.removeChild(a);
+        // });
+        $("#test_link").load(function(){
+          $("#test_link").trigger("click");
+        });
     }
