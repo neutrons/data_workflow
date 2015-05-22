@@ -133,6 +133,34 @@ def detail(request, instrument, run_id):
     except:
         logging.error("Error finding reduced image: %s" % sys.exc_value)
 
+    # Look for an image of the reduction
+    json_data = None
+    plot_data = None
+    try:
+        from file_handling.models import JsonData
+        json_data_list = JsonData.objects.filter(run_id=run_object)
+        if len(json_data_list) > 0:
+            json_data_entry = json_data_list.latest('created_on')
+            if json_data_entry is not None :
+                json_data = json_data_entry.data
+                data_dict = json.loads(json_data)
+
+                if 'main_output' in data_dict:
+                    x_values = data_dict['main_output']['x']
+                    y_values = data_dict['main_output']['y']
+                    logging.error(x_values)
+                    plot_data = [[x_values[i], y_values[i]] for i in range(len(x_values))]
+        else:
+            json_data = JsonData()
+            json_data.name = "test.json"
+            json_data.run_id = run_object
+            
+            file_content = "[[-23, 291], [-22, 638], [-21, 644], [-20, 635], [-19, 626], [-18, 655], [-17, 9], [-5, 1]]"
+            json_data.data = file_content
+            json_data.save()
+    except:
+        logging.error("Error finding reduced json data: %s" % sys.exc_value)
+
     # Check whether this is the last known run for this instrument
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
     if last_run_id == run_object:
@@ -159,6 +187,7 @@ def detail(request, instrument, run_id):
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
+                       'plot_data':plot_data,
                        'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
                        'image_url':image_url,
                        'prev_url': prev_url,

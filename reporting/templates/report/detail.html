@@ -13,7 +13,14 @@
 {% endblock %}
 
 {% block header %}
-
+<script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<script language="javascript" type="text/javascript" src="/static/plotting_line.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/plotting.css" title="no title" charset="utf-8">
+<link rel="stylesheet" type="text/css" href="/static/bar_chart.css" />
+<link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css">
 <div id="dialog-confirm" title="Submit for post-processing" style="display:none">
    <p><span class="ui-icon ui-icon-alert" style="float: left"></span>
    Confirm submission?</p>
@@ -34,44 +41,31 @@
         });
     };
 
-
+    // TODO: the following should be passed to the plot object.
+    // Now 1d_plots_v2.js relies on them being defined.
     var First_plot;
     var user_options = {
-        color: "#0077cc",
-        marker_size: 1,
-        marker_size_focus: 6,
-        path_stroke_width: 1.5,
-        log_scale: false,
-        grid: false
+          color: "#0077cc",
+          marker_size: 1,
+          marker_size_focus: 6,
+          path_stroke_width: 1.5,
+          log_scale: true,
+          grid: false
+      }
+      var anchor = "graph";
+      var dim = 20;
+      var raw_data = {{ plot_data }};
+      var step;
+      var qx = [parseFloat(-2.5)];
+
+      step = parseFloat(6) / dim;
+      for (var i = 0; i < dim - 1; i++) {
+          qx.push(qx[i] + step);
     }
-    var anchor = "graph";
-    var dim = 20;
-    var raw_data = [];
-    var step;
-    var qx = [parseFloat(-2.5)];
-
-    step = parseFloat(6) / dim;
-    for (var i = 0; i < dim - 1; i++) {
-        qx.push(qx[i] + step);
-    }
-
-
-    //////////////
-    // FOR PLOT //
-    //////////////
-
-    for (var i = 0; i < qx.length; i++) {
-        raw_data.push([]);
-        raw_data[i][0] = qx[i];
-        raw_data[i][1] = Math.random() * (qx.length - i) * parseFloat(5);
-    }
-
-
-
     $(function() {
-
-    		First_plot = new Plot_1d(raw_data, anchor);
-
+        First_plot = new Plot_1d(raw_data, anchor);
+        First_plot.x_label="Q";
+        // Would be nice to have a way to plot later so we can set options.
     });
 
 </script>
@@ -93,19 +87,18 @@
   </table>
   <p>
 
-  {# {% if image_url %} #}
+  {% if plot_data %}
   <p>
-    <!-- <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data"> -->
-        <div id="main">
-            <div class='cssmenu'>
-        		</div>
-            <div class="graph" id="graph">
-            </div>
-            <div class="user-console">
-        		</div>
-        <div>
+  <div id="main">
+    <div class='cssmenu'></div>
+    <div class="graph" id="graph"></div>
+    <div class="user-console"></div>
+  </div>
+  {% elif image_url %}
   <p>
-  {# {% endif %} #}
+  <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">
+  {% endif %}
+  <p>
 
   Data files:
   <ul>

@@ -8,6 +8,16 @@ import sys
 import argparse
 from workflow.settings import brokers, icat_user, icat_passcode
 
+brokers = [("amqbroker1.sns.gov", 61613), 
+           ("amqbroker2.sns.gov", 61613)]
+#brokers = [("localhost", 61613)]
+
+icat_user = 'icat'
+icat_passcode = 'icat'
+
+icat_user = 'wkflowmgr'
+icat_passcode = 'ekfhlqrhls38'
+
 def send(destination, message, persistent='true'):
     """
         Send a message to a queue
