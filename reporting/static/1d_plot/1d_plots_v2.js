@@ -1,10 +1,7 @@
 
 
 function Plot_1d(raw_data, anchor) {
-
-		//this.user_options = user_options;
     var self = this;
-
     self.user_options = user_options;
 
     //console.log(this.user_options.marker_size_focus);
@@ -27,11 +24,11 @@ function Plot_1d(raw_data, anchor) {
     };
     var log_scale = this.user_options.log_scale;
     var grid = this.user_options.grid;
-		var append_grid;
+    var append_grid;
     var translate_val = [0, 0];
     var scale_val = 1;
-    var x_label = "Energy transfer (meV)";
-    var y_label = "Intensity";
+    var x_label = this.user_options.x_label;
+    var y_label = this.user_options.y_label;
     var title_label = "";
     var x_label_align = "right";
     var y_label_align = "right";

@@ -144,20 +144,10 @@ def detail(request, instrument, run_id):
             if json_data_entry is not None :
                 json_data = json_data_entry.data
                 data_dict = json.loads(json_data)
-
                 if 'main_output' in data_dict:
                     x_values = data_dict['main_output']['x']
                     y_values = data_dict['main_output']['y']
-                    logging.error(x_values)
                     plot_data = [[x_values[i], y_values[i]] for i in range(len(x_values))]
-        else:
-            json_data = JsonData()
-            json_data.name = "test.json"
-            json_data.run_id = run_object
-            
-            file_content = "[[-23, 291], [-22, 638], [-21, 644], [-20, 635], [-19, 626], [-18, 655], [-17, 9], [-5, 1]]"
-            json_data.data = file_content
-            json_data.save()
     except:
         logging.error("Error finding reduced json data: %s" % sys.exc_value)
 
