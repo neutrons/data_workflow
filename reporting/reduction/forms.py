@@ -240,7 +240,10 @@ class PlottingForm(forms.Form):
         Simple form for a mask entry.
         A combination of banks, tubes, pixels can be specified.
     """
-    perpendicular_to = forms.ChoiceField(required=False, choices=[('[H,0,0]', '[H,0,0]'), ('[0,K,0]', '[0,K,0]'), ('[0,0,L]', '[0,0,L]')])
+    perpendicular_to = forms.ChoiceField(required=False, 
+                                         choices=[('[H,0,0]', '[H,0,0]'), ('[0,K,0]', '[0,K,0]'),
+                                                  ('[0,0,L]', '[0,0,L]'), ('Q_sample_x', 'Qx'),
+                                                  ('Q_sample_y', 'Qy'), ('Q_sample_z', 'Qz')])
     minimum = forms.FloatField(required=False, initial=-0.05)
     maximum = forms.FloatField(required=False, initial=0.05)
     remove = forms.BooleanField(required=False, initial=False)
