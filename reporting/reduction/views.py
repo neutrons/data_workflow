@@ -85,7 +85,7 @@ def configuration_dgs(request, instrument):
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
-    default_extra = 1
+    default_extra = 0
     try:
         extra = int(request.GET.get('extra', default_extra))
     except:
@@ -169,13 +169,17 @@ def configuration_corelli(request, instrument):
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     
-    default_extra = 1
+    default_extra = 0
     try:
-        extra = int(request.GET.get('extra', default_extra))
+        extra_mask = int(request.GET.get('extra_mask', default_extra))
     except:
-        extra = default_extra
-    MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
-    PlotFormSet = formset_factory(forms.PlottingForm, extra=extra)
+        extra_mask = default_extra
+    try:
+        extra_orientation = int(request.GET.get('extra_orientation', default_extra))
+    except:
+        extra_orientation = default_extra
+    MaskFormSet = formset_factory(forms.MaskForm, extra=extra_mask)
+    PlotFormSet = formset_factory(forms.PlottingForm, extra=extra_orientation)
 
     error_msg = []
     if request.method == 'POST':

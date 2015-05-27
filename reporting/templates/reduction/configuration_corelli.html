@@ -61,7 +61,7 @@ Instrument team members can use this page to generate a new automated reduction 
   {{ mask_form.management_form }}
   <table class="property_table">
     <thead>
-      <tr><th>Masked Bank</th> <th>Masked Tube</th> <th>Masked Pixel</th></tr>
+      <tr><th>Masked Bank</th> <th>Masked Tube</th> <th>Masked Pixel</th><td class='icon_input'><a href="?extra_mask=1"><span title='Click to add an entry' class="ui-icon ui-icon-circle-plus"></span></a></td></tr>
     </thead>
     <tbody>
     {% for form in mask_form %}
@@ -81,7 +81,7 @@ Instrument team members can use this page to generate a new automated reduction 
   {{ plot_form.management_form }}
   <table class="property_table">
     <thead>
-      <tr><th>Perpendicular To</th> <th>Minimum</th> <th>Maximum</th></tr>
+      <tr><th>Perpendicular To</th> <th>Minimum</th> <th>Maximum</th><td class='icon_input'><a href="?extra_orientation=1"><span title='Click to add an entry' class="ui-icon ui-icon-circle-plus"></span></a></td></tr>
     </thead>
     <tbody>
     {% for form in plot_form %}
