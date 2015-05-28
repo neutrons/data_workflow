@@ -1,6 +1,6 @@
 
 
-function Plot_1d(raw_data, anchor) {
+function Plot_1d(raw_data, anchor, user_options) {
     var self = this;
     self.user_options = user_options;
 
@@ -22,17 +22,18 @@ function Plot_1d(raw_data, anchor) {
         bottom: 50,
         left: 65
     };
-    var log_scale = this.user_options.log_scale;
+    var log_scale_x = this.user_options.log_scale_x;
+    var log_scale_y = this.user_options.log_scale_y;
     var grid = this.user_options.grid;
     var append_grid;
     var translate_val = [0, 0];
     var scale_val = 1;
     var x_label = this.user_options.x_label;
     var y_label = this.user_options.y_label;
-    var title_label = "";
-    var x_label_align = "right";
-    var y_label_align = "right";
-    var title_label_align = "center";
+    var title_label = this.user_options.title;
+    var x_label_align = this.user_options.x_label_align;
+    var y_label_align = this.user_options.y_label_align;
+    var title_label_align = this.user_options.title_label_align;
     var x;
     var y;
     var y_min;
@@ -44,16 +45,25 @@ function Plot_1d(raw_data, anchor) {
     var mouseY;
     var mouseX;
     var data = [];
+    var data_error_bars = false;
 
     for (var i = 0; i < raw_data.length; i++) {
-        if (log_scale == false || raw_data[i][1] > 0) data.push(raw_data[i]);
+        if (log_scale_y == false || raw_data[i][1] > 0) data.push(raw_data[i]);
     }
 
-    this.get_scale = function(log_scale) {
-        x = d3.scale
+    this.need_error_bars = function() {
+      if (raw_data[0].length == 3) data_error_bars = true;
+    }
+    self.need_error_bars();
+
+    this.get_scale = function(log_scale_x, log_scale_y) {
+        x = log_scale_x ? d3.scale
+            .log()
+            .range([0, mod_psize.width]) :
+            d3.scale
             .linear()
             .range([0, mod_psize.width]);
-        y = log_scale ? d3.scale
+        y = log_scale_y ? d3.scale
             .log()
             .range([mod_psize.height, 0])
             .nice() :
@@ -61,7 +71,7 @@ function Plot_1d(raw_data, anchor) {
             .linear()
             .range([mod_psize.height, 0]);
     }
-    self.get_scale(log_scale);
+    self.get_scale(log_scale_x, log_scale_y);
 
     this.get_domain = function() {
         y_min = d3.min(data, function(d) {
@@ -98,9 +108,9 @@ function Plot_1d(raw_data, anchor) {
 		        .orient("bottom")
 		        .ticks(5)
 		        .tickSize(-mod_psize.height)
-		        .tickFormat(d3.format("6d"));
+		        //.tickFormat(d3.format("6d"));
 
-		    if (log_scale == false) {
+		    if (log_scale_y == false) {
 		        yAxis = d3.svg
 		            .axis()
 		            .scale(y)
@@ -128,6 +138,8 @@ function Plot_1d(raw_data, anchor) {
 						.scale[0]);
 				d3.select("path")
 						.attr("stroke-width", path_stroke_width / scale_factor);
+				d3.selectAll(".error_bar")
+						.attr("stroke-width", path_stroke_width / scale_factor);
 				d3.selectAll(".datapt")
 						.attr("r", (path_stroke_width / scale_factor) * (parseFloat(2) / parseFloat(3)));
 				d3.selectAll(".focus")
@@ -147,6 +159,8 @@ function Plot_1d(raw_data, anchor) {
             .attr("transform", "translate(" + translate_val + ")scale(" + scale_val + ")");
         d3.selectAll(".focus")
             .attr("transform", "translate(" + translate_val + ")scale(" + scale_val + ")");
+        d3.selectAll(".error_bar")
+            .attr("transform", "translate(" + translate_val + ")scale(" + scale_val + ")");
         d3.selectAll(".extent")
             .attr("transform", "translate(" + translate_val[0] + ",0)scale(" + scale_val + ")");
         d3.selectAll(".brush-label")
@@ -157,7 +171,7 @@ function Plot_1d(raw_data, anchor) {
             .call(yAxis);
         self.toggle_grid();
         self.scale_objects();
-				d3.select(".console-input.zoom").attr("value", parseInt(scale_val*100) + "%");
+				d3.select(".console-input.zoom").html(parseInt(scale_val*100) + "%");
     }
 
     var zoom = d3.behavior.zoom()
@@ -215,8 +229,8 @@ function Plot_1d(raw_data, anchor) {
                 resize = d3.select(".resize .n");
 								console.log("num_of_brushes: " + num_of_brushes)
                 // $(".console-input.id").text(data_region.info_table[num_of_brushes].region_name);
-                $(".console-input.left").attr("value", formatter(d0));
-                $(".console-input.right").attr("value", formatter(d1));
+                $(".console-input.left").html(formatter(d0));
+                $(".console-input.right").html(formatter(d1));
                 $(this).children(".brush-label").attr("visibility", "visible")
                     .attr("x", x(d0) + 3)
                     .attr("y", 12);
@@ -261,8 +275,8 @@ function Plot_1d(raw_data, anchor) {
                 d3.select(this).transition()
                     .call(brush_action.extent([d0, d1]))
                     .call(brush_action);
-                $(".console-input.left").attr("value", formatter(d0));
-                $(".console-input.right").attr("value", formatter(d1));
+                $(".console-input.left").html(formatter(d0));
+                $(".console-input.right").html(formatter(d1));
                 $(this).attr("left", formatter(d0));
                 $(this).attr("right", formatter(d1));
                 console.log("region_id: " + this_id);
@@ -317,8 +331,8 @@ function Plot_1d(raw_data, anchor) {
         d1 = brush_action.extent()[1];
         resize = d3.select(".resize .n");
 				$(".console-input.id").text(data_region.info_table[num_of_brushes].region_name);
-        $(".console-input.left").attr("value", data_region.info_table[num_of_brushes].left);
-        $(".console-input.right").attr("value", data_region.info_table[num_of_brushes].right);
+        $(".console-input.left").html(data_region.info_table[num_of_brushes].left);
+        $(".console-input.right").html(data_region.info_table[num_of_brushes].right);
     }
 
 
@@ -347,36 +361,81 @@ function Plot_1d(raw_data, anchor) {
     // Refer to clip reference
     self.main_plot.attr("clip-path", "url(#clip)");
 
-    // Create X axis label
-    svg.append("text")
-        .attr("x", mod_psize.width)
-        .attr("y", mod_psize.height + 40)
-        .attr("id", "x_label")
-        .attr("font-size", "11px")
-        .style("text-anchor", "end")
-        .text(x_label);
-
-
-    // Create Y axis label
-    svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 4 - margin.left)
-        .attr("x", 0)
-        .attr("id", "y_label")
-        .attr("dy", "1.5em")
-        .attr("dx", "-1em")
-        .style("text-anchor", "end")
-        .text(y_label);
-
-
-    // Create title
-    svg.append("text")
-        .attr("x", mod_psize.width / 2.0)
-        .attr("y", -10)
-        .attr("id", "title")
-        .attr("font-size", "16px")
-        .style("text-anchor", "middle")
-        .text(title_label);
+    // Create text objects (labels):
+    this.create_labels = function(){
+        d3.selectAll(".label").remove();
+        var text_anchor;
+        var pos;
+        //
+        // Create X axis label
+        if (self.user_options.x_label_align == "left") {
+          text_anchor = "start";
+          pos = 0;
+        }
+        else if (self.user_options.x_label_align == "center") {
+          text_anchor = "middle";
+          pos = mod_psize.width / 2.0;
+        }
+        else if (self.user_options.x_label_align == "right") {
+          text_anchor = "end";
+          pos = mod_psize.width;
+        }
+        svg.append("text")
+            .attr("x", pos)
+            .attr("y", mod_psize.height + 40)
+            .attr("class", "label")
+            .attr("id", "x_label")
+            .attr("font-size", "11px")
+            .style("text-anchor", text_anchor)
+            .text(self.user_options.x_label);
+        //
+        // Create Y axis label
+        if (self.user_options.y_label_align == "left") {
+          text_anchor = "start";
+          pos = mod_psize.height;
+        }
+        else if (self.user_options.y_label_align == "center") {
+          text_anchor = "middle";
+          pos = mod_psize.height / 2.0;
+        }
+        else if (self.user_options.y_label_align == "right") {
+          text_anchor = "end";
+          pos = 0;
+        }
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 4 - margin.left)
+            .attr("x", 10 - pos)
+            .attr("class", "label")
+            .attr("id", "y_label")
+            .attr("dy", "1.5em")
+            .attr("dx", "-1em")
+            .style("text-anchor", text_anchor)
+            .text(self.user_options.y_label);
+        //
+        // Create title
+        if (self.user_options.title_label_align == "left") {
+          text_anchor = "start";
+          pos = 0;
+        }
+        else if (self.user_options.title_label_align == "center") {
+          text_anchor = "middle";
+          pos = mod_psize.width / 2.0;
+        }
+        else if (self.user_options.title_label_align == "right") {
+          text_anchor = "end";
+          pos = mod_psize.width;
+        }
+        svg.append("text")
+            .attr("x", pos)
+            .attr("y", -10)
+            .attr("class", "label")
+            .attr("id", "title")
+            .attr("font-size", "16px")
+            .style("text-anchor", text_anchor)
+            .text(self.user_options.title_label);
+    }
+    self.create_labels();
 
 
     // Interpolate
@@ -457,6 +516,35 @@ function Plot_1d(raw_data, anchor) {
             .attr("r", marker_size_focus)
             .style("fill", "white")
             .style("fill-opacity", "0");
+
+        if (data_error_bars == true){
+        	    // Append vertical dotted line
+        	points.append("line").attr("class", "error_bar")
+            .attr("x1", function(d) { return (x(d[0])); })
+        		.attr("y1", function(d) { return (y(d[1]-d[2])); })
+        		.attr("x2", function(d) { return (x(d[0])); })
+        		.attr("y2", function(d) { return (y(d[1]+d[2])); })
+        		.attr("stroke-width", path_stroke_width/2)
+        		.attr("stroke", color)
+        		.attr("stroke-dasharray", "2,2")
+        		.attr("opacity", 0.7);
+        	    // Append horizontal top line
+        	points.append("line").attr("class", "error_bar")
+            .attr("x1", function(d) { return (x(d[0])-parseFloat(marker_size)); })
+        		.attr("y1", function(d) { return (y(d[1]+d[2])); })
+        		.attr("x2", function(d) { return (x(d[0])+parseFloat(marker_size)); })
+        		.attr("y2", function(d) { return (y(d[1]+d[2])); })
+        		.attr("stroke-width", path_stroke_width/2)
+        		.attr("stroke", color);
+        	    // Append horizontal bottom line
+        	points.append("line").attr("class", "error_bar")
+            .attr("x1", function(d) { return (x(d[0])-parseFloat(marker_size)); })
+        		.attr("y1", function(d) { return (y(d[1]-d[2])); })
+        		.attr("x2", function(d) { return (x(d[0])+parseFloat(marker_size)); })
+        		.attr("y2", function(d) { return (y(d[1]-d[2])); })
+        		.attr("stroke-width", path_stroke_width/2)
+        		.attr("stroke", color);
+        }
     }
 
     pan_flag = true;
@@ -531,7 +619,9 @@ function Plot_1d(raw_data, anchor) {
 		this.change_color = function() {
 				d3.select("path").attr("stroke", self.user_options.color)
 				circle_ol.style("fill-opacity", "0").style("stroke", self.user_options.color);
+        d3.select(".circle_ol").style("stroke", self.user_options.color);
         d3.selectAll(".datapt").style("fill", self.user_options.color);
+        d3.selectAll(".error_bar").style("stroke", self.user_options.color);
 				little_pt.style("fill", self.user_options.color);
 		}
 

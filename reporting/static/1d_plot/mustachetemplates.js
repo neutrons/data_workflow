@@ -9,9 +9,23 @@ var data_menu = {
 				"buttons": [
 					  {
 					    "id": "log_scale",
-							"icon": "menu-icon fa fa-square-o",
+							"icon": "",
 							"name": "Log Scale",
-							"sub_menu": false
+							"sub_menu": true,
+							"sub_buttons": [
+								{
+									"id": "log_scale_x",
+									"icon": "menu-icon fa fa-square-o",
+									"name": "x-axis Log Scale",
+									"sub_menu": false
+								},
+								{
+									"id": "log_scale_y",
+									"icon": "menu-icon fa fa-square-o",
+									"name": "y-axis Log Scale",
+									"sub_menu": false
+								}
+							]
 				    },
 						{
 					    "id": "view_grid",
@@ -186,12 +200,12 @@ var data_console_item = {
 var tplt_console_region = '<span class="console-item" id="snap_bounds">' +
     '<b><span class="console-input id"></span></b> - ' +
     '[[#snap_bounds]]' +
-    '[[name]]: <input class="console-input [[class]]" disabled value="0"> ' +
+    '[[name]]: <span class="console-input [[class]]">0</span> - ' +
     '[[/snap_bounds]]' +
     '</span>';
 var tplt_console_zoom = '<span class="console-item" id="zoom">' +
     '[[#zoom]]' +
-		'[[name]]: <input class="console-input [[class]]" disabled value="100%">' +
+		'[[name]]: <span class="console-input [[class]]">100%</span>' +
 		'[[/zoom]]' +
 		'</span>';
 
@@ -226,13 +240,14 @@ var tplt_sidebar = "<div class='sidebar' id='[[name]]_sidebar' name='[[name]]'" 
 //
 var data_x_label = {
     heading: "Change x-axis label",
-    val: "test this first"
+    val: "",
+		align: ""
 };
 var tplt_x_label = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
     "<div class='modal-content'>Text: <input type='text' value='[[val]]'></input>" +
-    "<br /><br />Align: <span><i class='fa fa-align-left'></i> " +
-    "<i class='fa fa-align-center'></i> " +
-    "<i class='fa fa-align-right'></i></span>" +
+    "<br /><br />Align: <span><a href='#'><i class='fa fa-align-left'></i></a> " +
+    "<a href='#'><i class='fa fa-align-center'></i></a> " +
+    "<a href='#'><i class='fa fa-align-right'></i></a></span>" +
     "</div>" + modal_buttons;
 
 //
@@ -240,13 +255,14 @@ var tplt_x_label = "<div class='modal-heading'>[[heading]]<span>×</span></div>"
 //
 var data_y_label = {
     heading: "Change y-axis label",
-    val: "test this first..."
+    val: "",
+		align: ""
 };
 var tplt_y_label = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
     "<div class='modal-content'>Text: <input type='text' value='[[val]]'></input>" +
-    "<br /><br />Align: <span><i class='fa fa-align-left'></i> " +
-    "<i class='fa fa-align-center'></i> " +
-    "<i class='fa fa-align-right'></i></span>" +
+    "<br /><br />Align: <span><a href='#'><i class='fa fa-align-left'></i></a> " +
+    "<a href='#'><i class='fa fa-align-center'></i></a> " +
+    "<a href='#'><i class='fa fa-align-right'></i></a></span>" +
     "</div>" + modal_buttons;
 
 //
@@ -254,13 +270,14 @@ var tplt_y_label = "<div class='modal-heading'>[[heading]]<span>×</span></div>"
 //
 var data_title_label = {
     heading: "Change Title label",
-    val: "test this first"
+    val: "",
+		align: ""
 };
 var tplt_title_label = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
     "<div class='modal-content'>Text: <input type='text' value='[[val]]'></input>" +
-    "<br /><br />Align: <span><i class='fa fa-align-left'></i> " +
-    "<i class='fa fa-align-center'></i> " +
-    "<i class='fa fa-align-right'></i></span>" +
+    "<br /><br />Align: <span><a href='#'><i class='fa fa-align-left'></i> " +
+    "<a href='#'><i class='fa fa-align-center'></i></a> " +
+    "<a href='#'><i class='fa fa-align-right'></i></a></span>" +
     "</div>" + modal_buttons;
 
 //

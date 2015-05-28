@@ -16,10 +16,10 @@
 <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
-<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<!-- <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
 <script language="javascript" type="text/javascript" src="/static/plotting_line.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/plotting.css" title="no title" charset="utf-8">
-<link rel="stylesheet" type="text/css" href="/static/bar_chart.css" />
+<link rel="stylesheet" type="text/css" href="/static/bar_chart.css" /> -->
 <link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css">
 <div id="dialog-confirm" title="Submit for post-processing" style="display:none">
    <p><span class="ui-icon ui-icon-alert" style="float: left"></span>
@@ -43,30 +43,58 @@
 
     // TODO: the following should be passed to the plot object.
     // Now 1d_plots_v2.js relies on them being defined.
-    var First_plot;
-    var user_options = {
-          color: "#0077cc",
+
+      var First_plot; // Will change this soon
+      var plot_options = {
+        color: "#0077cc",
+        log_scale_x: false,
+        log_scale_y: true,
+        grid: false,
+        x_label: "Q [1/\u00C5]",
+        y_label: "Absolute reflectivity",
+        title: "",
+        allow_region_mode: true
+      }
+      // User options
+      var user_options = {
+          color: plot_options.color,
           marker_size: 1,
           marker_size_focus: 6,
           path_stroke_width: 1.5,
-          log_scale: true,
-          grid: false,
-          x_label: "Q [1/\u00C5]",
-          y_label: "Absolute reflectivity"
+          log_scale_x: plot_options.log_scale_x,
+          log_scale_y: plot_options.log_scale_y,
+          grid: plot_options.grid,
+          x_label: plot_options.x_label,
+          y_label: plot_options.y_label,
+          title: plot_options.title,
+          x_label_align: "center",
+          y_label_align: "center",
+          title_label_align: "center"
       }
-      var anchor = "graph";
-      var dim = 20;
-      var raw_data = {{ plot_data }};
-      var step;
-      var qx = [parseFloat(-2.5)];
+      // var user_options = {
+      //       color: "#0077cc",
+      //       marker_size: 1,
+      //       marker_size_focus: 6,
+      //       path_stroke_width: 1.5,
+      //       log_scale: true,
+      //       grid: false,
+      //       x_label: "Q [1/\u00C5]",
+      //       y_label: "Absolute reflectivity"
+      //   }
+        var anchor = "graph";
+        var dim = 20;
+        var raw_data = {{ plot_data }};
+        var step;
+        var qx = [parseFloat(-2.5)];
 
-      step = parseFloat(6) / dim;
-      for (var i = 0; i < dim - 1; i++) {
-          qx.push(qx[i] + step);
-    }
+        step = parseFloat(6) / dim;
+        for (var i = 0; i < dim - 1; i++) {
+            qx.push(qx[i] + step);
+      }
     $(function() {
-        First_plot = new Plot_1d(raw_data, anchor);
-        First_plot.x_label="Q";
+
+        First_plot = new Plot_1d(raw_data, anchor, user_options);
+        // First_plot.x_label="Q";
         // Would be nice to have a way to plot later so we can set options.
     });
 

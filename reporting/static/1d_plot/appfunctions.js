@@ -13,22 +13,55 @@ $(function() {
     var menu_flag_radio_true = "menu-icon fa fa-circle";
     var menu_flag_radio_false = "menu-icon fa fa-circle-thin";
 
-    $("#log_scale").click(function() {
+    if (First_plot.user_options.log_scale_x == true){
+      // var log_flag = $("#log_scale").children("i").attr("class");
+      var log_flag = menu_flag_check_true;
+      $("#log_scale_x").children("i").attr("class", log_flag);
+    }
+    if (First_plot.user_options.log_scale_y == true){
+      // var log_flag = $("#log_scale").children("i").attr("class");
+      var log_flag = menu_flag_check_true;
+      $("#log_scale_y").children("i").attr("class", log_flag);
+    }
+    if (First_plot.user_options.grid == true){
+      // var grid_flag = $("#view_grid").children("i").attr("class");
+      var grid_flag = menu_flag_check_true;
+      $("#view_grid").children("i").attr("class", grid_flag);
+    }
+    if (plot_options.allow_region_mode == false){
+      $(".modes-menu").parent().remove();
+      $("#main").css("width", 500);
+    }
+
+    $("#log_scale_x").click(function() {
         var log_flag = $(this).children("i").attr("class");
-        // alert(log_flag)
-        // alert(First_plot.user_options.log_scale);
         if (log_flag == menu_flag_check_false) {
             log_flag = menu_flag_check_true;
-            First_plot.user_options.log_scale = true;
+            First_plot.user_options.log_scale_x = true;
         }
         else {
             log_flag = menu_flag_check_false;
-            First_plot.user_options.log_scale = false;
+            First_plot.user_options.log_scale_x = false;
         }
-        First_plot = new Plot_1d(raw_data, anchor);
+        First_plot = new Plot_1d(raw_data, anchor, user_options);
         $("#pan_and_zoom").trigger("click");
         $(this).children("i").attr("class", log_flag);
-        $(".console-input.zoom").attr("value", parseInt(100) + "%");
+        $(".console-input.zoom").html(parseInt(100) + "%");
+    });
+    $("#log_scale_y").click(function() {
+        var log_flag = $(this).children("i").attr("class");
+        if (log_flag == menu_flag_check_false) {
+            log_flag = menu_flag_check_true;
+            First_plot.user_options.log_scale_y = true;
+        }
+        else {
+            log_flag = menu_flag_check_false;
+            First_plot.user_options.log_scale_y = false;
+        }
+        First_plot = new Plot_1d(raw_data, anchor, user_options);
+        $("#pan_and_zoom").trigger("click");
+        $(this).children("i").attr("class", log_flag);
+        $(".console-input.zoom").html(parseInt(100) + "%");
     });
     $("#view_grid").click(function() {
         var grid_flag = $(this).children("i").attr("class");
@@ -69,7 +102,7 @@ $(function() {
         First_plot.toggle_pan_and_zoom(flag)
         First_plot.clear_brush();
         add_console_item("zoom");
-        $(".console-input.zoom").attr("value", parseInt(First_plot.scale_val*100) + "%");
+        $(".console-input.zoom").html(parseInt(First_plot.scale_val*100) + "%");
     });
     $("#select_region").click(function() {
         var flag = true;
@@ -115,14 +148,6 @@ $(function() {
     })
 
     // Axis labels
-    $("#x_label").dblclick(function() {
-        var label = "x_label";
-        add_change_label(label);
-    });
-    $("#y_label").dblclick(function() {
-        var label = "y_label";
-        add_change_label(label);
-    });
     $("#x_axis_label").click(function() {
         var label = "x_label";
         add_change_label(label);
@@ -143,6 +168,9 @@ $(function() {
     });
     $("#export_svg").click(function() {
       test777();
+    });
+    $("#export_pdf").click(function() {
+      test888();
     });
 });
 
@@ -174,10 +202,10 @@ $(function() {
 
     function add_region() {
         // alert("in add_region()");
-        var i;
-        for (i = 0; i < parseInt(data_region.info_table.length); i++) {
-            // console.log(data_region.info_table[i].active = false);
-        }
+        // var i;
+        // for (i = 0; i < parseInt(data_region.info_table.length); i++) {
+        //     // console.log(data_region.info_table[i].active = false);
+        // }
         $(".brush").each(function() {
             $(this).css("pointer-events", "none");
         });
@@ -398,7 +426,12 @@ $(function() {
     };
 
     function modal_actions(change_id, modal_id) {
-        var val = $("#" + modal_id).children(".modal-content").children("input").val();
+        // var val = $("#" + modal_id).children(".modal-content").children("input").val();
+        // console.log(val);
+        // console.log(First_plot.user_options.x_label);
+        // First_plot.user_options.x_label = val;
+        // console.log(First_plot.user_options.x_label);
+
         if (change_id == "color_picker") {
             var color = $("#color_test").val();
             First_plot.user_options.color = color;
@@ -407,10 +440,27 @@ $(function() {
         else if (change_id == "select_region") {
             add_region();
         }
-        else {
-            console.log(val);
-            $("#" + change_id).text(val);
+        else { // change label (x_label, y_label, title)
+            change_label(change_id, modal_id);
         }
+    }
+
+    function change_label(change_id, modal_id) {
+        var val = $("#" + modal_id).children(".modal-content").children("input").val();
+        if (change_id == "x_label") {
+          First_plot.user_options.x_label = val
+          First_plot.user_options.x_label_align = "left";
+          console.log(First_plot.user_options.x_label);
+          console.log(First_plot.user_options.x_label_align);
+          First_plot.create_labels();
+        }
+        else if (change_id == "y_label") {
+          First_plot.user_options.y_label = val
+        }
+        else if (change_id == "title") {
+          First_plot.user_options.title = val
+        }
+        $("#" + change_id).text(val);
     }
 
     function activate_spectrum() {
@@ -425,10 +475,6 @@ $(function() {
         });
     }
 
-    // $("#export_svg").click(function() {
-    //   // encode_as_img_and_link();
-    //   test666();
-    // })
 
     // function encode_as_img_and_link(){
     //  // Add some critical information
@@ -479,4 +525,18 @@ $(function() {
         $("#test_link").load(function(){
           $("#test_link").trigger("click");
         });
+    }
+
+    function test888(){
+      // var svg_link = "";
+      // var doc;
+      // svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
+      //   svg_link = uri;
+      //   // return uri;
+      // });
+      // console.log(svg_link);
+      // doc = new jsPDF();
+      //
+      // doc.addImage(svg_link, 'PDF', 15, 40, 180, 180);
+      // doc.save('Test.pdf');
     }
