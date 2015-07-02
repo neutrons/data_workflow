@@ -1,7 +1,9 @@
-#main{
+.main{
     position: relative;
-    height: 440px;
+    height: 391px;
     width: 600px;
+    box-shadow: 2px 0 6px -4px, -2px 0 6px -4px;
+    margin-bottom: 30px;
 }
 .menu{
     height: 27px;
@@ -123,6 +125,7 @@ text,
     /*margin: 5px 5px 5px 5px; */
     /*padding-right: 5px;*/
     /* padding: 50px 50px 50px 50px; */
+    /*margin-top: 10px;*/
 }
 
 .analysis_tools { border: 0; }

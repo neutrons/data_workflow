@@ -18,7 +18,7 @@
 /**** MODAL ELEMENTS ****************************************/
 /************************************************************/
 .modal-window{
-	position: fixed;
+	position: absolute;
 	height: 100%;
 	background-color: #fff;
 	z-index: 450;
@@ -93,7 +93,7 @@
 	height: 274px;
 }
 
-#info_table a {
+.info_table a {
 	color: #000;
 }
 #new_row a,
@@ -162,20 +162,29 @@ a.icon-link {
   color: #fff;
 }
 
-#info_table,
-#info_table th,
-#info_table td {
-	font-family: serif;
-	font-size: 12px;
+.fa-align-left,
+.fa-align-center,
+.fa-align-right {
+	color: #000;
+	padding: 2px;
+}
+
+.align-active {
+	border: 1px solid black;
+}
+
+table.info_table{
+	font-size: 10px;
 	border: 1px solid grey;
 	border-spacing: 0px;
 	border-collapse: collapse;
 	margin: 0px;
 }
-#info_table th {
-	min-width: 0px;
-	max_width: 0px;
-}
-#info_table td {
-	white-space: nowrap;
+.info_table th,
+.info_table td {
+	font-size: 10px;
+	border: 1px solid grey;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	margin: 0px;
 }

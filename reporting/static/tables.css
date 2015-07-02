@@ -50,7 +50,7 @@ td.error {
 	color: #9d301d;
 }
 
-th {
+.message_table th {
 	min-width: 150px;
 	max-width: 150px;
     text-align: left;
