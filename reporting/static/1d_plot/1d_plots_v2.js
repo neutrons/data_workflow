@@ -634,10 +634,10 @@ function Plot_1d(raw_data, anchor, plot_options) {
   }
 
   //
-  // If regions are predetermined
+  // If regions are predetermined and Region Mode is allowed
   //
   this.predetermined_regions_flag = false;
-  if (self.plot_options.predetermined_region.length > 0) {
+  if (self.plot_options.predetermined_region.length > 0 && self.plot_options.allow_region_mode == true) {
     this.predetermined_regions_flag = true;
   }
 
