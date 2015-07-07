@@ -42,6 +42,8 @@ LEGACY_PREFIX = "ADARA"
 LEGACY_INSTRUMENT = "hysa"
 TOPIC_PREFIX = "SNS"
 
+MIN_NOTIFICATION_LEVEL = 3
+
 # Import local settings if available
 try:
     from local_settings import *
