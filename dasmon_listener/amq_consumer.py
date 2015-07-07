@@ -25,6 +25,7 @@ from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 from settings import IMAGE_PURGE_TIMEOUT
 from settings import TOPIC_PREFIX
+from settings import MIN_NOTIFICATION_LEVEL
 sys.path.append(INSTALLATION_DIR)
 
 import django
@@ -260,7 +261,9 @@ def process_signal(instrument_id, data):
                 signal.level = level
                 signal.timestamp = timestamp
                 signal.save()
-            notify_users(instrument_id, signal)
+            # Notify users only if it the signal level is greater than our threshold.
+            if level >= MIN_NOTIFICATION_LEVEL:
+                notify_users(instrument_id, signal)
         # Retract a signal
         else:
             for item in asserted_sig:
