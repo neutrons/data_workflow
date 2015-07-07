@@ -166,7 +166,7 @@ def process_ack(data=None):
         from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
-                if acks[proc_name] is not None and time.time() - acks[proc_name] > 15:
+                if acks[proc_name] is not None and time.time() - acks[proc_name] > 45:
                     logging.error("Client %s disappeared" % proc_name)
                     acks[proc_name] = None
                     send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
@@ -176,8 +176,8 @@ def process_ack(data=None):
             proc_name = data['src_name']
             if 'pid' in data:
                 proc_name = '%s:%s' % (proc_name, data['pid'])
-            if 'request_time' in data and time.time() - data['request_time'] > 10:
-                logging.error("Client %s took more than 10 secs to answer" % proc_name)
+            if 'request_time' in data and time.time() - data['request_time'] > 60:
+                logging.error("Client %s took more than 60 secs to answer" % proc_name)
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared" % proc_name)
                 send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
