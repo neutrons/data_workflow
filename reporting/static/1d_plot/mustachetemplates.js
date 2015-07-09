@@ -101,12 +101,12 @@ function mustachetemplates(i){
         "class": "export-menu",
         "list": "export-list",
         "buttons": [
-        {
-          "class": "export_pdf",
-          "icon": "menu-icon fa fa-file-pdf-o",
-          "name": "PDF",
-          "sub_menu": false
-        },
+        // {
+        //   "class": "export_pdf",
+        //   "icon": "menu-icon fa fa-file-pdf-o",
+        //   "name": "PDF",
+        //   "sub_menu": false
+        // },
         {
           "class": "export_png",
           "icon": "menu-icon fa fa-file-image-o",
@@ -118,7 +118,8 @@ function mustachetemplates(i){
           "icon": "menu-icon fa fa-file-image-o",
           "name": "SVG",
           "sub_menu": false
-        }]
+        }
+        ]
       },
       "help":
       {

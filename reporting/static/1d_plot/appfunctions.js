@@ -394,46 +394,48 @@ function appfunctions(i){
     //  $("body").append($("<a href-lang='image/svg+xml' href='data:image/svg+xml;utf8,"+b64+"' title='file.svg'>Download</a>"));
     // }
 
-    function test666() {
-      saveSvgAsPng(document.getElementById("graph_svg"), "diagram.png", {
+    plots[i].export_png = function() {
+      saveSvgAsPng(document.getElementById(this.anchor + "_svg"), "diagram.png", {
         scale: 2
       });
     }
 
-    function test777() {
-      alert("not yet implemented");
-      // $("#graph_svg .circle_ol").remove();
-      // var svg_link = "";
-      // svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
-      //   svg_link = uri;
-      // });
-      // var a = document.createElement('a');
-      // $(a).attr("id", "test_link");
-      // $(".graph").append(a);
-      // $(a).attr("href", svg_link);
-      // $(a).attr("download", "test.svg");
-      // document.getElementById("test_link").click();
+    plots[i].test777 = function() {
+      // alert("not yet implemented");
+      var svg_link = "";
+      svgAsDataUri(document.getElementById(this.anchor + "_svg"), {}, function(uri){
+      // svgAsDataUri(svg, {}, function(uri){
+        svg_link = uri;
+      });
+      // console.log(svg_link);
+      var a = document.createElement('a');
+      $(a).attr("id", "test_link");
+      $("body").append(a);
+      $(a).attr("href", svg_link);
+      $(a).attr("download", "diagram.svg");
+      document.getElementById("test_link").click();
+      $(a).remove();
     }
 
-    function test888() {
-      alert("not yet implemented");
-      // var svg_link = "";
-      // // var doc;
-      // svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
-      //   svg_link = uri;
-      //   // return uri;
-      // });
-      // var svg = $("#graph_svg").get(0);
-      // console.log(svg_link);
-      // var doc = new jsPDF('p', 'pt', 'a4');
-      //
+    plots[i].test888 = function() {
+      var svg_link = "";
+      var doc = new jsPDF();
+      svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
+        svg_link = uri;
+        return uri;
+      });
+      var svg = $("#graph_svg").get(0);
+      // console.log(svg);
+      // alert("waiting");
+
       // doc.addImage(svg_link, 'svg', 15, 40, 180, 180);
-      // svgElementToPdf(svg, doc, {
-      //   scale: 72/96, // this is the ratio of px to pt units
-      //   removeInvalid: false
-      // });
+      svgElementToPdf(svg, doc, {
+        scale: 72/96,
+        removeInvalid: false
+      });
+      doc.addSVG(svg);
       // doc.output("datauri");
-      // doc.save('Test.pdf');
+      doc.save('Test.pdf');
     }
 
 
@@ -768,15 +770,15 @@ function event_handlers(self, i) {
   });
 
   // Still working on this
-  // $("." + anchor + " .export_png").click(function() {
-  //   test666();
-  // });
-  // $("." + anchor + " .export_svg").click(function() {
-  //   test777();
-  // });
-  // $("." + anchor + " .export_pdf").click(function() {
-  //   test888();
-  // });
+  $(document).on("click", "." + anchor + " .export_png", function() {
+    plots[i].export_png();
+  });
+  $(document).on("click", "." + anchor + " .export_svg", function() {
+    plots[i].test777();
+  });
+  $(document).on("click", "." + anchor + " .export_pdf", function() {
+    plots[i].test888();
+  });
 
 
 
