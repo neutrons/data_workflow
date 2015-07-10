@@ -730,7 +730,6 @@ function event_handlers(self, i) {
 
   // When user clicks on Help > Topics, open Topics modal,
   $(document).on("click", "." + anchor + " .topics", function(){
-    // var flag = true; // why do I need this again??
     var offset = $("#" + anchor).offset();
     var w = $("#" + anchor).width();
     var h = $("#" + anchor).height();
@@ -739,7 +738,6 @@ function event_handlers(self, i) {
 
   // When user clicks on Help > About, open About modal,
   $(document).on("click", "." + anchor + " .about", function(){
-    // var flag = true; // why do I need this again??
     var offset = $("#" + anchor).offset();
     var w = $("#" + anchor).width();
     var h = $("#" + anchor).height();
@@ -768,7 +766,7 @@ function event_handlers(self, i) {
   $(document).on("click", "." + anchor + " .export_png", function() {
     plots[i].export_png();
   });
-  
+
   // Export as SVG file
   $(document).on("click", "." + anchor + " .export_svg", function() {
     plots[i].export_svg();
