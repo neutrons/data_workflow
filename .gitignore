@@ -1,0 +1,17 @@
+dasmon_listener.egg-info/
+workflow.egg-info/
+dist/
+build/
+check_diff.py
+workflow/git_version.py
+local_settings.py
+
+*.o
+*.obj
+*.pyc
+*.pyo
+*.so
+*.a
+
+.project
+.pydevproject

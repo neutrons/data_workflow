@@ -165,7 +165,7 @@ def retrieve_rates(instrument_id, last_run_id):
 
     return runs, errors
 
-@transaction.commit_on_success
+@transaction.atomic
 def run_rate(instrument_id, n_hours=24):
     """
         Returns the rate of new runs for the last n_hours hours.
@@ -197,7 +197,7 @@ def run_rate(instrument_id, n_hours=24):
             runs.append([-i, n])
         return runs
 
-@transaction.commit_on_success
+@transaction.atomic
 def error_rate(instrument_id, n_hours=24):
     """
         Returns the rate of errors for the last n_hours hours.

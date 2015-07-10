@@ -1,5 +1,6 @@
 prefix := /var/www/workflow
 HAS_MIGRATIONS:=$(shell python -c "import django;t=0 if django.VERSION[1]<7 else 1; print t")
+DJANGO_COMPATIBLE:=$(shell python -c "import django;t=0 if django.VERSION[1]<6 else 1; print t")
 
 all:
 
@@ -17,6 +18,12 @@ check:
 	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
 	@python -c "import stomp" || echo "\nERROR: somtp.py is not installed: http://code.google.com/p/stomppy\n"
 
+ifeq ($(DJANGO_COMPATIBLE),1)
+	@echo "Detected Django >= 1.6"
+else
+	$(error Detected Django < 1.6. The web monitor requires at least Django 1.6)
+endif
+
 workflow: check
 	# Install the workflow manager, which defines the database schema
 	python setup.py install
@@ -27,7 +34,7 @@ clean:
 	rm -fR *.pyc
 	rm -fR build/
 	
-install: clean workflow webapp
+install: check clean workflow webapp
 
 dasmonlistener: webapp/core
 	# Install DASMON listener
