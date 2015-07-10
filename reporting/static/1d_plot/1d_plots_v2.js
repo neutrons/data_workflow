@@ -449,7 +449,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .attr("class", "label title")
       .attr("font-size", "16px")
       .style("text-anchor", text_anchor)
-      .text(self.plot_options.title_label);
+      .text(self.plot_options.title);
   }
   self.create_labels();
 

@@ -394,49 +394,55 @@ function appfunctions(i){
     //  $("body").append($("<a href-lang='image/svg+xml' href='data:image/svg+xml;utf8,"+b64+"' title='file.svg'>Download</a>"));
     // }
 
+    //
+    // Function to export svg as png file
+    //
     plots[i].export_png = function() {
       saveSvgAsPng(document.getElementById(this.anchor + "_svg"), "diagram.png", {
         scale: 2
       });
     }
 
-    plots[i].test777 = function() {
+    //
+    // Function to export svg as svg file
+    //
+    plots[i].export_svg = function() {
       // alert("not yet implemented");
       var svg_link = "";
       svgAsDataUri(document.getElementById(this.anchor + "_svg"), {}, function(uri){
       // svgAsDataUri(svg, {}, function(uri){
         svg_link = uri;
       });
-      // console.log(svg_link);
+      // Make an invisible link to the svg and click on it to download
       var a = document.createElement('a');
-      $(a).attr("id", "test_link");
+      $(a).attr("id", "svg_file_link");
       $("body").append(a);
       $(a).attr("href", svg_link);
       $(a).attr("download", "diagram.svg");
-      document.getElementById("test_link").click();
+      document.getElementById("svg_file_link").click();
+      // Remove invisible link
       $(a).remove();
     }
 
-    plots[i].test888 = function() {
-      var svg_link = "";
-      var doc = new jsPDF();
-      svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
-        svg_link = uri;
-        return uri;
-      });
-      var svg = $("#graph_svg").get(0);
-      // console.log(svg);
-      // alert("waiting");
-
-      // doc.addImage(svg_link, 'svg', 15, 40, 180, 180);
-      svgElementToPdf(svg, doc, {
-        scale: 72/96,
-        removeInvalid: false
-      });
-      doc.addSVG(svg);
-      // doc.output("datauri");
-      doc.save('Test.pdf');
-    }
+    // plots[i].export_pdf = function() {
+    //   var svg_link = "";
+    //   var doc = new jsPDF();
+    //   svgAsDataUri(document.getElementById("graph_svg"), {}, function(uri){
+    //     svg_link = uri;
+    //     return uri;
+    //   });
+    //   var svg = $("#graph_svg").get(0);
+    //   // console.log(svg);
+    //
+    //   // doc.addImage(svg_link, 'svg', 15, 40, 180, 180);
+    //   svgElementToPdf(svg, doc, {
+    //     scale: 72/96,
+    //     removeInvalid: false
+    //   });
+    //   doc.addSVG(svg);
+    //   // doc.output("datauri");
+    //   doc.save('Test.pdf');
+    // }
 
 
 
@@ -774,11 +780,11 @@ function event_handlers(self, i) {
     plots[i].export_png();
   });
   $(document).on("click", "." + anchor + " .export_svg", function() {
-    plots[i].test777();
+    plots[i].export_svg();
   });
-  $(document).on("click", "." + anchor + " .export_pdf", function() {
-    plots[i].test888();
-  });
+  // $(document).on("click", "." + anchor + " .export_pdf", function() {
+  //   plots[i].export_pdf();
+  // });
 
 
 
