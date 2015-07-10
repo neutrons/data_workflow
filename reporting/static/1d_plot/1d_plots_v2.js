@@ -122,7 +122,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .orient("bottom")
       .ticks(5)
       .tickSize(-plot_size.height)
-      .tickFormat(d3.format("6d"));
+      .tickFormat(formatter);
     if (log_scale_y == false) {
       yAxis = d3.svg
         .axis()

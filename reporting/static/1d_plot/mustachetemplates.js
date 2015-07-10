@@ -120,26 +120,27 @@ function mustachetemplates(i){
           "sub_menu": false
         }
         ]
-      },
-      "help":
-      {
-        "name": "Help",
-        "class": "help-menu",
-        "list": "help-list",
-        "buttons": [
-        {
-          "class": "topics",
-          "icon": "menu-icon fa fa-book",
-          "name": "Topics",
-          "sub_menu": false
-        },
-        {
-          "class": "about",
-          "icon": "menu-icon fa fa-info-circle",
-          "name": "About",
-          "sub_menu": false
-        }]
       }
+      // Uncomment to add Help menu
+      // "help":
+      // {
+      //   "name": "Help",
+      //   "class": "help-menu",
+      //   "list": "help-list",
+      //   "buttons": [
+      //   {
+      //     "class": "topics",
+      //     "icon": "menu-icon fa fa-book",
+      //     "name": "Topics",
+      //     "sub_menu": false
+      //   },
+      //   {
+      //     "class": "about",
+      //     "icon": "menu-icon fa fa-info-circle",
+      //     "name": "About",
+      //     "sub_menu": false
+      //   }]
+      // }
     }
     plots[i].tplt_menu = '<ul>' +
       '<li class="has-sub"><a href="#/" class="[[options.class]]">[[options.name]]</a>' +
@@ -175,17 +176,18 @@ function mustachetemplates(i){
             '</li>' +
         '[[/export.buttons]]' +
       '</ul></li>' +
-      '<li class="has-sub"><a href="#/" class="[[help.class]]">[[help.name]]</a>' +
-        '<ul class="[[help.list]]">' +
-        '[[#help.buttons]]' +
-          '<li[[#sub_menu]] class="has-sub"[[/sub_menu]]><span>' +
-            '<a class="[[class]]" href="#/"><i class="[[icon]]"></i>[[name]]</a></span>' +
-            '[[#sub_menu]]<ul>[[#sub_buttons]]' +
-            '<li><span><a class="[[class]]" href="#/"><i class="[[icon]]"></i>[[name]]</a></span></li>' +
-            '[[/sub_buttons]]</ul>[[/sub_menu]]' +
-            '</li>' +
-        '[[/help.buttons]]' +
-      '</ul></li>' +
+      // Uncomment to add Help menu
+      // '<li class="has-sub"><a href="#/" class="[[help.class]]">[[help.name]]</a>' +
+      //   '<ul class="[[help.list]]">' +
+      //   '[[#help.buttons]]' +
+      //     '<li[[#sub_menu]] class="has-sub"[[/sub_menu]]><span>' +
+      //       '<a class="[[class]]" href="#/"><i class="[[icon]]"></i>[[name]]</a></span>' +
+      //       '[[#sub_menu]]<ul>[[#sub_buttons]]' +
+      //       '<li><span><a class="[[class]]" href="#/"><i class="[[icon]]"></i>[[name]]</a></span></li>' +
+      //       '[[/sub_buttons]]</ul>[[/sub_menu]]' +
+      //       '</li>' +
+      //   '[[/help.buttons]]' +
+      // '</ul></li>' +
       '</ul>';
 
     //
@@ -336,25 +338,25 @@ function mustachetemplates(i){
       "</table></div>"; // + buttons;
 
     //
-    // Topics
+    // Topics (uncomment if added Help menu above)
     //
-    plots[i].data_topics = {
-      heading: "Help Topics"
-    };
-    plots[i].tplt_topics = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
-      "<div class='modal-content'>under construction" +
-      "</div>" + plots[i].close_button;
+    // plots[i].data_topics = {
+    //   heading: "Help Topics"
+    // };
+    // plots[i].tplt_topics = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
+    //   "<div class='modal-content'>under construction" +
+    //   "</div>" + plots[i].close_button;
 
     //
-    // About
+    // About (uncomment if added Help menu above)
     //
-    plots[i].data_about = {
-      heading: "About"
-    };
-    plots[i].tplt_about = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
-      "<div class='modal-content'><img src='/static/sns_logo_111x75.png' height='50%'><br>" +
-      "ORNL Spallation Neutron Source" +
-      "</div>" + plots[i].close_button;
+    // plots[i].data_about = {
+    //   heading: "About"
+    // };
+    // plots[i].tplt_about = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
+    //   "<div class='modal-content'><img src='/static/sns_logo_111x75.png' height='50%'><br>" +
+    //   "ORNL Spallation Neutron Source" +
+    //   "</div>" + plots[i].close_button;
 
     //
     // Dummy row for regions table

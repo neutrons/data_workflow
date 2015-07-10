@@ -407,10 +407,8 @@ function appfunctions(i){
     // Function to export svg as svg file
     //
     plots[i].export_svg = function() {
-      // alert("not yet implemented");
       var svg_link = "";
       svgAsDataUri(document.getElementById(this.anchor + "_svg"), {}, function(uri){
-      // svgAsDataUri(svg, {}, function(uri){
         svg_link = uri;
       });
       // Make an invisible link to the svg and click on it to download
@@ -517,15 +515,6 @@ $(function(){
       plots[i].d1 = null;
     }
   }
-
-  // setInterval(test, 5000);
-  // function test(){
-  //   for (i = 0; i < plots.length; i++) {
-  //     for (j = 0; j < plots[i].data_region.info_table.length; j++){
-  //       console.log(plots[i].anchor + ", " + plots[i].data_region.info_table[j].left + ", " + plots[i].data_region.info_table[j].right + " test is running");
-  //     }
-  //   }
-  // }
 
   i--; // For some reason this needs to be here...
 })
@@ -775,15 +764,26 @@ function event_handlers(self, i) {
     self.add_change_label(label);
   });
 
-  // Still working on this
+  // Export as PNG file
   $(document).on("click", "." + anchor + " .export_png", function() {
     plots[i].export_png();
   });
+  
+  // Export as SVG file
   $(document).on("click", "." + anchor + " .export_svg", function() {
     plots[i].export_svg();
   });
   // $(document).on("click", "." + anchor + " .export_pdf", function() {
   //   plots[i].export_pdf();
+  // });
+
+  // $(document).on("click", ".test", function(){
+  //   var output = "";
+  //   for (var key in plots[i].plot_options){
+  //     if (plots[i].plot_options.hasOwnProperty(key)){
+  //       output = output + key + ": " + plots[i].plot_options[key] + "\n";
+  //     }
+  //   }
   // });
 
 
