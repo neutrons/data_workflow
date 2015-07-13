@@ -120,9 +120,8 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .axis()
       .scale(x)
       .orient("bottom")
-      .ticks(5)
-      .tickSize(-plot_size.height)
-      .tickFormat(formatter);
+      .ticks(5, d3.format("4d"))
+      .tickSize(-plot_size.height);
     if (log_scale_y == false) {
       yAxis = d3.svg
         .axis()
@@ -690,7 +689,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
     if (window.Event && document.captureEvents)
       document.captureEvents(Event.MOUSEOVER);
     document.onmouseover = getMousePos;
-    tooltip.text(d3.round(d[0], 1) + ", " + d3.format("6.3g")(d[1]));
+    tooltip.text(d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]));
     tooltip.style("top", (mouseY - 10) + "px")
       .style("left", (mouseX + 10) + "px");
   }
@@ -706,7 +705,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
     if (window.Event && document.captureEvents)
       document.captureEvents(Event.MOUSEMOVE);
     document.onmousemove = getMousePos;
-    tooltip.text(d3.round(d[0], 1) + ", " + d3.format("6.3g")(d[1]));
+    tooltip.text(d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]));
     tooltip.style("top", (mouseY - 10) + "px")
       .style("left", (mouseX + 10) + "px");
   }
