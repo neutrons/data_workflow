@@ -16,6 +16,8 @@
 <script language="javascript" type="text/javascript" src="/static/thirdparty/jquery.sparkline.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css">
 <div id="dialog-confirm" title="Submit for post-processing" style="display:none">
    <p><span class="ui-icon ui-icon-alert" style="float: left"></span>
@@ -37,6 +39,7 @@
         });
     };
 
+{% if plot_data %}
     // Container for all plots on page
     var plots = [];
 
@@ -71,7 +74,7 @@
       var plot = new Plot_1d(raw_data, anchor, plot_options);
       plots.push(plot);
     });
-
+{% endif %}
 </script>
 
 {% endblock %}

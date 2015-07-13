@@ -4,13 +4,11 @@
 {% block header %}
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
 <script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
 
-{% block extra_files_header %}
-<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
-<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
-{% endblock %}
 <script>
     var records = {% autoescape off %}{{ run_list }}{% endautoescape %};
     var dynatable = null;
