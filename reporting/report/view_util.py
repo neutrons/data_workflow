@@ -366,9 +366,9 @@ def get_run_list_dict(run_list):
             reduce_url = reverse('report.views.submit_for_reduction', args=[str(r.instrument_id), r.run_number])
             instr_url = reverse('dasmon.views.live_runs', args=[str(r.instrument_id)])
 
-            run_dicts.append({"instrument_id": "<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id)),
-                              "run": "<a href='%s'>%s</a>" % (run_url, r.run_number),
-                              "reduce_url": "<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>" % (r.run_number, reduce_url, r.run_number),
+            run_dicts.append({"instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
+                              "run": str("<a href='%s'>%s</a>" % (run_url, r.run_number)),
+                              "reduce_url": str("<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>" % (r.run_number, reduce_url, r.run_number)),
                               "run_id": r.id,
                               "timestamp": str(df.format(settings.DATETIME_FORMAT)),
                               "status": get_run_status_text(r, use_element_id=True)
