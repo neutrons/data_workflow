@@ -600,7 +600,7 @@ function event_handlers(self, i) {
     // Change to Pan and Zoom mode
     $("." + anchor + " .pan_and_zoom").trigger("click");
     // Add zoom console item
-    $(".console-input.zoom").html(parseInt(100) + "%");
+    $("." + anchor + " .console-input.zoom").html(parseInt(100) + "%");
   });
 
   // When user clicks on y-axis Log Scale option in submenu,
@@ -630,7 +630,7 @@ function event_handlers(self, i) {
     // Change to Pan and Zoom mode
     $("." + anchor + " .pan_and_zoom").trigger("click");
     // Add zoom console item
-    $(".console-input.zoom").html(parseInt(100) + "%");
+    $("." + anchor + " .console-input.zoom").html(parseInt(100) + "%");
   });
 
   // When user clicks on View Grid option in menu,
