@@ -9,7 +9,10 @@
 <link rel="stylesheet" href="/static/reporting_layout_print.css" type="text/css" media="print" title="no title" charset="utf-8">
 <link rel="stylesheet" href="/static/thirdparty/jquery-ui-1.11.2.custom/jquery-ui.css" type="text/css" title="no title" charset="utf-8">
 <link rel="stylesheet" href="/static/tables.css" type="text/css" title="no title" charset="utf-8">
-<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
+
+{% block extra_files_header %}
+
+{% endblock %}
 <!--[if !(IE)]>
 <style>
 .fixed_table td, th { overflow:scroll; }
@@ -27,8 +30,9 @@
 <script src="/static/thirdparty/jquery-1.11.2.js"></script>
 <script src="/static/thirdparty/jquery-ui-1.11.2.custom/jquery-ui.js"></script>
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
-<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<!-- <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script> -->
 <script src="/static/thirdparty/jquery.ui.touch-punch.min.js"></script>
+
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -75,7 +79,7 @@
   {% endfor %}
   </div>
   {% else %}<div id="alert_message"></div>{% endif %}
-</div> 
+</div>
 
 <div class="breadcrumbs">
   {% block breadcrumb %}
@@ -115,5 +119,6 @@
     </table>
   </div>
 </footer>
+{% block extra_files_footer %}{% endblock %}
 </body>
 </html>

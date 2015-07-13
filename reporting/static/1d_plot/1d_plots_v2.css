@@ -1,0 +1,155 @@
+.main{
+    position: relative;
+    height: 391px;
+    width: 600px;
+    box-shadow: 2px 0 6px -4px, -2px 0 6px -4px;
+    margin-bottom: 30px;
+}
+.menu{
+    height: 27px;
+    width: 590px;
+    background-color: #7fbbe5;
+}
+.options,
+.modes,
+.export{
+    width: 60px;
+    display:inline-block;
+    vertical-align:top;
+}
+.reset{
+    width: 40px;
+    display:inline-block;
+    vertical-align:top;
+}
+ul{
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+}
+.menu_button{
+    width:100%;
+	position:relative;
+	background-color:#7fbae5;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:arial;
+	font-size:11px;
+	padding:7px 11px;
+	text-decoration:none;
+}
+.menu_button:hover {
+	background-color:#94c6e9;
+}
+.menu_button:active {
+	background-color:#94c6e9;
+}
+ul#options,
+ul#modes,
+ul#export{
+    display: none;
+}
+
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #555;
+    shape-rendering: crispEdges;
+}
+
+.axis text,
+text,
+.tooltip {
+    color: #555;
+    font-family: sans-serif;
+    font-size: 10px;
+}
+
+#y_label{
+	cursor: vertical-text;
+}
+
+#title {
+  font-size: 18px;
+  padding-top: 6px;
+  margin-top: 6px;
+}
+
+.x.axis path { fill: none; }
+
+.tick line {
+    stroke: lightgrey;
+    shape-rendering: crispEdges;
+    /*opacity: 0.7;*/
+}
+.grid path{
+    stroke-width: 0;
+}
+
+.focus circle {
+    fill: none;
+    stroke: steelblue;
+}
+
+.focus text{
+    font-size: 8pt;
+    color: #333;
+}
+
+#overlay{
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid grey;
+    visibility: hidden;
+    position: absolute;
+    left: 10%;
+    top: 40%;
+    width: 200px;
+    height: 150px;
+    text-align: center;
+    z-index: 1000;
+}
+
+#plot_anchor{
+    /* width: 150px;
+    height: 160px; */
+    padding: 0.5em;
+}
+#plot_anchor h3{
+    text-align: center;
+    margin: 0;
+}
+
+.default_1d {
+    /*margin: 5px 5px 5px 5px; */
+    /*padding-right: 5px;*/
+    /* padding: 50px 50px 50px 50px; */
+    /*margin-top: 10px;*/
+}
+
+.analysis_tools { border: 0; }
+
+.plot_refresh {
+    padding: 1px 0;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
+.extent {
+  /*stroke: #999;
+  shape-rendering: crispEdges;*/
+  fill: blue;
+  fill-opacity: .15;
+}
+
+.pan{
+    fill: none;
+    pointer-events: all;
+    cursor: move;
+}
+
+.brush-label{
+	fill: #fff;
+}

@@ -25,7 +25,7 @@
 
 .fixed_table {
 	table-layout: fixed;
-	width:530px;
+	width:580px;
 }
 
 .fixed_table input { min-width: 400px; }
@@ -50,7 +50,7 @@ td.error {
 	color: #9d301d;
 }
 
-th {
+.message_table th {
 	min-width: 150px;
 	max-width: 150px;
     text-align: left;

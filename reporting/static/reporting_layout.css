@@ -130,7 +130,7 @@
 }
 
 .status_box .status_text_ {
-    
+
 }
 
 .submenu{
@@ -162,13 +162,13 @@
     margin-right:35px;
 }
 
-.ui-menu, 
+.ui-menu,
 .ui-menu-item {
     width: 95%;
 }
 
 .summary {
-    padding-left: 5px;    
+    padding-left: 5px;
     padding-right: 5px;
 }
 
@@ -185,12 +185,12 @@
 
 .dashboard_highlight
 {
-    font-size:18px;    
+    font-size:18px;
 }
 
 .dashboard_highlight .dashboard_normal
 {
-    font-size:12px;    
+    font-size:12px;
 }
 
 .dashboard_plots
@@ -281,7 +281,7 @@ header {
 }
 
 .narrow_section {
-    width:90%; 
+    width:90%;
     margin-top:20px;
     margin-left: auto;
     margin-right: auto;
@@ -297,8 +297,8 @@ body {
     text-align:left;
     font-family: "Lucida Grande", Verdana, Arial, sans-serif;
     font-size:12px;
-    max-width:550px;
-    min-width:550px;
+    max-width:600px;
+    min-width:600px;
     color:#555555;
 }
 
@@ -325,12 +325,12 @@ img {border: 0;}
     padding-top:5px;
     padding-left:5px;
     padding-right:5px;
-    max-width:530px;
-    min-width:530px;
+    max-width:600px;
+    min-width:600px;
     color:#555555;
-    
+
     border: 1px solid #cdc0b0;
-    
+
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px; /* future proofing */

@@ -133,6 +133,34 @@ def detail(request, instrument, run_id):
     except:
         logging.error("Error finding reduced image: %s" % sys.exc_value)
 
+    # Look for an image of the reduction
+    json_data = None
+    plot_data = None
+    try:
+        from file_handling.models import JsonData
+        json_data_list = JsonData.objects.filter(run_id=run_object)
+        if len(json_data_list) > 0:
+            json_data_entry = json_data_list.latest('created_on')
+            if json_data_entry is not None :
+                json_data = json_data_entry.data
+                data_dict = json.loads(json_data)
+                if 'main_output' in data_dict:
+                    x_values = data_dict['main_output']['x']
+                    y_values = data_dict['main_output']['y']
+                    plot_data = [[x_values[i], y_values[i]] for i in range(len(x_values))]
+        elif not request.GET.get('test', '-1') == '-1':
+            plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
+                         [0.0089, 0.96], [0.0091, 1], [0.0092, 1], [0.0094, 1], [0.0096, 0.96],
+                         [0.0098, 0.98], [ 0.01, 0.99], [ 0.01, 1.1], [ 0.01, 0.96], [0.011, 0.9],
+                         [0.011, 0.82], [0.011, 0.69], [0.011, 0.64], [0.011, 0.48], [0.012, 0.37],
+                         [0.012, 0.25], [0.012, 0.14], [0.013, 0.1], [0.013,  0.1], [0.013, 0.14],
+                         [0.013, 0.15], [0.014, 0.16], [0.014, 0.2], [0.014,  0.2], [0.015, 0.22],
+                         [0.015, 0.22], [0.015, 0.19], [0.015, 0.2], [0.016, 0.17], [0.016, 0.16],
+                         [0.016, 0.13], [0.017, 0.1], [0.017, 0.072], [0.018, 0.054], [0.018, 0.041],
+                         [0.018, 0.027], [0.019, 0.025], [0.019, 0.02], [0.02, 0.026], [0.02, 0.03]]
+    except:
+        logging.error("Error finding reduced json data: %s" % sys.exc_value)
+
     # Check whether this is the last known run for this instrument
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
     if last_run_id == run_object:
@@ -159,6 +187,7 @@ def detail(request, instrument, run_id):
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
+                       'plot_data':plot_data,
                        'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
                        'image_url':image_url,
                        'prev_url': prev_url,
