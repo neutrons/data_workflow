@@ -39,9 +39,9 @@
         });
     };
 
+{% if plot_data %}
     // Container for all plots on page
     var plots = [];
-{% if plot_data %}
 
     // Anchor
     var anchor = "graph";
@@ -154,10 +154,12 @@
 {% endblock %}
 
 {% block extra_files_footer %}
+  {% if plot_data %}
   <script language="javascript" type="text/javascript" src="/static/1d_plot/1d_plots_v2.js"></script>
   <script language="javascript" type="text/javascript" src="/static/thirdparty/saveSvgAsPng.js"></script>
   <script language="javascript" type="text/javascript" src="/static/1d_plot/spectrum.js"></script>
   <script language="javascript" type="text/javascript" src="/static/1d_plot/mustachetemplates.js"></script>
   <script language="javascript" type="text/javascript" src="/static/1d_plot/appfunctions.js"></script>
   <script language="javascript" type="text/javascript" src="/static/thirdparty/cssmenu/script.js"></script>
+  {% endif %}
 {% endblock %}
