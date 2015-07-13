@@ -23,7 +23,7 @@ else:
 
 from django.db import transaction
 
-@transaction.commit_on_success
+@transaction.atomic
 def add_status_entry(headers, data):
     """
         Populate the reporting database with the contents

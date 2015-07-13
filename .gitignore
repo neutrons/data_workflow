@@ -4,6 +4,7 @@ dist/
 build/
 check_diff.py
 workflow/git_version.py
+local_settings.py
 
 *.o
 *.obj
@@ -11,3 +12,6 @@ workflow/git_version.py
 *.pyo
 *.so
 *.a
+
+.project
+.pydevproject

@@ -25,6 +25,7 @@ from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 from settings import IMAGE_PURGE_TIMEOUT
 from settings import TOPIC_PREFIX
+from settings import MIN_NOTIFICATION_LEVEL
 sys.path.append(INSTALLATION_DIR)
 
 import django
@@ -166,7 +167,7 @@ def process_ack(data=None):
         from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
-                if acks[proc_name] is not None and time.time() - acks[proc_name] > 15:
+                if acks[proc_name] is not None and time.time() - acks[proc_name] > 45:
                     logging.error("Client %s disappeared" % proc_name)
                     acks[proc_name] = None
                     send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
@@ -176,8 +177,8 @@ def process_ack(data=None):
             proc_name = data['src_name']
             if 'pid' in data:
                 proc_name = '%s:%s' % (proc_name, data['pid'])
-            if 'request_time' in data and time.time() - data['request_time'] > 10:
-                logging.error("Client %s took more than 10 secs to answer" % proc_name)
+            if 'request_time' in data and time.time() - data['request_time'] > 60:
+                logging.error("Client %s took more than 60 secs to answer" % proc_name)
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared" % proc_name)
                 send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
@@ -260,7 +261,9 @@ def process_signal(instrument_id, data):
                 signal.level = level
                 signal.timestamp = timestamp
                 signal.save()
-            notify_users(instrument_id, signal)
+            # Notify users only if it the signal level is greater than our threshold.
+            if level >= MIN_NOTIFICATION_LEVEL:
+                notify_users(instrument_id, signal)
         # Retract a signal
         else:
             for item in asserted_sig:
