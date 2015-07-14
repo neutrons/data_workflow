@@ -41,10 +41,13 @@ function Plot_1d(raw_data, anchor, plot_options) {
   var y_max;
   var xAxis;
   var xAxisMinor;
+  var xAxisItems;
   var yAxis;
   var yAxisMinor;
+  var yAxisItems;
   var mouseY;
   var mouseX;
+  var formatter;
   var data = [];
 
   for (var i = 0; i < raw_data.length; i++) {
@@ -141,6 +144,17 @@ function Plot_1d(raw_data, anchor, plot_options) {
   }
   self.get_axes();
 
+
+  this.axis_items = function(){
+    xAxisItems = svg.append("g")
+                          .attr("class", "x axis")
+                          .attr("transform", "translate(0," + plot_size.height + ")")
+                          .call(xAxis);
+    yAxisItems = svg.append("g")
+                          .attr("class", "y axis")
+                          .call(yAxis);
+  }
+
   //
   // On zoom action, scale data points and line such that the paths
   // don't become too thick or too thin
@@ -206,9 +220,19 @@ function Plot_1d(raw_data, anchor, plot_options) {
   this.toggle_grid = function() {
     grid = self.plot_options.grid;
     if (grid === true) {
-      append_grid = d3.selectAll("#" + self.anchor + " .tick").select("line").style("opacity", "0.7");
+      svg.select("#" + self.anchor + " g.x.axis").remove();
+      svg.select("#" + self.anchor + " g.y.axis").remove();
+      // xAxisItems = svg.append("g")
+      //                       .attr("class", "x axis")
+      //                       .attr("transform", "translate(0," + plot_size.height + ")")
+      //                       .call(xAxis);
+      // yAxisItems = svg.append("g")
+      //                       .attr("class", "y axis")
+      //                       .call(yAxis);
+      self.axis_items();
     } else if (grid === false) {
-      append_grid = d3.selectAll("#" + self.anchor + " .tick").select("line").style("opacity", "0");
+      d3.select(".y.axis").selectAll(".tick line").remove();
+      d3.select(".x.axis").selectAll(".tick line").remove();
     }
   }
 
@@ -358,6 +382,9 @@ function Plot_1d(raw_data, anchor, plot_options) {
     $("." + self.anchor + " .console-input.right").text(self.data_region.info_table[num_of_brushes].right);
   }
 
+  this.main_plot = svg.append("g").attr("class", "main_plot");
+  self.axis_items();
+
   //
   // Create clipping reference for zoom element
   //
@@ -372,13 +399,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
     .attr("height", plot_size.height);
 
 
-  this.main_plot = svg.append("g").attr("class", "main_plot");
-  test1 = svg.append("g");
-  test2 = svg.append("g");
-  test1.attr("class", "x axis")
-    .attr("transform", "translate(0," + plot_size.height + ")")
-    .call(xAxis);
-  test2.attr("class", "y axis").call(yAxis);
 
   // Reference to clip object
   self.main_plot.attr("clip-path", "url(#clip)");
@@ -618,7 +638,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
     }
   }
   this.toggle_pan_and_zoom(pan_flag);
-
   self.toggle_grid();
 
   //
