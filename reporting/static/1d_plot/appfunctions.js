@@ -111,12 +111,12 @@ function appfunctions(i){
 
         // Loop through regions to get index and region shortname of
         // the newly selected region
-        for (i = 0; i < parseInt(self.data_region.info_table.length); i++) {
-          self.data_region.info_table[i].active = false;
-          if (self.data_region.info_table[i].region_id == region_id) {
-            self.data_region.info_table[i].active = true;
-            region_shortname = self.data_region.info_table[i].region_shortname;
-            break;
+        for (var c = 0; c < parseInt(self.data_region.info_table.length); c++) {
+          self.data_region.info_table[c].active = false;
+          if (self.data_region.info_table[c].region_id == region_id) {
+            self.data_region.info_table[c].active = true;
+            region_shortname = self.data_region.info_table[c].region_shortname;
+            i = c;
           }
         }
         // Uncheck all other regions in side panel table
@@ -592,7 +592,7 @@ function event_handlers(self, i) {
     $("." + anchor + ".user-console").empty();
     var temp_options = plots[i].plot_options;
     // plots[i] = null;
-    plots[i] = new Plot_1d(raw_data, anchor, temp_options);
+    plots[i] = new Plot_1d(plots[i].raw_data, anchor, temp_options);
     mustachetemplates(i);
     appfunctions(i);
     // Change x-axis Log Scale checkbox icon in submenu
@@ -622,7 +622,7 @@ function event_handlers(self, i) {
     $("." + anchor + ".user-console").empty();
     var temp_options = plots[i].plot_options;
     // plots[i] = null;
-    plots[i] = new Plot_1d(raw_data, anchor, temp_options);
+    plots[i] = new Plot_1d(plots[i].raw_data, anchor, temp_options);
     mustachetemplates(i);
     appfunctions(i);
     // Change y-axis Log Scale checkbox icon in submenu
@@ -661,7 +661,7 @@ function event_handlers(self, i) {
 
   // When user clicks on Pan and Zoom mode,
   $(document).on("click", "." + anchor + " .pan_and_zoom", function(){
-    var flag = true;
+    var pan_bool = true;
     var pan_flag = $(this).children("i").attr("class");
     // Change Pan and Zoom checkbox icon in menu
     if (pan_flag == Plot_1d.menu_flag_radio_true) {}
@@ -678,7 +678,7 @@ function event_handlers(self, i) {
       self.data_region.info_table.length = 0;
       self.remove_all_regions();
     }
-    plots[i].toggle_pan_and_zoom(flag)
+    plots[i].toggle_pan_and_zoom(pan_bool)
     plots[i].clear_brush();
     $("." + anchor + " .sidebar").remove();
     // Reset regions data

@@ -3,11 +3,11 @@
 //
 function Plot_1d(raw_data, anchor, plot_options) {
   var self = this; // Assign scope
+  self.raw_data = raw_data;
   self.anchor = anchor;
   self.plot_options = plot_options;
   self.translate_val = [0, 0];
   self.scale_val = 1;
-
   var plot_size = {
     height: 244,
     width: 360
@@ -32,6 +32,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
   var marker_size_focus = 6;
   var path_stroke_width = 1.5;
   var data_error_bars = false;
+  var pan_bool = true;
   var append_grid;
   var w;
   var h;
@@ -45,6 +46,13 @@ function Plot_1d(raw_data, anchor, plot_options) {
   var yAxis;
   var yAxisMinor;
   var yAxisItems;
+  var svg;
+  var clip;
+  var interp_line; // interpolation line object
+  var points; // points object
+  var tooltip;
+  var little_pt;
+  var circle_ar;
   var mouseY;
   var mouseX;
   var formatter;
@@ -61,7 +69,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
   this.need_error_bars = function() {
     if (raw_data[0].length == 3) data_error_bars = true;
   }
-  self.need_error_bars();
 
   //
   // Get log scale flags from plot_options and draw plot scale
@@ -69,7 +76,8 @@ function Plot_1d(raw_data, anchor, plot_options) {
   this.get_scale = function(log_scale_x, log_scale_y) {
     x = log_scale_x ? d3.scale
       .log()
-      .range([0, plot_size.width]) :
+      .range([0, plot_size.width])
+      .nice() :
       d3.scale
       .linear()
       .range([0, plot_size.width]);
@@ -81,7 +89,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .linear()
       .range([plot_size.height, 0]);
   }
-  self.get_scale(log_scale_x, log_scale_y);
 
   //
   // Get domain of raw_data
@@ -102,7 +109,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
       y.domain([y_min, y_max]);
     }
   }
-  self.get_domain();
 
   //
   // Format values on axes
@@ -142,9 +148,10 @@ function Plot_1d(raw_data, anchor, plot_options) {
         .tickSize(-plot_size.width);
     }
   }
-  self.get_axes();
 
-
+  //
+  // Create axis values and tick marks
+  //
   this.axis_items = function(){
     xAxisItems = svg.append("g")
                           .attr("class", "x axis")
@@ -204,15 +211,17 @@ function Plot_1d(raw_data, anchor, plot_options) {
   //
   // Applies listener on user scroll and calls zm() the zoom function
   //
-  this.zoom_setup = d3.behavior.zoom()
-    .x(x)
-    .y(y);
-  this.zoom = self.zoom_setup
-    .on("zoom", self.zm);
-  this.zoom_reset = self.zoom_setup
-    .scale(self.scale_val)
-    .translate(self.translate_val)
-    .on("zoom", self.zm);
+  this.apply_zooms = function(){
+    self.zoom_setup = d3.behavior.zoom()
+      .x(x)
+      .y(y);
+    self.zoom = self.zoom_setup
+      .on("zoom", self.zm);
+    self.zoom_reset = self.zoom_setup
+      .scale(self.scale_val)
+      .translate(self.translate_val)
+      .on("zoom", self.zm);
+  }
 
   //
   // Toggles display of grid
@@ -222,40 +231,40 @@ function Plot_1d(raw_data, anchor, plot_options) {
     if (grid === true) {
       svg.select("#" + self.anchor + " g.x.axis").remove();
       svg.select("#" + self.anchor + " g.y.axis").remove();
-      // xAxisItems = svg.append("g")
-      //                       .attr("class", "x axis")
-      //                       .attr("transform", "translate(0," + plot_size.height + ")")
-      //                       .call(xAxis);
-      // yAxisItems = svg.append("g")
-      //                       .attr("class", "y axis")
-      //                       .call(yAxis);
       self.axis_items();
     } else if (grid === false) {
-      d3.select(".y.axis").selectAll(".tick line").remove();
-      d3.select(".x.axis").selectAll(".tick line").remove();
+      d3.select("#" + self.anchor + " .y.axis").selectAll(".tick line").remove();
+      d3.select("#" + self.anchor + " .x.axis").selectAll(".tick line").remove();
     }
   }
 
   //
-  // Remove old plot (if any) to redraw
+  // Create svg element and add axis items
   //
-  d3.select("#" + anchor).select("svg").remove();
+  this.create_svg = function(){
+    // Remove old plot (if any) to redraw
+    d3.select("#" + anchor).select("svg").remove();
+    // Draw svg element
+    svg = d3.select("#" + self.anchor).append("svg")
+      .attr("class", "default_1d")
+      .attr("id", self.anchor + "_svg")
+      .attr("width", plot_size.width + margin.left + margin.right)
+      .attr("height", plot_size.height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    self.main_plot = svg.append("g").attr("class", "main_plot");
+    self.axis_items();
+  }
 
   //
-  // Create svg element
+  // Initialize brush variables for region mode
   //
-  var svg = d3.select("#" + self.anchor).append("svg")
-    .attr("class", "default_1d")
-    .attr("id", self.anchor + "_svg")
-    .attr("width", plot_size.width + margin.left + margin.right)
-    .attr("height", plot_size.height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  // Brush element
-  this.d0 = null; // brush value left
-  this.d1 = null; // brush value right
-  this.last_brush = 0;
+  this.init_brush = function(){
+    // Brush element
+    self.d0 = null; // brush value left
+    self.d1 = null; // brush value right
+    self.last_brush = 0;
+  }
 
   //
   // Handles drawing of region
@@ -382,26 +391,22 @@ function Plot_1d(raw_data, anchor, plot_options) {
     $("." + self.anchor + " .console-input.right").text(self.data_region.info_table[num_of_brushes].right);
   }
 
-  this.main_plot = svg.append("g").attr("class", "main_plot");
-  self.axis_items();
-
   //
   // Create clipping reference for zoom element
   //
-  clip = svg.append("defs")
-    .append("clipPath")
-    .attr("id", "clip")
-    .append("rect")
-    .attr("id", "clip-rect")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("width", plot_size.width)
-    .attr("height", plot_size.height);
-
-
-
-  // Reference to clip object
-  self.main_plot.attr("clip-path", "url(#clip)");
+  this.create_clipping = function(){
+    clip = svg.append("defs")
+      .append("clipPath")
+      .attr("id", "clip")
+      .append("rect")
+      .attr("id", "clip-rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", plot_size.width)
+      .attr("height", plot_size.height);
+    // Reference to clip object
+    self.main_plot.attr("clip-path", "url(#clip)");
+  }
 
   //
   // Create text objects (x-axis, y-axis, title labels)
@@ -410,7 +415,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
     d3.selectAll("." + this.anchor + " .label").remove();
     var text_anchor;
     var pos;
-    //
     // Create X axis label
     if (self.plot_options.x_label_align == "left") {
       text_anchor = "start";
@@ -429,7 +433,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .attr("font-size", "11px")
       .style("text-anchor", text_anchor)
       .text(self.plot_options.x_label);
-    //
     // Create Y axis label
     if (self.plot_options.y_label_align == "left") {
       text_anchor = "start";
@@ -450,7 +453,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .attr("dx", "-1em")
       .style("text-anchor", text_anchor)
       .text(self.plot_options.y_label);
-    //
     // Create title
     if (self.plot_options.title_label_align == "left") {
       text_anchor = "start";
@@ -470,55 +472,53 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .style("text-anchor", text_anchor)
       .text(self.plot_options.title);
   }
-  self.create_labels();
 
   //
   // Interpolate data points to draw line graph
   //
-  this.main_plot.select("#" + self.anchor + " path").remove();
-  var interp_line = d3.svg.line()
-    .interpolate("linear")
-    .x(function(d) {
-      return x(d[0]);
-    })
-    .y(function(d) {
-      return y(d[1]);
-    });
-  this.main_plot.append("path")
-    .attr("d", interp_line(data))
-    .attr("fill", "none")
-    .attr("stroke", color)
-    .attr("stroke-width", path_stroke_width)
-    .style("opacity", 0.5);
-
-  this.data_points = d3.select("#" + self.anchor + " .main_plot").insert("g", ".focus")
-    .attr("class", "data_points")
-    .attr("clip-path", "url(#clip)");
+  this.create_data_line = function(){
+    self.main_plot.select("#" + self.anchor + " path").remove();
+    interp_line = d3.svg.line()
+      .interpolate("linear")
+      .x(function(d) {
+        return x(d[0]);
+      })
+      .y(function(d) {
+        return y(d[1]);
+      });
+    self.main_plot.append("path")
+      .attr("d", interp_line(data))
+      .attr("fill", "none")
+      .attr("stroke", color)
+      .attr("stroke-width", path_stroke_width)
+      .style("opacity", 0.5);
+  }
 
   //
-  // Tooltip obj
+  // Create data points in graph
   //
-  var tooltip = d3.select("body")
-    .append("text")
-    .attr("class", "tooltip")
-    .style("position", "absolute")
-    .style("z-index", "2010")
-    .style("visibility", "hidden")
-    .style("color", "black");
-
-  // Points obj with data
-  var points = self.data_points.selectAll("#" + anchor + " circle")
-    .data(data)
-    .enter();
-  var pan;
-  var little_pt;
-  var circle_ar;
+  this.create_data_points = function(){
+    self.data_points = d3.select("#" + self.anchor + " .main_plot").insert("g", ".focus")
+      .attr("class", "data_points")
+      .attr("clip-path", "url(#clip)");
+    // Points obj with data
+    points = self.data_points.selectAll("#" + anchor + " circle")
+      .data(data)
+      .enter();
+  }
 
   //
   // Make data points interactive by adding a hidden larger circle to
   // detect mouse movements, showing a colored outline on mouseover
   //
   this.interactive_points = function(points) {
+    tooltip = d3.select("body")
+      .append("text")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("z-index", "2010")
+      .style("visibility", "hidden")
+      .style("color", "black");
     // Circle obj with colored outline
     self.circle_ol = self.data_points.append("circle")
       .attr("class", "circle_ol")
@@ -616,9 +616,8 @@ function Plot_1d(raw_data, anchor, plot_options) {
   // When Pan and Zoom mode is selected, call the zoom function and
   // make sure data values are visible on mouseover
   //
-  pan_flag = true;
-  this.toggle_pan_and_zoom = function(pan_flag) {
-    if (pan_flag == true) {
+  this.toggle_pan_and_zoom = function(pan_bool) {
+    if (pan_bool == true) {
       // Remove any previous pan rect element
       d3.select("#" + self.anchor + " .pan").remove();
       // Points obj with data
@@ -637,8 +636,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
         .call(self.zoom);
     }
   }
-  this.toggle_pan_and_zoom(pan_flag);
-  self.toggle_grid();
 
   //
   // Enable d3 brush for regions mode
@@ -652,11 +649,13 @@ function Plot_1d(raw_data, anchor, plot_options) {
   }
 
   //
-  // If regions are predetermined and Region Mode is allowed
+  // Check if regions are predetermined and Region Mode is allowed
   //
-  this.predetermined_regions_flag = false;
-  if (self.plot_options.predetermined_region.length > 0 && self.plot_options.allow_region_mode == true) {
-    this.predetermined_regions_flag = true;
+  this.check_predetermined_regions = function(){
+    self.predetermined_regions_flag = false;
+    if (self.plot_options.predetermined_region.length > 0 && self.plot_options.allow_region_mode == true) {
+      self.predetermined_regions_flag = true;
+    }
   }
 
   //
@@ -681,7 +680,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
   //
   // Get data values on hover event
   //
-  function get_data_values(d) {
+  this.get_data_values = function(d) {
     svg.selectAll(".focus")
       .on("mouseover", function(d) {
         mouseover(d);
@@ -693,7 +692,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
         mouseout(d);
       });
   }
-  get_data_values(data);
 
   //
   // Show data values and outline when mouse neters data point
@@ -750,5 +748,21 @@ function Plot_1d(raw_data, anchor, plot_options) {
       mouseY = e.clientY + document.body.scrollTop;
     }
   }
+
+  self.need_error_bars();
+  self.get_scale(log_scale_x, log_scale_y);
+  self.get_domain();
+  self.get_axes();
+  self.apply_zooms();
+  self.create_svg();
+  self.init_brush();
+  self.create_clipping();
+  self.create_labels();
+  self.create_data_line();
+  self.create_data_points();
+  self.toggle_pan_and_zoom(pan_bool);
+  self.toggle_grid();
+  self.check_predetermined_regions();
+  self.get_data_values(data);
 
 }
