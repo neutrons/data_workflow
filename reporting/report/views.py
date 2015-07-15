@@ -192,6 +192,7 @@ def detail(request, instrument, run_id):
                        'image_url':image_url,
                        'prev_url': prev_url,
                        'next_url': next_url,
+                       'test2d': 'test2d' in request.GET,
                       }
     if icat_info == {}:
         template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]
