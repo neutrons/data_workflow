@@ -422,6 +422,30 @@ function appfunctions(i){
       $(a).remove();
     }
 
+    //
+    // Function to export data as text file
+    //
+    plots[i].export_txt = function(){
+      // Get and format data
+      var txt_link = "data:text/plain;charset=utf-8;,";
+      for (var j=0; j<plots[i].raw_data.length; j++){
+        var line = "";
+        for (var k=0; k<plots[i].raw_data[j].length; k++){
+          line = line + plots[i].raw_data[j][k] + "%20"; // add space character
+        }
+        txt_link = txt_link + line + '%0A'; // add newline character
+      }
+      // Make an invisible link to the txt and click on it to download
+      var a = document.createElement('a');
+      $(a).attr("id", "txt_file_link");
+      $("body").append(a);
+      $(a).attr("href", txt_link);
+      $(a).attr("download", "data.txt");
+      document.getElementById("txt_file_link").click();
+      // Remove invisible link
+      $(a).remove();
+    }
+
     // plots[i].export_pdf = function() {
     //   var svg_link = "";
     //   var doc = new jsPDF();
@@ -693,9 +717,7 @@ function event_handlers(self, i) {
   });
 
   $(document).on("click", "." + anchor + " .zoom_100", function(){
-    // There's a better way to do this...
-    $("." + anchor + " a.log_scale_x").trigger("click");
-    $("." + anchor + " a.log_scale_x").trigger("click");
+    plots[i].zoom_reset();
   })
 
   // When user clicks on Select Region mode,
@@ -771,6 +793,12 @@ function event_handlers(self, i) {
   $(document).on("click", "." + anchor + " .export_svg", function() {
     plots[i].export_svg();
   });
+
+  // Export as ASCII file
+  $(document).on("click", "." + anchor + " .export_txt", function(){
+    plots[i].export_txt();
+  });
+
   // $(document).on("click", "." + anchor + " .export_pdf", function() {
   //   plots[i].export_pdf();
   // });

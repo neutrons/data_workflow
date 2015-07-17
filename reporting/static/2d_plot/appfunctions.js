@@ -1,6 +1,5 @@
 function appfunctions(i){
     var anchor = plots[i].anchor;
-    console.log(anchor);
     var plot = plots[i]; // This plot object
 
     // Change mustache.js tags
@@ -202,7 +201,6 @@ function appfunctions(i){
     // Function to export svg as png file
     //
     plots[i].export_png = function() {
-      console.log(this.anchor)
       saveSvgAsPng(document.getElementById(this.anchor + "_svg"), "diagram.png", {
         scale: 2
       });
@@ -312,12 +310,10 @@ function event_handlers(self, i) {
     // Toggle log scale flag
     var log_flag = $(this).children("i").attr("class");
     if (log_flag == Plot_2d.menu_flag_check_false) {
-      console.log("is false, will change to true");
       log_flag = Plot_2d.menu_flag_check_true;
       plots[i].plot_options.log_scale = true;
     }
     else {
-      console.log("is true, will change to false");
       log_flag = Plot_2d.menu_flag_check_false;
       plots[i].plot_options.log_scale = false;
     }
@@ -340,7 +336,7 @@ function event_handlers(self, i) {
 
   // When user clicks on Pan and Zoom mode,
   $(document).on("click", "." + anchor + " .pan_and_zoom", function(){
-    var flag = true;
+    var pan_bool = true;
     var pan_flag = $(this).children("i").attr("class");
     // Change Pan and Zoom checkbox icon in menu
     if (pan_flag == Plot_2d.menu_flag_radio_true) {}
@@ -352,7 +348,7 @@ function event_handlers(self, i) {
         .attr("class", Plot_2d.menu_flag_radio_false);
     }
     $(this).children("i").attr("class", pan_flag);
-    plots[i].toggle_pan_and_zoom(flag);
+    plots[i].toggle_pan_and_zoom(pan_bool);
     // Add zoom console item
     self.add_console_item("zoom");
     // Set zoom console item to 100%
@@ -360,8 +356,6 @@ function event_handlers(self, i) {
   });
 
   $(document).on("click", "." + anchor + " .zoom_100", function(){
-    // There's a better way to do this...
-    // alert("implement this asap");
     plots[i].zoom_reset();
   })
 
@@ -380,7 +374,6 @@ function event_handlers(self, i) {
     }
     $(this).children("i").attr("class", select_flag);
     // If See Values mode is not already active, make it active
-    console.log("length: " + $("." + anchor + " .pan").length);
     if ($("." + anchor + " .pan").length == 0) {}
     else {
       // $("#" + anchor + " .pan").remove();

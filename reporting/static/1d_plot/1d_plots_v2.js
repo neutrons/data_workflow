@@ -114,10 +114,11 @@ function Plot_1d(raw_data, anchor, plot_options) {
   // Format values on axes
   //
   formatter = function(d) {
-    if (d < 1000000.0 && d > 1e-3) {
+    if (d < 1000000.0 && d > 1.0e-3) {
+      // console.log(d3.format("5.3g")(d));
       return d3.format("5.3g")(d);
     } else {
-      return d3.format("5.3g")(d);
+      return d3.format("1.2g")(d);
     }
   };
 
@@ -129,7 +130,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .axis()
       .scale(x)
       .orient("bottom")
-      .ticks(5, d3.format("4d"))
+      .ticks(4, formatter)
       .tickSize(-plot_size.height);
     if (log_scale_y == false) {
       yAxis = d3.svg
@@ -217,10 +218,36 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .y(y);
     self.zoom = self.zoom_setup
       .on("zoom", self.zm);
-    self.zoom_reset = self.zoom_setup
-      .scale(self.scale_val)
-      .translate(self.translate_val)
-      .on("zoom", self.zm);
+  }
+
+  //
+	// Resets zoom to 100% and translates back to origin
+	//
+  this.zoom_reset = function(){
+    // console.log("in zoom reset");
+    self.translate_val = [0,0];
+    self.zoom.translate(self.translate_val);
+    self.scale_val = 1;
+    self.zoom.scale(self.scale_val);
+    d3.select("#" + self.anchor + " path")
+      .attr("transform", "translate(" + self.translate_val + ")scale(" + self.scale_val + ")");
+    d3.selectAll("#" + self.anchor + " .datapt")
+      .attr("transform", "translate(" + self.translate_val + ")scale(" + self.scale_val + ")");
+    d3.selectAll("#" + self.anchor + " .focus")
+      .attr("transform", "translate(" + self.translate_val + ")scale(" + self.scale_val + ")");
+    d3.selectAll("#" + self.anchor + " .error_bar")
+      .attr("transform", "translate(" + self.translate_val + ")scale(" + self.scale_val + ")");
+    d3.selectAll("#" + self.anchor + " .extent")
+      .attr("transform", "translate(" + self.translate_val[0] + ",0)scale(" + self.scale_val + ")");
+    d3.selectAll("#" + self.anchor + " .brush-label")
+      .attr("transform", "translate(" + self.translate_val[0] + ",0)scale(1)");
+    svg.select("#" + self.anchor + " g.x.axis")
+      .call(xAxis);
+    svg.select("#" + self.anchor + " g.y.axis")
+      .call(yAxis);
+    self.toggle_grid();
+    self.scale_objects();
+    d3.select("." + self.anchor + " .console-input.zoom").html(parseInt(self.scale_val * 100) + "%");
   }
 
   //
