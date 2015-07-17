@@ -118,6 +118,12 @@ function mustachetemplates(i){
           "icon": "menu-icon fa fa-file-image-o",
           "name": "SVG",
           "sub_menu": false
+        },
+        {
+          "class": "export_txt",
+          "icon": "menu-icon fa fa-file-image-o",
+          "name": "TXT",
+          "sub_menu": false
         }
         ]
       }
