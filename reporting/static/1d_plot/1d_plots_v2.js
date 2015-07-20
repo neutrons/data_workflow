@@ -55,7 +55,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
   var circle_ar;
   var mouseY;
   var mouseX;
-  var formatter;
   var data = [];
 
   for (var i = 0; i < raw_data.length; i++) {
@@ -76,8 +75,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
   this.get_scale = function(log_scale_x, log_scale_y) {
     x = log_scale_x ? d3.scale
       .log()
-      .range([0, plot_size.width])
-      .nice() :
+      .range([0, plot_size.width]) :
       d3.scale
       .linear()
       .range([0, plot_size.width]);
@@ -656,7 +654,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
       little_pt.attr("transform", "translate(" + self.translate_val + ")scale(" + self.scale_val + ")");
       d3.select("#" + self.anchor + " path")
         .attr("transform", "translate(" + self.translate_val + ")scale(" + self.scale_val + ")");
-      pan = d3.select("#" + self.anchor + " .main_plot").insert("rect", ".datapt")
+      var pan = d3.select("#" + self.anchor + " .main_plot").insert("rect", ".datapt")
         .attr("class", "pan")
         .attr("width", plot_size.width)
         .attr("height", plot_size.height)
@@ -726,6 +724,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
   function mouseover(d) {
     mouseY = 0;
     mouseX = 0;
+    var text = "";
     self.circle_ol.attr("cx", x(d[0]))
       .attr("cy", y(d[1]))
       .style("visibility", "visible");
@@ -733,7 +732,11 @@ function Plot_1d(raw_data, anchor, plot_options) {
     if (window.Event && document.captureEvents)
       document.captureEvents(Event.MOUSEOVER);
     document.onmouseover = getMousePos;
-    tooltip.text(d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]));
+    text = d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]);
+    if (data_error_bars == true) text = text + " " +
+      decodeURI('%C2%B1') +
+      d3.format("6.3g")(d[2]);
+    tooltip.text(text);
     tooltip.style("top", (mouseY - 10) + "px")
       .style("left", (mouseX + 10) + "px");
   }
@@ -742,6 +745,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
   // Follow mouse near data point
   //
   function mousemove(d) {
+    var text = "";
     self.circle_ol.attr("cx", x(d[0]))
       .attr("cy", y(d[1]))
       .style("visibility", "visible");
@@ -749,7 +753,11 @@ function Plot_1d(raw_data, anchor, plot_options) {
     if (window.Event && document.captureEvents)
       document.captureEvents(Event.MOUSEMOVE);
     document.onmousemove = getMousePos;
-    tooltip.text(d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]));
+    text = d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]);
+    if (data_error_bars == true) text = text + " " +
+      decodeURI('%C2%B1') +
+      d3.format("6.3g")(d[2]);
+    tooltip.text(text);
     tooltip.style("top", (mouseY - 10) + "px")
       .style("left", (mouseX + 10) + "px");
   }
