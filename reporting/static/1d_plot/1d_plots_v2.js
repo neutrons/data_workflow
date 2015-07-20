@@ -602,7 +602,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
         })
         .attr("stroke-width", path_stroke_width / 2)
         .attr("stroke", color)
-        .attr("stroke-dasharray", "2,2")
+        //.attr("stroke-dasharray", "2,2")
         .attr("opacity", 0.7);
       // Append horizontal top line
       points.append("line").attr("class", "error_bar")
