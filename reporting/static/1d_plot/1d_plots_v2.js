@@ -511,12 +511,14 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .y(function(d) {
         return y(d[1]);
       });
+    var opacity = 0.5;
+    if (data_error_bars == true) opacity = 0.0;
     self.main_plot.append("path")
       .attr("d", interp_line(data))
       .attr("fill", "none")
       .attr("stroke", color)
       .attr("stroke-width", path_stroke_width)
-      .style("opacity", 0.5);
+      .style("opacity", opacity);
   }
 
   //
