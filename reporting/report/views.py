@@ -147,7 +147,8 @@ def detail(request, instrument, run_id):
                 if 'main_output' in data_dict:
                     x_values = data_dict['main_output']['x']
                     y_values = data_dict['main_output']['y']
-                    plot_data = [[x_values[i], y_values[i]] for i in range(len(x_values))]
+                    e_values = data_dict['main_output']['e']
+                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(x_values))]
         elif not request.GET.get('test', '-1') == '-1':
             plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
                          [0.0089, 0.96], [0.0091, 1], [0.0092, 1], [0.0094, 1], [0.0096, 0.96],
@@ -181,6 +182,9 @@ def detail(request, instrument, run_id):
     except:
         prev_url = None
 
+    is_test_2d = 'test2d' in request.GET
+    if is_test_2d:
+        plot_data = None
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
@@ -192,6 +196,7 @@ def detail(request, instrument, run_id):
                        'image_url':image_url,
                        'prev_url': prev_url,
                        'next_url': next_url,
+                       'test2d': is_test_2d,
                       }
     if icat_info == {}:
         template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]

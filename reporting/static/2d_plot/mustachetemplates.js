@@ -13,33 +13,8 @@ function mustachetemplates(i){
         "buttons": [
         {
           "class": "log_scale",
-          "icon": "menu-icon fa fa-line-chart",
-          "name": "Log Scale",
-          "sub_menu": true,
-          "sub_buttons": [
-          {
-            "class": "log_scale_x",
-            "icon": "menu-icon fa fa-square-o",
-            "name": "x-axis Log Scale",
-            "sub_menu": false
-          },
-          {
-            "class": "log_scale_y",
-            "icon": "menu-icon fa fa-square-o",
-            "name": "y-axis Log Scale",
-            "sub_menu": false
-          }]
-        },
-        {
-          "class": "view_grid",
           "icon": "menu-icon fa fa-square-o",
-          "name": "View Grid",
-          "sub_menu": false
-        },
-        {
-          "class": "color_picker",
-          "icon": "menu-icon fa fa-pencil-square-o",
-          "name": "Color",
+          "name": "Log Scale",
           "sub_menu": false
         },
         {
@@ -89,9 +64,9 @@ function mustachetemplates(i){
           ]
         },
         {
-          "class": "select_region",
+          "class": "see_values",
           "icon": "menu-icon fa fa-circle-thin",
-          "name": "Select Region",
+          "name": "See Values",
           "sub_menu": false
         }]
       },
@@ -118,16 +93,8 @@ function mustachetemplates(i){
           "icon": "menu-icon fa fa-file-image-o",
           "name": "SVG",
           "sub_menu": false
-        },
-        {
-          "class": "export_txt",
-          "icon": "menu-icon fa fa-file-image-o",
-          "name": "TXT",
-          "sub_menu": false
-        }
-        ]
+        }]
       }
-      // Uncomment to add Help menu
       // "help":
       // {
       //   "name": "Help",
@@ -182,7 +149,6 @@ function mustachetemplates(i){
             '</li>' +
         '[[/export.buttons]]' +
       '</ul></li>' +
-      // Uncomment to add Help menu
       // '<li class="has-sub"><a href="#/" class="[[help.class]]">[[help.name]]</a>' +
       //   '<ul class="[[help.list]]">' +
       //   '[[#help.buttons]]' +
@@ -249,9 +215,9 @@ function mustachetemplates(i){
     plots[i].tplt_modal = "<div class='modal-window [[name]]_modal' name='[[name]]'" +
       " style='top:[[top]]px; left:[[left]]px; width:[[width]]px;" +
       " height:[[height]]px;'></div>";
-    plots[i].tplt_sidebar = "<div class='sidebar' class='[[name]]_sidebar' name='[[name]]'" +
-      " style='top:[[top]]px; left:[[left]]px; width:[[width]]px;" +
-      " height:[[height]]px;'></div>";
+    // plots[i].tplt_sidebar = "<div class='sidebar' class='[[name]]_sidebar' name='[[name]]'" +
+    //   " style='top:[[top]]px; left:[[left]]px; width:[[width]]px;" +
+    //   " height:[[height]]px;'></div>";
 
     //
     // x Label
@@ -301,68 +267,68 @@ function mustachetemplates(i){
     //
     // Color Picker
     //
-    plots[i].data_color_picker = {
-      heading: "Choose color"
-    };
-    plots[i].tplt_color_picker = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
-      "<div class='modal-content'><input type='text' class='color_val' value='1'></input>" +
-      "</div>" + plots[i].modal_buttons;
+    // plots[i].data_color_picker = {
+    //   heading: "Choose color"
+    // };
+    // plots[i].tplt_color_picker = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
+    //   "<div class='modal-content'><input type='text' class='color_val' value='1'></input>" +
+    //   "</div>" + plots[i].modal_buttons;
 
     //
     // Select Region
     //
-    plots[i].data_region = {
-      "heading": "Regions",
-      "info_table": [
-        //{
-        //"graph_id": "graph",
-        //"region_id": "brush brush_A",
-        //"region_name": "A",
-        //"region_shortname": "brush_A",
-        //"active": false,
-        //"left": 2.71,
-        //"right": 3.14,
-        //"delete": false
-        //}
-      ]
+    // plots[i].data_region = {
+    //   "heading": "Regions",
+    //   "info_table": [
+    //     //{
+    //     //"graph_id": "graph",
+    //     //"region_id": "brush brush_A",
+    //     //"region_name": "A",
+    //     //"region_shortname": "brush_A",
+    //     //"active": false,
+    //     //"left": 2.71,
+    //     //"right": 3.14,
+    //     //"delete": false
+    //     //}
+    //   ]
+    // };
+    // plots[i].tplt_region = "<div class='sidebar-heading'>[[heading]]</div>" +
+    //   "<div class='sidebar-content'><table class='info_table'>Visible regions:<thead>" +
+    //     "<tr><th>ID</th>" +
+    //     "<th>Active</th>" +
+    //     "<th>Remove</th></tr>" +
+    //   "</thead>" +
+    //   "<tbody>" +
+    //     "[[#info_table]]" +
+    //     "<tr class='[[region_id]]_info'><td name='[[region_id]]'>[[region_name]]</td>" +
+    //     "<td><input type='radio' name='[[graph_id]]_regions' [[#active]] checked [[/active]]></input></td>" +
+    //     "<td><a href='#/' class='link_remove_region'><i class='fa fa-times'></i></a></td></tr>" +
+    //     "[[/info_table]]" +
+    //     "<tr class='new_row'><td><a href='#/' class='link_add_region'>Add</a></td><td></td>" +
+    //     "<td><a href='#/' class='link_remove_all_regions'>Remove All</a></td></tr>" +
+    //   "</tbody>" +
+    //   "</table></div>"; // + buttons;
+
+    //
+    // Topics
+    //
+    plots[i].data_topics = {
+      heading: "Help Topics"
     };
-    plots[i].tplt_region = "<div class='sidebar-heading'>[[heading]]</div>" +
-      "<div class='sidebar-content'><table class='info_table'>Visible regions:<thead>" +
-        "<tr><th>ID</th>" +
-        "<th>Active</th>" +
-        "<th>Remove</th></tr>" +
-      "</thead>" +
-      "<tbody>" +
-        "[[#info_table]]" +
-        "<tr class='[[region_id]]_info'><td name='[[region_id]]'>[[region_name]]</td>" +
-        "<td><input type='radio' name='[[graph_id]]_regions' [[#active]] checked [[/active]]></input></td>" +
-        "<td><a href='#/' class='link_remove_region'><i class='fa fa-times'></i></a></td></tr>" +
-        "[[/info_table]]" +
-        "<tr class='new_row'><td><a href='#/' class='link_add_region'>Add</a></td><td></td>" +
-        "<td><a href='#/' class='link_remove_all_regions'>Remove All</a></td></tr>" +
-      "</tbody>" +
-      "</table></div>"; // + buttons;
+    plots[i].tplt_topics = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
+      "<div class='modal-content'>..." +
+      "</div>" + plots[i].close_button;
 
     //
-    // Topics (uncomment if added Help menu above)
+    // About
     //
-    // plots[i].data_topics = {
-    //   heading: "Help Topics"
-    // };
-    // plots[i].tplt_topics = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
-    //   "<div class='modal-content'>under construction" +
-    //   "</div>" + plots[i].close_button;
-
-    //
-    // About (uncomment if added Help menu above)
-    //
-    // plots[i].data_about = {
-    //   heading: "About"
-    // };
-    // plots[i].tplt_about = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
-    //   "<div class='modal-content'><img src='/static/sns_logo_111x75.png' height='50%'><br>" +
-    //   "ORNL Spallation Neutron Source" +
-    //   "</div>" + plots[i].close_button;
+    plots[i].data_about = {
+      heading: "About"
+    };
+    plots[i].tplt_about = "<div class='modal-heading'>[[heading]]<span>×</span></div>" +
+      "<div class='modal-content'><img src='sns_logo_111x75.png' height='50%'><br>" +
+      "ORNL Spallation Neutron Source" +
+      "</div>" + plots[i].close_button;
 
     //
     // Dummy row for regions table

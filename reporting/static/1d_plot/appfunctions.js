@@ -111,12 +111,12 @@ function appfunctions(i){
 
         // Loop through regions to get index and region shortname of
         // the newly selected region
-        for (i = 0; i < parseInt(self.data_region.info_table.length); i++) {
-          self.data_region.info_table[i].active = false;
-          if (self.data_region.info_table[i].region_id == region_id) {
-            self.data_region.info_table[i].active = true;
-            region_shortname = self.data_region.info_table[i].region_shortname;
-            break;
+        for (var c = 0; c < parseInt(self.data_region.info_table.length); c++) {
+          self.data_region.info_table[c].active = false;
+          if (self.data_region.info_table[c].region_id == region_id) {
+            self.data_region.info_table[c].active = true;
+            region_shortname = self.data_region.info_table[c].region_shortname;
+            i = c;
           }
         }
         // Uncheck all other regions in side panel table
@@ -422,6 +422,30 @@ function appfunctions(i){
       $(a).remove();
     }
 
+    //
+    // Function to export data as text file
+    //
+    plots[i].export_txt = function(){
+      // Get and format data
+      var txt_link = "data:text/plain;charset=utf-8;,";
+      for (var j=0; j<plots[i].raw_data.length; j++){
+        var line = "";
+        for (var k=0; k<plots[i].raw_data[j].length; k++){
+          line = line + plots[i].raw_data[j][k] + "%20"; // add space character
+        }
+        txt_link = txt_link + line + '%0A'; // add newline character
+      }
+      // Make an invisible link to the txt and click on it to download
+      var a = document.createElement('a');
+      $(a).attr("id", "txt_file_link");
+      $("body").append(a);
+      $(a).attr("href", txt_link);
+      $(a).attr("download", "data.txt");
+      document.getElementById("txt_file_link").click();
+      // Remove invisible link
+      $(a).remove();
+    }
+
     // plots[i].export_pdf = function() {
     //   var svg_link = "";
     //   var doc = new jsPDF();
@@ -592,7 +616,7 @@ function event_handlers(self, i) {
     $("." + anchor + ".user-console").empty();
     var temp_options = plots[i].plot_options;
     // plots[i] = null;
-    plots[i] = new Plot_1d(raw_data, anchor, temp_options);
+    plots[i] = new Plot_1d(plots[i].raw_data, anchor, temp_options);
     mustachetemplates(i);
     appfunctions(i);
     // Change x-axis Log Scale checkbox icon in submenu
@@ -622,7 +646,7 @@ function event_handlers(self, i) {
     $("." + anchor + ".user-console").empty();
     var temp_options = plots[i].plot_options;
     // plots[i] = null;
-    plots[i] = new Plot_1d(raw_data, anchor, temp_options);
+    plots[i] = new Plot_1d(plots[i].raw_data, anchor, temp_options);
     mustachetemplates(i);
     appfunctions(i);
     // Change y-axis Log Scale checkbox icon in submenu
@@ -661,7 +685,7 @@ function event_handlers(self, i) {
 
   // When user clicks on Pan and Zoom mode,
   $(document).on("click", "." + anchor + " .pan_and_zoom", function(){
-    var flag = true;
+    var pan_bool = true;
     var pan_flag = $(this).children("i").attr("class");
     // Change Pan and Zoom checkbox icon in menu
     if (pan_flag == Plot_1d.menu_flag_radio_true) {}
@@ -678,7 +702,7 @@ function event_handlers(self, i) {
       self.data_region.info_table.length = 0;
       self.remove_all_regions();
     }
-    plots[i].toggle_pan_and_zoom(flag)
+    plots[i].toggle_pan_and_zoom(pan_bool)
     plots[i].clear_brush();
     $("." + anchor + " .sidebar").remove();
     // Reset regions data
@@ -693,9 +717,7 @@ function event_handlers(self, i) {
   });
 
   $(document).on("click", "." + anchor + " .zoom_100", function(){
-    // There's a better way to do this...
-    $("." + anchor + " a.log_scale_x").trigger("click");
-    $("." + anchor + " a.log_scale_x").trigger("click");
+    plots[i].zoom_reset();
   })
 
   // When user clicks on Select Region mode,
@@ -771,6 +793,12 @@ function event_handlers(self, i) {
   $(document).on("click", "." + anchor + " .export_svg", function() {
     plots[i].export_svg();
   });
+
+  // Export as ASCII file
+  $(document).on("click", "." + anchor + " .export_txt", function(){
+    plots[i].export_txt();
+  });
+
   // $(document).on("click", "." + anchor + " .export_pdf", function() {
   //   plots[i].export_pdf();
   // });

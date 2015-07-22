@@ -52,8 +52,8 @@ ul#export{
 }
 
 
-.axis path,
-.axis line {
+.main .axis path,
+.main .axis line {
     fill: none;
     stroke: #555;
     shape-rendering: crispEdges;
@@ -79,7 +79,7 @@ text,
 
 .x.axis path { fill: none; }
 
-.tick line {
+.main .tick line {
     stroke: lightgrey;
     shape-rendering: crispEdges;
     /*opacity: 0.7;*/
