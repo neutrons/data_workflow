@@ -403,6 +403,25 @@ function appfunctions(i){
       });
     }
 
+    function saveAs(uri, filename) {
+        var link = document.createElement('a');
+        if (typeof link.download === 'string') {
+            link.href = uri;
+            link.download = filename;
+
+            // Firefox requires the link to be in the body
+            document.body.appendChild(link);
+
+            // simulate click
+            link.click();
+
+            // remove the link when done
+            document.body.removeChild(link);
+        } else {
+            window.open(uri);
+        }
+    }
+
     //
     // Function to export svg as svg file
     //
@@ -411,21 +430,13 @@ function appfunctions(i){
       svgAsDataUri(document.getElementById(this.anchor + "_svg"), {}, function(uri){
         svg_link = uri;
       });
-      // Make an invisible link to the svg and click on it to download
-      var a = document.createElement('a');
-      $(a).attr("id", "svg_file_link");
-      $("body").append(a);
-      $(a).attr("href", svg_link);
-      $(a).attr("download", "diagram.svg");
-      document.getElementById("svg_file_link").click();
-      // Remove invisible link
-      $(a).remove();
+      saveAs(svg_link, "data.svg");
     }
 
     //
     // Function to export data as text file
     //
-    plots[i].export_txt = function(){
+    plots[i].export_txt = function() {       
       // Get and format data
       var txt_link = "data:text/plain;charset=utf-8;,";
       for (var j=0; j<plots[i].raw_data.length; j++){
@@ -435,15 +446,7 @@ function appfunctions(i){
         }
         txt_link = txt_link + line + '%0A'; // add newline character
       }
-      // Make an invisible link to the txt and click on it to download
-      var a = document.createElement('a');
-      $(a).attr("id", "txt_file_link");
-      $("body").append(a);
-      $(a).attr("href", txt_link);
-      $(a).attr("download", "data.txt");
-      document.getElementById("txt_file_link").click();
-      // Remove invisible link
-      $(a).remove();
+      saveAs(txt_link, "data.txt");
     }
 
     // plots[i].export_pdf = function() {
