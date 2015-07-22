@@ -322,6 +322,8 @@ function mustachetemplates(i){
         //"active": false,
         //"left": 2.71,
         //"right": 3.14,
+        //"left_idx": 0,
+        //"right_idx": 1,
         //"delete": false
         //}
       ]

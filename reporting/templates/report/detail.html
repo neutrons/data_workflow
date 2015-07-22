@@ -73,6 +73,7 @@
     $(function() {
       var plot = new Plot_1d(raw_data, anchor, plot_options);
       plots.push(plot);
+      console.log("{{ instrument }}_{{ run_object.run_number }}")
     });
 {% endif %}
 </script>
@@ -101,7 +102,7 @@
     <div class="graph" id="graph"></div>
     <div class="graph user-console"></div>
   </div>
-  
+
   {% elif image_url %}
   <p>
   <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">

@@ -30,7 +30,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to change labels (x-axis, y-axis, title) of plot object
+    // Changes labels (x-axis, y-axis, title) of plot object
     //
     plots[i].add_change_label = function(label) {
       var offset = $("#" + this.anchor).offset();
@@ -40,7 +40,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to add console item (zoom % or region bounds)
+    // Adds console item (zoom % or region bounds)
     //
     plots[i].add_console_item = function(id) {
       var self = this; // Assign scope
@@ -63,7 +63,7 @@ function appfunctions(i){
     plots[i].add_console_item("zoom");
 
     //
-    // Function when user adds a new region in Select Region mode
+    // Adds a new region in Select Region mode
     //
     plots[i].add_region = function() {
       // Deactivate other regions if there are any
@@ -83,7 +83,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to change region (either when user
+    // Changes active region (either when user
     // adds a new region or toggles a different region)
     //
     plots[i].change_region = function(region_id) {
@@ -100,9 +100,14 @@ function appfunctions(i){
       });
 
       // Change active region when user removes current active region
-      if (region_id != null) {
+      if (region_id != null) { // If changed region already existed
         region_shortname = change_region_in_table(region_id);
         activate_region_in_graph(region_shortname);
+      }
+      else { // If change region was triggered by adding new region
+        var last_region_index = parseInt(self.data_region.info_table.length)-1;
+        // Make previous region non active
+        self.data_region.info_table[last_region_index-1].active = false;
       }
       // Make the selected region active in side panel table
       function change_region_in_table(region_id) {
@@ -142,7 +147,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to remove region
+    // Removes region
     //
     plots[i].remove_region = function(region_id) {
       var self = this; // Assign scope
@@ -201,7 +206,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to remove all regions and go back to Pan and Zoom mode
+    // Remove all regions and go back to Pan and Zoom mode
     //
     plots[i].remove_all_regions = function() {
       // Loop through all regions and remove them
@@ -219,7 +224,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to create modal objects
+    // Creates modal objects
     //
     plots[i].graph_modal = function(offset, w, h, type) {
       var html;
@@ -268,7 +273,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to create sidebar
+    // Creates sidebar
     //
     plots[i].graph_sidebar = function(offset, w, h, type) {
       var html;
@@ -285,12 +290,10 @@ function appfunctions(i){
       $("." + this.anchor + ".main").prepend(html);
       // Append sidebar contents
       $("." + this.anchor + " .sidebar").html(sect_html);
-      // Make color picker interactive
-      // this.activate_spectrum();
     }
 
     //
-    // Function to create backdrop (for modal)
+    // Creates backdrop (for modal)
     //
     plots[i].create_backdrop = function(offset, w, h, type) {
       h = h + 64;
@@ -302,7 +305,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to create modal
+    // Creates modal
     //
     plots[i].create_modal = function(offset, w, h, type) {
       h = h + 64;
@@ -315,7 +318,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to create sidebar
+    // Creates sidebar
     //
     plots[i].create_sidebar = function(offset, w, h, type) {
       this.data_objs.name = type;
@@ -327,7 +330,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to add functionality to buttons in modal
+    // Adds functionality to buttons in modal
     //
     plots[i].modal_actions = function(change_id, modal_id) {
       if (change_id == "color_picker") {
@@ -344,7 +347,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to change labels (x-axis, y-axis, title labels)
+    // Changes labels (x-axis, y-axis, title labels)
     //
     plots[i].change_label = function(change_id, modal_id) {
       // Get user input from textbox
@@ -363,7 +366,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to make the color picker interactive
+    // Makes the color picker interactive
     //
     plots[i].activate_spectrum = function() {
       var self = this;
@@ -395,7 +398,7 @@ function appfunctions(i){
     // }
 
     //
-    // Function to export svg as png file
+    // Saves svg (plot and labels) as PNG file
     //
     plots[i].export_png = function() {
       saveSvgAsPng(document.getElementById(this.anchor + "_svg"), "diagram.png", {
@@ -423,7 +426,7 @@ function appfunctions(i){
     }
 
     //
-    // Function to export svg as svg file
+    // Saves svg (plot and labels) as SVG file
     //
     plots[i].export_svg = function() {
       var svg_link = "";
@@ -434,9 +437,9 @@ function appfunctions(i){
     }
 
     //
-    // Function to export data as text file
+    // Saves data as TXT file
     //
-    plots[i].export_txt = function() {       
+    plots[i].export_txt = function() {
       // Get and format data
       var txt_link = "data:text/plain;charset=utf-8;,";
       for (var j=0; j<plots[i].raw_data.length; j++){
@@ -490,61 +493,61 @@ $(function(){
     event_handlers(plots[i], i);
     // If there are predetermined regions in the graph, display them
     if (plots[i].predetermined_regions_flag == true) {
-      // For first predetermined region
-      // Get region bounds
-      plots[i].d0 = plots[i].plot_options.predetermined_region[0][0];
-      plots[i].d1 = plots[i].plot_options.predetermined_region[0][1];
-      // Trigger Select Region mode and add region
-      $("." + plots[i].anchor + " .select_region").trigger("click");
-
-      // Add region bounds to region data object
-      plots[i].data_region.info_table[0].left = formatter(plots[i].d0);
-      plots[i].data_region.info_table[0].right = formatter(plots[i].d1);
-
-      var this_region_shortname = plots[i].data_region.info_table[0].region_shortname;
-      // Add label to region near left bound
-      var x = parseInt($("." + plots[i].anchor + " ." + this_region_shortname + " .extent").attr("x"));
-      $("." + plots[i].anchor + " ." + this_region_shortname).children(".brush-label").attr("visibility", "visible")
-        .attr("x", x + 3)
-        .attr("y", 12);
-
-      // Get region name, left bound, right bound, insert in console item
-      $("." + plots[i].anchor + " .console-input.id").text(plots[i].data_region.info_table[0].region_name);
-      $("." + plots[i].anchor + " .console-input.left").text(plots[i].data_region.info_table[0].left);
-      $("." + plots[i].anchor + " .console-input.right").text(plots[i].data_region.info_table[0].right);
-
-      // For subsequent predetermined regions
-      for (var count = 1; count < plots[i].plot_options.predetermined_region.length; count++) {
-        // Get region bounds
-        plots[i].d0 = plots[i].plot_options.predetermined_region[count][0];
-        plots[i].d1 = plots[i].plot_options.predetermined_region[count][1];
-        // Trigger Add Region button and add region
-        $("." + plots[i].anchor + " .link_add_region").trigger("click");
-
-        // Add region bounds to region data object
-        plots[i].data_region.info_table[count].left = formatter(plots[i].d0);
-        plots[i].data_region.info_table[count].right = formatter(plots[i].d1);
-
-        var this_region_shortname = plots[i].data_region.info_table[count].region_shortname;
-        // Add label to region near left bound
-        var x = parseInt($("." + plots[i].anchor + " ." + this_region_shortname + " .extent").attr("x"));
-        $("." + plots[i].anchor + " ." + this_region_shortname).children(".brush-label").attr("visibility", "visible")
-          .attr("x", x + 3)
-          .attr("y", 12);
-
-        // Get region name, left bound, right bound, insert in console item
-        $("." + plots[i].anchor + " .console-input.id").text(plots[i].data_region.info_table[count].region_name);
-        $("." + plots[i].anchor + " .console-input.left").text(plots[i].data_region.info_table[count].left);
-        $("." + plots[i].anchor + " .console-input.right").text(plots[i].data_region.info_table[count].right);
-      }
-      // Reset region bounds
-      plots[i].d0 = null;
-      plots[i].d1 = null;
+      draw_predetermined_regions(self, i);
     }
   }
 
   i--; // For some reason this needs to be here...
-})
+});
+
+function draw_predetermined_regions(self, i){
+  // Loop through predetermined regions
+  for (var count = 0; count < plots[i].plot_options.predetermined_region.length; count++) {
+    var extent;
+    // Get region bounds
+    plots[i].d0 = plots[i].plot_options.predetermined_region[count][0];
+    plots[i].d1 = plots[i].plot_options.predetermined_region[count][1];
+
+    if (count == 0){
+      // Trigger Select Region mode and add region
+      $("." + plots[i].anchor + " .select_region").trigger("click");
+    }
+    else {
+      // Trigger Add Region button and add region
+      $("." + plots[i].anchor + " .link_add_region").trigger("click");
+    }
+    // Add region bounds and indices to region data object
+    extent = nearest_data(plots[i].raw_data, plots[i].d0, null);
+    plots[i].data_region.info_table[count].left_idx = extent[1];
+    extent = nearest_data(plots[i].raw_data, plots[i].d1, null);
+    plots[i].data_region.info_table[count].right_idx = extent[1];
+    plots[i].data_region.info_table[count].left = formatter(plots[i].d0);
+    plots[i].data_region.info_table[count].right = formatter(plots[i].d1);
+
+    var this_region_shortname = plots[i].data_region.info_table[count].region_shortname;
+    // Add label to region near left bound
+    var x = parseInt($("." + plots[i].anchor + " ." + this_region_shortname + " .extent")
+      .attr("x"));
+    $("." + plots[i].anchor + " ." + this_region_shortname)
+      .children(".brush-label")
+      .attr("visibility", "visible")
+      .attr("x", x + 3)
+      .attr("y", 12);
+    // Get region name, left bound, right bound, insert in console item
+    $("." + plots[i].anchor + " .console-input.id")
+      .text(plots[i].data_region.info_table[count].region_name);
+    $("." + plots[i].anchor + " .console-input.left")
+      .text(plots[i].data_region.info_table[count].left);
+    $("." + plots[i].anchor + " .console-input.right")
+      .text(plots[i].data_region.info_table[count].right);
+    // Make all previous regions non active
+    if (count > 0) plots[i].data_region.info_table[count-1].active = false;
+
+  }
+  // Reset region bounds
+  plots[i].d0 = null;
+  plots[i].d1 = null;
+}
 
 function event_handlers(self, i) {
   var anchor = plots[i].anchor;
