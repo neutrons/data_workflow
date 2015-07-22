@@ -736,7 +736,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
     document.onmouseover = getMousePos;
     text = d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]);
     if (data_error_bars == true) text = text + " " +
-      decodeURI('%C2%B1') +
+      decodeURI('%C2%B1') + " " +
       d3.format("6.3g")(d[2]);
     tooltip.text(text);
     tooltip.style("top", (mouseY - 10) + "px")
@@ -757,7 +757,7 @@ function Plot_1d(raw_data, anchor, plot_options) {
     document.onmousemove = getMousePos;
     text = d3.format("6.3g")(d[0]) + ", " + d3.format("6.3g")(d[1]);
     if (data_error_bars == true) text = text + " " +
-      decodeURI('%C2%B1') +
+      decodeURI('%C2%B1') + " " +
       d3.format("6.3g")(d[2]);
     tooltip.text(text);
     tooltip.style("top", (mouseY - 10) + "px")
