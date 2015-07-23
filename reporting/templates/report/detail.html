@@ -74,7 +74,6 @@
       var name = "{{ instrument }}_{{ run_object.run_number }}";
       var plot = new Plot_1d(raw_data, anchor, plot_options, name);
       plots.push(plot);
-      console.log("{{ instrument }}_{{ run_object.run_number }}")
     });
 {% endif %}
 </script>
