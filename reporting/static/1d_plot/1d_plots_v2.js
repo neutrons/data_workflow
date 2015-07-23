@@ -1,11 +1,12 @@
 //
 // Plot object that handles all SVG (d3) elements
 //
-function Plot_1d(raw_data, anchor, plot_options) {
+function Plot_1d(raw_data, anchor, plot_options, name) {
   var self = this; // Assign scope
   self.raw_data = raw_data;
   self.anchor = anchor;
   self.plot_options = plot_options;
+  self.name = name;
   self.translate_val = [0, 0];
   self.scale_val = 1;
   var plot_size = {

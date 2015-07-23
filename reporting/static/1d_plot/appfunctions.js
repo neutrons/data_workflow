@@ -401,7 +401,8 @@ function appfunctions(i){
     // Saves svg (plot and labels) as PNG file
     //
     plots[i].export_png = function() {
-      saveSvgAsPng(document.getElementById(this.anchor + "_svg"), "diagram.png", {
+      var filename = plots[i].name + ".png"
+      saveSvgAsPng(document.getElementById(this.anchor + "_svg"), filename, {
         scale: 2
       });
     }
@@ -429,11 +430,12 @@ function appfunctions(i){
     // Saves svg (plot and labels) as SVG file
     //
     plots[i].export_svg = function() {
+      var filename = plots[i].name + ".svg";
       var svg_link = "";
       svgAsDataUri(document.getElementById(this.anchor + "_svg"), {}, function(uri){
         svg_link = uri;
       });
-      saveAs(svg_link, "data.svg");
+      saveAs(svg_link, filename);
     }
 
     //
@@ -441,6 +443,7 @@ function appfunctions(i){
     //
     plots[i].export_txt = function() {
       // Get and format data
+      var filename = plots[i].name + ".txt";
       var txt_link = "data:text/plain;charset=utf-8;,";
       for (var j=0; j<plots[i].raw_data.length; j++){
         var line = "";
@@ -449,7 +452,7 @@ function appfunctions(i){
         }
         txt_link = txt_link + line + '%0A'; // add newline character
       }
-      saveAs(txt_link, "data.txt");
+      saveAs(txt_link, filename);
     }
 
     // plots[i].export_pdf = function() {
