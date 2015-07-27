@@ -110,14 +110,14 @@
 /**********************************************************/
 .modal-content::-webkit-scrollbar-track,
 .sidebar-content::-webkit-scrollbar-track{
-	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-	background-color: #F5F5F5;
+	/*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
+	background-color: #FFFFFF;
 }
 .modal-content::-webkit-scrollbar,
 .sidebar-content::-webkit-scrollbar{
 	width: 6px;
 	height: 6px;
-	background-color: #F5F5F5;
+	background-color: #FFFFFF;
 }
 .modal-content::-webkit-scrollbar-thumb,
 .sidebar-content::-webkit-scrollbar-thumb{

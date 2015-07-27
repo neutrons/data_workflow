@@ -1,11 +1,12 @@
 //
 // Plot object that handles all SVG (d3) elements
 //
-function Plot_1d(raw_data, anchor, plot_options) {
+function Plot_1d(raw_data, anchor, plot_options, name) {
   var self = this; // Assign scope
   self.raw_data = raw_data;
   self.anchor = anchor;
   self.plot_options = plot_options;
+  self.name = name;
   self.translate_val = [0, 0];
   self.scale_val = 1;
   var plot_size = {
@@ -222,7 +223,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
 	// Resets zoom to 100% and translates back to origin
 	//
   this.zoom_reset = function(){
-    // console.log("in zoom reset");
     self.translate_val = [0,0];
     self.zoom.translate(self.translate_val);
     self.scale_val = 1;
@@ -285,7 +285,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
   // Initialize brush variables for region mode
   //
   this.init_brush = function(){
-    // Brush element
     self.d0 = null; // brush value left
     self.d1 = null; // brush value right
     self.last_brush = 0;
@@ -329,34 +328,16 @@ function Plot_1d(raw_data, anchor, plot_options) {
 
     brushend = function(s) {
       // Snap region to nearest data points
-      var bisect_data = d3.bisector(function(d) {
-        return d[0];
-      }).left;
-      var i = bisect_data(data, self.d0);
-      // console.log("i : " + i);
-      if (i != 0 && i < data.length) {
-        if (Math.abs(data[i - 1][0] - self.d0) < Math.abs(data[i][0] - self.d0)) {
-          self.d0 = data[i - 1][0]
-        } else {
-          self.d0 = data[i][0]
-        }
-      } else if (i <= 0) {
-        self.d0 = data[i][0]
-      } else if (i >= data.length) {
-        self.d0 = data[i - 1][0]
-      }
-      i = bisect_data(data, self.d1);
-      if (i != 0 && i < data.length) {
-        if (Math.abs(data[i - 1][0] - self.d1) < Math.abs(data[i][0] - self.d1)) {
-          self.d1 = data[i - 1][0]
-        } else {
-          self.d1 = data[i][0]
-        }
-      } else if (i <= 0) {
-        self.d1 = data[i][0];
-      } else if (i >= data.length) {
-        self.d1 = data[i - 1][0]
-      }
+      var l_idx;
+      var r_idx;
+      var new_extent;
+
+      new_extent = nearest_data(data, self.d0, l_idx);
+      self.d0 = new_extent[0];
+      l_idx = new_extent[1];
+      new_extent = nearest_data(data, self.d1, r_idx);
+      self.d1 = new_extent[0];
+      r_idx = new_extent[1];
 
       d3.select(s).transition()
         .call(brush_action.extent([self.d0, self.d1]))
@@ -373,6 +354,8 @@ function Plot_1d(raw_data, anchor, plot_options) {
       }
       self.data_region.info_table[this_index].left = formatter(self.d0);
       self.data_region.info_table[this_index].right = formatter(self.d1);
+      self.data_region.info_table[this_index].left_idx = l_idx;
+      self.data_region.info_table[this_index].right_idx = r_idx;
       $(s).children(".brush-label").attr("x", x(self.d0) + 3).attr("y", 12);
       self.d0 = null;
       self.d1 = null;
@@ -383,7 +366,6 @@ function Plot_1d(raw_data, anchor, plot_options) {
       .datum(function() {
         return self.last_brush;
       })
-      // .attr("class", "brush")
       .attr("class", function(d) {
         return this_id = "brush brush_" + String.fromCharCode(65 + d);
       })
@@ -409,11 +391,39 @@ function Plot_1d(raw_data, anchor, plot_options) {
       "active": true,
       "left": 0,
       "right": 0,
+      "left_idx": 0,
+      "right_idx": 0,
       "delete": false
     });
     $("." + self.anchor + " .console-input.id").text(self.data_region.info_table[num_of_brushes].region_name);
     $("." + self.anchor + " .console-input.left").text(self.data_region.info_table[num_of_brushes].left);
     $("." + self.anchor + " .console-input.right").text(self.data_region.info_table[num_of_brushes].right);
+  }
+
+  //
+  // Find nearest data point to snap to
+  //
+  nearest_data = function(data, val, idx){
+    var bisect_data = d3.bisector(function(d) {
+      return d[0];
+    }).left;
+    var i = bisect_data(data, val);
+    if (i != 0 && i < data.length) {
+      if (Math.abs(data[i - 1][0] - val) < Math.abs(data[i][0] - val)) {
+        val = data[i - 1][0];
+        idx = i-1;
+      } else {
+        val = data[i][0];
+        idx = i;
+      }
+    } else if (i <= 0) {
+      val = data[i][0];
+      idx = i;
+    } else if (i >= data.length) {
+      val = data[i - 1][0];
+      idx = i-1;
+    }
+    return [val, idx];
   }
 
   //
