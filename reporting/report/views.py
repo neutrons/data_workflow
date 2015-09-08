@@ -148,7 +148,7 @@ def detail(request, instrument, run_id):
                     x_values = data_dict['main_output']['x']
                     y_values = data_dict['main_output']['y']
                     e_values = data_dict['main_output']['e']
-                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(x_values))]
+                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
         elif not request.GET.get('test', '-1') == '-1':
             plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
                          [0.0089, 0.96], [0.0091, 1], [0.0092, 1], [0.0094, 1], [0.0096, 0.96],
