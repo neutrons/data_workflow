@@ -136,6 +136,8 @@ def detail(request, instrument, run_id):
     # Look for an image of the reduction
     json_data = None
     plot_data = None
+    x_label = "Q [1/\u00C5]"
+    y_label = "Absolute reflectivity"
     try:
         from file_handling.models import JsonData
         json_data_list = JsonData.objects.filter(run_id=run_object)
@@ -148,6 +150,10 @@ def detail(request, instrument, run_id):
                     x_values = data_dict['main_output']['x']
                     y_values = data_dict['main_output']['y']
                     e_values = data_dict['main_output']['e']
+                    if 'x_label' in data_dict['main_output']:
+                        x_label = data_dict['main_output']['x_label']
+                    if 'y_label' in data_dict['main_output']:
+                        y_label = data_dict['main_output']['y_label']
                     plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
         elif not request.GET.get('test', '-1') == '-1':
             plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
@@ -192,6 +198,8 @@ def detail(request, instrument, run_id):
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
                        'plot_data':plot_data,
+                       'plot_label_x':x_label,
+                       'plot_label_y':y_label,
                        'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
                        'image_url':image_url,
                        'prev_url': prev_url,
