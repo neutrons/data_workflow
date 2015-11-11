@@ -163,10 +163,10 @@ def detail(request, instrument, run_id):
                         y_values = data_dict['main_output']['data']['1'][1]
                         e_values = data_dict['main_output']['data']['1'][2]
                         if 'axes' in data_dict['main_output']:
-                            if 'xlabel' in data_dict['main_output']:
-                                x_label = data_dict['main_output']['xlabel']
-                            if 'ylabel' in data_dict['main_output']:
-                                y_label = data_dict['main_output']['ylabel']
+                            if 'xlabel' in data_dict['main_output']['axes']:
+                                x_label = data_dict['main_output']['axes']['xlabel']
+                            if 'ylabel' in data_dict['main_output']['axes']:
+                                y_label = data_dict['main_output']['axes']['ylabel']
                         plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
         elif not request.GET.get('test', '-1') == '-1':
             plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
