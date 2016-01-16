@@ -1,0 +1,27 @@
+{% extends "report/base_instrument.html" %}
+
+{% block title %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
+{% block banner %}{{ instrument }} Run {{ run_object.run_number }}{% endblock %}
+
+{% block header %}
+<script>
+    $(function() {
+      var availableTags = ["10","12","13"];
+      $( "#{{ form.experiment.id_for_label }}" ).autocomplete({ source: availableTags });
+    });
+</script>
+{% endblock %}
+
+{% block summary %}
+<form action="" method="POST">{% csrf_token %}
+<table>
+{{ form.as_table }}
+</table>
+</form>
+
+<script>
+
+$( "#{{ form.instrument.id_for_label }}" ).change(function() { window.location.href = '?instrument='+$( "#{{ form.instrument.id_for_label }} option:selected" ).text(); });
+</script>
+{% endblock %}
+{% block nocontent %}{% endblock %}
