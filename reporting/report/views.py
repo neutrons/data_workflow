@@ -7,6 +7,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.core.context_processors import csrf
 from django.utils import dateformat, timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
@@ -36,8 +37,27 @@ def processing_admin(request):
     template_values = users.view_util.fill_template_values(request, **template_values)
 
     if request.method == 'POST':
-        # Check that the user is part of the instrument team
         processing_form = ProcessingForm(request.POST)
+        if processing_form.is_valid():
+            output = processing_form.process()
+            template_values['notes'] = output['report']
+            
+            # Submit task and append success outcome to notes.
+            if 'runs' in output and 'instrument' in output \
+                and 'task' in output and output['task'] is not None:
+                submission_errors = ""
+                for run_obj in output['runs']:
+                    try:
+                        view_util.send_processing_request(output['instrument'], run_obj, 
+                                                          user=request.user, destination=output['task'])
+                    except:
+                        submission_errors += "%s run %s could not be submitted: %s<br>" % \
+                            (str(run_obj.instrument_id), str(run_obj.run_number), sys.exc_value)
+                        logging.error(sys.exc_value)
+                template_values['notes'] += submission_errors
+                if len(submission_errors) == 0:
+                    template_values['notes'] += "<b>All tasks were submitted</b><br>"
+                    
     else:
         processing_form = ProcessingForm(initial=request.GET)
         
@@ -45,6 +65,7 @@ def processing_admin(request):
         
 
     template_values['form'] = processing_form
+    template_values.update(csrf(request))
 
     return render_to_response('report/processing_admin.html',
                               template_values)
