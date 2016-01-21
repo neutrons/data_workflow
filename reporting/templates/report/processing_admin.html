@@ -29,12 +29,20 @@ For example, entering <i>4,6-8</i> is the same as entering <i>4,6,7,8</i>.
 </ul>
 
 <form action="" method="POST">{% csrf_token %}
-<table>
+<table class="property_table" >
 {{ form.as_table }}
-</table>
+<tr><th></th><td>
+<div style="float:right;" >
 <input id="submit_button" title="Click submit tasks" type="submit" name="submit" value="submit"/>
+</div>
+</td></tr>
+</table>
 </form>
+
+<p>
 {{ notes|safe }}
+<p>
+
 <script>
 
 $( "#{{ form.instrument.id_for_label }}" ).change(function() { window.location.href = '?instrument='+$( "#{{ form.instrument.id_for_label }} option:selected" ).text()+'&run_list='+$( "#{{ form.run_list.id_for_label }}" ).val()+'&experiment='+$( "#{{ form.experiment.id_for_label }}" ).val()+'&task='+$( "#{{ form.task.id_for_label }}" ).val(); });

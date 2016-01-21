@@ -72,7 +72,7 @@ class ProcessingForm(forms.Form):
             instrument = Instrument.objects.get(name=self.cleaned_data['instrument'])
             output_report += "Found instrument %s<br>" % str(instrument)
         except Instrument.DoesNotExist:
-            output_report += "Could not find instrument [%s]" % self.cleaned_data['instrument']
+            output_report += "Could not find instrument %s<br>" % self.cleaned_data['instrument']
             output_report += "Fix your inputs and re-submit<br>"
             return {'report': output_report, 'task': None}
         
@@ -82,7 +82,7 @@ class ProcessingForm(forms.Form):
                                     expt_name=self.cleaned_data['experiment'].upper())
             output_report += "Found experiment %s<br>" % str(ipts)
         except IPTS.DoesNotExist:
-            output_report += 'Could not find experiment [%s]' % self.cleaned_data['experiment']
+            output_report += "Could not find experiment %s<br>" % self.cleaned_data['experiment']
             output_report += "Fix your inputs and re-submit<br>"
             return {'report': output_report, 'task': None}
         
