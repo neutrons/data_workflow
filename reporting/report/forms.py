@@ -48,6 +48,7 @@ class ProcessingForm(forms.Form):
     instrument = forms.ChoiceField(choices=[])
     experiment = forms.CharField(required=False, initial='')
     run_list = forms.CharField(required=False, initial='', validators=[validate_integer_list])
+    create_as_needed = forms.BooleanField(required=False, initial=False)
     task = forms.ChoiceField(choices=[])
 
     def __init__(self, *args, **kwargs):
@@ -62,6 +63,17 @@ class ProcessingForm(forms.Form):
         tasks = [ (str(q), str(q)) for q in queue_ids ]
         self.fields['task'].choices = tasks
 
+    def set_initial(self, initial):
+        """
+            Set the initial values after cleaning them up
+            @param initial: initial dictionary
+        """
+        self.initial = {'instrument': initial['instrument'],
+                        'experiment': initial['experiment'],
+                        'run_list': initial['run_list'],
+                        'task': initial['task'],
+                        'create_as_needed': self.fields['create_as_needed'].to_python(initial['create_as_needed'])}
+        
     def process(self):
         """
             Process the completed form
@@ -100,6 +112,8 @@ class ProcessingForm(forms.Form):
                 invalid_runs.append(run)
         if len(invalid_runs) == 0:
             output_report += "All the runs were valid<br>"
+        elif self.cleaned_data['create_as_needed']:
+            output_report += "The following runs will be created: %s<br>" % str(invalid_runs)
         else:
             output_report += "The following were invalid runs: %s<br>" % str(invalid_runs)
             output_report += "Fix your inputs and re-submit<br>"

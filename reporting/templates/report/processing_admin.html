@@ -26,6 +26,10 @@ you start typing the experiment number.
 <b>Run List</b>: Runs must be comma-separated, and a dash can be used to specify ranges.
 For example, entering <i>4,6-8</i> is the same as entering <i>4,6,7,8</i>.
 </li>
+<li>
+<b>New Runs</b>: Select <i>Create as needed</i> if some of the runs are not already in the system.
+This option is turned off by default to prevent the accidental creation of bad runs.
+</li>
 </ul>
 
 <form action="" method="POST">{% csrf_token %}
@@ -45,7 +49,7 @@ For example, entering <i>4,6-8</i> is the same as entering <i>4,6,7,8</i>.
 
 <script>
 
-$( "#{{ form.instrument.id_for_label }}" ).change(function() { window.location.href = '?instrument='+$( "#{{ form.instrument.id_for_label }} option:selected" ).text()+'&run_list='+$( "#{{ form.run_list.id_for_label }}" ).val()+'&experiment='+$( "#{{ form.experiment.id_for_label }}" ).val()+'&task='+$( "#{{ form.task.id_for_label }}" ).val(); });
+$( "#{{ form.instrument.id_for_label }}" ).change(function() { window.location.href = '?instrument='+$( "#{{ form.instrument.id_for_label }} option:selected" ).text()+'&run_list='+$( "#{{ form.run_list.id_for_label }}" ).val()+'&experiment='+$( "#{{ form.experiment.id_for_label }}" ).val()+'&task='+$( "#{{ form.task.id_for_label }}" ).val()+'&create_as_needed='+$( "#{{ form.create_as_needed.id_for_label }}" ).prop( "checked" ); });
 </script>
 {% endblock %}
 {% block nocontent %}{% endblock %}

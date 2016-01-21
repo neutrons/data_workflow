@@ -33,7 +33,8 @@ def processing_admin(request):
     """
         Form to let admins easily reprocess parts of the workflow
     """
-    template_values = {}
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
+    template_values = {'breadcrumbs':breadcrumbs}
     template_values = users.view_util.fill_template_values(request, **template_values)
 
     if request.method == 'POST':
@@ -57,13 +58,12 @@ def processing_admin(request):
                 template_values['notes'] += submission_errors
                 if len(submission_errors) == 0:
                     template_values['notes'] += "<b>All tasks were submitted</b><br>"
-                    
     else:
-        processing_form = ProcessingForm(initial=request.GET)
+        processing_form = ProcessingForm()
+        processing_form.set_initial(request.GET)
         
         # Get list of available experiments
         
-
     template_values['form'] = processing_form
     template_values.update(csrf(request))
 
