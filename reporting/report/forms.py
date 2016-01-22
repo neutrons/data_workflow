@@ -17,8 +17,8 @@ def validate_integer_list(value):
     """
     # Look for a list of ranges
     range_list = value.split(',')
-    for range in range_list:
-        for item in range.split('-'):
+    for item in range_list:
+        for item in item.split('-'):
             try:
                 int(item.strip())
             except:
@@ -28,10 +28,10 @@ class ProcessingForm(forms.Form):
     """
         Form to send a post-processing request
     """
-    instrument = forms.ChoiceField(choices=[])
+    instrument = forms.ChoiceField(required=True, choices=[])
     experiment = forms.CharField(required=False, initial='')
     run_list = forms.CharField(required=False, initial='', validators=[validate_integer_list])
-    task = forms.ChoiceField(choices=[])
+    task = forms.ChoiceField(required=False, choices=[])
 
     def __init__(self, *args, **kwargs):
         super(ProcessingForm, self).__init__(*args, **kwargs)
@@ -42,6 +42,7 @@ class ProcessingForm(forms.Form):
         
         # Get the list of available inputs
         queue_ids = StatusQueue.objects.filter(is_workflow_input=True)
-        tasks = [ (str(q), str(q)) for q in queue_ids ]
+        tasks = [ (str(q), str(q)) for q in queue_ids if (str(q).endswith('REQUEST') or \
+                                                          str(q).endswith('DATA_READY') or \
+                                                          str(q).endswith('NOT_NEEDED'))]
         self.fields['task'].choices = tasks
-

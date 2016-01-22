@@ -39,12 +39,21 @@ def processing_admin(request):
         # Check that the user is part of the instrument team
         processing_form = ProcessingForm(request.POST)
     else:
-        processing_form = ProcessingForm(initial=request.GET)
+        if 'instrument' in request.GET:
+            instrument = request.GET['instrument']
+        else:
+            instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
+            instrument = instruments[0]
         
         # Get list of available experiments
+        instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+        ipts = [ str(i) for i in IPTS.objects.filter(instruments=instrument_id) ]
         
+        processing_form = ProcessingForm(initial={'instrument': instrument, 'task': 'POSTPROCESS.DATA_READY'})
 
     template_values['form'] = processing_form
+    template_values['experiment_list'] = ipts
+    template_values['notes'] =  ''
 
     return render_to_response('report/processing_admin.html',
                               template_values)

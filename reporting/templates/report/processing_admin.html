@@ -6,7 +6,7 @@
 {% block header %}
 <script>
     $(function() {
-      var availableTags = ["10","12","13"];
+      var availableTags = {{ experiment_list|safe }};
       $( "#{{ form.experiment.id_for_label }}" ).autocomplete({ source: availableTags });
     });
 </script>
@@ -19,8 +19,9 @@
 </table>
 </form>
 
-<script>
+{{notes}}
 
+<script>
 $( "#{{ form.instrument.id_for_label }}" ).change(function() { window.location.href = '?instrument='+$( "#{{ form.instrument.id_for_label }} option:selected" ).text(); });
 </script>
 {% endblock %}
