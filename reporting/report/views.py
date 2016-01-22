@@ -7,6 +7,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.core.context_processors import csrf
 from django.utils import dateformat, timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
@@ -32,28 +33,50 @@ def processing_admin(request):
     """
         Form to let admins easily reprocess parts of the workflow
     """
-    template_values = {}
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
+    template_values = {'breadcrumbs':breadcrumbs}
     template_values = users.view_util.fill_template_values(request, **template_values)
 
     if request.method == 'POST':
-        # Check that the user is part of the instrument team
         processing_form = ProcessingForm(request.POST)
+        if processing_form.is_valid():
+            output = processing_form.process()
+            template_values['notes'] = output['report']
+            
+            # Submit task and append success outcome to notes.
+            if 'runs' in output and 'instrument' in output \
+                and 'task' in output and output['task'] is not None:
+                submission_errors = ""
+                for run_obj in output['runs']:
+                    try:
+                        view_util.send_processing_request(output['instrument'], run_obj, 
+                                                          user=request.user, destination=output['task'])
+                    except:
+                        submission_errors += "%s run %s could not be submitted: %s<br>" % \
+                            (str(run_obj.instrument_id), str(run_obj.run_number), sys.exc_value)
+                        logging.error(sys.exc_value)
+                template_values['notes'] += submission_errors
+                if len(submission_errors) == 0:
+                    template_values['notes'] += "<b>All tasks were submitted</b><br>"
     else:
         if 'instrument' in request.GET:
             instrument = request.GET['instrument']
         else:
             instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
             instrument = instruments[0]
+        processing_form = ProcessingForm()
+        processing_form.set_initial(request.GET)
         
         # Get list of available experiments
         instrument_id = get_object_or_404(Instrument, name=instrument.lower())
         ipts = [ str(i) for i in IPTS.objects.filter(instruments=instrument_id) ]
         
-        processing_form = ProcessingForm(initial={'instrument': instrument, 'task': 'POSTPROCESS.DATA_READY'})
+        #processing_form = ProcessingForm(initial={'instrument': instrument, 'task': 'POSTPROCESS.DATA_READY'})
 
     template_values['form'] = processing_form
     template_values['experiment_list'] = ipts
     template_values['notes'] =  ''
+    template_values.update(csrf(request))
 
     return render_to_response('report/processing_admin.html',
                               template_values)
