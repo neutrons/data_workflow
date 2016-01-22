@@ -7,22 +7,83 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.core.context_processors import csrf
 from django.utils import dateformat, timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 import logging
 import sys
 import os
 import json
 
-from report.models import DataRun, IPTS, Instrument, Error, RunStatus
+from report.models import DataRun, IPTS, Instrument, RunStatus
+from dasmon.models import ActiveInstrument
 from icat_server_communication import get_run_info
 import datetime
 import view_util
 import users.view_util
 import dasmon.view_util
 import reporting_app.view_util
+from forms import ProcessingForm
+
+@login_required
+def processing_admin(request):
+    """
+        Form to let admins easily reprocess parts of the workflow
+    """
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
+    template_values = {'breadcrumbs':breadcrumbs, 'notes': ''}
+    template_values = users.view_util.fill_template_values(request, **template_values)
+
+    if request.method == 'POST':
+        # Get instrument
+        if 'instrument' in request.POST:
+            instrument = request.POST['instrument']
+            
+        processing_form = ProcessingForm(request.POST)
+        if processing_form.is_valid():
+            output = processing_form.process()
+            template_values['notes'] = output['report']
+            
+            # Submit task and append success outcome to notes.
+            if 'runs' in output and 'instrument' in output \
+                and 'task' in output and output['task'] is not None:
+                submission_errors = ""
+                for run_obj in output['runs']:
+                    try:
+                        view_util.send_processing_request(output['instrument'], run_obj, 
+                                                          user=request.user, destination=output['task'])
+                    except:
+                        submission_errors += "%s run %s could not be submitted: %s<br>" % \
+                            (str(run_obj.instrument_id), str(run_obj.run_number), sys.exc_value)
+                        logging.error(sys.exc_value)
+                template_values['notes'] += submission_errors
+                if len(submission_errors) == 0:
+                    template_values['notes'] += "<b>All tasks were submitted</b><br>"
+    else:
+        # Get instrument
+        if 'instrument' in request.GET:
+            instrument = request.GET['instrument']
+        else:
+            instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
+            instrument = instruments[0]
+            
+        processing_form = ProcessingForm()
+        processing_form.set_initial(request.GET)
+
+    # Get list of available experiments
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    ipts = [ str(i) for i in IPTS.objects.filter(instruments=instrument_id) ]
+
+    template_values['form'] = processing_form
+    template_values['experiment_list'] = ipts
+    template_values.update(csrf(request))
+
+    return render_to_response('report/processing_admin.html',
+                              template_values)
+
 
 @users.view_util.login_or_local_required
 def summary(request):
@@ -225,7 +286,7 @@ def detail(request, instrument, run_id):
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/detail.html', template_values)
 
-@users.view_util.login_or_local_required
+@login_required
 @users.view_util.monitor
 def submit_for_reduction(request, instrument, run_id):
     """
@@ -236,7 +297,7 @@ def submit_for_reduction(request, instrument, run_id):
     return view_util.processing_request(request, instrument, run_id,
                                         destination='/queue/REDUCTION.REQUEST')
 
-@users.view_util.login_or_local_required
+@login_required
 @users.view_util.monitor
 def submit_for_post_processing(request, instrument, run_id):
     """
@@ -247,7 +308,7 @@ def submit_for_post_processing(request, instrument, run_id):
     return view_util.processing_request(request, instrument, run_id,
                                         destination='/queue/POSTPROCESS.DATA_READY')
 
-@users.view_util.login_or_local_required
+@login_required
 @users.view_util.monitor
 def submit_for_cataloging(request, instrument, run_id):
     """

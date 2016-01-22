@@ -66,7 +66,7 @@
 {% endblock %}
 
 <div class="user_info">
-  {% if gravatar_url %}<img src="{{ gravatar_url|safe }}&s=16" height="16" width="16" alt="{{ user.username }}">{% endif %} {% if profile_url %}<a href="{{ profile_url }}">{{ user.username }}</a> {% else %}{{ user.username }}{% endif %} |{% if user.is_staff %} <a href="https://trac.sns.gov/adara/wiki/Post-Processing"><b>admin</b></a> |{% endif %}{% if user.is_authenticated %} <a href="{{ logout_url }}">logout</a>{% else %} <a href="{{ login_url }}">login</a>{% endif %}
+  {% if gravatar_url %}<img src="{{ gravatar_url|safe }}&s=16" height="16" width="16" alt="{{ user.username }}">{% endif %} {% if profile_url %}<a href="{{ profile_url }}">{{ user.username }}</a> {% else %}{{ user.username }}{% endif %} |{% if user.is_staff %} <a href="{% url 'processing_admin' %}"><b>admin</b></a> |{% endif %}{% if user.is_authenticated %} <a href="{{ logout_url }}">logout</a>{% else %} <a href="{{ login_url }}">login</a>{% endif %}
 </div>
 
 <a class="banner_logo" href="http://neutrons.ornl.gov/" target="_blank"><img title="SNS" src="/static/ornl_hfir_sns.png" alt="SNS" /></a>

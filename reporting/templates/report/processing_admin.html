@@ -1,0 +1,55 @@
+{% extends "report/base_instrument.html" %}
+
+{% block title %}Post-Processing Administration{% endblock %}
+{% block banner %}Post-Processing Administration{% endblock %}
+
+{% block header %}
+<script>
+    $(function() {
+      var availableTags = {{ experiment_list|safe }};
+      $( "#{{ form.experiment.id_for_label }}" ).autocomplete({ source: availableTags });
+    });
+</script>
+{% endblock %}
+
+{% block summary %}
+This page allows you to submit post-processing jobs. Select your instrument, experiment, 
+runs, and task in the form below.
+
+<ul>
+<li>
+<b>Experiment</b>: Enter the full name as found on our file system (IPTS-XXXX). 
+For convenience, available experiments for the selected instrument will be listed as
+you start typing the experiment number.
+</li>
+<li>
+<b>Run List</b>: Runs must be comma-separated, and a dash can be used to specify ranges.
+For example, entering <i>4,6-8</i> is the same as entering <i>4,6,7,8</i>.
+</li>
+<li>
+<b>New Runs</b>: Select <i>Create as needed</i> if some of the runs are not already in the system.
+This option is turned off by default to prevent the accidental creation of bad runs.
+</li>
+</ul>
+
+<form action="" method="POST">{% csrf_token %}
+<table class="property_table" >
+{{ form.as_table }}
+<tr><th></th><td>
+<div style="float:right;" >
+<input id="submit_button" title="Click submit tasks" type="submit" name="submit" value="submit"/>
+</div>
+</td></tr>
+</table>
+</form>
+
+<p>
+{{ notes|safe }}
+<p>
+
+<script>
+
+$( "#{{ form.instrument.id_for_label }}" ).change(function() { window.location.href = '?instrument='+$( "#{{ form.instrument.id_for_label }} option:selected" ).text()+'&run_list='+$( "#{{ form.run_list.id_for_label }}" ).val()+'&experiment='+$( "#{{ form.experiment.id_for_label }}" ).val()+'&task='+$( "#{{ form.task.id_for_label }}" ).val()+'&create_as_needed='+$( "#{{ form.create_as_needed.id_for_label }}" ).prop( "checked" ); });
+</script>
+{% endblock %}
+{% block nocontent %}{% endblock %}

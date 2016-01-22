@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns('',
     url(r'^$', 'report.views.summary', name='summary'),
+    url(r'^processing$', 'report.views.processing_admin', name='processing_admin'),
     url(r'^(?P<instrument>[\w]+)/$', 'report.views.instrument_summary'),
     url(r'^(?P<instrument>[\w]+)/update/$', 'report.views.get_instrument_update'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/$', 'report.views.detail', name='report_detail'),
