@@ -34,10 +34,14 @@ def processing_admin(request):
         Form to let admins easily reprocess parts of the workflow
     """
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
-    template_values = {'breadcrumbs':breadcrumbs}
+    template_values = {'breadcrumbs':breadcrumbs, 'notes': ''}
     template_values = users.view_util.fill_template_values(request, **template_values)
 
     if request.method == 'POST':
+        # Get instrument
+        if 'instrument' in request.POST:
+            instrument = request.POST['instrument']
+            
         processing_form = ProcessingForm(request.POST)
         if processing_form.is_valid():
             output = processing_form.process()
@@ -59,23 +63,22 @@ def processing_admin(request):
                 if len(submission_errors) == 0:
                     template_values['notes'] += "<b>All tasks were submitted</b><br>"
     else:
+        # Get instrument
         if 'instrument' in request.GET:
             instrument = request.GET['instrument']
         else:
             instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
             instrument = instruments[0]
+            
         processing_form = ProcessingForm()
         processing_form.set_initial(request.GET)
-        
-        # Get list of available experiments
-        instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-        ipts = [ str(i) for i in IPTS.objects.filter(instruments=instrument_id) ]
-        
-        #processing_form = ProcessingForm(initial={'instrument': instrument, 'task': 'POSTPROCESS.DATA_READY'})
+
+    # Get list of available experiments
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    ipts = [ str(i) for i in IPTS.objects.filter(instruments=instrument_id) ]
 
     template_values['form'] = processing_form
     template_values['experiment_list'] = ipts
-    template_values['notes'] =  ''
     template_values.update(csrf(request))
 
     return render_to_response('report/processing_admin.html',

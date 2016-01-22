@@ -46,10 +46,10 @@ class ProcessingForm(forms.Form):
         Form to send a post-processing request
     """
     instrument = forms.ChoiceField(required=True, choices=[])
-    experiment = forms.CharField(required=False, initial='')
-    run_list = forms.CharField(required=False, initial='', validators=[validate_integer_list])
+    experiment = forms.CharField(required=True, initial='')
+    run_list = forms.CharField(required=True, initial='', validators=[validate_integer_list])
     create_as_needed = forms.BooleanField(required=False, initial=False)
-    task = forms.ChoiceField(choices=[])
+    task = forms.ChoiceField(required=True, choices=[])
 
     def __init__(self, *args, **kwargs):
         super(ProcessingForm, self).__init__(*args, **kwargs)
@@ -70,11 +70,25 @@ class ProcessingForm(forms.Form):
             Set the initial values after cleaning them up
             @param initial: initial dictionary
         """
-        self.initial = {'instrument': initial['instrument'],
-                        'experiment': initial['experiment'],
-                        'run_list': initial['run_list'],
-                        'task': initial['task'],
-                        'create_as_needed': self.fields['create_as_needed'].to_python(initial['create_as_needed'])}
+        self.initial = {}
+        if 'instrument' in initial:
+            self.initial['instrument'] = initial['instrument']
+        else:
+            self.initial['instrument'] = self.fields['instrument'].choices[0]
+        
+        if 'experiment' in initial:
+            self.initial['experiment'] = initial['experiment']
+        
+        if 'run_list' in initial:
+            self.initial['run_list'] = initial['run_list']
+        
+        if 'task' in initial:
+            self.initial['task'] = initial['task']
+        else:
+            self.initial['task'] = "POSTPROCESS.DATA_READY"
+        
+        if 'create_as_needed' in initial:
+            self.initial['create_as_needed'] = self.fields['create_as_needed'].to_python(initial['create_as_needed'])
         
     def process(self):
         """
