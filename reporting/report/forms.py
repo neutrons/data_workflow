@@ -128,12 +128,27 @@ class ProcessingForm(forms.Form):
                 invalid_runs.append(run)
         if len(invalid_runs) == 0:
             output_report += "All the runs were valid<br>"
-        elif self.cleaned_data['create_as_needed']:
-            output_report += "The following runs will be created: %s<br>" % str(invalid_runs)
         else:
-            output_report += "The following were invalid runs: %s<br>" % str(invalid_runs)
-            output_report += "Fix your inputs and re-submit<br>"
-            return {'report': output_report, 'task': None}
+            # First look for mismatch between run and ipts
+            has_ipts_mismatch = False
+            for run in invalid_runs:
+                run_list = DataRun.objects.filter(instrument_id=instrument, run_number=run)
+                if len(run_list)>0:
+                    output_report += "Run %s was found in experiment %s<br>" % (run, run_list[0].ipts_id)
+                    has_ipts_mismatch = True
+
+            if has_ipts_mismatch:
+                output_report += "Fix your inputs and re-submit<br>"
+                return {'report': output_report, 'task': None}
+
+            if self.cleaned_data['create_as_needed']:
+                output_report += "The following runs will be created: %s<br>" % str(invalid_runs)
+                output_report += "Fix your inputs and re-submit<br>"
+                return {'report': output_report, 'task': None}
+            else:
+                output_report += "The following were invalid runs: %s<br>" % str(invalid_runs)
+                output_report += "Fix your inputs and re-submit<br>"
+                return {'report': output_report, 'task': None}
         
         # Retrieve the command
         try:
