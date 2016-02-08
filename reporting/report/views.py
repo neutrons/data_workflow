@@ -18,7 +18,7 @@ import sys
 import os
 import json
 
-from report.models import DataRun, IPTS, Instrument, RunStatus
+from report.models import DataRun, IPTS, Instrument, Error, RunStatus
 from dasmon.models import ActiveInstrument
 from icat_server_communication import get_run_info
 import datetime
