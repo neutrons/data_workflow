@@ -290,7 +290,8 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
             logging.error("Very slow reduction response: %s" % str(latest_run.run_id))
             status_dict["catalog"] = 2
         elif time_catalog_start - latest_run.created_on > delta_short:
-            logging.error("Slow reduction response: %s" % str(latest_run.run_id))
+            elapsed_time = time_catalog_start - latest_run.created_on
+            logging.error("Slow reduction response: %s [%s sec]" % (str(latest_run.run_id), str(elapsed_time)))
             status_dict["catalog"] = 1
         else:
             status_dict["catalog"] = 0
