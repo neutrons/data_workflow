@@ -67,7 +67,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
   // and data_error_bars flags for error bars to be drawn
   //
   this.need_error_bars = function() {
-    if (raw_data[0].length == 3) data_error_bars = true;
+    if (raw_data[0].length >= 3) data_error_bars = true;
   }
 
   //
