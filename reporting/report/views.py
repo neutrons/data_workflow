@@ -229,7 +229,7 @@ def detail(request, instrument, run_id):
                             if 'ylabel' in data_dict['main_output']['axes']:
                                 y_label = data_dict['main_output']['axes']['ylabel']
                         if len(data_dict['main_output']['data']['1'])>3:
-                            dx = e_values = data_dict['main_output']['data']['1'][3]
+                            dx = data_dict['main_output']['data']['1'][3]
                             plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
                         else:
                             plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
