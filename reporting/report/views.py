@@ -228,7 +228,11 @@ def detail(request, instrument, run_id):
                                 x_label = data_dict['main_output']['axes']['xlabel']
                             if 'ylabel' in data_dict['main_output']['axes']:
                                 y_label = data_dict['main_output']['axes']['ylabel']
-                        plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
+                        if len(data_dict['main_output']['data']['1'])>3:
+                            dx = e_values = data_dict['main_output']['data']['1'][3]
+                            plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
+                        else:
+                            plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
         elif not request.GET.get('test', '-1') == '-1':
             plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
                          [0.0089, 0.96], [0.0091, 1], [0.0092, 1], [0.0094, 1], [0.0096, 0.96],
