@@ -135,6 +135,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
 
     # List of field that are used in the template
     _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
+                      'vanadium_integration_min', 'vanadium_integration_max',
                       'tib_min', 'tib_max', 't0', 'motor_names', 'temperature_names',
                       'create_elastic_nxspe', 'create_md_nxs',
                       'alpha', 'beta', 'gamma',
