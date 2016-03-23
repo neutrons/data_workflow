@@ -108,7 +108,7 @@ def configuration_cncs(request, instrument):
         options_form.set_instrument(instrument.lower())
         mask_form = MaskFormSet(request.POST)
         if options_form.is_valid() and mask_form.is_valid():
-            mask_block = forms.MaskForm.to_python(mask_form)
+            mask_block = forms.MaskForm.to_python(mask_form, indent='')
             options_form.cleaned_data['mask'] = mask_block
             options_form.to_db(instrument_id, request.user)
             # Send ActiveMQ request
