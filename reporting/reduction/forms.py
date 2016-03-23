@@ -117,9 +117,9 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     e_min = forms.FloatField(required=True, initial=-0.2)
     e_step = forms.FloatField(required=True, initial=0.015)
     e_max = forms.FloatField(required=True, initial=0.95)
-    tib_min = forms.FloatField(required=False, initial=0.0)
-    tib_max = forms.FloatField(required=False, initial=0.0) # empty string or a number
-    t0 = forms.FloatField(required=False, initial=0.0)
+    tib_min = forms.CharField(required=False, initial="", validators=[validate_float_list])
+    tib_max = forms.CharField(required=False, initial="", validators=[validate_float_list])
+    t0 = forms.CharField(required=False, initial="", validators=[validate_float_list])
     motor_names = forms.CharField(required=False, initial='huber,SERotator2,OxDilRot,CCR13VRot,SEOCRot,CCR10G2Rot,Ox2WeldRot,ThreeSampleRot')
     temperature_names = forms.CharField(required=False, initial='SampleTemp,sampletemp,SensorC,SensorB,SensorA,temp5,temp8')
     create_elastic_nxspe = forms.BooleanField(required=False)
