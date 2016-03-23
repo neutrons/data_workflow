@@ -53,10 +53,9 @@ Instrument team members can use this page to generate a new automated reduction 
     <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors|first }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
     <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors|first }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
     <tr class='tiny_input'><th>Vanadium integration</th> <td>
-    <span {% if options_form.vanadium_integration_min.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.vanadium_integration_min }} </span>
-    <span {% if options_form.vanadium_integration_max.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.vanadium_integration_max }} </span>
+      <span {% if options_form.vanadium_integration_min.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.vanadium_integration_min }} </span>
+      <span {% if options_form.vanadium_integration_max.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.vanadium_integration_max }} </span>
     </td></tr>
-    <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors|first }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
     <tr><th>Motor names</th> <td {% if options_form.motor_names.errors %}class='highlight_row' title='{{ options_form.motor_names.errors|first }}'{% endif %}>{{options_form.motor_names }} </td></tr>
     <tr><th>Temperature names</th> <td {% if options_form.temperature_names.errors %}class='highlight_row' title='{{ options_form.temperature_names.errors|first }}'{% endif %}>{{options_form.temperature_names }} </td></tr>
     <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{options_form.grouping.errors|first}}'{% endif %}>{{options_form.grouping }} </td></tr>
