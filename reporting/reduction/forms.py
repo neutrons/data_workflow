@@ -45,6 +45,19 @@ def validate_integer_list(value):
             except:
                 raise ValidationError(u'Error parsing %s for a range of integers' % value)
 
+def validate_float_list(value):
+    """
+        @param value: string value to parse
+    """
+    # Look for a list of ranges
+    range_list = value.split(',')
+    for value_range in range_list:
+        for item in value_range.split('-'):
+            try:
+                float(item.strip())
+            except:
+                raise ValidationError(u'Error parsing %s for a list of numbers' % value)
+
 
 class BaseReductionConfigurationForm(forms.Form):
     """
@@ -100,12 +113,13 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     vanadium_integration_min = forms.FloatField(required=True, initial=84000)
     vanadium_integration_max = forms.FloatField(required=True, initial=94000)
     grouping = forms.ChoiceField(choices=[])
+    e_pars_in_mev = forms.BooleanField(required=True)
     e_min = forms.FloatField(required=True, initial=-0.2)
     e_step = forms.FloatField(required=True, initial=0.015)
     e_max = forms.FloatField(required=True, initial=0.95)
-    tib_min = forms.FloatField(required=True, initial=0.0)
-    tib_max = forms.FloatField(required=True, initial=0.0)
-    t0 = forms.FloatField(required=True, initial=0.0)
+    tib_min = forms.FloatField(required=False, initial=0.0)
+    tib_max = forms.FloatField(required=False, initial=0.0) # empty string or a number
+    t0 = forms.FloatField(required=False, initial=0.0)
     motor_names = forms.CharField(required=False, initial='huber,SERotator2,OxDilRot,CCR13VRot,SEOCRot,CCR10G2Rot,Ox2WeldRot,ThreeSampleRot')
     temperature_names = forms.CharField(required=False, initial='SampleTemp,sampletemp,SensorC,SensorB,SensorA,temp5,temp8')
     create_elastic_nxspe = forms.BooleanField(required=True)
@@ -116,15 +130,15 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     alpha = forms.FloatField(required=True, initial=90)
     beta = forms.FloatField(required=True, initial=90)
     gamma = forms.FloatField(required=True, initial=90)
-    u_vector = forms.CharField(required=False, initial="1,0,0", validators=[validate_integer_list])
-    v_vector = forms.CharField(required=False, initial="0,0,1", validators=[validate_integer_list])
+    u_vector = forms.CharField(required=False, initial="1,0,0", validators=[validate_float_list])
+    v_vector = forms.CharField(required=False, initial="0,0,1", validators=[validate_float_list])
 
     # List of field that are used in the template
     _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
                       'tib_min', 'tib_max', 't0', 'motor_names', 'temperature_names',
                       'create_elastic_nxspe', 'create_md_nxs',
                       'alpha', 'beta', 'gamma',
-                      'u_vector', 'v_vector'
+                      'u_vector', 'v_vector', 'e_pars_in_mev',
                       'e_min', 'e_step', 'e_max', 'a', 'b', 'c']
 
     def __init__(self, *args, **kwargs):

@@ -52,21 +52,29 @@ Instrument team members can use this page to generate a new automated reduction 
   <table class="property_table  fixed_table" >
     <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors|first }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
     <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors|first }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
+    <tr class='tiny_input'><th>Vanadium integration</th> <td>
+    <span {% if options_form.vanadium_integration_min.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.vanadium_integration_min }} </span>
+    <span {% if options_form.vanadium_integration_max.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.vanadium_integration_max }} </span>
+    </td></tr>
+    <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors|first }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
     <tr><th>Motor names</th> <td {% if options_form.motor_names.errors %}class='highlight_row' title='{{ options_form.motor_names.errors|first }}'{% endif %}>{{options_form.motor_names }} </td></tr>
     <tr><th>Temperature names</th> <td {% if options_form.temperature_names.errors %}class='highlight_row' title='{{ options_form.temperature_names.errors|first }}'{% endif %}>{{options_form.temperature_names }} </td></tr>
     <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{options_form.grouping.errors|first}}'{% endif %}>{{options_form.grouping }} </td></tr>
     <tr><th>Create elastic nxspe</th> <td>{{options_form.create_elastic_nxspe }}</td></tr>
     <tr><th>Create MD nxs </th> <td>{{options_form.create_md_nxs }}</td></tr>
-    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td> 
+    <tr><th>Energy in meV</th> <td>{{options_form.e_pars_in_mev }}</td></tr>
+    <tr class='tiny_input'><th>Energy binning</th> <td> 
       <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors|first }}'{% endif %}><span class='short_label'>E<sub>min</sub></span> {{options_form.e_min }} </span> 
       <span class='short_label'>E<sub>step</sub></span> {{options_form.e_step }} 
       <span class='short_label'>E<sub>max</sub></span> {{options_form.e_max }} </td></tr>
-    <tr class='tiny_input'><th></th><td> 
-      <span {% if options_form.t0.errors %}class='highlight_row' title='{{ options_form.t0.errors|first }}'{% endif %}><span class='short_label'>t<sub>0</sub></span> {{options_form.t0 }} </span> 
-      <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>tib<sub>min</sub></span> {{options_form.tib_min }} </span> 
-      <span {% if options_form.tib_max.errors %}class='highlight_row' title='{{ options_form.tib_max.errors|first }}'{% endif %}><span class='short_label'>tib<sub>max</sub></span> {{options_form.tib_max }} </span> 
+    <tr class='tiny_input'><th>TOF offset</th><td> 
+      <span {% if options_form.t0.errors %}class='highlight_row' title='{{ options_form.t0.errors|first }}'{% endif %}><span class='short_label'>t<sub>0</sub></span> {{options_form.t0 }} </span>
+    </td></tr>
+    <tr class='tiny_input'><th>Time independent bck</th><td>
+      <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.tib_min }} </span> 
+      <span {% if options_form.tib_max.errors %}class='highlight_row' title='{{ options_form.tib_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.tib_max }} </span> 
       </td></tr>
-    <tr class='tiny_input'><th></th><td> 
+    <tr class='tiny_input'><th>UB matrix</th><td> 
       <span {% if options_form.a.errors %}class='highlight_row' title='{{ options_form.a.errors|first }}'{% endif %}><span class='short_label'>a</span> {{options_form.a }} </span> 
       <span {% if options_form.b.errors %}class='highlight_row' title='{{ options_form.b.errors|first }}'{% endif %}><span class='short_label'>b</span> {{options_form.b }} </span> 
       <span {% if options_form.c.errors %}class='highlight_row' title='{{ options_form.c.errors|first }}'{% endif %}><span class='short_label'>c</span> {{options_form.c }} </span> 
