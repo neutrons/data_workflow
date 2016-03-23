@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} Configuration {% endblock %}
+
+{% block banner %}{{ instrument }} Configuration {% endblock %}
+
+{% block header %}
+<script>
+  var action_records = {% autoescape off %}{{ action_list }}{% endautoescape %};
+  var default_requested = 0;
+  var last_action = '{{ last_action_time }}';
+  function poll(){
+      $.ajax({ url: "{% url 'reduction_configuration_update' instrument %}?since="+last_action, success: function(data) {
+          if (data.refresh_needed.localeCompare('1')==0) {
+              $('#last_action').replaceWith("<span id='last_action'>"+data.actions[data.actions.length-1].info+" on "+data.actions[data.actions.length-1].time+"</span>");
+              last_action = data.last_action_time;
+          }
+      }, dataType: "json", timeout: 30000, cache: true,
+      statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
+  };
+  $(document).ready( function() {
+      {% if not is_instrument_staff %}
+      $('#submit_button').prop('disabled', 'disabled');
+      $('#reset_button').prop('disabled', 'disabled');
+      new_alert( "Only instrument team members can use this form: contact {{ helpline }}" ); show_alert();
+      {% endif %}
+      setInterval(poll, 10000);
+  });
+  function remove_entry(id, bank_id, tube_id, pixel_id) { 
+      $(id).prop('checked', !$(id).prop('checked')); 
+      $(bank_id).prop('disabled', $(id).prop('checked'));
+      $(tube_id).prop('disabled', $(id).prop('checked'));
+      $(pixel_id).prop('disabled', $(id).prop('checked'));
+  }
+</script>
+{% endblock %}
+    
+{% block summary %}
+<div class='section_divider'>Configuring the automated reduction</div>
+<div class='narrow_section'>
+Instrument team members can use this page to generate a new automated reduction script.
+<ul>
+<li>Click the submit button to create a new automated reduction script.</li>
+<li>Click the reset to populate the form with default values.</li>
+<li>The <i>reduce_{{ instrument }}.py</i> will automatically be overwritten once you click the submit button.</li>
+</ul>
+</div>
+
+<div style="margin-bottom:60px;">
+<p>List of parameters for {{ instrument }} reduction template:</p>
+<form action="" method="POST">{% csrf_token %}
+  <table class="property_table  fixed_table" >
+    <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors|first }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
+    <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors|first }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
+    <tr><th>Motor names</th> <td {% if options_form.motor_names.errors %}class='highlight_row' title='{{ options_form.motor_names.errors|first }}'{% endif %}>{{options_form.motor_names }} </td></tr>
+    <tr><th>Temperature names</th> <td {% if options_form.temperature_names.errors %}class='highlight_row' title='{{ options_form.temperature_names.errors|first }}'{% endif %}>{{options_form.temperature_names }} </td></tr>
+    <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{options_form.grouping.errors|first}}'{% endif %}>{{options_form.grouping }} </td></tr>
+    <tr><th>Create elastic nxspe</th> <td>{{options_form.create_elastic_nxspe }}</td></tr>
+    <tr><th>Create MD nxs </th> <td>{{options_form.create_md_nxs }}</td></tr>
+    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td> 
+      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors|first }}'{% endif %}><span class='short_label'>E<sub>min</sub></span> {{options_form.e_min }} </span> 
+      <span class='short_label'>E<sub>step</sub></span> {{options_form.e_step }} 
+      <span class='short_label'>E<sub>max</sub></span> {{options_form.e_max }} </td></tr>
+    <tr class='tiny_input'><th></th><td> 
+      <span {% if options_form.t0.errors %}class='highlight_row' title='{{ options_form.t0.errors|first }}'{% endif %}><span class='short_label'>t<sub>0</sub></span> {{options_form.t0 }} </span> 
+      <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>tib<sub>min</sub></span> {{options_form.tib_min }} </span> 
+      <span {% if options_form.tib_max.errors %}class='highlight_row' title='{{ options_form.tib_max.errors|first }}'{% endif %}><span class='short_label'>tib<sub>max</sub></span> {{options_form.tib_max }} </span> 
+      </td></tr>
+    <tr class='tiny_input'><th></th><td> 
+      <span {% if options_form.a.errors %}class='highlight_row' title='{{ options_form.a.errors|first }}'{% endif %}><span class='short_label'>a</span> {{options_form.a }} </span> 
+      <span {% if options_form.b.errors %}class='highlight_row' title='{{ options_form.b.errors|first }}'{% endif %}><span class='short_label'>b</span> {{options_form.b }} </span> 
+      <span {% if options_form.c.errors %}class='highlight_row' title='{{ options_form.c.errors|first }}'{% endif %}><span class='short_label'>c</span> {{options_form.c }} </span> 
+      </td></tr>
+    <tr class='tiny_input'><th></th><td> 
+      <span {% if options_form.alpha.errors %}class='highlight_row' title='{{ options_form.alpha.errors|first }}'{% endif %}><span class='short_label'>alpha</span> {{options_form.alpha }} </span> 
+      <span {% if options_form.beta.errors %}class='highlight_row' title='{{ options_form.beta.errors|first }}'{% endif %}><span class='short_label'>beta</span> {{options_form.beta }} </span>
+      <span {% if options_form.gamma.errors %}class='highlight_row' title='{{ options_form.gamma.errors|first }}'{% endif %}><span class='short_label'>gamma</span> {{options_form.gamma }} </span>
+      </td></tr>
+    <tr class='tiny_input'><th></th><td> 
+      <span {% if options_form.u_vector.errors %}class='highlight_row' title='{{ options_form.u_vector.errors|first }}'{% endif %}><span class='short_label'>u_vector</span> {{options_form.u_vector }} </span> 
+      <span {% if options_form.v_vector.errors %}class='highlight_row' title='{{ options_form.v_vector.errors|first }}'{% endif %}><span class='short_label'>v_vector</span> {{options_form.v_vector }} </span> 
+      </td></tr>
+  </table>
+  <p>
+  {{ mask_form.management_form }}
+  <table class="property_table">
+    <thead>
+      <tr><th>Masked Bank</th> <th>Masked Tube</th> <th>Masked Pixel</th><td class='icon_input'><a href="?extra=1"><span title='Click to add an entry' class="ui-icon ui-icon-circle-plus"></span></a></td></tr>
+    </thead>
+    <tbody>
+    {% for form in mask_form %}
+      <tr class='short_input'>
+        {{ form.id }}<span style='display:none;'>{{ form.remove }}</span>
+        <td {% if form.bank.errors %}class='highlight_row' title='{{ form.bank.errors|first }}'{% endif %}>{{ form.bank }}</td>
+        <td {% if form.tube.errors %}class='highlight_row' title='{{ form.tube.errors|first }}'{% endif %}>{{ form.tube }}</td>
+        <td {% if form.pixel.errors %}class='highlight_row' title='{{ form.pixel.errors|first }}'{% endif %}>{{ form.pixel }}</td>
+        <td class='icon_input'> <span title='Click to remove this entry' class="ui-icon ui-icon-trash" onclick="remove_entry('#{{ form.remove.id_for_label }}', '#{{ form.bank.id_for_label }}', '#{{ form.tube.id_for_label }}', '#{{ form.pixel.id_for_label }}')"></span></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+<p>
+<span style="float: right; margin-left:15px;" >
+<input id="submit_button" title="Click to create new reduction script" type="submit" name="button_choice" value="submit"/>
+<input id="reset_button" title="Click to populate the form with default values" type="submit" name="button_choice" value="reset"/>
+</span>
+</form>
+</div>
+<p>
+{% endblock %}
+
+{% block content %}
+Latest post-processing log entries for {{ instrument }}:<br><br>
+<span id='last_action'>
+{% if action_list and action_list|length > 0 %}{{ action_list.0.info }} on {{ action_list.0.time }}
+{% else %}No recent changes{% endif %}
+</span>
+<br>
+
+<script>
+function compute_size(id) { 
+    if($(id).val().length > 30) {
+        var len = ($(id).val().length-30)/15;
+        size = 11-Math.round(len); 
+        if(size >= 8) $(id).css("font-size",size + "px")
+    } else $(id).css("font-size","11px");
+}
+compute_size('#id_processed_vanadium');
+compute_size('#id_raw_vanadium');
+$('.font_resize').keyup(function(ev) {
+  compute_size(this);
+});
+</script>
+{% endblock %}
