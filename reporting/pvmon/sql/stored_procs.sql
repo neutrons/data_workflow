@@ -21,7 +21,7 @@ BEGIN
     WHERE pvmon_pvname.name = pv_name;
 
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvname (pvmon_pvname.name, pvmon_pvname.monitored) VALUES (pv_name, true);
+    INSERT INTO pvmon_pvname (name, monitored) VALUES (pv_name, true);
   END IF;
 
   -- Get the ID from the parameter name table
@@ -31,7 +31,7 @@ BEGIN
     WHERE pvmon_pvname.name = pv_name;
 
   -- Add the entry for the new value
-  INSERT INTO pvmon_pv (pvmon_pv.name_id, pvmon_pv.value, pvmon_pv.status, pvmon_pv.update_time)
+  INSERT INTO pvmon_pv (name_id, value, status, update_time)
     VALUES (n_id, new_value, status, update_time);
 
   -- Cache the latest values
@@ -41,11 +41,11 @@ BEGIN
     WHERE pvmon_pvcache.name_id = n_id;
 
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvcache (pvmon_pvcache.name_id, pvmon_pvcache.value, pvmon_pvcache.status, pvmon_pvcache.update_time)
+    INSERT INTO pvmon_pvcache (name_id, value, status, update_time)
       VALUES (n_id, value, status, update_time);
   ELSE
     UPDATE pvmon_pvcache
-      SET pvmon_pvcache.value=new_value, pvmon_pvcache.update_time=new_time
+      SET value=new_value, update_time=new_time
       WHERE name_id = n_id;
   END IF;
 END;$BODY$
@@ -78,7 +78,7 @@ BEGIN
     WHERE pvmon_pvname.name = pv_name;
 
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvname (pvmon_pvname.name, pvmon_pvname.monitored) VALUES (pv_name, true);
+    INSERT INTO pvmon_pvname (name, monitored) VALUES (pv_name, true);
   END IF;
 
   -- Get the ID from the parameter name table
@@ -94,7 +94,7 @@ BEGIN
     WHERE report_instrument.name = lower(instrument);
 
   -- Add the entry for the new value
-  INSERT INTO pvmon_pv (pvmon_pv.instrument_id, pvmon_pv.name_id, pvmon_pv.value, pvmon_pv.status, pvmon_pv.update_time)
+  INSERT INTO pvmon_pv (instrument_id, name_id, value, status, update_time)
     VALUES (n_instrument, n_id, new_value, status, new_time);
 
   -- Cache the latest values
@@ -104,11 +104,11 @@ BEGIN
     WHERE pvmon_pvcache.instrument_id=n_instrument AND pvmon_pvcache.name_id = n_id;
 
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvcache (pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, pvmon_pvcache.value, pvmon_pvcache.status, pvmon_pvcache.update_time)
+    INSERT INTO pvmon_pvcache (instrument_id, name_id, value, status, update_time)
       VALUES (n_instrument, n_id, new_value, status, new_time);
   ELSE
     UPDATE pvmon_pvcache
-      SET pvmon_pvcache.value=new_value, pvmon_pvcache.update_time=new_time
+      SET value=new_value, update_time=new_time
       WHERE name_id = n_id AND instrument_id = n_instrument;
   END IF;
 END;
@@ -142,7 +142,7 @@ BEGIN
     WHERE pvmon_pvname.name = pv_name;
 
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvname (pvmon_pvname.name, pvmon_pvname.monitored) VALUES (pv_name, true);
+    INSERT INTO pvmon_pvname (name, monitored) VALUES (pv_name, true);
   END IF;
 
   -- Get the ID from the parameter name table
@@ -158,7 +158,7 @@ BEGIN
     WHERE report_instrument.name = lower(instrument);
 
   -- Add the entry for the new value
-  INSERT INTO pvmon_pvstring (pvmon_pvstring.instrument_id, pvmon_pvstring.name_id, pvmon_pvstring.value, pvmon_pvstring.status, pvmon_pvstring.update_time)
+  INSERT INTO pvmon_pvstring (instrument_id, name_id, value, status, update_time)
     VALUES (n_instrument, n_id, new_value, status, new_time);
 
   -- Cache the latest values
@@ -168,11 +168,11 @@ BEGIN
     WHERE pvmon_pvstringcache.instrument_id=n_instrument AND pvmon_pvstringcache.name_id = n_id;
 
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvstringcache (pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, pvmon_pvstringcache.value, pvmon_pvstringcache.status, pvmon_pvstringcache.update_time)
+    INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, update_time)
       VALUES (n_instrument, n_id, new_value, status, new_time);
   ELSE
     UPDATE pvmon_pvstringcache
-      SET pvmon_pvstringcache.value=new_value, pvmon_pvstringcache.update_time=new_time
+      SET value=new_value, update_time=new_time
       WHERE name_id = n_id AND instrument_id = n_instrument;
   END IF;
 END;
