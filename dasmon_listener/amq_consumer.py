@@ -35,7 +35,10 @@ from django.utils import timezone
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification
 from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
-from report.models import Instrument
+try:
+    from report.models import Instrument
+except:
+    from workflow.database.report.models import Instrument
 from file_handling.models import ReducedImage
 
 # ACK data
@@ -94,6 +97,8 @@ class Listener(stomp.ConnectionListener):
         if "STATUS" in destination:
             if "STS" in destination:
                 store_and_cache(instrument, "system_sts", data_dict["status"])
+            elif "SMS" in destination:
+                store_and_cache(instrument, "system_sms", data_dict["status"])
             elif "status" in data_dict:
                 key = None
                 if "src_id" in data_dict:
@@ -118,6 +123,8 @@ class Listener(stomp.ConnectionListener):
                 logging.error("Could not process signal: %s" % str(data_dict))
                 logging.error(sys.exc_value)
 
+        elif "APP.SMS" in destination:
+            process_SMS(instrument, headers, data_dict)    
         # For other status messages, store each entry
         else:
             for key in data_dict:
@@ -157,6 +164,40 @@ def send_message(sender, recipients, subject, message):
         s.quit()
     except:
         logging.error("Could not send message: %s" % sys.exc_value)
+
+def process_SMS(instrument_id, headers, data):
+    """
+        Process SMS process information
+        The message content looks like this:
+
+           {u'start_sec': u'1460394343', 
+            u'src_id': u'SMS_32162', 
+            u'msg_type': u'2686451712', 
+            u'facility': u'SNS', 
+            u'timestamp': u'1460394348', 
+            u'dest_id': u'', 
+            u'start_nsec': u'554801929', 
+            u'instrument': u'BL16B', 
+            u'reason': u'SMS run stopped', 
+            u'run_number': u'3014'}
+
+        @param instrument_id: Instrument object
+        @param data: data dictionary
+    """
+    try:
+        if 'run_number' in data and 'msg_type' in data and 'reason' in data and 'ipts' in data:
+            from workflow.database.transactions import add_status_entry
+            message_type = int(data['msg_type'])
+            status_data = {'instrument': str(instrument_id),
+                           'ipts': data['ipts'],
+                           'information': data['reason'],
+                           'data_file': "",
+                           'run_number': data['run_number']}
+            add_status_entry({'destination':'SMS',
+                              'message-id':headers['message-id']}, json.dumps(status_data))
+            
+    except:
+        logging.error("Could not process SMS message: %s" % sys.exc_value)
 
 def process_ack(data=None):
     """

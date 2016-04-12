@@ -86,6 +86,11 @@ def add_status_entry(headers, data):
     run_number = int(data_dict["run_number"])
     try:
         run_id = DataRun.objects.get(run_number=run_number, instrument_id=instrument_id)
+        # Update the file location and IPTS as needed
+        run_id.ipts_id = ipts_id
+        if "data_file" in data_dict:
+            run_id.file = data_dict["data_file"]
+        run_id.save()
     except DataRun.DoesNotExist:
         logging.info("Creating entry for run %s-%d" % (instrument, run_number))
         run_id = DataRun.create_and_save(run_number=run_number,
