@@ -128,10 +128,11 @@ class Listener(stomp.ConnectionListener):
         # For other status messages, store each entry
         else:
             timestamp = None
-            if 'timestamp_micro' in data_dict:
-                timestamp = data_dict['timestamp_micro']
-            elif 'timestamp' in data_dict:
-                timestamp = data_dict['timestamp']
+            # Uncomment the following when the DB has migrated to editable timestamps for AMQ message entries
+            #if 'timestamp_micro' in data_dict:
+            #    timestamp = data_dict['timestamp_micro']
+            #elif 'timestamp' in data_dict:
+            #    timestamp = data_dict['timestamp']
             for key in data_dict:
                 if key == 'monitors' and type(data_dict[key]) == dict:
                     for item in data_dict[key]:
