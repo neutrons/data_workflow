@@ -124,15 +124,20 @@ class Listener(stomp.ConnectionListener):
                 logging.error(sys.exc_value)
 
         elif "APP.SMS" in destination:
-            process_SMS(instrument, headers, data_dict)    
+            process_SMS(instrument, headers, data_dict)
         # For other status messages, store each entry
         else:
+            timestamp = None
+            if 'timestamp_micro' in data_dict:
+                timestamp = data_dict['timestamp_micro']
+            elif 'timestamp' in data_dict:
+                timestamp = data_dict['timestamp']
             for key in data_dict:
                 if key == 'monitors' and type(data_dict[key]) == dict:
                     for item in data_dict[key]:
                         # Protect against old API
                         if not type(data_dict[key][item]) == dict:
-                            store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item])
+                            store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item], timestamp=timestamp)
                         else:
                             identifier = None
                             counts = None
@@ -142,9 +147,9 @@ class Listener(stomp.ConnectionListener):
                                 counts = data_dict[key][item]["counts"]
                             if identifier is not None and counts is not None:
                                 parameter_name = "%s_count_%s" % (item, identifier)
-                                store_and_cache(instrument, parameter_name, counts)
+                                store_and_cache(instrument, parameter_name, counts, timestamp=timestamp)
                 else:
-                    store_and_cache(instrument, key, data_dict[key])
+                    store_and_cache(instrument, key, data_dict[key], timestamp=timestamp)
 
 def send_message(sender, recipients, subject, message):
     """
@@ -187,7 +192,6 @@ def process_SMS(instrument_id, headers, data):
     try:
         if 'run_number' in data and 'msg_type' in data and 'reason' in data and 'ipts' in data:
             from workflow.database.transactions import add_status_entry
-            message_type = int(data['msg_type'])
             status_data = {'instrument': str(instrument_id),
                            'ipts': data['ipts'],
                            'information': data['reason'],
@@ -311,7 +315,7 @@ def process_signal(instrument_id, data):
                 item.delete()
 
 
-def store_and_cache(instrument_id, key, value):
+def store_and_cache(instrument_id, key, value, timestamp=None):
     """
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
@@ -335,6 +339,13 @@ def store_and_cache(instrument_id, key, value):
     status_entry = StatusVariable(instrument_id=instrument_id,
                                   key_id=key_id,
                                   value=value_string)
+    # Force the timestamp value as needed
+    if timestamp is not None:
+        try:
+            datetime_timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
+            status_entry.timestamp = datetime_timestamp
+        except:
+            logging.error("Could not process timestamp [%s]: %s" % (timestamp, sys.exc_value))
     status_entry.save()
 
     # Update the latest value
