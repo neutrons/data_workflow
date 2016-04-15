@@ -1,6 +1,5 @@
 from django.db import models
 import json
-import logging
 
 class InstrumentManager(models.Manager):
     def find_instrument(self, instrument):
@@ -11,7 +10,7 @@ class InstrumentManager(models.Manager):
         if len(instrument_ids) > 0:
             return instrument_ids[0]
         return None
-    
+
     def sql_dump(self):
         sql = ''
         instrument_ids = super(InstrumentManager, self).get_queryset()
@@ -26,31 +25,31 @@ class InstrumentManager(models.Manager):
         sql += "SELECT pg_catalog.setval('report_instrument_id_seq', %d, true);\n" % max_instr_id
 
         return sql
-        
+
 
 class Instrument(models.Model):
     name = models.CharField(max_length=20, unique=True)
     objects = InstrumentManager()
     def __unicode__(self):
         return self.name
-    
+
     def number_of_runs(self):
         """
             Returns the total number of runs for this instrument
         """
         return DataRun.objects.filter(instrument_id=self).count()
-    
+
     def number_of_expts(self):
         """
             Returns the total number of experiments for this instrument
         """
         return IPTS.objects.filter(instruments=self).count()
-    
+
 class IPTSManager(models.Manager):
-    
+
     def ipts_for_instrument(self, instrument_id):
         return super(IPTSManager, self).get_queryset().filter(instruments=instrument_id)
-        
+
     def get_last_ipts(self, instrument_id):
         """
             Get the last experiment object for a given instrument.
@@ -70,13 +69,13 @@ class IPTS(models.Model):
     instruments = models.ManyToManyField(Instrument, related_name='_ipts_instruments+')
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = IPTSManager()
-    
+
     class Meta:
         verbose_name_plural = "IPTS"
-        
+
     def __unicode__(self):
         return self.expt_name
-    
+
     def number_of_runs(self, instrument_id=None):
         """
             Returns the total number of runs for this IPTS
@@ -88,7 +87,7 @@ class IPTS(models.Model):
         return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id).distinct().count()
 
 class DataRunManager(models.Manager):
-    
+
     def get_last_run(self, instrument_id, ipts_id=None):
         """
             Get the last run for a given instrument and experiment.
@@ -104,7 +103,7 @@ class DataRunManager(models.Manager):
             last_run_query = last_run_query.order_by('created_on').reverse()
             return last_run_query[0]
         return None
-    
+
     def get_last_cached_run(self, instrument_id):
         """
             Try to get the last run from the InstrumentStatus table.
@@ -136,7 +135,7 @@ class DataRun(models.Model):
 
     def __unicode__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)
-    
+
     @classmethod
     def create_and_save(cls, run_number, ipts_id, instrument_id, file):
         """
@@ -149,7 +148,7 @@ class DataRun(models.Model):
                     ipts_id=ipts_id,
                     file=file)
         run_id.save()
-        
+
         # Update the instrument status
         try:
             instrument = InstrumentStatus.objects.get(instrument_id=instrument_id)
@@ -158,9 +157,9 @@ class DataRun(models.Model):
             instrument.save()
         instrument.last_run_id = run_id
         instrument.save()
-            
+
         return run_id
-    
+
     def is_complete(self):
         """
             Return completion status
@@ -173,7 +172,7 @@ class DataRun(models.Model):
             # No entry for this run
             pass
         return False
-         
+
     def last_error(self):
         """
             Return last error
@@ -191,7 +190,7 @@ class DataRun(models.Model):
                            "ipts": str(self.ipts_id),
                            "run_number": self.run_number,
                            "data_file": self.file})
-    
+
 class StatusQueue(models.Model):
     """
         Table containing the ActiveMQ queue names
@@ -199,13 +198,13 @@ class StatusQueue(models.Model):
     """
     name = models.CharField(max_length=100, unique=True)
     is_workflow_input = models.BooleanField(default=False)
-    
+
     def __unicode__(self):
         return self.name
-    
-    
+
+
 class RunStatusManager(models.Manager):
-    
+
     def status(self, run_id, status_description):
         """
             Returns all database entries for a given run and a given
@@ -228,14 +227,14 @@ class RunStatusManager(models.Manager):
         if len(timestamps)>0:
             return timestamps[0].created_on
         return None
-    
+
     def get_last_error(self, run_id):
         errors = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by('-created_on')
         for item in errors:
             if item.has_errors():
                 return item.last_error()
         return None
-    
+
 class RunStatus(models.Model):
     """
         Map ActiveMQ messages, which have a header like this:
@@ -251,15 +250,15 @@ class RunStatus(models.Model):
     ## ActiveMQ message ID
     message_id = models.CharField(max_length=100, null=True)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
-    
+
     objects = RunStatusManager()
-    
+
     class Meta:
         verbose_name_plural = "Run status"
-        
+
     def __unicode__(self):
         return "%s: %s" % (str(self.run_id), str(self.queue_id))
-    
+
     def last_info(self):
         """
             Return the last available information object for this status
@@ -268,7 +267,7 @@ class RunStatus(models.Model):
         if len(info_list)>0:
             return info_list[0]
         return None
-    
+
     def last_error(self):
         """
             Return the last available error object for this status
@@ -277,18 +276,18 @@ class RunStatus(models.Model):
         if len(error_list)>0:
             return error_list[0]
         return None
-    
+
     def has_errors(self):
         return Error.objects.filter(run_status_id=self).count()>0
-    
+
 class WorkflowSummaryManager(models.Manager):
-    
+
     def incomplete(self):
         """
             Returns the query set of all incomplete runs
         """
         return super(WorkflowSummaryManager, self).get_queryset().filter(complete=False)
-    
+
     def get_summary(self, run_id):
         """
             Get the run summary for a given DataRun object
@@ -298,7 +297,7 @@ class WorkflowSummaryManager(models.Manager):
         if len(run_list)>0:
             return run_list[0]
         return None
-        
+
 class WorkflowSummary(models.Model):
     """
         Overall status of the workflow for a given run
@@ -307,79 +306,77 @@ class WorkflowSummary(models.Model):
 
     # Overall status of the workflow for this run
     complete = models.BooleanField(default=False)
-    
+
     # Cataloging status
     catalog_started = models.BooleanField(default=False)
     cataloged = models.BooleanField(default=False)
-    
+
     # Automated reduction status
     reduction_needed = models.BooleanField(default=True)
     reduction_started = models.BooleanField(default=False)
     reduced = models.BooleanField(default=False)
     reduction_cataloged = models.BooleanField(default=False)
     reduction_catalog_started = models.BooleanField(default=False)
-    
+
     objects = WorkflowSummaryManager()
-    
+
     class Meta:
         verbose_name_plural = "Workflow summaries"
-        
+
     def __unicode__(self):
         if self.complete is True:
             return "%s: complete" % str(self.run_id)
         else:
             return str(self.run_id)
-    
+
     def update(self):
         """
             Update status according the messages received
         """
-        # Check whether we have data
-        if len(RunStatus.objects.status(self.run_id, 'POSTPROCESS.DATA_READY'))==0:
-            self.complete = True
-            self.save()
-            return
-            
+        # We start with an incomplete state. If a run entry is present without
+        # any action from the workflow manager, it is by definition incomplete.
+        self.complete = False
+
         # Look for cataloging status
         if len(RunStatus.objects.status(self.run_id, 'CATALOG.COMPLETE'))>0:
             self.cataloged = True
         if len(RunStatus.objects.status(self.run_id, 'CATALOG.STARTED'))>0:
             self.catalog_started = True
-            
+
         # Check whether we need reduction (default is no)
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION.NOT_NEEDED'))>0:
             self.reduction_needed = False
         elif len(RunStatus.objects.status(self.run_id, 'REDUCTION.DISABLED'))>0:
             self.reduction_needed = False
-        
+
         # Look for reduction status
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION.COMPLETE'))>0:
             self.reduced = True
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION.STARTED'))>0:
             self.reduction_started = True
-        
+
         # Look for status of reduced data cataloging
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION_CATALOG.COMPLETE'))>0:
             self.reduction_cataloged = True
         if len(RunStatus.objects.status(self.run_id, 'REDUCTION_CATALOG.STARTED'))>0:
             self.reduction_catalog_started = True
-            
+
         # Determine overall status
         if self.cataloged is True:
             if self.reduction_needed is False or \
                (self.reduced is True and self.reduction_cataloged is True):
                 self.complete = True
-                
+
         self.save()
 
-         
+
 class Error(models.Model):
     """
         Details of a particular error event
     """   
     run_status_id = models.ForeignKey(RunStatus)
     description = models.CharField(max_length=200, null=True)
-            
+
 
 class Information(models.Model):
     """
@@ -417,7 +414,7 @@ class TaskManager(models.Manager):
                 sql += 'task_id, statusqueue_id) '
                 sql += 'VALUES (%d, ' % item.id
                 sql += '%d);\n' % q.id
-                
+
         sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_task_id
 
         return sql
@@ -438,7 +435,7 @@ class Task(models.Model):
     # Map one-to-one with task queue IDs
     success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+', blank=True) 
     objects = TaskManager()
-    
+
     def task_queues(self):
         queues = ""
         for q in self.task_queue_ids.all():
@@ -460,7 +457,7 @@ class Task(models.Model):
                            "task_class": self.task_class,
                            "task_queues": [str(q) for q in self.task_queue_ids.all()],
                            "success_queues": [str(q) for q in self.success_queue_ids.all()]})
-        
+
 class InstrumentStatus(models.Model):
     """
         Cache the latest information for each instrument.
@@ -468,6 +465,6 @@ class InstrumentStatus(models.Model):
     """
     instrument_id = models.ForeignKey(Instrument, unique=True)
     last_run_id = models.ForeignKey(DataRun, null=True)
-    
+
     class Meta:
         verbose_name_plural = "Instrument status"
