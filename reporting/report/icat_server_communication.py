@@ -127,7 +127,7 @@ def get_run_info(instrument, ipts, run_number):
                             run_info[item] = "%g" % float(value)
                         except:
                             run_info[item] = value
-                 # Start time
+                # Start time
                 if n.nodeName == 'startTime' and n.hasChildNodes():
                     timestr = get_text_from_xml(n.childNodes)
                     run_info['startTime'] = decode_time(timestr)

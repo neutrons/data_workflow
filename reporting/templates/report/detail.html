@@ -83,6 +83,12 @@
 {% block summary %}
   <span style='float:right'>{% if prev_url %}<a href='{{ prev_url|safe }}'>previous</a>{% else %}previous{% endif %} | {% if next_url %}<a href='{{ next_url|safe }}'>next</a>{% else %}next{% endif %}</span>
   <br><br>
+  {% if no_icat_info %}
+  <p>
+  The is no catalog information for this run. It is either still running or currently being cataloged.
+  <p>
+
+  {% else %}
   <table class='info_display'>
     <tbody>
         <tr><td>Run title</td><td>{{ icat_info.title|default:"unknown" }}</td></tr>
@@ -125,6 +131,7 @@
     {% endfor %}
   {% endif %}
   </ul>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
