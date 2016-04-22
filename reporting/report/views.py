@@ -288,10 +288,14 @@ def detail(request, instrument, run_id):
         template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]
     try:
         if 'data_files' not in icat_info or icat_info['data_files'] is None or len(icat_info['data_files'])==0:
-            template_values['no_icat_info'] = True
+            if view_util.is_acquisition_complete(run_object):
+                template_values['no_icat_info'] = "There is no catalog information for this run yet."
+            else:
+                template_values['no_icat_info'] = "The final data file for this run is not yet available."
+
     except:
         logging.error("Could not determine whether we have ICAT info: %s" % sys.exc_value)
-        template_values['no_icat_info'] = True
+        template_values['no_icat_info'] = "There is no catalog information for this run yet."
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render_to_response('report/detail.html', template_values)
