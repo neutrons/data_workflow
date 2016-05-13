@@ -921,6 +921,10 @@ def get_signals(instrument_id):
     except:
         logging.error("Could not process monitored PVs: %s" % sys.exc_value)
 
+    try:
+        return sorted(sig_alerts, key=lambda s: str(s.name).lower())
+    except:
+        logging.error("Could not sort monitored PV list: %s" % sys.exc_value)
     return sig_alerts
 
 def get_instrument_status_summary():
