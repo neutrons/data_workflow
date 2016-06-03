@@ -5,9 +5,11 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 import sys
+import os
 import logging
 import json
 import datetime
+import string
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
@@ -384,3 +386,124 @@ def get_run_list_dict(run_list):
     except:
         logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
     return run_dicts
+
+
+def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
+    plot_dict = {'image_url': None,
+                 'plot_data': None,
+                 'html_data': None,
+                 'plot_label_x': '',
+                 'plot_label_y': '',
+                 'update_url': None}
+
+    url_template = string.Template(settings.LIVE_DATA_SERVER)
+    url = url_template.substitute(instrument=instrument, run_number=run_id)
+
+    # First option: html data
+    html_data = get_plot_data_from_server(instrument, run_id, 'html')
+    if html_data is not None:
+        plot_dict['html_data'] = html_data
+        plot_dict['update_url'] = "%s/html" % url
+        return plot_dict
+
+    # Second, json data from the plot server
+    json_data = get_plot_data_from_server(instrument, run_id, 'json')
+
+    # Third, local json data for the d3 plots
+    if json_data is None:
+        json_data = get_local_plot_data(run_object)
+    else:
+        plot_dict['update_url'] = "%s/json" % url
+
+    plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
+    if plot_data is not None:
+        plot_dict['plot_data'] = plot_data
+        plot_dict['plot_label_x'] = x_label
+        plot_dict['plot_label_y'] = y_label
+        return plot_dict
+
+    # Fourth, get a local image
+    plot_dict['image_url'] = get_local_image_url(run_object)
+    return plot_dict
+
+def get_local_image_url(run_object):
+    image_url = None
+    try:
+        from file_handling.models import ReducedImage
+        images = ReducedImage.objects.filter(run_id=run_object)
+        if len(images) > 0:
+            image = images.latest('created_on')
+            if image is not None and bool(image.file) and os.path.isfile(image.file.path):
+                image_url = image.file.url
+    except:
+        logging.error("Error finding reduced image: %s", sys.exc_value)
+    return image_url
+
+def get_plot_data_from_server(instrument, run_id, data_type='json'):
+    json_data = None
+    try:
+        import requests
+        url_template = string.Template(settings.LIVE_DATA_SERVER)
+        url = url_template.substitute(instrument=instrument, run_number=run_id)
+        url += "/%s" % data_type
+        data_request = requests.get(url)
+        if data_request.status_code == 200:
+            json_data = data_request.text
+    except:
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
+    return json_data
+
+def get_local_plot_data(run_object):
+    from file_handling.models import JsonData
+    json_data = None
+
+    try:
+        json_data_list = JsonData.objects.filter(run_id=run_object)
+        if len(json_data_list) > 0:
+            json_data_entry = json_data_list.latest('created_on')
+            if json_data_entry is not None :
+                json_data = json_data_entry.data
+    except:
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
+    return json_data
+
+def extract_d3_data_from_json(json_data):
+    plot_data = None
+    x_label = u"Q [1/\u00C5]"
+    y_label = u"Absolute reflectivity"
+
+    # Return dummy data if not data is coming in.
+    if json_data is None:
+        return plot_data, x_label, y_label
+
+    try:
+        data_dict = json.loads(json_data)
+        if 'main_output' in data_dict:
+            # Old format
+            if 'x' in data_dict['main_output']:
+                x_values = data_dict['main_output']['x']
+                y_values = data_dict['main_output']['y']
+                e_values = data_dict['main_output']['e']
+                if 'x_label' in data_dict['main_output']:
+                    x_label = data_dict['main_output']['x_label']
+                if 'y_label' in data_dict['main_output']:
+                    y_label = data_dict['main_output']['y_label']
+                plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
+            # New format from Mantid
+            elif 'data' in data_dict['main_output']:
+                x_values = data_dict['main_output']['data']['1'][0]
+                y_values = data_dict['main_output']['data']['1'][1]
+                e_values = data_dict['main_output']['data']['1'][2]
+                if 'axes' in data_dict['main_output']:
+                    if 'xlabel' in data_dict['main_output']['axes']:
+                        x_label = data_dict['main_output']['axes']['xlabel']
+                    if 'ylabel' in data_dict['main_output']['axes']:
+                        y_label = data_dict['main_output']['axes']['ylabel']
+                if len(data_dict['main_output']['data']['1'])>3:
+                    dx = data_dict['main_output']['data']['1'][3]
+                    plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
+                else:
+                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
+    except:
+        logging.error("Error finding reduced json data: %s", sys.exc_value)
+    return plot_data, x_label, y_label

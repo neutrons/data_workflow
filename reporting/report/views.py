@@ -181,68 +181,7 @@ def detail(request, instrument, run_id):
     status_objects = RunStatus.objects.filter(run_id=run_object).order_by('created_on').reverse()
 
     # Look for an image of the reduction
-    image_url = None
-    try:
-        from file_handling.models import ReducedImage
-        images = ReducedImage.objects.filter(run_id=run_object)
-        if len(images) > 0:
-            image = images.latest('created_on')
-            if image is not None and bool(image.file) and os.path.isfile(image.file.path):
-                image_url = image.file.url
-    except:
-        logging.error("Error finding reduced image: %s" % sys.exc_value)
-
-    # Look for an image of the reduction
-    json_data = None
-    plot_data = None
-    x_label = "Q [1/\u00C5]"
-    y_label = "Absolute reflectivity"
-    try:
-        from file_handling.models import JsonData
-        json_data_list = JsonData.objects.filter(run_id=run_object)
-        if len(json_data_list) > 0:
-            json_data_entry = json_data_list.latest('created_on')
-            if json_data_entry is not None :
-                json_data = json_data_entry.data
-                data_dict = json.loads(json_data)
-                if 'main_output' in data_dict:
-                    # Old format
-                    if 'x' in data_dict['main_output']:
-                        x_values = data_dict['main_output']['x']
-                        y_values = data_dict['main_output']['y']
-                        e_values = data_dict['main_output']['e']
-                        if 'x_label' in data_dict['main_output']:
-                            x_label = data_dict['main_output']['x_label']
-                        if 'y_label' in data_dict['main_output']:
-                            y_label = data_dict['main_output']['y_label']
-                        plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
-                    # New format from Mantid
-                    elif 'data' in data_dict['main_output']:
-                        x_values = data_dict['main_output']['data']['1'][0]
-                        y_values = data_dict['main_output']['data']['1'][1]
-                        e_values = data_dict['main_output']['data']['1'][2]
-                        if 'axes' in data_dict['main_output']:
-                            if 'xlabel' in data_dict['main_output']['axes']:
-                                x_label = data_dict['main_output']['axes']['xlabel']
-                            if 'ylabel' in data_dict['main_output']['axes']:
-                                y_label = data_dict['main_output']['axes']['ylabel']
-                        if len(data_dict['main_output']['data']['1'])>3:
-                            dx = data_dict['main_output']['data']['1'][3]
-                            plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
-                        else:
-                            plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
-        elif not request.GET.get('test', '-1') == '-1':
-            plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
-                         [0.0089, 0.96], [0.0091, 1], [0.0092, 1], [0.0094, 1], [0.0096, 0.96],
-                         [0.0098, 0.98], [ 0.01, 0.99], [ 0.01, 1.1], [ 0.01, 0.96], [0.011, 0.9],
-                         [0.011, 0.82], [0.011, 0.69], [0.011, 0.64], [0.011, 0.48], [0.012, 0.37],
-                         [0.012, 0.25], [0.012, 0.14], [0.013, 0.1], [0.013,  0.1], [0.013, 0.14],
-                         [0.013, 0.15], [0.014, 0.16], [0.014, 0.2], [0.014,  0.2], [0.015, 0.22],
-                         [0.015, 0.22], [0.015, 0.19], [0.015, 0.2], [0.016, 0.17], [0.016, 0.16],
-                         [0.016, 0.13], [0.017, 0.1], [0.017, 0.072], [0.018, 0.054], [0.018, 0.041],
-                         [0.018, 0.027], [0.019, 0.025], [0.019, 0.02], [0.02, 0.026], [0.02, 0.03]]
-    except:
-        logging.error("Error finding reduced json data: %s" % sys.exc_value)
+    plot_template_dict = view_util.get_plot_template_dict(run_object, instrument, run_id)
 
     # Check whether this is the last known run for this instrument
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
@@ -264,24 +203,17 @@ def detail(request, instrument, run_id):
     except:
         prev_url = None
 
-    is_test_2d = 'test2d' in request.GET
-    if is_test_2d:
-        plot_data = None
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
-                       'plot_data':plot_data,
-                       'plot_label_x':x_label,
-                       'plot_label_y':y_label,
                        'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
-                       'image_url':image_url,
                        'prev_url': prev_url,
                        'next_url': next_url,
-                       'test2d': is_test_2d,
                       }
+    template_values.update(plot_template_dict)
     if icat_info == {}:
         template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]
     try:

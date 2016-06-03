@@ -17,6 +17,8 @@
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css">
 <div id="dialog-confirm" title="Submit for post-processing" style="display:none">
@@ -39,7 +41,23 @@
         });
     };
 
-{% if plot_data %}
+{% if html_data %}
+    (function poll() {
+        setTimeout(function() {
+            $.ajax({
+                type: "GET",
+                url: "{{update_url}}",
+                success: function(data) {
+                    $('#graph').replaceWith("<div id='graph'>"+data+"</div>");
+                },
+                dataType: "html",
+                complete: poll,
+                timeout: 2000
+            })
+        }, 2000);
+    })();
+
+{% elif plot_data %}
     // Container for all plots on page
     var plots = [];
 
@@ -101,7 +119,11 @@
   </table>
   <p>
 
-  {% if plot_data %}
+  {% if html_data %}
+  <p>
+  <div id="graph">{{html_data|safe}}</div>
+
+  {% elif plot_data %}
   <p>
   <div class="graph main">
     <div class='graph cssmenu'></div>
