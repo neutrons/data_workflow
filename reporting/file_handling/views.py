@@ -5,8 +5,7 @@
     @copyright: 2015 Oak Ridge National Laboratory
 """
 from django.http import HttpResponse
-from django.template import RequestContext
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -68,7 +67,7 @@ def upload_image(request, instrument, run_id):
             # Sanity check
             _, ext = os.path.splitext(file_name)
             if ext.lower() not in ['.jpeg', '.jpg', '.png', '.gif', '.json', '.dat']:
-                logging.error("Uploaded file doesn't appear to be an image or json data: %s" % file_name)
+                logging.error("Uploaded file doesn't appear to be an image or json data: %s", file_name)
                 return HttpResponse(status=400)
             # Store file info to DB
             # Search to see whether a file with that name exists.
@@ -104,9 +103,8 @@ def upload_image(request, instrument, run_id):
 
     else:
         form = UploadFileForm()
-        return render_to_response('file_handling/upload.html',
-                                  {'form': form,
-                                   'upload_url': reverse('file_handling.views.upload_image',
-                                                         args=[instrument, run_id])},
-                                  context_instance=RequestContext(request))
+        return render(request, 'file_handling/upload.html',
+                      {'form': form,
+                       'upload_url': reverse('file_handling:upload_image',
+                                             args=[instrument, run_id])})
     return HttpResponse()
