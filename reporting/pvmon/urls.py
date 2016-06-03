@@ -1,6 +1,11 @@
-from django.conf.urls import patterns, url
+#pylint: disable=invalid-name, line-too-long
+"""
+    Define url structure
+"""
+from django.conf.urls import url
+from . import views
 
-urlpatterns = patterns('',
-    url(r'^(?P<instrument>[\w]+)/$', 'pvmon.views.pv_monitor'),
-    url(r'^(?P<instrument>[\w]+)/update/$', 'pvmon.views.get_update'),
-)
+urlpatterns = [
+    url(r'^(?P<instrument>[\w]+)/$',        views.pv_monitor, name='pv_monitor'),
+    url(r'^(?P<instrument>[\w]+)/update/$', views.get_update, name='get_update'),
+]

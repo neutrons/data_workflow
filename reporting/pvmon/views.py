@@ -11,7 +11,7 @@ from django.views.decorators.vary import vary_on_cookie
 from report.models import Instrument
 
 import json
-import view_util
+from . import view_util
 import report.view_util
 import users.view_util
 import dasmon.view_util
@@ -31,10 +31,10 @@ def pv_monitor(request, instrument):
 
     # DASMON Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
-            reverse('report.views.instrument_summary', args=[instrument]), instrument.lower(), "monitor")
+            reverse('report:instrument_summary', args=[instrument]), instrument.lower(), "monitor")
     template_values = {'instrument':instrument.upper(),
                        'breadcrumbs': breadcrumbs,
-                       'update_url':reverse('pvmon.views.get_update', args=[instrument]),
+                       'update_url':reverse('pvmon:get_update', args=[instrument]),
                        'key_value_pairs':view_util.get_cached_variables(instrument_id, True),
                       }
     template_values = report.view_util.fill_template_values(request, **template_values)
