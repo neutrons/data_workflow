@@ -29,7 +29,7 @@ def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
     """
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     if ActiveInstrument.objects.is_alive(instrument_id):
-        breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',
+        breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',
                                                                   args=[instrument_id.name]),
                                                           instrument_id.name)
     else:
@@ -198,15 +198,15 @@ def fill_template_values(request, **template_args):
     template_args['is_adara'] = is_adara
     template_args['is_alive'] = is_alive
     if template_args['is_instrument_staff'] and is_adara:
-        template_args['profile_url'] = reverse('dasmon.views.notifications')
+        template_args['profile_url'] = reverse('dasmon:notifications')
 
     # Get live monitoring URLs
-    template_args['live_monitor_url'] = reverse('dasmon.views.live_monitor', args=[instr])
-    template_args['live_runs_url'] = reverse('dasmon.views.live_runs', args=[instr])
-    template_args['live_pv_url'] = reverse('pvmon.views.pv_monitor', args=[instr])
-    template_args['legacy_url'] = reverse('dasmon.views.legacy_monitor', args=[instr])
+    template_args['live_monitor_url'] = reverse('dasmon:live_monitor', args=[instr])
+    template_args['live_runs_url'] = reverse('dasmon:live_runs', args=[instr])
+    template_args['live_pv_url'] = reverse('pvmon:pv_monitor', args=[instr])
+    template_args['legacy_url'] = reverse('dasmon:legacy_monitor', args=[instr])
 
-    #template_args["help_url"] = reverse('dasmon.views.user_help')
+    #template_args["help_url"] = reverse('dasmon:user_help')
 
     # The DAS monitor link is filled out by report.view_util but we don't need it here
     template_args['dasmon_url'] = None
@@ -796,7 +796,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
             if since_run_id.created_on < r.created_on:
                 localtime = timezone.localtime(r.created_on)
                 df = dateformat.DateFormat(localtime)
-                reduce_url = reverse('report.views.submit_for_reduction', args=[str(r.instrument_id), r.run_number])
+                reduce_url = reverse('report:submit_for_reduction', args=[str(r.instrument_id), r.run_number])
                 expt_dict = {"run":r.run_number,
                              "timestamp":df.format(settings.DATETIME_FORMAT),
                              "last_error":status,
@@ -874,7 +874,7 @@ def get_signals(instrument_id):
         sig_entry = SignalEntry(name=sig.name,
                                 status="<span class='red'><b>%s</b></span>" % sig.message,
                                 assert_time=sig.timestamp,
-                                ack_url=reverse('dasmon.views.acknowledge_signal', args=[instrument_id, sig.id]))
+                                ack_url=reverse('dasmon:acknowledge_signal', args=[instrument_id, sig.id]))
         try:
             monitored = MonitoredVariable.objects.filter(instrument=instrument_id,
                                                          rule_name=sig.name)
@@ -938,7 +938,7 @@ def get_instrument_status_summary():
         if not ActiveInstrument.objects.is_alive(i):
             continue
         if is_adara:
-            dasmon_url = reverse('dasmon.views.live_monitor', args=[i.name])
+            dasmon_url = reverse('dasmon:live_monitor', args=[i.name])
             try:
                 das_status = get_component_status(i, process='dasmon')
             except:
@@ -950,10 +950,10 @@ def get_instrument_status_summary():
                 logging.error(sys.exc_value)
                 pvstreamer_status = 2
         else:
-            dasmon_url = reverse('dasmon.views.live_runs', args=[i.name])
+            dasmon_url = reverse('dasmon:live_runs', args=[i.name])
             das_status = -1
             pvstreamer_status = -1
-        diagnostics_url = reverse('dasmon.views.diagnostics', args=[i.name])
+        diagnostics_url = reverse('dasmon:diagnostics', args=[i.name])
         completeness, message = get_completeness_status(i)
         instrument_list.append({'name': i.name,
                                 'recording_status': is_running(i),

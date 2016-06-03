@@ -4,16 +4,16 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+import sys
+import logging
+import json
+import datetime
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import dateformat, timezone
-import datetime
 from django.conf import settings
-import logging
-import sys
-import json
 from django.db import connection, transaction
 from django.core.cache import cache
 
@@ -44,12 +44,12 @@ def fill_template_values(request, **template_args):
     template_args['last_run'] = last_run_id
 
     # Get base IPTS URL
-    base_ipts_url = reverse('report.views.ipts_summary', args=[instr, '0000'])
+    base_ipts_url = reverse('report:ipts_summary', args=[instr, '0000'])
     base_ipts_url = base_ipts_url.replace('/0000', '')
     template_args['base_ipts_url'] = base_ipts_url
 
     # Get base Run URL
-    base_run_url = reverse('report.views.detail', args=[instr, '0000'])
+    base_run_url = reverse('report:detail', args=[instr, '0000'])
     base_run_url = base_run_url.replace('/0000', '')
     template_args['base_run_url'] = base_run_url
 
@@ -107,7 +107,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
 
     data = json.dumps(data_dict)
     reporting_app.view_util.send_activemq_message(destination, data)
-    logging.info("Reduction requested: %s" % str(data))
+    logging.info("Reduction requested: %s", str(data))
 
 def processing_request(request, instrument, run_id, destination):
     """
@@ -123,10 +123,10 @@ def processing_request(request, instrument, run_id, destination):
         send_processing_request(instrument_id, run_object, request.user,
                                 destination=destination)
     except:
-        logging.error("Could not send post-processing request: %s" % destination)
+        logging.error("Could not send post-processing request: %s", destination)
         logging.error(sys.exc_value)
         return HttpResponseServerError()
-    return redirect(reverse('report.views.detail', args=[instrument, run_id]))
+    return redirect(reverse('report:detail', args=[instrument, run_id]))
 
 def retrieve_rates(instrument_id, last_run_id):
     """
@@ -183,7 +183,7 @@ def run_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:
         connection.close()
-        logging.error("Run rate (%s): %s" % (str(instrument_id), sys.exc_value))
+        logging.error("Run rate (%s): %s", str(instrument_id), sys.exc_value)
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -215,7 +215,7 @@ def error_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:
         connection.close()
-        logging.error("Error rate (%s): %s" % (str(instrument_id), sys.exc_value))
+        logging.error("Error rate (%s): %s", str(instrument_id), sys.exc_value)
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -266,7 +266,7 @@ def is_acquisition_complete(run_id):
     status_items = RunStatus.objects.filter(run_id=run_id,
                                             queue_id__name='POSTPROCESS.DATA_READY')
     return len(status_items) > 0
-                                              
+
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
     """
         Get the health status of post-processing services
@@ -292,11 +292,11 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
             time_catalog_start = timezone.now()
 
         if time_catalog_start - latest_run.created_on > delta_long:
-            logging.error("Very slow reduction response: %s" % str(latest_run.run_id))
+            logging.error("Very slow reduction response: %s", str(latest_run.run_id))
             status_dict["catalog"] = 2
         elif time_catalog_start - latest_run.created_on > delta_short:
             elapsed_time = time_catalog_start - latest_run.created_on
-            logging.error("Slow reduction response: %s [%s sec]" % (str(latest_run.run_id), str(elapsed_time)))
+            logging.error("Slow reduction response: %s [%s sec]", str(latest_run.run_id), str(elapsed_time))
             status_dict["catalog"] = 1
         else:
             status_dict["catalog"] = 0
@@ -354,7 +354,7 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
             else:
                 status = "<span %s class='red'>incomplete</span>" % element_id
     except:
-        logging.error("report.view_util.get_run_status_text: %s" % sys.exc_value)
+        logging.error("report.view_util.get_run_status_text: %s", sys.exc_value)
     return status
 
 def get_run_list_dict(run_list):
@@ -370,9 +370,9 @@ def get_run_list_dict(run_list):
             localtime = timezone.localtime(r.created_on)
             df = dateformat.DateFormat(localtime)
 
-            run_url = reverse('report.views.detail', args=[str(r.instrument_id), r.run_number])
-            reduce_url = reverse('report.views.submit_for_reduction', args=[str(r.instrument_id), r.run_number])
-            instr_url = reverse('dasmon.views.live_runs', args=[str(r.instrument_id)])
+            run_url = reverse('report:detail', args=[str(r.instrument_id), r.run_number])
+            reduce_url = reverse('report:submit_for_reduction', args=[str(r.instrument_id), r.run_number])
+            instr_url = reverse('dasmon:live_runs', args=[str(r.instrument_id)])
 
             run_dicts.append({"instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
                               "run": str("<a href='%s'>%s</a>" % (run_url, r.run_number)),
@@ -382,5 +382,5 @@ def get_run_list_dict(run_list):
                               "status": get_run_status_text(r, use_element_id=True)
                              })
     except:
-        logging.error("report.view_util.get_run_list_dict: %s" % sys.exc_value)
+        logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
     return run_dicts

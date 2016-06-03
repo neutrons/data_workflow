@@ -1,20 +1,12 @@
 # Django settings for reporting_app project.
 import os
 import django
-
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-#        'NAME': 'reporting_db',                      # Or path to database file if using sqlite3.
-#        'USER': 'icat',                      # Not used with sqlite3.
-#        'PASSWORD': 'icat',                  # Not used with sqlite3.
-#        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-#        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-#    }
-#}
 DATABASES['default']['CONN_MAX_AGE']=5
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -84,12 +76,21 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -107,10 +108,6 @@ ROOT_URLCONF = 'reporting_app.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'reporting_app.wsgi.application'
-
-TEMPLATE_DIRS = (
-                 os.path.abspath(os.path.join(os.path.dirname(__file__),'..','templates')),
-)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -146,7 +143,7 @@ ALLOWED_HOSTS = [ '.ornl.gov', '.sns.gov', 'localhost']
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
 LOGIN_URL = '/workflow/users/login'
-LANDING_VIEW = 'dasmon.views.dashboard'
+LANDING_VIEW = 'dasmon:dashboard'
 
 LOGGING = {
     'version': 1,
@@ -158,10 +155,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'null': {
-            'level':'INFO',
-            'class':'django.utils.log.NullHandler',
-        },
         'console':{
             'level':'INFO',
             'class':'logging.StreamHandler',
@@ -169,6 +162,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True
+        },
         'django': {
             'handlers':['console'],
             'propagate': True,
@@ -208,7 +206,7 @@ FAST_PAGE_CACHE_TIMEOUT = 10
 # Timeout value for cached pages that are expected to be slow to render, in seconds
 SLOW_PAGE_CACHE_TIMEOUT = 60
 
-# QUERY TUNING - SAFE FOR POSTGRESQL 
+# QUERY TUNING - SAFE FOR POSTGRESQL
 # If the tables IDs are always incrementing, use 'id' below
 # otherwise use 'timestamp'
 DASMON_SQL_SORT = 'id'
@@ -245,10 +243,11 @@ HELPLINE_EMAIL = 'adara_support@ornl.gov'
 
 INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs')
 
+LIVE_DATA_SERVER = "http://livedata.sns.gov/plots/$instrument/$run_number/update/json"
+
 # Import local settings if available
 try:
     from local_settings import *
+    LOCAL_SETTINGS = True
 except ImportError, e:
     LOCAL_SETTINGS = False
-    pass
-   

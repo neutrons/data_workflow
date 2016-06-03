@@ -16,7 +16,7 @@ check:
 	# Check dependencies
 	@python -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
 	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
-	@python -c "import stomp" || echo "\nERROR: somtp.py is not installed: http://code.google.com/p/stomppy\n"
+	@python -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 
 ifeq ($(DJANGO_COMPATIBLE),1)
 	@echo "Detected Django >= 1.6"
