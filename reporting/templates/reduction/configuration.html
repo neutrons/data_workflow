@@ -16,7 +16,7 @@
   var default_requested = 0;
   var last_action = '{{ last_action_time }}';
   function poll(){
-      $.ajax({ url: "{% url 'reduction_configuration_update' instrument %}?since="+last_action, success: function(data) {
+      $.ajax({ url: "{% url 'reduction:configuration_update' instrument %}?since="+last_action, success: function(data) {
           if (data.refresh_needed.localeCompare('1')==0) {
               for (var i=0;i<data.actions.length;i++) { 
                   action_records.push({'info': data.actions[i].info, 'time': data.actions[i].time, 'timestamp': data.actions[i].timestamp});
@@ -48,7 +48,7 @@
         for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++)
           template_data.push({'key': dynatable.settings.dataset.originalRecords[i].key,
                               'value': dynatable.settings.dataset.originalRecords[i].raw_value});
-        $.post( "{% url 'reduction_configuration_change' instrument %}", {use_default: default_requested, data: JSON.stringify(template_data) } )
+        $.post( "{% url 'reduction:configuration_change' instrument %}", {use_default: default_requested, data: JSON.stringify(template_data) } )
             .fail(function() { new_alert( "Error processing request: contact {{ helpline }}" ); show_alert(); });
       });
       setInterval(poll, 10000);
