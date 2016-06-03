@@ -20,7 +20,7 @@ def reduction_setup_url(instrument):
         @param instrument: instrument name
     """
     if instrument.lower() in settings.INSTRUMENT_REDUCTION_SETUP:
-        return reverse('reduction.views.configuration', args=[instrument])
+        return reverse('reduction:configuration', args=[instrument])
     return None
 
 def store_property(instrument_id, key, value, user=None):
