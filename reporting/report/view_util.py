@@ -10,6 +10,7 @@ import logging
 import json
 import datetime
 import string
+import httplib
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
@@ -442,13 +443,15 @@ def get_local_image_url(run_object):
 def get_plot_data_from_server(instrument, run_id, data_type='json'):
     json_data = None
     try:
-        import requests
         url_template = string.Template(settings.LIVE_DATA_SERVER)
         url = url_template.substitute(instrument=instrument, run_number=run_id)
         url += "/%s" % data_type
-        data_request = requests.get(url)
-        if data_request.status_code == 200:
-            json_data = data_request.text
+        conn = httplib.HTTPConnection(settings.LIVE_DATA_SERVER_DOMAIN,
+                                      settings.LIVE_DATA_SERVER_PORT, timeout=1.5)
+        conn.request('GET', url)
+        data_request = conn.getresponse()
+        if data_request.status == 200:
+            json_data = data_request.read()
     except:
         logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
     return json_data

@@ -255,6 +255,8 @@ HELPLINE_EMAIL = 'adara_support@ornl.gov'
 INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs')
 
 LIVE_DATA_SERVER = "http://livedata.sns.gov/plots/$instrument/$run_number/update"
+LIVE_DATA_SERVER_DOMAIN = "livedata.sns.gov"
+LIVE_DATA_SERVER_PORT = "80"
 
 # Import local settings if available
 try:
