@@ -76,6 +76,17 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
 
+# ------- Template settings for Django 1.6 ------
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+#     'django.template.loaders.eggs.Loader',
+)
+TEMPLATE_DIRS = (
+                 os.path.abspath(os.path.join(os.path.dirname(__file__),'..','templates')),
+)
+# ------ End of template settings for Django 1.6 ------
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
