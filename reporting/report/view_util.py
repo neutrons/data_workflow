@@ -399,6 +399,8 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
 
     url_template = string.Template(settings.LIVE_DATA_SERVER)
     url = url_template.substitute(instrument=instrument, run_number=run_id)
+    url = "https://%s:%s%s" % (settings.LIVE_DATA_SERVER_DOMAIN,
+                               settings.LIVE_DATA_SERVER_PORT, url)
 
     # First option: html data
     html_data = get_plot_data_from_server(instrument, run_id, 'html')
@@ -446,8 +448,7 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
         url_template = string.Template(settings.LIVE_DATA_SERVER)
         url = url_template.substitute(instrument=instrument, run_number=run_id)
         url += "/%s" % data_type
-        conn = httplib.HTTPConnection(settings.LIVE_DATA_SERVER_DOMAIN,
-                                      settings.LIVE_DATA_SERVER_PORT, timeout=1.5)
+        conn = httplib.HTTPSConnection(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
         conn.request('GET', url)
         data_request = conn.getresponse()
         if data_request.status == 200:
