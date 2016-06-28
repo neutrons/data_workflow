@@ -406,7 +406,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     html_data = get_plot_data_from_server(instrument, run_id, 'html')
     if html_data is not None:
         plot_dict['html_data'] = html_data
-        plot_dict['update_url'] = "%s/html" % url
+        plot_dict['update_url'] = "%s/html/" % url
         return plot_dict
 
     # Second, json data from the plot server
@@ -416,7 +416,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     if json_data is None:
         json_data = get_local_plot_data(run_object)
     else:
-        plot_dict['update_url'] = "%s/json" % url
+        plot_dict['update_url'] = "%s/json/" % url
 
     plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
     if plot_data is not None:
@@ -447,7 +447,7 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
     try:
         url_template = string.Template(settings.LIVE_DATA_SERVER)
         url = url_template.substitute(instrument=instrument, run_number=run_id)
-        url += "/%s" % data_type
+        url += "/%s/" % data_type
         conn = httplib.HTTPSConnection(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
         conn.request('GET', url)
         data_request = conn.getresponse()
