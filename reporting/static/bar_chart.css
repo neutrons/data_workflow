@@ -40,9 +40,3 @@
 .y .tick{
     stroke-width: 1;
 }
-
-.legend rect {
-    fill:white;
-    stroke:black;
-    opacity:0.8;
-}
