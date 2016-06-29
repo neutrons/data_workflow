@@ -1,3 +1,4 @@
+#pylint: disable=bare-except, invalid-name
 """
     Status monitor utilities to support 'report' views
 
@@ -98,12 +99,22 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
     """
     if destination is None:
         destination = '/queue/POSTPROCESS.DATA_READY'
+
+    # Verify that we have a file path.
+    # If not, look up ICAT
+    file_path = run_id.file
+    if len(file_path) == 0:
+        from report.icat_server_communication import get_run_info
+        run_info = get_run_info(str(instrument_id), '', run_id.run_number)
+        for _file in run_info['data_files']:
+            if _file.endswith('nxs') or _file.endswith('h5'):
+                file_path = _file
     # Build up dictionary
     data_dict = {'facility': 'SNS',
                  'instrument': str(instrument_id),
                  'ipts': run_id.ipts_id.expt_name.upper(),
                  'run_number': run_id.run_number,
-                 'data_file': run_id.file
+                 'data_file': file_path
                 }
     if user is not None:
         data_dict['information'] = "Requested by %s" % user
