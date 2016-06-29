@@ -30,6 +30,10 @@ class InstrumentManager(models.Manager):
 class Instrument(models.Model):
     name = models.CharField(max_length=20, unique=True)
     objects = InstrumentManager()
+
+    class Meta:
+        app_label = 'report'
+
     def __unicode__(self):
         return self.name
 
@@ -72,6 +76,7 @@ class IPTS(models.Model):
 
     class Meta:
         verbose_name_plural = "IPTS"
+        app_label = 'report'
 
     def __unicode__(self):
         return self.expt_name
@@ -132,6 +137,9 @@ class DataRun(models.Model):
     file = models.CharField(max_length=128)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = DataRunManager()
+
+    class Meta:
+        app_label = 'report'
 
     def __unicode__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)
@@ -199,6 +207,9 @@ class StatusQueue(models.Model):
     name = models.CharField(max_length=100, unique=True)
     is_workflow_input = models.BooleanField(default=False)
 
+    class Meta:
+        app_label = 'report'
+
     def __unicode__(self):
         return self.name
 
@@ -255,6 +266,7 @@ class RunStatus(models.Model):
 
     class Meta:
         verbose_name_plural = "Run status"
+        app_label = 'report'
 
     def __unicode__(self):
         return "%s: %s" % (str(self.run_id), str(self.queue_id))
@@ -322,6 +334,7 @@ class WorkflowSummary(models.Model):
 
     class Meta:
         verbose_name_plural = "Workflow summaries"
+        app_label = 'report'
 
     def __unicode__(self):
         if self.complete is True:
@@ -377,6 +390,9 @@ class Error(models.Model):
     run_status_id = models.ForeignKey(RunStatus)
     description = models.CharField(max_length=200, null=True)
 
+    class Meta:
+        app_label = 'report'
+
 
 class Information(models.Model):
     """
@@ -384,6 +400,9 @@ class Information(models.Model):
     """
     run_status_id = models.ForeignKey(RunStatus)
     description = models.CharField(max_length=200, null=True)
+
+    class Meta:
+        app_label = 'report'
 
 
 class TaskManager(models.Manager):
@@ -436,6 +455,9 @@ class Task(models.Model):
     success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+', blank=True) 
     objects = TaskManager()
 
+    class Meta:
+        app_label = 'report'
+
     def task_queues(self):
         queues = ""
         for q in self.task_queue_ids.all():
@@ -468,3 +490,4 @@ class InstrumentStatus(models.Model):
 
     class Meta:
         verbose_name_plural = "Instrument status"
+        app_label = 'report'

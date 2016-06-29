@@ -1,32 +1,33 @@
+#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except
 """
     Report views
-    
+
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014-2015 Oak Ridge National Laboratory
 """
+import sys
+import logging
+import os
+import json
+import datetime
 from django.http import HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.core.context_processors import csrf
 from django.utils import dateformat, timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-import logging
-import sys
-import os
-import json
 
-from report.models import DataRun, IPTS, Instrument, Error, RunStatus
 from dasmon.models import ActiveInstrument
-from icat_server_communication import get_run_info
-import datetime
-import view_util
+from report.models import DataRun, IPTS, Instrument, Error, RunStatus
+from report.icat_server_communication import get_run_info
+from report.forms import ProcessingForm
+from . import view_util
 import users.view_util
 import dasmon.view_util
 import reporting_app.view_util
-from forms import ProcessingForm
+
 
 @login_required
 def processing_admin(request):
@@ -41,19 +42,19 @@ def processing_admin(request):
         # Get instrument
         if 'instrument' in request.POST:
             instrument = request.POST['instrument']
-            
+
         processing_form = ProcessingForm(request.POST)
         if processing_form.is_valid():
             output = processing_form.process()
             template_values['notes'] = output['report']
-            
+
             # Submit task and append success outcome to notes.
             if 'runs' in output and 'instrument' in output \
                 and 'task' in output and output['task'] is not None:
                 submission_errors = ""
                 for run_obj in output['runs']:
                     try:
-                        view_util.send_processing_request(output['instrument'], run_obj, 
+                        view_util.send_processing_request(output['instrument'], run_obj,
                                                           user=request.user, destination=output['task'])
                     except:
                         submission_errors += "%s run %s could not be submitted: %s<br>" % \
@@ -69,7 +70,7 @@ def processing_admin(request):
         else:
             instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
             instrument = instruments[0]
-            
+
         processing_form = ProcessingForm()
         processing_form.set_initial(request.GET)
 
@@ -79,10 +80,8 @@ def processing_admin(request):
 
     template_values['form'] = processing_form
     template_values['experiment_list'] = ipts
-    template_values.update(csrf(request))
 
-    return render_to_response('report/processing_admin.html',
-                              template_values)
+    return render(request, 'report/processing_admin.html', template_values)
 
 
 @users.view_util.login_or_local_required
@@ -92,7 +91,7 @@ def summary(request):
     """
     instruments = Instrument.objects.all().order_by('name')
     # Get base URL
-    base_url = reverse('report.views.instrument_summary', args=['aaaa'])
+    base_url = reverse('report:instrument_summary', args=['aaaa'])
     base_url = base_url.replace('/aaaa', '')
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse(settings.LANDING_VIEW)
 
@@ -134,14 +133,13 @@ def summary(request):
         else:
             max_date = max_date.replace(month=month)
 
-    template_values = {'instruments':instruments,
+    template_values = {'instruments': instruments,
                        'run_summary': run_summary,
                        'run_rate': run_rate,
-                       'breadcrumbs':breadcrumbs,
-                       'base_instrument_url':base_url}
+                       'breadcrumbs': breadcrumbs,
+                       'base_instrument_url': base_url}
     template_values = users.view_util.fill_template_values(request, **template_values)
-    return render_to_response('report/global_summary.html',
-                              template_values)
+    return render(request, 'report/global_summary.html', template_values)
 
 @users.view_util.login_or_local_required
 @users.view_util.monitor
@@ -159,9 +157,9 @@ def detail(request, instrument, run_id):
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',
                                                               args=[instrument]), instrument)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.ipts_summary',
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:ipts_summary',
                                                               args=[instrument, run_object.ipts_id.expt_name]),
                                                       str(run_object.ipts_id).lower())
     breadcrumbs += " &rsaquo; run %s" % run_id
@@ -172,7 +170,7 @@ def detail(request, instrument, run_id):
                            'breadcrumbs':breadcrumbs}
         template_values = users.view_util.fill_template_values(request, **template_values)
         template_values = dasmon.view_util.fill_template_values(request, **template_values)
-        return render_to_response('report/private_data.html', template_values)
+        return render(request, 'report/private_data.html', template_values)
 
     # Check whether we need a re-reduce link
     reduce_url = None
@@ -183,68 +181,7 @@ def detail(request, instrument, run_id):
     status_objects = RunStatus.objects.filter(run_id=run_object).order_by('created_on').reverse()
 
     # Look for an image of the reduction
-    image_url = None
-    try:
-        from file_handling.models import ReducedImage
-        images = ReducedImage.objects.filter(run_id=run_object)
-        if len(images) > 0:
-            image = images.latest('created_on')
-            if image is not None and bool(image.file) and os.path.isfile(image.file.path):
-                image_url = image.file.url
-    except:
-        logging.error("Error finding reduced image: %s" % sys.exc_value)
-
-    # Look for an image of the reduction
-    json_data = None
-    plot_data = None
-    x_label = "Q [1/\u00C5]"
-    y_label = "Absolute reflectivity"
-    try:
-        from file_handling.models import JsonData
-        json_data_list = JsonData.objects.filter(run_id=run_object)
-        if len(json_data_list) > 0:
-            json_data_entry = json_data_list.latest('created_on')
-            if json_data_entry is not None :
-                json_data = json_data_entry.data
-                data_dict = json.loads(json_data)
-                if 'main_output' in data_dict:
-                    # Old format
-                    if 'x' in data_dict['main_output']:
-                        x_values = data_dict['main_output']['x']
-                        y_values = data_dict['main_output']['y']
-                        e_values = data_dict['main_output']['e']
-                        if 'x_label' in data_dict['main_output']:
-                            x_label = data_dict['main_output']['x_label']
-                        if 'y_label' in data_dict['main_output']:
-                            y_label = data_dict['main_output']['y_label']
-                        plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
-                    # New format from Mantid
-                    elif 'data' in data_dict['main_output']:
-                        x_values = data_dict['main_output']['data']['1'][0]
-                        y_values = data_dict['main_output']['data']['1'][1]
-                        e_values = data_dict['main_output']['data']['1'][2]
-                        if 'axes' in data_dict['main_output']:
-                            if 'xlabel' in data_dict['main_output']['axes']:
-                                x_label = data_dict['main_output']['axes']['xlabel']
-                            if 'ylabel' in data_dict['main_output']['axes']:
-                                y_label = data_dict['main_output']['axes']['ylabel']
-                        if len(data_dict['main_output']['data']['1'])>3:
-                            dx = data_dict['main_output']['data']['1'][3]
-                            plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
-                        else:
-                            plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
-        elif not request.GET.get('test', '-1') == '-1':
-            plot_data = [[0.008, 0.0048], [0.0082, 0.96], [0.0084, 1], [0.0085, 1.1], [0.0087, 1],
-                         [0.0089, 0.96], [0.0091, 1], [0.0092, 1], [0.0094, 1], [0.0096, 0.96],
-                         [0.0098, 0.98], [ 0.01, 0.99], [ 0.01, 1.1], [ 0.01, 0.96], [0.011, 0.9],
-                         [0.011, 0.82], [0.011, 0.69], [0.011, 0.64], [0.011, 0.48], [0.012, 0.37],
-                         [0.012, 0.25], [0.012, 0.14], [0.013, 0.1], [0.013,  0.1], [0.013, 0.14],
-                         [0.013, 0.15], [0.014, 0.16], [0.014, 0.2], [0.014,  0.2], [0.015, 0.22],
-                         [0.015, 0.22], [0.015, 0.19], [0.015, 0.2], [0.016, 0.17], [0.016, 0.16],
-                         [0.016, 0.13], [0.017, 0.1], [0.017, 0.072], [0.018, 0.054], [0.018, 0.041],
-                         [0.018, 0.027], [0.019, 0.025], [0.019, 0.02], [0.02, 0.026], [0.02, 0.03]]
-    except:
-        logging.error("Error finding reduced json data: %s" % sys.exc_value)
+    plot_template_dict = view_util.get_plot_template_dict(run_object, instrument, run_id)
 
     # Check whether this is the last known run for this instrument
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
@@ -254,7 +191,7 @@ def detail(request, instrument, run_id):
         try:
             DataRun.objects.get(instrument_id=instrument_id,
                                 run_number=run_object.run_number + 1)
-            next_url = reverse('report.views.detail', args=[instrument, run_object.run_number + 1])
+            next_url = reverse('report:detail', args=[instrument, run_object.run_number + 1])
         except:
             next_url = None
 
@@ -262,28 +199,21 @@ def detail(request, instrument, run_id):
     try:
         DataRun.objects.get(instrument_id=instrument_id,
                             run_number=run_object.run_number - 1)
-        prev_url = reverse('report.views.detail', args=[instrument, run_object.run_number - 1])
+        prev_url = reverse('report:detail', args=[instrument, run_object.run_number - 1])
     except:
         prev_url = None
 
-    is_test_2d = 'test2d' in request.GET
-    if is_test_2d:
-        plot_data = None
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
                        'reduce_url':reduce_url,
-                       'plot_data':plot_data,
-                       'plot_label_x':x_label,
-                       'plot_label_y':y_label,
                        'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
-                       'image_url':image_url,
                        'prev_url': prev_url,
                        'next_url': next_url,
-                       'test2d': is_test_2d,
                       }
+    template_values.update(plot_template_dict)
     if icat_info == {}:
         template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]
     try:
@@ -294,11 +224,11 @@ def detail(request, instrument, run_id):
                 template_values['no_icat_info'] = "The final data file for this run is not yet available."
 
     except:
-        logging.error("Could not determine whether we have ICAT info: %s" % sys.exc_value)
+        logging.error("Could not determine whether we have ICAT info: %s", sys.exc_value)
         template_values['no_icat_info'] = "There is no catalog information for this run yet."
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render_to_response('report/detail.html', template_values)
+    return render(request, 'report/detail.html', template_values)
 
 @login_required
 @users.view_util.monitor
@@ -349,7 +279,7 @@ def instrument_summary(request, instrument):
     for expt in ipts:
         localtime = timezone.localtime(expt.created_on)
         df = dateformat.DateFormat(localtime)
-        expt_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report.views.ipts_summary',
+        expt_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report:ipts_summary',
                                                                              args=[instrument, expt.expt_name]),
                                                                      expt.expt_name)),
                           'total': expt.number_of_runs(),
@@ -357,10 +287,10 @@ def instrument_summary(request, instrument):
                           'created_on': str(df.format(settings.DATETIME_FORMAT))})
 
     # Instrument error URL
-    error_url = reverse('report.views.live_errors', args=[instrument])
+    error_url = reverse('report:live_errors', args=[instrument])
 
     # Update URL for live monitoring
-    update_url = reverse('report.views.get_instrument_update', args=[instrument])
+    update_url = reverse('report:get_instrument_update', args=[instrument])
 
     # Get the last IPTS created so that we can properly do the live update
     if IPTS.objects.filter(instruments=instrument_id).count() > 0:
@@ -381,7 +311,7 @@ def instrument_summary(request, instrument):
                       }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    return render_to_response('report/instrument.html', template_values)
+    return render(request, 'report/instrument.html', template_values)
 
 @users.view_util.login_or_local_required
 @users.view_util.monitor
@@ -399,8 +329,8 @@ def ipts_summary(request, instrument, ipts):
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
 
     # Get IPTS URL
-    ipts_url = reverse('report.views.ipts_summary', args=[instrument, ipts])
-    update_url = reverse('report.views.get_experiment_update', args=[instrument, ipts])
+    ipts_url = reverse('report:ipts_summary', args=[instrument, ipts])
+    update_url = reverse('report:get_experiment_update', args=[instrument, ipts])
 
     # Get the latest run and experiment so we can determine later
     # whether the user should refresh the page
@@ -418,7 +348,7 @@ def ipts_summary(request, instrument, ipts):
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',
                                                               args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; %s" % str(ipts_id).lower()
 
@@ -432,7 +362,7 @@ def ipts_summary(request, instrument, ipts):
                       }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    return render_to_response('report/ipts_summary.html', template_values)
+    return render(request, 'report/ipts_summary.html', template_values)
 
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -460,11 +390,11 @@ def live_errors(request, instrument):
     for err in error_query:
         localtime = timezone.localtime(err.run_status_id.created_on)
         df = dateformat.DateFormat(localtime)
-        error_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report.views.ipts_summary',
+        error_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report:ipts_summary',
                                                                               args=[instrument,
                                                                                     err.run_status_id.run_id.ipts_id.expt_name]),
                                                                       err.run_status_id.run_id.ipts_id.expt_name)),
-                           'run': str("<a href='%s'>%s</a>" % (reverse('report.views.detail',
+                           'run': str("<a href='%s'>%s</a>" % (reverse('report:detail',
                                                                        args=[instrument,
                                                                              err.run_status_id.run_id.run_number]),
                                                                err.run_status_id.run_id.run_number)),
@@ -473,12 +403,12 @@ def live_errors(request, instrument):
                            'created_on': str(df.format(settings.DATETIME_FORMAT))})
 
     # Instrument reporting URL
-    instrument_url = reverse('report.views.instrument_summary', args=[instrument])
-    update_url = reverse('report.views.get_error_update', args=[instrument])
+    instrument_url = reverse('report:instrument_summary', args=[instrument])
+    update_url = reverse('report:get_error_update', args=[instrument])
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',
                                                               args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; errors"
 
@@ -492,7 +422,7 @@ def live_errors(request, instrument):
                       }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
-    return render_to_response('report/live_errors.html', template_values)
+    return render(request, 'report/live_errors.html', template_values)
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
@@ -608,5 +538,3 @@ def get_error_update(request, instrument):
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
-
-

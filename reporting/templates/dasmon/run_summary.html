@@ -36,7 +36,7 @@ $(document).ready( function() {
 var last_run_id = '{{ last_run_id }}';
 
 function poll(){
-    $.ajax({ url: "{% url 'dasmon_summary_update' %}?since="+last_run_id+"&complete_since="+{{ first_run_id }}, success: function(data){
+    $.ajax({ url: "{% url 'dasmon:run_summary_update' %}?since="+last_run_id+"&complete_since="+{{ first_run_id }}, success: function(data){
         if (data.refresh_needed.localeCompare('1')==0){
             for (var i=0;i<data.run_list.length;i++) {
                 if (!$('#run_id_'+data.run_list[i].run_id).length) {
@@ -74,7 +74,7 @@ function poll(){
 
 {% block right_side_links %}
     <span style="float:right">
-    <a href="{% url 'dasmon_dashboard' %}">dashboard</a> | <b>latest runs</b>
+    <a href="{% url 'dasmon:dashboard' %}">dashboard</a> | <b>latest runs</b>
     </span>
 {% endblock %}
 

@@ -1,6 +1,11 @@
-from django.conf.urls import patterns, url
+#pylint: disable=invalid-name
+"""
+    Define url structure
+"""
+from django.conf.urls import url
+from . import views
 
-urlpatterns = patterns('',
-    url(r'^login$', 'users.views.perform_login'),
-    url(r'^logout$', 'users.views.perform_logout'),
-)
+urlpatterns = [
+    url(r'^login$', views.perform_login, name='perform_login'),
+    url(r'^logout$', views.perform_logout, name='perform_logout'),
+]

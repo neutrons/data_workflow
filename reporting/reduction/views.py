@@ -1,3 +1,4 @@
+#pylint: disable=bare-except, too-many-locals, line-too-long
 """
     Automated reduction configuration view
 
@@ -5,25 +6,25 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.context_processors import csrf
-from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, get_object_or_404, redirect
-from django.conf import settings
-from django.utils import dateparse, timezone
-from models import ReductionProperty
-from report.models import Instrument
+import sys
 import logging
 import json
-import sys
 import datetime
-from . import forms
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.urlresolvers import reverse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
+from django.utils import dateparse, timezone
 from django.forms.formsets import formset_factory
+from report.models import Instrument
+
+from reduction.models import ReductionProperty
+from . import forms
+from . import view_util
 
 import users.view_util
 import dasmon.view_util
-import view_util
 
 @users.view_util.login_or_local_required
 def configuration(request, instrument):
@@ -59,7 +60,7 @@ def configuration(request, instrument):
 
     # Breadcrumbs
     breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
@@ -68,11 +69,9 @@ def configuration(request, instrument):
                        'action_list': action_list ,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs}
-    template_values.update(csrf(request))
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render_to_response('reduction/configuration.html',
-                              template_values)
+    return render(request, 'reduction/configuration.html', template_values)
 
 @users.view_util.login_or_local_required
 def configuration_cncs(request, instrument):
@@ -92,17 +91,18 @@ def configuration_cncs(request, instrument):
         extra = int(request.GET.get('extra', default_extra))
     except:
         extra = default_extra
+    #pylint: disable=invalid-name
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
 
     error_msg = []
     if request.method == 'POST':
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
-            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            return redirect(reverse('reduction:configuration', args=[instrument]))
         elif request.POST["button_choice"]=="reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
-            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            return redirect(reverse('reduction:configuration', args=[instrument]))
 
         options_form = forms.ReductionConfigurationCNCSForm(request.POST)
         options_form.set_instrument(instrument.lower())
@@ -114,12 +114,12 @@ def configuration_cncs(request, instrument):
             # Send ActiveMQ request
             try:
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
-                return redirect(reverse('reduction.views.configuration', args=[instrument]))
+                return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s" % sys.exc_value)
-                error_msg.append("Error processing request: %s" % sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                error_msg.append("Error processing request")
         else:
-            logging.error("Invalid form %s %s" % (options_form.errors, mask_form.errors))
+            logging.error("Invalid form %s %s", options_form.errors, mask_form.errors)
     else:
         params_dict = {}
         props_list = ReductionProperty.objects.filter(instrument=instrument_id)
@@ -141,7 +141,7 @@ def configuration_cncs(request, instrument):
 
     # Breadcrumbs
     breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
@@ -152,11 +152,9 @@ def configuration_cncs(request, instrument):
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
                        'user_alert':error_msg}
-    template_values.update(csrf(request))
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render_to_response('reduction/configuration_cncs.html',
-                              template_values)
+    return render(request, 'reduction/configuration_cncs.html', template_values)
 
 
 @users.view_util.login_or_local_required
@@ -177,17 +175,18 @@ def configuration_dgs(request, instrument):
         extra = int(request.GET.get('extra', default_extra))
     except:
         extra = default_extra
+    #pylint: disable=invalid-name
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
 
     error_msg = []
     if request.method == 'POST':
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
-            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            return redirect(reverse('reduction:configuration', args=[instrument]))
         elif request.POST["button_choice"]=="reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
-            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            return redirect(reverse('reduction:configuration', args=[instrument]))
 
         options_form = forms.ReductionConfigurationDGSForm(request.POST)
         options_form.set_instrument(instrument.lower())
@@ -199,12 +198,12 @@ def configuration_dgs(request, instrument):
             # Send ActiveMQ request
             try:
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
-                return redirect(reverse('reduction.views.configuration', args=[instrument]))
+                return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s" % sys.exc_value)
-                error_msg.append("Error processing request: %s" % sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                error_msg.append("Error processing request")
         else:
-            logging.error("Invalid form %s %s" % (options_form.errors, mask_form.errors))
+            logging.error("Invalid form %s %s", options_form.errors, mask_form.errors)
     else:
         params_dict = {}
         props_list = ReductionProperty.objects.filter(instrument=instrument_id)
@@ -226,7 +225,7 @@ def configuration_dgs(request, instrument):
 
     # Breadcrumbs
     breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
@@ -237,11 +236,10 @@ def configuration_dgs(request, instrument):
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
                        'user_alert':error_msg}
-    template_values.update(csrf(request))
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render_to_response('reduction/configuration_dgs.html',
-                              template_values)
+    return render(request, 'reduction/configuration_dgs.html', template_values)
+
 
 @users.view_util.login_or_local_required
 def configuration_corelli(request, instrument):
@@ -265,6 +263,7 @@ def configuration_corelli(request, instrument):
         extra_orientation = int(request.GET.get('extra_orientation', default_extra))
     except:
         extra_orientation = default_extra
+    #pylint: disable=invalid-name
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra_mask)
     PlotFormSet = formset_factory(forms.PlottingForm, extra=extra_orientation)
 
@@ -272,11 +271,11 @@ def configuration_corelli(request, instrument):
     if request.method == 'POST':
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
-            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            return redirect(reverse('reduction:configuration', args=[instrument]))
         elif request.POST["button_choice"]=="reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
-            return redirect(reverse('reduction.views.configuration', args=[instrument]))
+            return redirect(reverse('reduction:configuration', args=[instrument]))
 
         options_form = forms.ReductionConfigurationCorelliForm(request.POST)
         mask_form = MaskFormSet(request.POST)
@@ -290,12 +289,12 @@ def configuration_corelli(request, instrument):
             # Send ActiveMQ request
             try:
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
-                return redirect(reverse('reduction.views.configuration', args=[instrument]))
+                return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s" % sys.exc_value)
-                error_msg.append("Error processing request: %s" % sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                error_msg.append("Error processing request")
         else:
-            logging.error("Invalid form %s %s" % (options_form.errors, mask_form.errors))
+            logging.error("Invalid form %s %s", options_form.errors, mask_form.errors)
     else:
         params_dict = {}
         props_list = ReductionProperty.objects.filter(instrument=instrument_id)
@@ -308,12 +307,12 @@ def configuration_corelli(request, instrument):
             try:
                 mask_list = forms.MaskForm.from_dict_list(params_dict['mask'])
             except:
-                logging.error("Error evaluating the mask information: %s" % sys.exc_value)
+                logging.error("Error evaluating the mask information: %s", sys.exc_value)
         if 'plot_requests' in params_dict:
             try:
                 plot_list = forms.PlottingForm.from_dict_list(params_dict['plot_requests'])
             except:
-                logging.error("Error evaluating the plotting information: %s" % sys.exc_value)
+                logging.error("Error evaluating the plotting information: %s", sys.exc_value)
         mask_form = MaskFormSet(initial=mask_list)
         plot_form = PlotFormSet(initial=plot_list)
 
@@ -326,7 +325,7 @@ def configuration_corelli(request, instrument):
 
     # Breadcrumbs
     breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report.views.instrument_summary',args=[instrument]), instrument)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
@@ -338,11 +337,9 @@ def configuration_corelli(request, instrument):
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
                        'user_alert':error_msg}
-    template_values.update(csrf(request))
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render_to_response('reduction/configuration_corelli.html',
-                              template_values)
+    return render(request, 'reduction/configuration_corelli.html', template_values)
 
 @csrf_exempt
 @users.view_util.login_or_local_required_401
@@ -362,19 +359,19 @@ def configuration_change(request, instrument):
                 template_dict[item['key']] = item['value']
                 view_util.store_property(instrument_id, item['key'], item['value'], user=request.user)
             except:
-                logging.error("config_change: %s" % sys.exc_value)
+                logging.error("config_change: %s", sys.exc_value)
 
         # Check whether the user wants to install the default script
         if 'use_default' in request.POST:
             try:
                 template_dict['use_default'] = int(request.POST['use_default'])==1
             except:
-                logging.error("Error parsing use_default parameter: %s" % sys.exc_value)
+                logging.error("Error parsing use_default parameter: %s", sys.exc_value)
         # Send ActiveMQ request
         try:
             view_util.send_template_request(instrument_id, template_dict, user=request.user)
         except:
-            logging.error("Error sending AMQ script request: %s" % sys.exc_value)
+            logging.error("Error sending AMQ script request: %s", sys.exc_value)
             return HttpResponse("Error processing request", status=500)
 
     data_dict = {}

@@ -1,7 +1,12 @@
-from django.conf.urls import patterns, url
+#pylint: disable=invalid-name, line-too-long
+"""
+    Define url structure
+"""
+from django.conf.urls import url
+from . import views
 
-urlpatterns = patterns('',
-    url(r'^(?P<instrument>[\w]+)/$', 'reduction.views.configuration', name='reduction_configuration'),
-    url(r'^(?P<instrument>[\w]+)/change$', 'reduction.views.configuration_change', name='reduction_configuration_change'),
-    url(r'^(?P<instrument>[\w]+)/update$', 'reduction.views.configuration_update', name='reduction_configuration_update'),
-)
+urlpatterns = [
+    url(r'^(?P<instrument>[\w]+)/$',       views.configuration,        name='configuration'),
+    url(r'^(?P<instrument>[\w]+)/change$', views.configuration_change, name='configuration_change'),
+    url(r'^(?P<instrument>[\w]+)/update$', views.configuration_update, name='configuration_update'),
+]

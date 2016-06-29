@@ -1,21 +1,25 @@
-from django.conf.urls import patterns, include, url
+#pylint: disable=invalid-name, line-too-long
+"""
+    Define url structure
+"""
+from django.conf.urls import url
+from . import views
 
-urlpatterns = patterns('',
-    url(r'^$', 'dasmon.views.dashboard'),
-    url(r'^update/$', 'dasmon.views.summary_update'),
-    url(r'^summary/$', 'dasmon.views.run_summary', name='dasmon_summary'),
-    url(r'^dashboard/$', 'dasmon.views.dashboard', name='dasmon_dashboard'),
-    url(r'^dashboard/update/$', 'dasmon.views.dashboard_update'),
-    url(r'^summary/update/$', 'dasmon.views.run_summary_update', name='dasmon_summary_update'),
-    url(r'^user_help/', 'dasmon.views.user_help'),
-    url(r'^notifications/', 'dasmon.views.notifications'),
-    url(r'^(?P<instrument>[\w]+)/$', 'dasmon.views.live_monitor'),
-    url(r'^(?P<instrument>[\w]+)/runs/$', 'dasmon.views.live_runs', name='dasmon_live_runs'),
-    url(r'^(?P<instrument>[\w]+)/update/$', 'dasmon.views.get_update'),
-    url(r'^(?P<instrument>[\w]+)/diagnostics/$', 'dasmon.views.diagnostics'),
-    url(r'^(?P<instrument>[\w]+)/signals/$', 'dasmon.views.get_signal_table'),
-    url(r'^(?P<instrument>[\w]+)/signals/ack/(?P<sig_id>\d+)/$', 'dasmon.views.acknowledge_signal'),
-    url(r'^(?P<instrument>[\w]+)/legacy/$', 'dasmon.views.legacy_monitor'),
-    url(r'^(?P<instrument>[\w]+)/legacy/update/$', 'dasmon.views.get_legacy_data'),
-    
-)
+urlpatterns = [
+    url(r'^$',                                      views.dashboard,            name='dashboard'),
+    url(r'^update/$',                               views.summary_update,       name='summary_update'),
+    url(r'^summary/$',                              views.run_summary,          name='run_summary'),
+    url(r'^dashboard/$',                            views.dashboard,            name='dashboard'),
+    url(r'^dashboard/update/$',                     views.dashboard_update,     name='dashboard_update'),
+    url(r'^summary/update/$',                       views.run_summary_update,   name='run_summary_update'),
+    url(r'^user_help/',                             views.user_help,            name='user_help'),
+    url(r'^notifications/',                         views.notifications,        name='notifications'),
+    url(r'^(?P<instrument>[\w]+)/$',                views.live_monitor,         name='live_monitor'),
+    url(r'^(?P<instrument>[\w]+)/runs/$',           views.live_runs,            name='live_runs'),
+    url(r'^(?P<instrument>[\w]+)/update/$',         views.get_update,           name='get_update'),
+    url(r'^(?P<instrument>[\w]+)/diagnostics/$',    views.diagnostics,          name='diagnostics'),
+    url(r'^(?P<instrument>[\w]+)/signals/$',        views.get_signal_table,     name='get_signal_table'),
+    url(r'^(?P<instrument>[\w]+)/signals/ack/(?P<sig_id>\d+)/$', views.acknowledge_signal, name='acknowledge_signal'),
+    url(r'^(?P<instrument>[\w]+)/legacy/$',         views.legacy_monitor,       name='legacy_monitor'),
+    url(r'^(?P<instrument>[\w]+)/legacy/update/$',  views.get_legacy_data,      name='get_legacy_data'),
+]

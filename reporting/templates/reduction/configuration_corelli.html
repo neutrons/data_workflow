@@ -10,7 +10,7 @@
   var default_requested = 0;
   var last_action = '{{ last_action_time }}';
   function poll(){
-      $.ajax({ url: "{% url 'reduction_configuration_update' instrument %}?since="+last_action, success: function(data) {
+      $.ajax({ url: "{% url 'reduction:configuration_update' instrument %}?since="+last_action, success: function(data) {
           if (data.refresh_needed.localeCompare('1')==0) {
               $('#last_action').replaceWith("<span id='last_action'>"+data.actions[data.actions.length-1].info+" on "+data.actions[data.actions.length-1].time+"</span>");
               last_action = data.last_action_time;

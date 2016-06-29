@@ -1,19 +1,23 @@
+#pylint: disable=bare-except, invalid-name
 """
     Status monitor utilities to support 'report' views
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+import sys
+import os
+import logging
+import json
+import datetime
+import string
+import httplib
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import dateformat, timezone
-import datetime
 from django.conf import settings
-import logging
-import sys
-import json
 from django.db import connection, transaction
 from django.core.cache import cache
 
@@ -44,12 +48,12 @@ def fill_template_values(request, **template_args):
     template_args['last_run'] = last_run_id
 
     # Get base IPTS URL
-    base_ipts_url = reverse('report.views.ipts_summary', args=[instr, '0000'])
+    base_ipts_url = reverse('report:ipts_summary', args=[instr, '0000'])
     base_ipts_url = base_ipts_url.replace('/0000', '')
     template_args['base_ipts_url'] = base_ipts_url
 
     # Get base Run URL
-    base_run_url = reverse('report.views.detail', args=[instr, '0000'])
+    base_run_url = reverse('report:detail', args=[instr, '0000'])
     base_run_url = base_run_url.replace('/0000', '')
     template_args['base_run_url'] = base_run_url
 
@@ -95,19 +99,29 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
     """
     if destination is None:
         destination = '/queue/POSTPROCESS.DATA_READY'
+
+    # Verify that we have a file path.
+    # If not, look up ICAT
+    file_path = run_id.file
+    if len(file_path) == 0:
+        from report.icat_server_communication import get_run_info
+        run_info = get_run_info(str(instrument_id), '', run_id.run_number)
+        for _file in run_info['data_files']:
+            if _file.endswith('nxs') or _file.endswith('h5'):
+                file_path = _file
     # Build up dictionary
     data_dict = {'facility': 'SNS',
                  'instrument': str(instrument_id),
                  'ipts': run_id.ipts_id.expt_name.upper(),
                  'run_number': run_id.run_number,
-                 'data_file': run_id.file
+                 'data_file': file_path
                 }
     if user is not None:
         data_dict['information'] = "Requested by %s" % user
 
     data = json.dumps(data_dict)
     reporting_app.view_util.send_activemq_message(destination, data)
-    logging.info("Reduction requested: %s" % str(data))
+    logging.info("Reduction requested: %s", str(data))
 
 def processing_request(request, instrument, run_id, destination):
     """
@@ -123,10 +137,10 @@ def processing_request(request, instrument, run_id, destination):
         send_processing_request(instrument_id, run_object, request.user,
                                 destination=destination)
     except:
-        logging.error("Could not send post-processing request: %s" % destination)
+        logging.error("Could not send post-processing request: %s", destination)
         logging.error(sys.exc_value)
         return HttpResponseServerError()
-    return redirect(reverse('report.views.detail', args=[instrument, run_id]))
+    return redirect(reverse('report:detail', args=[instrument, run_id]))
 
 def retrieve_rates(instrument_id, last_run_id):
     """
@@ -183,7 +197,7 @@ def run_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:
         connection.close()
-        logging.error("Run rate (%s): %s" % (str(instrument_id), sys.exc_value))
+        logging.error("Run rate (%s): %s", str(instrument_id), sys.exc_value)
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -215,7 +229,7 @@ def error_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:
         connection.close()
-        logging.error("Error rate (%s): %s" % (str(instrument_id), sys.exc_value))
+        logging.error("Error rate (%s): %s", str(instrument_id), sys.exc_value)
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -266,7 +280,7 @@ def is_acquisition_complete(run_id):
     status_items = RunStatus.objects.filter(run_id=run_id,
                                             queue_id__name='POSTPROCESS.DATA_READY')
     return len(status_items) > 0
-                                              
+
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
     """
         Get the health status of post-processing services
@@ -292,11 +306,11 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
             time_catalog_start = timezone.now()
 
         if time_catalog_start - latest_run.created_on > delta_long:
-            logging.error("Very slow reduction response: %s" % str(latest_run.run_id))
+            logging.error("Very slow reduction response: %s", str(latest_run.run_id))
             status_dict["catalog"] = 2
         elif time_catalog_start - latest_run.created_on > delta_short:
             elapsed_time = time_catalog_start - latest_run.created_on
-            logging.error("Slow reduction response: %s [%s sec]" % (str(latest_run.run_id), str(elapsed_time)))
+            logging.error("Slow reduction response: %s [%s sec]", str(latest_run.run_id), str(elapsed_time))
             status_dict["catalog"] = 1
         else:
             status_dict["catalog"] = 0
@@ -354,7 +368,7 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
             else:
                 status = "<span %s class='red'>incomplete</span>" % element_id
     except:
-        logging.error("report.view_util.get_run_status_text: %s" % sys.exc_value)
+        logging.error("report.view_util.get_run_status_text: %s", sys.exc_value)
     return status
 
 def get_run_list_dict(run_list):
@@ -370,9 +384,9 @@ def get_run_list_dict(run_list):
             localtime = timezone.localtime(r.created_on)
             df = dateformat.DateFormat(localtime)
 
-            run_url = reverse('report.views.detail', args=[str(r.instrument_id), r.run_number])
-            reduce_url = reverse('report.views.submit_for_reduction', args=[str(r.instrument_id), r.run_number])
-            instr_url = reverse('dasmon.views.live_runs', args=[str(r.instrument_id)])
+            run_url = reverse('report:detail', args=[str(r.instrument_id), r.run_number])
+            reduce_url = reverse('report:submit_for_reduction', args=[str(r.instrument_id), r.run_number])
+            instr_url = reverse('dasmon:live_runs', args=[str(r.instrument_id)])
 
             run_dicts.append({"instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
                               "run": str("<a href='%s'>%s</a>" % (run_url, r.run_number)),
@@ -382,5 +396,129 @@ def get_run_list_dict(run_list):
                               "status": get_run_status_text(r, use_element_id=True)
                              })
     except:
-        logging.error("report.view_util.get_run_list_dict: %s" % sys.exc_value)
+        logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
     return run_dicts
+
+
+def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
+    plot_dict = {'image_url': None,
+                 'plot_data': None,
+                 'html_data': None,
+                 'plot_label_x': '',
+                 'plot_label_y': '',
+                 'update_url': None}
+
+    url_template = string.Template(settings.LIVE_DATA_SERVER)
+    url = url_template.substitute(instrument=instrument, run_number=run_id)
+    url = "https://%s:%s%s" % (settings.LIVE_DATA_SERVER_DOMAIN,
+                               settings.LIVE_DATA_SERVER_PORT, url)
+
+    # First option: html data
+    html_data = get_plot_data_from_server(instrument, run_id, 'html')
+    if html_data is not None:
+        plot_dict['html_data'] = html_data
+        plot_dict['update_url'] = "%s/html/" % url
+        return plot_dict
+
+    # Second, json data from the plot server
+    json_data = get_plot_data_from_server(instrument, run_id, 'json')
+
+    # Third, local json data for the d3 plots
+    if json_data is None:
+        json_data = get_local_plot_data(run_object)
+    else:
+        plot_dict['update_url'] = "%s/json/" % url
+
+    plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
+    if plot_data is not None:
+        plot_dict['plot_data'] = plot_data
+        plot_dict['plot_label_x'] = x_label
+        plot_dict['plot_label_y'] = y_label
+        return plot_dict
+
+    # Fourth, get a local image
+    plot_dict['image_url'] = get_local_image_url(run_object)
+    return plot_dict
+
+def get_local_image_url(run_object):
+    image_url = None
+    try:
+        from file_handling.models import ReducedImage
+        images = ReducedImage.objects.filter(run_id=run_object)
+        if len(images) > 0:
+            image = images.latest('created_on')
+            if image is not None and bool(image.file) and os.path.isfile(image.file.path):
+                image_url = image.file.url
+    except:
+        logging.error("Error finding reduced image: %s", sys.exc_value)
+    return image_url
+
+def get_plot_data_from_server(instrument, run_id, data_type='json'):
+    json_data = None
+    try:
+        url_template = string.Template(settings.LIVE_DATA_SERVER)
+        url = url_template.substitute(instrument=instrument, run_number=run_id)
+        url += "/%s/" % data_type
+        conn = httplib.HTTPSConnection(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
+        conn.request('GET', url)
+        data_request = conn.getresponse()
+        if data_request.status == 200:
+            json_data = data_request.read()
+    except:
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
+    return json_data
+
+def get_local_plot_data(run_object):
+    from file_handling.models import JsonData
+    json_data = None
+
+    try:
+        json_data_list = JsonData.objects.filter(run_id=run_object)
+        if len(json_data_list) > 0:
+            json_data_entry = json_data_list.latest('created_on')
+            if json_data_entry is not None :
+                json_data = json_data_entry.data
+    except:
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
+    return json_data
+
+def extract_d3_data_from_json(json_data):
+    plot_data = None
+    x_label = u"Q [1/\u00C5]"
+    y_label = u"Absolute reflectivity"
+
+    # Return dummy data if not data is coming in.
+    if json_data is None:
+        return plot_data, x_label, y_label
+
+    try:
+        data_dict = json.loads(json_data)
+        if 'main_output' in data_dict:
+            # Old format
+            if 'x' in data_dict['main_output']:
+                x_values = data_dict['main_output']['x']
+                y_values = data_dict['main_output']['y']
+                e_values = data_dict['main_output']['e']
+                if 'x_label' in data_dict['main_output']:
+                    x_label = data_dict['main_output']['x_label']
+                if 'y_label' in data_dict['main_output']:
+                    y_label = data_dict['main_output']['y_label']
+                plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
+            # New format from Mantid
+            elif 'data' in data_dict['main_output']:
+                x_values = data_dict['main_output']['data']['1'][0]
+                y_values = data_dict['main_output']['data']['1'][1]
+                e_values = data_dict['main_output']['data']['1'][2]
+                if 'axes' in data_dict['main_output']:
+                    if 'xlabel' in data_dict['main_output']['axes']:
+                        x_label = data_dict['main_output']['axes']['xlabel']
+                    if 'ylabel' in data_dict['main_output']['axes']:
+                        y_label = data_dict['main_output']['axes']['ylabel']
+                if len(data_dict['main_output']['data']['1'])>3:
+                    dx = data_dict['main_output']['data']['1'][3]
+                    plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
+                else:
+                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
+    except:
+        logging.error("Error finding reduced json data: %s", sys.exc_value)
+    return plot_data, x_label, y_label
