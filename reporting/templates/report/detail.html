@@ -42,21 +42,23 @@
     };
 
 {% if html_data %}
-    (function poll() {
-        setTimeout(function() {
-            $.ajax({
-                type: "GET",
+    var div_data = '';
+    function get_plot_update() {
+        $.ajax({type: "GET",
                 url: "{{update_url}}",
                 success: function(data) {
-                    $('#graph').replaceWith("<div id='graph'>"+data+"</div>");
+                    if (div_data.localeCompare(data) != 0) {
+                        div_data = data;
+                        $('#graph').replaceWith("<div id='graph'>"+data+"</div>");
+                    };
                 },
                 dataType: "html",
-                complete: poll,
                 timeout: 2000
-            })
-        }, 10000);
-    })();
-
+        })
+    };
+    get_plot_update();
+    setInterval(get_plot_update, 10000);
+    
 {% elif plot_data %}
     // Container for all plots on page
     var plots = [];
@@ -122,7 +124,7 @@
   {% if html_data %}
   <p>
   {% if data_url %}<a href='{{ data_url }}'>download data</a>{% endif %}
-  <div id="graph">{{html_data|safe}}</div>
+  <div id="graph"></div>
 
   {% elif plot_data %}
   <p>
