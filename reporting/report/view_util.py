@@ -12,6 +12,8 @@ import json
 import datetime
 import string
 import httplib
+import re
+import numpy as np
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
@@ -399,6 +401,38 @@ def get_run_list_dict(run_list):
         logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
     return run_dicts
 
+
+def extract_ascii_from_div(html_data):
+    """
+        Extract data from an plot <div>.
+        Only returns the first one it finds.
+        @param html_data: <div> string
+    """
+    try:
+        result = re.search(r"newPlot\((.*)\)</script>", html_data)
+        jsondata_str = "[%s]" % result.group(1)
+        data_list = json.loads(jsondata_str)
+        ascii_data = ""
+        for d in data_list:
+            if isinstance(d, list):
+                for trace in d:
+                    if 'type' in trace and trace['type'] == 'scatter':
+                        x = trace['x']
+                        y = trace['y']
+                        dx = np.zeros(len(x))
+                        dy = np.zeros(len(y))
+                        if 'error_x' in trace:
+                            dx = trace['error_x']['array']
+                        if 'error_y' in trace:
+                            dy = trace['error_y']['array']
+                        break
+                for i in range(len(x)):
+                    ascii_data += "%g %g %g %g\n" % (x[i], y[i], dy[i], dx[i])
+                return ascii_data
+    except:
+        # Unable to extract data from <div>
+        logging.debug("Unable to extract data from <div>: %s", sys.exc_value)
+    return None
 
 def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     plot_dict = {'image_url': None,

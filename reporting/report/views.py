@@ -7,10 +7,9 @@
 """
 import sys
 import logging
-import os
 import json
 import datetime
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
@@ -141,8 +140,17 @@ def summary(request):
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'report/global_summary.html', template_values)
 
+@login_required
+def download_reduced_data(request, instrument, run_id):
+    html_data = view_util.get_plot_data_from_server(instrument, run_id, 'html')
+    ascii_data = view_util.extract_ascii_from_div(html_data)
+    if ascii_data is None:
+        error_msg = "No data available for %s %s" % (instrument, run_id)
+        return HttpResponseNotFound(error_msg)
+    ascii_data = "# %s run %\n%s" % (instrument, run_id, ascii_data)
+    return HttpResponse(ascii_data, content_type="text/csv")
+
 @users.view_util.login_or_local_required
-@users.view_util.monitor
 def detail(request, instrument, run_id):
     """
         Run details
@@ -231,7 +239,6 @@ def detail(request, instrument, run_id):
     return render(request, 'report/detail.html', template_values)
 
 @login_required
-@users.view_util.monitor
 def submit_for_reduction(request, instrument, run_id):
     """
         Send a run for automated reduction
@@ -242,7 +249,6 @@ def submit_for_reduction(request, instrument, run_id):
                                         destination='/queue/REDUCTION.REQUEST')
 
 @login_required
-@users.view_util.monitor
 def submit_for_post_processing(request, instrument, run_id):
     """
         Send a run for complete post-processing
@@ -253,7 +259,6 @@ def submit_for_post_processing(request, instrument, run_id):
                                         destination='/queue/POSTPROCESS.DATA_READY')
 
 @login_required
-@users.view_util.monitor
 def submit_for_cataloging(request, instrument, run_id):
     """
         Send a run for cataloging
@@ -264,7 +269,6 @@ def submit_for_cataloging(request, instrument, run_id):
                                         destination='/queue/CATALOG.REQUEST')
 
 @users.view_util.login_or_local_required
-@users.view_util.monitor
 def instrument_summary(request, instrument):
     """
         Instrument summary page
@@ -314,7 +318,6 @@ def instrument_summary(request, instrument):
     return render(request, 'report/instrument.html', template_values)
 
 @users.view_util.login_or_local_required
-@users.view_util.monitor
 def ipts_summary(request, instrument, ipts):
     """
         Experiment summary giving the list of runs
@@ -367,7 +370,6 @@ def ipts_summary(request, instrument, ipts):
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
 @vary_on_cookie
 def live_errors(request, instrument):
     """

@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^(?P<instrument>[\w]+)/$',                                views.instrument_summary,           name='instrument_summary'),
     url(r'^(?P<instrument>[\w]+)/update/$',                         views.get_instrument_update,        name='get_instrument_update'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/$',                views.detail,                       name='detail'),
+    url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/data/$',           views.download_reduced_data,        name='download_reduced_data'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/reduce/$',         views.submit_for_reduction,         name='submit_for_reduction'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/catalog/$',        views.submit_for_cataloging,        name='submit_for_cataloging'),
     url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/postprocess/$',    views.submit_for_post_processing,   name='submit_for_post_processing'),
