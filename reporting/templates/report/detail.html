@@ -118,7 +118,7 @@
     </tbody>
   </table>
   <p>
-
+  {% endif %}
   {% if html_data %}
   <p>
   {% if data_url %}<a href='{{ data_url }}'>download data</a>{% endif %}
@@ -137,7 +137,7 @@
   <img style="max-width:90%" src="{{ image_url|safe }}" alt="Reduced data">
   {% endif %}
   <p>
-
+  {% if not no_icat_info %}
   Data files:
   <ul>
   {%if icat_info.data_files %}
