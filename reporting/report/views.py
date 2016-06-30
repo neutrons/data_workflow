@@ -147,7 +147,7 @@ def download_reduced_data(request, instrument, run_id):
     if ascii_data is None:
         error_msg = "No data available for %s %s" % (instrument, run_id)
         return HttpResponseNotFound(error_msg)
-    ascii_data = "# %s run %\n%s" % (instrument, run_id, ascii_data)
+    ascii_data = "# %s run %s\n%s" % (instrument, run_id, ascii_data)
     return HttpResponse(ascii_data, content_type="text/csv")
 
 @users.view_util.login_or_local_required
