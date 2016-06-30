@@ -420,9 +420,9 @@ def extract_ascii_from_div(html_data):
                         y = trace['y']
                         dx = [0]*len(x)
                         dy = [0]*len(y)
-                        if 'error_x' in trace:
+                        if 'error_x' in trace and 'array' in trace['error_x']:
                             dx = trace['error_x']['array']
-                        if 'error_y' in trace:
+                        if 'error_y' in trace and 'array' in trace['error_y']:
                             dy = trace['error_y']['array']
                         break
                 for i in range(len(x)):
