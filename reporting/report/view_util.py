@@ -13,7 +13,6 @@ import datetime
 import string
 import httplib
 import re
-import numpy as np
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
@@ -419,8 +418,8 @@ def extract_ascii_from_div(html_data):
                     if 'type' in trace and trace['type'] == 'scatter':
                         x = trace['x']
                         y = trace['y']
-                        dx = np.zeros(len(x))
-                        dy = np.zeros(len(y))
+                        dx = [0]*len(x)
+                        dy = [0]*len(y)
                         if 'error_x' in trace:
                             dx = trace['error_x']['array']
                         if 'error_y' in trace:
