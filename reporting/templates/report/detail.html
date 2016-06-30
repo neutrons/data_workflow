@@ -121,6 +121,7 @@
 
   {% if html_data %}
   <p>
+  {% if data_url %}<a href='{{ data_url }}'>download data</a>{% endif %}
   <div id="graph">{{html_data|safe}}</div>
 
   {% elif plot_data %}

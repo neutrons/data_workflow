@@ -451,6 +451,8 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     if html_data is not None:
         plot_dict['html_data'] = html_data
         plot_dict['update_url'] = "%s/html/" % url
+        if extract_ascii_from_div(html_data) is not None:
+            plot_dict['data_url'] = reverse('report:download_reduced_data', args=[instrument, run_id])
         return plot_dict
 
     # Second, json data from the plot server

@@ -147,8 +147,10 @@ def download_reduced_data(request, instrument, run_id):
     if ascii_data is None:
         error_msg = "No data available for %s %s" % (instrument, run_id)
         return HttpResponseNotFound(error_msg)
-    ascii_data = "# %s run %s\n%s" % (instrument, run_id, ascii_data)
-    return HttpResponse(ascii_data, content_type="text/csv")
+    ascii_data = "# %s Run %s\n%s" % (instrument.upper(), run_id, ascii_data)
+    response = HttpResponse(ascii_data, content_type="text/csv")
+    response['Content-Disposition'] = 'attachment; filename=%s_%s.txt' % (instrument.upper(), run_id)
+    return response
 
 @users.view_util.login_or_local_required
 def detail(request, instrument, run_id):
