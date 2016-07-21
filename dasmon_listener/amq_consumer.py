@@ -160,6 +160,9 @@ def send_message(sender, recipients, subject, message):
         @param subject: subject of the message
         @param message: content of the message
     """
+    # If no sender or recipients are defined, do nothing
+    if len(sender) == 0 or len(recipients) == 0:
+        return
     try:
         msg = MIMEText(message)
         msg['Subject'] = subject
