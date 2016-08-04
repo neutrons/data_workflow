@@ -1,9 +1,11 @@
+#pylint: disable=too-many-branches, too-many-lines, line-too-long, too-many-locals, too-many-statements, bare-except, invalid-name
 """
     Status monitor utilities to support 'dasmon' views
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+import sys
 from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
 from pvmon.models import PVCache, PVStringCache, MonitoredVariable
@@ -11,12 +13,10 @@ from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils import dateformat, timezone
 from django.contrib.auth.models import Group
-import datetime
 from django.conf import settings
+import datetime
 import logging
-import sys
 import time
-import math
 import report.view_util
 import pvmon.view_util
 import users.view_util
@@ -132,7 +132,7 @@ def is_running(instrument_id):
         if not ActiveInstrument.objects.is_adara(instrument_id):
             return '-'
     except:
-        logging.error("Could not determine whether %s is running ADARA" % str(instrument_id))
+        logging.error("Could not determine whether %s is running ADARA", str(instrument_id))
     try:
         is_recording = False
         key_id = Parameter.objects.get(name="recording")
@@ -160,7 +160,7 @@ def is_running(instrument_id):
         else:
             return "Stopped"
     except:
-        logging.error("Could not determine running condition: %s" % sys.exc_value)
+        logging.error("Could not determine running condition: %s", str(sys.exc_value))
     return "Unknown"
 
 def get_system_health(instrument_id=None):
@@ -261,7 +261,7 @@ def get_live_variables(request, instrument_id):
     try:
         plot_timeframe = int(plot_timeframe)
     except:
-        logging.warning("Bad time period request: %s" % str(plot_timeframe))
+        logging.warning("Bad time period request: %s", str(plot_timeframe))
         plot_timeframe = settings.DASMON_PLOT_TIME_RANGE
 
     data_dict = []
@@ -291,32 +291,13 @@ def get_live_variables(request, instrument_id):
                 if len(values) > settings.DASMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.DASMON_NUMBER_OF_OLD_PTS]
 
-            # Average out points every two minutes when plotting a long period of time
-            if now - values[len(values) - 1].timestamp > datetime.timedelta(seconds=2 * 60 * 60):
-                range_t = now - values[len(values) - 1].timestamp
-                range_minutes = int(math.floor(range_t.total_seconds() / 120)) + 1
-                data_values = range_minutes * [0]
-                data_counts = range_minutes * [0]
-                for v in values:
-                    delta_t = now - v.timestamp
-                    i_bin = int(math.floor(delta_t.total_seconds() / 120))
-                    if i_bin < range_minutes:
-                        data_counts[i_bin] += 1.0
-                        data_values[i_bin] += float(v.value)
-                    else:
-                        logging.warning("Skipping point %s/%s %s(%s) = %s" % (i_bin, range_minutes, key, v.timestamp, v.value))
-                for i in range(range_minutes):
-                    if data_counts[i] > 0:
-                        data_values[i] /= data_counts[i]
-                    data_list.append([-i * 2.0, data_values[i]])
-            else:
-                for v in values:
-                    delta_t = now - v.timestamp
-                    data_list.append([-delta_t.total_seconds() / 60.0, float(v.value)])
+            for v in values:
+                delta_t = now - v.timestamp
+                data_list.append([-delta_t.total_seconds() / 60.0, float(v.value)])
             data_dict.append([key, data_list])
         except:
             # Could not find data for this key
-            logging.warning("Could not process %s: %s" % (key, sys.exc_value))
+            logging.warning("Could not process %s: %s", key, str(sys.exc_value))
     return data_dict
 
 def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
@@ -356,17 +337,17 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
         #    STATUS_UNRESPONSIVE = 2
         #    STATUS_INACTIVE = 3
         if int(last_value.value) > 0:
-            logging.error("%s status = %s" % (process, last_value.value))
+            logging.error("%s status = %s", process, last_value.value)
             return 2
     except:
-        logging.debug("No cached status for %s on instrument %s" % (process, instrument_id.name))
+        logging.debug("No cached status for %s on instrument %s", process, instrument_id.name)
         return 2
 
     if timezone.now() - last_value.timestamp > delta_long:
-        logging.debug("%s has a long delay in %s" % (process, instrument_id))
+        logging.debug("%s has a long delay in %s", process, instrument_id)
         return 2
     elif timezone.now() - last_value.timestamp > delta_short:
-        logging.debug("%s has a short delay in %s" % (process, instrument_id))
+        logging.debug("%s has a short delay in %s", process, instrument_id)
         return 1
     return 0
 
@@ -386,7 +367,7 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + 'workflowmgr')
         last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest('timestamp')
         if int(last_value.value) > 0:
-            logging.error("WorkflowMgr status = %s" % last_value.value)
+            logging.error("WorkflowMgr status = %s", last_value.value)
             return 2
     except:
         logging.debug("No cached status for WorkflowMgr on instrument")
@@ -438,7 +419,7 @@ def workflow_diagnostics(timeout=None):
                 process_list.append({'pid': item.value,
                                      'time': timezone.localtime(item.timestamp)})
     except:
-        logging.error("workflow_diagnostics: %s" % sys.exc_value)
+        logging.error("workflow_diagnostics: %s", str(sys.exc_value))
 
     dasmon_listener_list = []
     try:
@@ -452,7 +433,7 @@ def workflow_diagnostics(timeout=None):
                 dasmon_listener_list.append({'pid': item.value,
                                              'time': timezone.localtime(item.timestamp)})
     except:
-        logging.error("workflow_diagnostics: %s" % sys.exc_value)
+        logging.error("workflow_diagnostics: %s", str(sys.exc_value))
 
     # Heartbeat
     if timezone.now() - status_time > delay_time:
@@ -512,7 +493,6 @@ def postprocessing_diagnostics(timeout=None):
         red_diag['ar_nodes'] = nodes
     except:
         # No data available
-        # pylint: disable=pointless-except
         pass
 
     post_processing = report.view_util.get_post_processing_status()
@@ -557,7 +537,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
         status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        logging.error("pvstreamer_diagnostics: %s" % sys.exc_value)
+        logging.error("pvstreamer_diagnostics: %s", str(sys.exc_value))
 
     # Heartbeat
     if timezone.now() - status_time > delay_time:
@@ -601,7 +581,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        logging.error("dasmon_diagnostics: %s" % sys.exc_value)
+        logging.error("dasmon_diagnostics: %s", str(sys.exc_value))
 
     # Recent PVs, which come from DASMON straight to the DB
     last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -612,7 +592,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         last_pv_timestamp = latest.update_time
     except:
         # No data available, keep defaults
-        logging.error("dasmon_diagnostics: %s" % sys.exc_value)
+        logging.error("dasmon_diagnostics: %s", str(sys.exc_value))
 
     # Recent AMQ messages
     last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -779,7 +759,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 run_list = DataRun.objects.filter(id__gte=complete_since).order_by('created_on').reverse()
         except:
             # Invalid value for complete_since
-            logging.error("get_live_runs_update: %s" % sys.exc_value)
+            logging.error("get_live_runs_update: %s", str(sys.exc_value))
 
     status_list = []
     update_list = []
@@ -843,7 +823,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None):
         # Create dictionary for each run
         run_list = report.view_util.get_run_list_dict(runs)
     except:
-        logging.error("get_live_runs: %s" % sys.exc_value)
+        logging.error("get_live_runs: %s", str(sys.exc_value))
     return run_list, first_run, last_run
 
 class SignalEntry(object):
@@ -866,7 +846,7 @@ def get_signals(instrument_id):
     try:
         signals = Signal.objects.filter(instrument_id=instrument_id)
     except:
-        logging.error("Error reading signals: %s" % sys.exc_value)
+        logging.error("Error reading signals: %s", str(sys.exc_value))
         return []
 
     sig_alerts = []
@@ -882,7 +862,7 @@ def get_signals(instrument_id):
                 sig_entry.key = str(monitored[0].pv_name)
         except:
             # Could not find an entry for this signal
-            logging.error("Problem finding PV for signal: %s" % sys.exc_value)
+            logging.error("Problem finding PV for signal: %s", str(sys.exc_value))
 
         sig_alerts.append(sig_entry)
 
@@ -919,12 +899,12 @@ def get_signals(instrument_id):
             sig_entry.data = ','.join(data_list)
             sig_alerts.append(sig_entry)
     except:
-        logging.error("Could not process monitored PVs: %s" % sys.exc_value)
+        logging.error("Could not process monitored PVs: %s", str(sys.exc_value))
 
     try:
         return sorted(sig_alerts, key=lambda s: str(s.name).lower())
     except:
-        logging.error("Could not sort monitored PV list: %s" % sys.exc_value)
+        logging.error("Could not sort monitored PV list: %s", str(sys.exc_value))
     return sig_alerts
 
 def get_instrument_status_summary():
@@ -996,7 +976,7 @@ def add_status_entry(instrument_id, message_channel, value):
                                 value=str(value))
         update.save()
     except:
-        logging.error("add_status_entry: could add parameter for %s" % message_channel)
+        logging.error("add_status_entry: could add parameter for %s", message_channel)
 
 def get_latest_updates(instrument_id, message_channel,
                        timeframe=2.0, number_of_entries=10,
@@ -1014,7 +994,7 @@ def get_latest_updates(instrument_id, message_channel,
     try:
         key_id = Parameter.objects.get(name=message_channel)
     except:
-        logging.error("get_latest_updates: could not find parameter for %s" % message_channel)
+        logging.error("get_latest_updates: could not find parameter for %s", message_channel)
         return []
 
     # Determine what's the oldest time stamp we'll report

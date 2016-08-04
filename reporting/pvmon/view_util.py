@@ -1,17 +1,17 @@
+#pylint: disable=too-many-branches, line-too-long, too-many-locals, too-many-statements, bare-except, invalid-name
 """
     Utilities to compile the PVs stored in the web monitor DB.
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+import sys
 from pvmon.models import PVName, PV, PVCache, PVStringCache
 from django.utils import dateformat, timezone
 from django.conf import settings
 import datetime
 import logging
-import sys
 import time
-import math
 
 def get_live_variables(request, instrument_id, key_id=None):
     """
@@ -33,7 +33,7 @@ def get_live_variables(request, instrument_id, key_id=None):
                 if len(key_ids) > 0:
                     key_id = key_ids[0]
                 else:
-                    logging.error("Error finding %s" % key)
+                    logging.error("Error finding %s", key)
                     return []
                 live_keys.append(key_id)
         else:
@@ -47,7 +47,7 @@ def get_live_variables(request, instrument_id, key_id=None):
     try:
         plot_timeframe = int(plot_timeframe)
     except:
-        logging.warning("Bad time period request: %s" % str(plot_timeframe))
+        logging.warning("Bad time period request: %s", str(plot_timeframe))
         plot_timeframe = settings.PVMON_PLOT_TIME_RANGE
 
     data_dict = []
@@ -81,29 +81,13 @@ def get_live_variables(request, instrument_id, key_id=None):
                 if len(values) > settings.PVMON_NUMBER_OF_OLD_PTS:
                     values = values[:settings.PVMON_NUMBER_OF_OLD_PTS]
 
-            # Average out points every two minutes when plotting a long period of time
-            if now - values[len(values) - 1].update_time > 2 * 60 * 60 and len(values) > 60:
-                range_t = now - values[len(values) - 1].update_time
-                range_minutes = int(math.floor(range_t / 120)) + 1
-                data_values = range_minutes * [0]
-                data_counts = range_minutes * [0]
-                for v in values:
-                    delta_t = now - v.update_time
-                    i_bin = int(math.floor(delta_t / 120))
-                    data_counts[i_bin] += 1.0
-                    data_values[i_bin] += float(v.value)
-                for i in range(range_minutes):
-                    if data_counts[i] > 0:
-                        data_values[i] /= data_counts[i]
-                    data_list.append([-i * 2.0, data_values[i]])
-            else:
-                for v in values:
-                    delta_t = now - v.update_time
-                    data_list.append([-delta_t / 60.0, v.value])
+            for v in values:
+                delta_t = now - v.update_time
+                data_list.append([-delta_t / 60.0, v.value])
             data_dict.append([key, data_list])
         except:
             # Could not find data for this key
-            logging.warning("Could not process %s: %s" % (key, sys.exc_value))
+            logging.warning("Could not process %s: %s", key, str(sys.exc_value))
     return data_dict
 
 def get_cached_variables(instrument_id, monitored_only=False):
@@ -120,7 +104,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
             if kvp.name.monitored or monitored_only is False:
                 localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
                 df = dateformat.DateFormat(localtime)
-                if type(kvp.value) == float:
+                if isinstance(kvp.value, (int, float)):
                     string_value = '%g' % kvp.value
                 else:
                     string_value = '%s' % kvp.value
