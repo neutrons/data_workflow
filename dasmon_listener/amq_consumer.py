@@ -484,7 +484,7 @@ class Client(object):
                     delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
                     cutoff = timezone.now() - delta_time
                     StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
-                    StatusCache.objects.filter(timestamp__lte=cutoff).delete()
+                    #StatusCache.objects.filter(timestamp__lte=cutoff).delete()
 
                     # Remove old PVMON entries: first, the float values
                     PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
