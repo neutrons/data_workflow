@@ -126,6 +126,12 @@ class ProcessingForm(forms.Form):
                 valid_run_objects.append(run_obj)
             except DataRun.DoesNotExist:
                 invalid_runs.append(run)
+                if self.cleaned_data['create_as_needed']:
+                    new_run = type('new_run', (object,), {'instrument_id' : instrument,
+                                                          'run_number': run,
+                                                          'ipts_id': ipts,
+                                                          'file':''})
+                    valid_run_objects.append(new_run)
         if len(invalid_runs) == 0:
             output_report += "All the runs were valid<br>"
         else:
@@ -143,8 +149,6 @@ class ProcessingForm(forms.Form):
 
             if self.cleaned_data['create_as_needed']:
                 output_report += "The following runs will be created: %s<br>" % str(invalid_runs)
-                output_report += "Fix your inputs and re-submit<br>"
-                return {'report': output_report, 'task': None}
             else:
                 output_report += "The following were invalid runs: %s<br>" % str(invalid_runs)
                 output_report += "Fix your inputs and re-submit<br>"
