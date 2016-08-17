@@ -126,6 +126,19 @@ class ProcessingForm(forms.Form):
                 valid_run_objects.append(run_obj)
             except DataRun.DoesNotExist:
                 invalid_runs.append(run)
+                if self.cleaned_data['create_as_needed']:
+                    # Create a file path
+                    if not ActiveInstrument.objects.is_adara(instrument):
+                        file_path = "/SNS/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
+                        (instrument.upper(), ipts, run, str(instrument).upper(), run)
+                    else:
+                        base_path = "/SNS/%s/%s/nexus/" % (str(instrument).upper(), ipts)
+                        file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
+                    new_run = type('new_run', (object,), {'instrument_id' : instrument,
+                                                          'run_number': run,
+                                                          'ipts_id': ipts,
+                                                          'file': file_path})
+                    valid_run_objects.append(new_run)
         if len(invalid_runs) == 0:
             output_report += "All the runs were valid<br>"
         else:
@@ -143,8 +156,6 @@ class ProcessingForm(forms.Form):
 
             if self.cleaned_data['create_as_needed']:
                 output_report += "The following runs will be created: %s<br>" % str(invalid_runs)
-                output_report += "Fix your inputs and re-submit<br>"
-                return {'report': output_report, 'task': None}
             else:
                 output_report += "The following were invalid runs: %s<br>" % str(invalid_runs)
                 output_report += "Fix your inputs and re-submit<br>"
