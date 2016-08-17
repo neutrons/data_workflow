@@ -1,15 +1,16 @@
+#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, too-many-statements, too-many-branches
 """
     DASMON ActiveMQ consumer class
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+import sys
 import time
 import stomp
 import logging
 import json
 import os
-import sys
 import datetime
 import smtplib
 from email.mime.text import MIMEText
@@ -117,10 +118,10 @@ class Listener(stomp.ConnectionListener):
         # Process signals
         elif "SIGNAL" in destination:
             try:
-                logging.warn("SIGNAL: %s: %s" % (destination, str(data_dict)))
+                logging.warn("SIGNAL: %s: %s", destination, str(data_dict))
                 process_signal(instrument, data_dict)
             except:
-                logging.error("Could not process signal: %s" % str(data_dict))
+                logging.error("Could not process signal: %s", str(data_dict)
                 logging.error(sys.exc_value)
 
         elif "APP.SMS" in destination:
@@ -150,7 +151,11 @@ class Listener(stomp.ConnectionListener):
                                 parameter_name = "%s_count_%s" % (item, identifier)
                                 store_and_cache(instrument, parameter_name, counts, timestamp=timestamp)
                 else:
-                    store_and_cache(instrument, key, data_dict[key], timestamp=timestamp)
+                    # For this type of status updates, there's no need to deal with old
+                    # messages. Just update the cache for messages older than 1 minute.
+                    timestamp = float(data['timestamp']) if 'timestamp' in data else time.time()
+                    cache_only = time.time() - timestamp > 60
+                    store_and_cache(instrument, key, data_dict[key], timestamp=timestamp, cache_only=cache_only)
 
 def send_message(sender, recipients, subject, message):
     """
@@ -203,7 +208,6 @@ def process_SMS(instrument_id, headers, data):
                            'run_number': data['run_number']}
             add_status_entry({'destination':'SMS',
                               'message-id':headers['message-id']}, json.dumps(status_data))
-            
     except:
         logging.error("Could not process SMS message: %s" % sys.exc_value)
 
@@ -319,12 +323,13 @@ def process_signal(instrument_id, data):
                 item.delete()
 
 
-def store_and_cache(instrument_id, key, value, timestamp=None):
+def store_and_cache(instrument_id, key, value, timestamp=None, cache_only=False):
     """
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
         @param key: key string
         @param value: value for the given key
+        @param cache_only: only update cache
     """
     try:
         key_id = Parameter.objects.get(name=key)
@@ -340,17 +345,19 @@ def store_and_cache(instrument_id, key, value, timestamp=None):
     value_string = str(value)
     if len(value_string) > 128:
         value_string = value_string[:128]
-    status_entry = StatusVariable(instrument_id=instrument_id,
-                                  key_id=key_id,
-                                  value=value_string)
-    # Force the timestamp value as needed
-    if timestamp is not None:
-        try:
-            datetime_timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
-            status_entry.timestamp = datetime_timestamp
-        except:
-            logging.error("Could not process timestamp [%s]: %s" % (timestamp, sys.exc_value))
-    status_entry.save()
+
+    if not cache_only:
+        status_entry = StatusVariable(instrument_id=instrument_id,
+                                      key_id=key_id,
+                                      value=value_string)
+        # Force the timestamp value as needed
+        if timestamp is not None:
+            try:
+                datetime_timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
+                status_entry.timestamp = datetime_timestamp
+            except:
+                logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_value)
+        status_entry.save()
 
     # Update the latest value
     try:
