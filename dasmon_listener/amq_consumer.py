@@ -153,10 +153,10 @@ class Listener(stomp.ConnectionListener):
                 else:
                     # For this type of status updates, there's no need to deal with old
                     # messages. Just update the cache for messages older than 1 minute.
-                    #timestamp_ = float(data_dict['timestamp']) if 'timestamp' in data_dict else time.time()
-                    #delta_time = time.time() - timestamp_
-                    #cache_only =  delta_time > 60
-                    store_and_cache(instrument, key, data_dict[key], timestamp=timestamp)
+                    timestamp_ = float(data_dict['timestamp']) if 'timestamp' in data_dict else time.time()
+                    delta_time = time.time() - timestamp_
+                    cache_only =  delta_time > 60
+                    store_and_cache(instrument, key, data_dict[key], timestamp=timestamp, cache_only=cache_only)
 
 def send_message(sender, recipients, subject, message):
     """
@@ -347,6 +347,7 @@ def store_and_cache(instrument_id, key, value, timestamp=None, cache_only=False)
     if len(value_string) > 128:
         value_string = value_string[:128]
 
+    datetime_timestamp = datetime.datetime.fromtimestamp(time.time()).replace(tzinfo=timezone.get_current_timezone())
     if cache_only is False:
         status_entry = StatusVariable(instrument_id=instrument_id,
                                       key_id=key_id,
@@ -359,19 +360,20 @@ def store_and_cache(instrument_id, key, value, timestamp=None, cache_only=False)
             except:
                 logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_value)
         status_entry.save()
+        datetime_timestamp = status_entry.timestamp
 
     # Update the latest value
     try:
         last_value = StatusCache.objects.filter(instrument_id=instrument_id,
                                                 key_id=key_id).latest('timestamp')
-        last_value.value = status_entry.value
-        last_value.timestamp = status_entry.timestamp
+        last_value.value = value_string
+        last_value.timestamp = datetime_timestamp
         last_value.save()
     except:
         last_value = StatusCache(instrument_id=instrument_id,
                                  key_id=key_id,
-                                 value=status_entry.value,
-                                 timestamp=status_entry.timestamp)
+                                 value=value_string,
+                                 timestamp=datetime_timestamp)
         last_value.save()
 
 
