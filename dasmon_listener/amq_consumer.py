@@ -153,8 +153,8 @@ class Listener(stomp.ConnectionListener):
                 else:
                     # For this type of status updates, there's no need to deal with old
                     # messages. Just update the cache for messages older than 1 minute.
-                    timestamp = float(data['timestamp']) if 'timestamp' in data else time.time()
-                    cache_only = time.time() - timestamp > 60
+                    timestamp_ = float(data_dict['timestamp']) if 'timestamp' in data_dict else time.time()
+                    cache_only = time.time() - timestamp_ > 60
                     store_and_cache(instrument, key, data_dict[key], timestamp=timestamp, cache_only=cache_only)
 
 def send_message(sender, recipients, subject, message):
