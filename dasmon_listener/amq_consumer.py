@@ -121,7 +121,7 @@ class Listener(stomp.ConnectionListener):
                 logging.warn("SIGNAL: %s: %s", destination, str(data_dict))
                 process_signal(instrument, data_dict)
             except:
-                logging.error("Could not process signal: %s", str(data_dict)
+                logging.error("Could not process signal: %s", str(data_dict))
                 logging.error(sys.exc_value)
 
         elif "APP.SMS" in destination:
