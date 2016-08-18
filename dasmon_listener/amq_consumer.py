@@ -326,6 +326,20 @@ def process_signal(instrument_id, data):
 
 def store_and_cache(instrument_id, key, value, timestamp=None, cache_only=False):
     """
+        Protected store and cache process.
+        Store and cache a DASMON parameter
+        @param instrument_id: Instrument object
+        @param key: key string
+        @param value: value for the given key
+        @param cache_only: only update cache
+    """
+    try:
+        store_and_cache_(instrument_id, key, value, timestamp=timestamp, cache_only=cache_only)
+    except:
+        logging.error("Could not store %s %s=%s", str(instrument_id), key, str(value))
+
+def store_and_cache_(instrument_id, key, value, timestamp=None, cache_only=False):
+    """
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
         @param key: key string
