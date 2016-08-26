@@ -108,6 +108,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
         Generic form for DGS reduction instruments
     """
     mask = forms.CharField(required=False, initial='')
+    sub_directory = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
     raw_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
     processed_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
     vanadium_integration_min = forms.FloatField(required=True, initial=84000)
@@ -134,7 +135,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     v_vector = forms.CharField(required=False, initial="0,0,1", validators=[validate_float_list])
 
     # List of field that are used in the template
-    _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
+    _template_list = ['mask', 'sub_directory', 'raw_vanadium', 'processed_vanadium', 'grouping',
                       'vanadium_integration_min', 'vanadium_integration_max',
                       'tib_min', 'tib_max', 't0', 'motor_names', 'temperature_names',
                       'create_elastic_nxspe', 'create_md_nxs',

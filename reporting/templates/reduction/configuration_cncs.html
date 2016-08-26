@@ -52,6 +52,7 @@ Instrument team members can use this page to generate a new automated reduction 
   <table class="property_table  fixed_table" >
     <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors|first }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
     <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors|first }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
+    <tr><th>Output directory</th> <td {% if options_form.sub_directory.errors %}class='highlight_row' title='{{ options_form.sub_directory.errors|first }}'{% endif %}>{{options_form.sub_directory }} </td></tr>
     <tr class='tiny_input'><th>Vanadium integration</th> <td>
       <span {% if options_form.vanadium_integration_min.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.vanadium_integration_min }} </span>
       <span {% if options_form.vanadium_integration_max.errors %}class='highlight_row' title='{{ options_form.vanadium_integration_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.vanadium_integration_max }} </span>
