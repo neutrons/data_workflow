@@ -1,9 +1,10 @@
+#pylint: disable=bare-except, line-too-long
 """
     ActiveMQ listener class for the workflow manager
 """
+import sys
 import stomp
 import logging
-import sys
 import states
 
 
@@ -19,14 +20,15 @@ class Listener(stomp.ConnectionListener):
     _user = None
     ## AMQ passcode
     _passcode = None
-    
-    def __init__(self, use_db_tasks=False):
+
+    def __init__(self, use_db_tasks=False, auto_ack=True):
         """
             Initialization
             @param use_db_task: if True, a task definition will be looked for in the DB when executing the action
-        """ 
+        """
         ## If True, the DB will be queried for task definition
         self._use_db_tasks = use_db_tasks
+        self._auto_ack = auto_ack
 
     def set_amq_user(self, brokers, user, passcode):
         """
@@ -35,30 +37,32 @@ class Listener(stomp.ConnectionListener):
         self._brokers = brokers
         self._user = user
         self._passcode = passcode
-        
+
     def on_message(self, headers, message):
         """
-            Process a message. 
+            Process a message.
             Example of an ActiveMQ header:
             headers: {'expires': '0', 'timestamp': '1344613053723',
-                      'destination': '/queue/POSTPROCESS.DATA_READY', 
-                      'persistent': 'true', 'priority': '5', 
+                      'destination': '/queue/POSTPROCESS.DATA_READY',
+                      'persistent': 'true', 'priority': '5',
                       'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
-                      
+
             @param headers: message headers
             @param message: JSON-encoded message content
         """
-        logging.debug("Recv: %s" % headers['destination'])
-        
+        logging.debug("Recv: %s", headers['destination'])
+
         # Execute the appropriate action
         try:
             connection = self._get_connection()
             action = states.StateAction(connection=connection,
                                         use_db_task=self._use_db_tasks)
             action(headers, message)
+            if self._auto_ack:
+                connection.ack(headers['message-id'])
         except:
-            logging.error("Listener failed to process message: %s" % str(sys.exc_value))
-            logging.error("  Message: %s: %s" % (headers['destination'], str(message)))
+            logging.error("Listener failed to process message: %s", str(sys.exc_value))
+            logging.error("  Message: %s: %s", headers['destination'], str(message))
 
     def _get_connection(self):
         """
@@ -68,9 +72,9 @@ class Listener(stomp.ConnectionListener):
         if self._send_connection is None or self._send_connection.is_connected() is False:
             logging.info("[workflow_send_connection] Attempting to connect to ActiveMQ broker")
             if stomp.__version__[0]<4:
-                conn = stomp.Connection(host_and_ports=self._brokers, 
+                conn = stomp.Connection(host_and_ports=self._brokers,
                                         user=self._user,
-                                        passcode=self._passcode, 
+                                        passcode=self._passcode,
                                         wait_on_receipt=True)
                 conn.start()
                 conn.connect()

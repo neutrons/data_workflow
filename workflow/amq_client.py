@@ -1,13 +1,14 @@
+#pylint: disable=bare-except, too-many-instance-attributes, too-many-arguments, invalid-name, line-too-long
 """
     ActiveMQ workflow manager client
-    
+
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+import sys
 import time
 import stomp
 import logging
-import sys
 import json
 import os
 
@@ -17,21 +18,22 @@ try:
     from . import __version__ as version
 except:
     version = 'development'
-        
+
 class Client(object):
     """
         ActiveMQ client
         Holds the connection to a broker
     """
-    
-    def __init__(self, brokers, user, passcode, 
-                 queues=None, 
+
+    def __init__(self, brokers, user, passcode,
+                 queues=None,
                  workflow_check=False,
-                 check_frequency=24, 
+                 check_frequency=24,
                  workflow_recovery=False,
                  flexible_tasks=False,
-                 consumer_name="amq_consumer"):
-        """ 
+                 consumer_name="amq_consumer",
+                 auto_ack=True):
+        """
             @param brokers: list of brokers we can connect to
             @param user: activemq user
             @param passcode: passcode for activemq user
@@ -41,8 +43,10 @@ class Client(object):
             @param workflow_recovery: if True, the manager will try to recover from workflow problems
             @param flexible_tasks: if True, the workflow tasks will be defined by the DB
             @param consumer_name: name of the AMQ listener
+            @param auto_ack: if True, AMQ ack will be auotomatic
         """
         # Connection parameters
+        self._auto_ack = auto_ack
         self._brokers = brokers
         self._user = user
         self._passcode = passcode
@@ -61,7 +65,7 @@ class Client(object):
 
         ## Listener used for dealing with incoming messages
         self._listener = None
-        
+
         startup_msg = "Starting Workflow Manager client %s\n" % self._consumer_name
         startup_msg += "  Version: %s\n" % version
         startup_msg += "  User: %s\n" % self._user
@@ -74,7 +78,6 @@ class Client(object):
                 startup_msg += "  Delay since last activity before attempting recovery: %s seconds\n" % str(self._workflow_check_delay)
         logging.info(startup_msg)
 
-        
     def set_listener(self, listener):
         """
             Set the listener object that will process each
@@ -82,7 +85,7 @@ class Client(object):
             @param listener: listener object
         """
         self._listener = listener
-        
+
     def get_connection(self, consumer_name=None):
         """
             Establish and return a connection to ActiveMQ
@@ -90,11 +93,11 @@ class Client(object):
         """
         if consumer_name is None:
             consumer_name = self._consumer_name
-        logging.info("[%s] Connecting to %s" % (consumer_name, str(self._brokers)))
+        logging.info("[%s] Connecting to %s", consumer_name, str(self._brokers))
         if stomp.__version__[0]<4:
-            conn = stomp.Connection(host_and_ports=self._brokers, 
+            conn = stomp.Connection(host_and_ports=self._brokers,
                                     user=self._user,
-                                    passcode=self._passcode, 
+                                    passcode=self._passcode,
                                     wait_on_receipt=True)
             conn.set_listener(consumer_name, self._listener)
             conn.start()
@@ -107,7 +110,7 @@ class Client(object):
         # Give the connection threads a little breather
         time.sleep(0.5)
         return conn
-            
+
     def connect(self):
         """
             Connect to a broker
@@ -115,12 +118,14 @@ class Client(object):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        
-        logging.info("[%s] Subscribing to %s" % (self._consumer_name,
-                                                 str(self._queues)))
+
+        logging.info("[%s] Subscribing to %s", self._consumer_name, str(self._queues))
         for q in self._queues:
-            self._connection.subscribe(destination=q, id=0, ack='auto')
-    
+            if self._auto_ack:
+                self._connection.subscribe(destination=q, id=0, ack='auto')
+            else:
+                self._connection.subscribe(destination=q, id=0, ack='client')
+
     def _disconnect(self):
         """
             Clean disconnect
@@ -128,7 +133,7 @@ class Client(object):
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
         self._connection = None
-        
+
     def verify_workflow(self):
         """
             Verify that the workflow has completed for all the runs and
@@ -140,7 +145,7 @@ class Client(object):
                                 recovery=self._workflow_recovery,
                                 allowed_lag=self._workflow_check_delay).verify_workflow()
             except:
-                logging.error("Workflow verification failed: %s" % sys.exc_value)
+                logging.error("Workflow verification failed: %s", sys.exc_value)
 
     def listen_and_wait(self, waiting_period=1.0):
         """
@@ -153,16 +158,16 @@ class Client(object):
             self.connect()
             self.verify_workflow()
         except:
-            logging.error("Problem starting AMQ client: %s" % sys.exc_value)
-            
+            logging.error("Problem starting AMQ client: %s", sys.exc_value)
+
         last_heartbeat = 0
-        while(True):
+        while True:
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
-                    
+
                 time.sleep(waiting_period)
-                
+
                 try:
                     if time.time()-last_heartbeat>5:
                         last_heartbeat = time.time()
@@ -171,20 +176,19 @@ class Client(object):
                                      "pid": str(os.getpid())}
                         message = json.dumps(data_dict)
                         if stomp.__version__[0]<4:
-                            self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0", 
-                                                  message=message, 
+                            self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0",
+                                                  message=message,
                                                   persistent='true')
                         else:
-                            self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message, 
+                            self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message,
                                                   persistent='true')
                 except:
-                    logging.error("Problem sending heartbeat: %s" % sys.exc_value)
-                
+                    logging.error("Problem sending heartbeat: %s", sys.exc_value)
+
                 # Check for workflow completion
                 if time.time()-self._workflow_check_start>self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
             except:
-                logging.error("Problem connecting to AMQ broker: %s" % sys.exc_value)
+                logging.error("Problem connecting to AMQ broker: %s", sys.exc_value)
                 time.sleep(5.0)
-                
