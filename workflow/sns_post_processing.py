@@ -80,7 +80,6 @@ class WorkflowDaemon(Daemon):
 
         listener = Listener(use_db_tasks=self._flexible_tasks, auto_ack=auto_ack)
         listener.set_amq_user(brokers, wkflow_user, wkflow_passcode)
-        listener._send_connection = c.new_connection()
         c.set_listener(listener)
         c.listen_and_wait(0.1)
 

@@ -64,6 +64,12 @@ class Listener(stomp.ConnectionListener):
         if not self._auto_ack:
             connection.ack(headers['message-id'], 0)
 
+    def set_connection(self, connection):
+        """
+            Set a AMQ connection
+        """
+        self._send_connection = connection
+
     def _get_connection(self):
         """
             Create a connection for sending messages, or return the existing
