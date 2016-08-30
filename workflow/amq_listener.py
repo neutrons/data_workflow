@@ -58,11 +58,11 @@ class Listener(stomp.ConnectionListener):
             action = states.StateAction(connection=connection,
                                         use_db_task=self._use_db_tasks)
             action(headers, message)
-            if self._auto_ack:
-                connection.ack(headers['message-id'])
         except:
             logging.error("Listener failed to process message: %s", str(sys.exc_value))
             logging.error("  Message: %s: %s", headers['destination'], str(message))
+        if self._auto_ack:
+            connection.ack(headers['message-id'])
 
     def _get_connection(self):
         """
