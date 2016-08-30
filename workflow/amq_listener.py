@@ -62,7 +62,7 @@ class Listener(stomp.ConnectionListener):
             logging.error("Listener failed to process message: %s", str(sys.exc_value))
             logging.error("  Message: %s: %s", headers['destination'], str(message))
         if not self._auto_ack:
-            connection.ack(headers['message-id'], 0)
+            connection.ack(headers['message-id'], headers['subscription'])
 
     def set_connection(self, connection):
         """
