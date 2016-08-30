@@ -90,7 +90,8 @@ class Client(object):
         """
             Get existing connection or create a new one.
         """
-        if self._connection is None:
+        if self._connection is None or not self._connection.is_connected():
+            self._disconnect()
             self._connection = self.new_connection(consumer_name)
         return self._connection
 
