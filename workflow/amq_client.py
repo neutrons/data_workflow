@@ -88,6 +88,14 @@ class Client(object):
 
     def get_connection(self, consumer_name=None):
         """
+            Get existing connection or create a new one.
+        """
+        if self._connection is None:
+            self._connection = self.new_connection(consumer_name)
+        return self._connection
+
+    def new_connection(self, consumer_name=None):
+        """
             Establish and return a connection to ActiveMQ
             @param consumer_name: name to give the new connection
         """
