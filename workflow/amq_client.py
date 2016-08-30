@@ -85,7 +85,7 @@ class Client(object):
             @param listener: listener object
         """
         self._listener = listener
-        self.new_connection()
+        self._connection = self.new_connection()
         self._listener.set_connection(self._connection)
 
     def get_connection(self, consumer_name=None):
