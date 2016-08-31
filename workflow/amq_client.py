@@ -131,11 +131,11 @@ class Client(object):
             self._connection = self.get_connection()
 
         logging.info("[%s] Subscribing to %s", self._consumer_name, str(self._queues))
-        for q in self._queues:
+        for i, q in enumerate(self._queues):
             if self._auto_ack:
-                self._connection.subscribe(destination=q, id=0, ack='auto')
+                self._connection.subscribe(destination=q, id=i, ack='auto')
             else:
-                self._connection.subscribe(destination=q, id=0, ack='client')
+                self._connection.subscribe(destination=q, id=i, ack='client')
 
     def _disconnect(self):
         """
