@@ -189,10 +189,10 @@ class Client(object):
                         if stomp.__version__[0]<4:
                             self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0",
                                                   message=message,
-                                                  persistent='true')
+                                                  persistent='false')
                         else:
                             self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message,
-                                                  persistent='true')
+                                                  persistent='false')
                 except:
                     logging.error("Problem sending heartbeat: %s", sys.exc_value)
 
