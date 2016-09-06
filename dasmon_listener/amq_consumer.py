@@ -45,6 +45,9 @@ from file_handling.models import ReducedImage
 # ACK data
 acks = {}
 
+# Heartbeat delay [secs]
+HEARTBEAT_DELAY = 120
+
 class Listener(stomp.ConnectionListener):
     """
         Base listener class for an ActiveMQ client
@@ -221,7 +224,8 @@ def process_ack(data=None):
         from settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
-                if acks[proc_name] is not None and time.time() - acks[proc_name] > 45:
+                # Start complaining if we missed three heartbeats
+                if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0*HEARTBEAT_DELAY:
                     logging.error("Client %s disappeared" % proc_name)
                     acks[proc_name] = None
                     send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
@@ -231,8 +235,10 @@ def process_ack(data=None):
             proc_name = data['src_name']
             if 'pid' in data:
                 proc_name = '%s:%s' % (proc_name, data['pid'])
-            if 'request_time' in data and time.time() - data['request_time'] > 60:
-                logging.error("Client %s took more than 60 secs to answer" % proc_name)
+            # Start complaining if we don't get an answer before half our heartbeat delay
+            if 'request_time' in data and time.time() - data['request_time'] > 0.5*HEARTBEAT_DELAY:
+                answer_delay = time.time() - data['request_time']
+                logging.error("Client %s took more than %s secs to answer", proc_name, str(answer_delay))
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared" % proc_name)
                 send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
@@ -240,7 +246,7 @@ def process_ack(data=None):
                              message="An AMQ client reappeared")
             acks[proc_name] = time.time()
     except:
-        logging.error("Error processing ack: %s" % sys.exc_value)
+        logging.error("Error processing ack: %s", sys.exc_value)
 
 def notify_users(instrument_id, signal):
     """
@@ -260,7 +266,7 @@ def notify_users(instrument_id, signal):
                          subject="New alert on %s" % str(instrument_id).upper(),
                          message=message)
     except:
-        logging.error("Failed to notify users: %s" % sys.exc_value)
+        logging.error("Failed to notify users: %s", sys.exc_value)
 
 def process_signal(instrument_id, data):
     """
@@ -433,7 +439,7 @@ class Client(object):
             else:
                 listener = self._listener
 
-        logging.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
+        logging.info("[%s] Connecting to %s", self._consumer_name, str(self._brokers))
         if stomp.__version__[0] < 4:
             conn = stomp.Connection(host_and_ports=self._brokers,
                                     user=self._user,
@@ -459,8 +465,7 @@ class Client(object):
             self._disconnect()
             self._connection = self.get_connection()
 
-        logging.info("[%s] Subscribing to %s" % (self._consumer_name,
-                                                 str(self._queues)))
+        logging.info("[%s] Subscribing to %s", self._consumer_name, str(self._queues))
         for q in self._queues:
             self._connection.subscribe(destination=q, id=1, ack='auto')
 
@@ -530,7 +535,7 @@ class Client(object):
                     ReducedImage.objects.filter(created_on__lte=cutoff).delete()
                 time.sleep(waiting_period)
                 try:
-                    if time.time() - last_heartbeat > 120:
+                    if time.time() - last_heartbeat > HEARTBEAT_DELAY:
                         last_heartbeat = time.time()
                         store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
                         # Send ping request
@@ -543,9 +548,9 @@ class Client(object):
                         else:
                             logging.error("settings.PING_TOPIC is not defined")
                 except:
-                    logging.error("Problem writing heartbeat %s" % sys.exc_value)
+                    logging.error("Problem writing heartbeat %s", sys.exc_value)
             except:
-                logging.error("Problem connecting to AMQ broker %s" % sys.exc_value)
+                logging.error("Problem connecting to AMQ broker %s", sys.exc_value)
                 time.sleep(5.0)
 
     def send(self, destination, message, persistent='false'):
