@@ -530,7 +530,7 @@ class Client(object):
                     ReducedImage.objects.filter(created_on__lte=cutoff).delete()
                 time.sleep(waiting_period)
                 try:
-                    if time.time() - last_heartbeat > 30:
+                    if time.time() - last_heartbeat > 360:
                         last_heartbeat = time.time()
                         store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
                         # Send ping request
