@@ -530,7 +530,7 @@ class Client(object):
                     ReducedImage.objects.filter(created_on__lte=cutoff).delete()
                 time.sleep(waiting_period)
                 try:
-                    if time.time() - last_heartbeat > 5:
+                    if time.time() - last_heartbeat > 30:
                         last_heartbeat = time.time()
                         store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
                         # Send ping request
@@ -548,11 +548,13 @@ class Client(object):
                 logging.error("Problem connecting to AMQ broker %s" % sys.exc_value)
                 time.sleep(5.0)
 
-    def send(self, destination, message, persistent='true'):
+    def send(self, destination, message, persistent='false'):
         """
-            Send a message to a queue
+            Send a message to a queue.
+            This send method is used for heartbeats and doesn't need AMQ persistent messages.
             @param destination: name of the queue
             @param message: message content
+            @param persistent: true, to set persistent header
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()

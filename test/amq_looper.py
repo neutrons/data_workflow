@@ -195,7 +195,7 @@ class Client(object):
                 logging.error("Problem connecting to AMQ broker %s", sys.exc_value)
                 time.sleep(5.0)
 
-    def send(self, destination, message, persistent='true'):
+    def send(self, destination, message, persistent='false'):
         """
             Send a message to a queue
             @param destination: name of the queue
@@ -212,4 +212,4 @@ if __name__ == "__main__":
     c = Client(amq_brokers, amq_user, amq_pwd, amq_queues, "amq_looper")
     l = Listener()
     c.set_listener(l)
-    c.listen_and_wait(0.01)
+    c.listen_and_wait()
