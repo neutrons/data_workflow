@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, invalid-name
+#pylint: disable=bare-except, invalid-name, too-many-nested-blocks, unused-argument, line-too-long, consider-using-enumerate
 """
     Status monitor utilities to support 'report' views
 
@@ -13,6 +13,7 @@ import datetime
 import string
 import httplib
 import re
+import hashlib
 from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
@@ -24,6 +25,36 @@ from django.core.cache import cache
 
 import dasmon.view_util
 import reporting_app.view_util
+
+def generate_key(instrument, run_id):
+    """
+        Generate a secret key for a run on a given instrument
+        @param instrument: instrument name
+        @param run_id: run number
+    """
+    if not hasattr(settings, "LIVE_PLOT_SECRET_KEY"):
+        return None
+    secret_key = settings.LIVE_PLOT_SECRET_KEY
+    if len(secret_key) == 0:
+        return None
+    else:
+        h = hashlib.sha1()
+        h.update("%s%s%s" % (instrument.upper(), secret_key, run_id))
+        return h.hexdigest()
+
+def append_key(input_url, instrument, run_id):
+    """
+        Append a live data secret key to a url
+        @param input_url: url to modify
+        @param instrument: instrument name
+        @param run_id: run number
+    """
+    client_key = generate_key(instrument, run_id)
+    if client_key is None:
+        return input_url
+    # Determine whether this is the first query string argument of the url
+    delimiter = '&' if '/?' in input_url else '?'
+    return "%s%skey=%s" % (input_url, delimiter, client_key)
 
 def fill_template_values(request, **template_args):
     """
@@ -278,6 +309,11 @@ def get_current_status(instrument_id):
     return data_dict
 
 def is_acquisition_complete(run_id):
+    """
+        Determine whether the acquisition is complete and post-processing
+        has started
+        @param run_id: run object
+    """
     status_items = RunStatus.objects.filter(run_id=run_id,
                                             queue_id__name='POSTPROCESS.DATA_READY')
     return len(status_items) > 0
@@ -434,6 +470,12 @@ def extract_ascii_from_div(html_data):
     return None
 
 def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
+    """
+        Get template dictionary for plots
+        @param run_object: DataRun object
+        @param instrument: instrument name
+        @param run_id: run_number
+    """
     plot_dict = {'image_url': None,
                  'plot_data': None,
                  'html_data': None,
@@ -442,15 +484,15 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
                  'update_url': None}
 
     url_template = string.Template(settings.LIVE_DATA_SERVER)
-    url = url_template.substitute(instrument=instrument, run_number=run_id)
-    url = "https://%s:%s%s" % (settings.LIVE_DATA_SERVER_DOMAIN,
-                               settings.LIVE_DATA_SERVER_PORT, url)
+    live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
+    live_data_url = "https://%s:%s%s" % (settings.LIVE_DATA_SERVER_DOMAIN,
+                               settings.LIVE_DATA_SERVER_PORT, live_data_url)
 
     # First option: html data
     html_data = get_plot_data_from_server(instrument, run_id, 'html')
     if html_data is not None:
         plot_dict['html_data'] = html_data
-        plot_dict['update_url'] = "%s/html/" % url
+        plot_dict['update_url'] = append_key("%s/html/" % live_data_url, instrument, run_id)
         if extract_ascii_from_div(html_data) is not None:
             plot_dict['data_url'] = reverse('report:download_reduced_data', args=[instrument, run_id])
         return plot_dict
@@ -462,7 +504,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     if json_data is None:
         json_data = get_local_plot_data(run_object)
     else:
-        plot_dict['update_url'] = "%s/json/" % url
+        plot_dict['update_url'] = append_key("%s/json/" % live_data_url, instrument, run_id)
 
     plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
     if plot_data is not None:
@@ -476,6 +518,10 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     return plot_dict
 
 def get_local_image_url(run_object):
+    """
+        Get url for plot data served by this application
+        @param run_object: DataRun object
+    """
     image_url = None
     try:
         from file_handling.models import ReducedImage
@@ -489,13 +535,20 @@ def get_local_image_url(run_object):
     return image_url
 
 def get_plot_data_from_server(instrument, run_id, data_type='json'):
+    """
+        Get json data from the live data server
+        @param instrument: instrument name
+        @param run_id: run number
+        @param data_type: data type, either 'json' or 'html'
+    """
     json_data = None
     try:
         url_template = string.Template(settings.LIVE_DATA_SERVER)
-        url = url_template.substitute(instrument=instrument, run_number=run_id)
-        url += "/%s/" % data_type
+        live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
+        live_data_url += "/%s/" % data_type
+        live_data_url = append_key(live_data_url, instrument, run_id)
         conn = httplib.HTTPSConnection(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
-        conn.request('GET', url)
+        conn.request('GET', live_data_url)
         data_request = conn.getresponse()
         if data_request.status == 200:
             json_data = data_request.read()
@@ -504,6 +557,10 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
     return json_data
 
 def get_local_plot_data(run_object):
+    """
+        Get json data served by this application
+        @param run_object: DataRun object
+    """
     from file_handling.models import JsonData
     json_data = None
 
@@ -518,6 +575,13 @@ def get_local_plot_data(run_object):
     return json_data
 
 def extract_d3_data_from_json(json_data):
+    """
+        DEPRECATED
+
+        For backward compatibility, extract D3 data from json data for
+        the old-style interactive plots.
+        @param json_data: json data block
+    """
     plot_data = None
     x_label = u"Q [1/\u00C5]"
     y_label = u"Absolute reflectivity"
@@ -557,3 +621,24 @@ def extract_d3_data_from_json(json_data):
     except:
         logging.error("Error finding reduced json data: %s", sys.exc_value)
     return plot_data, x_label, y_label
+
+def find_skipped_runs(instrument_id, start_run_number=0):
+    """
+        Find run numbers that were skipped for a given instrument
+        @param instrument_id: Instrument object
+        @param start_run_number: run number to start from
+    """
+    missing_runs = []
+    try:
+        last_run_id = DataRun.objects.get_last_run(instrument_id)
+        last_run_number = last_run_id.run_number
+        # Use a reasonable default for the start run number
+        if start_run_number == 0:
+            start_run_number = max(0, last_run_number - 1000)
+        for i in range(start_run_number, last_run_number):
+            query_set = DataRun.objects.filter(instrument_id=instrument_id, run_number=i)
+            if len(query_set) == 0:
+                missing_runs.append(i)
+    except:
+        logging.error("Error finding missing runs: %s", sys.exc_value)
+    return missing_runs

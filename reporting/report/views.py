@@ -1,4 +1,4 @@
-#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except
+#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, unused-argument
 """
     Report views
 
@@ -37,13 +37,21 @@ def processing_admin(request):
     template_values = {'breadcrumbs':breadcrumbs, 'notes': ''}
     template_values = users.view_util.fill_template_values(request, **template_values)
 
+    instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
+    instrument = instruments[0]
+
     if request.method == 'POST':
         # Get instrument
         if 'instrument' in request.POST:
             instrument = request.POST['instrument']
 
         processing_form = ProcessingForm(request.POST)
-        if processing_form.is_valid():
+        if request.POST.get("button_choice", "none") == "find":
+            instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+            skipped_runs = view_util.find_skipped_runs(instrument_id)
+            template_values['notes'] = "Missing runs: %" % str(skipped_runs)
+
+        elif processing_form.is_valid():
             output = processing_form.process()
             template_values['notes'] = output['report']
 
@@ -66,9 +74,6 @@ def processing_admin(request):
         # Get instrument
         if 'instrument' in request.GET:
             instrument = request.GET['instrument']
-        else:
-            instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
-            instrument = instruments[0]
 
         processing_form = ProcessingForm()
         processing_form.set_initial(request.GET)
@@ -142,6 +147,12 @@ def summary(request):
 
 @login_required
 def download_reduced_data(request, instrument, run_id):
+    """
+        Download reduced data from live data server
+        @param request: http request object
+        @param instrument: instrument name
+        @param run_id: run number
+    """
     html_data = view_util.get_plot_data_from_server(instrument, run_id, 'html')
     ascii_data = view_util.extract_ascii_from_div(html_data)
     if ascii_data is None:
