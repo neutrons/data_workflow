@@ -49,7 +49,7 @@ def processing_admin(request):
         if request.POST.get("button_choice", "none") == "find":
             instrument_id = get_object_or_404(Instrument, name=instrument.lower())
             skipped_runs = view_util.find_skipped_runs(instrument_id)
-            template_values['notes'] = "Missing runs: %" % str(skipped_runs)
+            template_values['notes'] = "Missing runs: %s" % str(skipped_runs)
 
         elif processing_form.is_valid():
             output = processing_form.process()
