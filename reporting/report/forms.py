@@ -131,7 +131,7 @@ class ProcessingForm(forms.Form):
                     # Create a file path
                     if not ActiveInstrument.objects.is_adara(instrument):
                         file_path = "/SNS/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
-                        (instrument.upper(), ipts, run, str(instrument).upper(), run)
+                        (str(instrument).upper(), ipts, run, str(instrument).upper(), run)
                     else:
                         base_path = "/SNS/%s/%s/nexus/" % (str(instrument).upper(), ipts)
                         file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
