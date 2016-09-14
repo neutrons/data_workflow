@@ -191,7 +191,7 @@ class ProcessingForm(forms.Form):
                                                   'file': ''})
             valid_run_objects.append(new_run)
 
-        output_report = "Your runs will be created if they exist in ICAT"
+        output_report = "Your runs will be created if they exist in ICAT<br>"
 
         # Returns a report and task to be sent
         return {'report': output_report, 'task': str(self.cleaned_data['task']).upper(),
