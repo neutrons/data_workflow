@@ -139,12 +139,17 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
         from report.icat_server_communication import get_run_info
         run_info = get_run_info(str(instrument_id), '', run_id.run_number)
         for _file in run_info['data_files']:
-            if _file.endswith('nxs') or _file.endswith('h5'):
+            if _file.endswith('_event.nxs') or _file.endswith('.nxs.h5'):
                 file_path = _file
+    # IPTS name
+    try:
+        ipts = run_id.ipts_id.expt_name.upper()
+    except:
+        ipts = str(run_id.ipts_id)
     # Build up dictionary
     data_dict = {'facility': 'SNS',
                  'instrument': str(instrument_id),
-                 'ipts': run_id.ipts_id.expt_name.upper(),
+                 'ipts': ipts,
                  'run_number': run_id.run_number,
                  'data_file': file_path
                 }

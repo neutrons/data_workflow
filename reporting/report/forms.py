@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from report.models import Instrument, IPTS, DataRun, StatusQueue
 from dasmon.models import ActiveInstrument
 import logging
+from reporting.report.icat_server_communication import get_run_info
 
 def validate_integer_list(value):
     """
@@ -105,6 +106,10 @@ class ProcessingForm(forms.Form):
             output_report += "Fix your inputs and re-submit<br>"
             return {'report': output_report, 'task': None}
 
+        # Special recovery process
+        if self.cleaned_data['experiment'].upper() == "FIND" and self.cleaned_data['create_as_needed']:
+            return self._recover_processed_run(instrument)
+
         # Verify that the experiment exists
         try:
             ipts = IPTS.objects.get(instruments=instrument,
@@ -170,4 +175,24 @@ class ProcessingForm(forms.Form):
 
         # Returns a report and task to be sent
         return {'report': output_report, 'task': str(queue),
+                'instrument': instrument, 'runs': valid_run_objects}
+
+    def _recover_processed_run(self, instrument):
+        """
+            Recovery method for when runs exist in ICAT but need to be inserted into the workflow DB
+        """
+        # Parse the runs and make sure they all exist
+        run_list = validate_integer_list(self.cleaned_data['run_list'])
+        valid_run_objects = []
+        for run in run_list:
+            new_run = type('new_run', (object,), {'instrument_id' : instrument,
+                                                  'run_number': run,
+                                                  'ipts_id': self.cleaned_data['proposal'],
+                                                  'file': ''})
+            valid_run_objects.append(new_run)
+
+        output_report = "The following runs will be created: %s<br>" % str(valid_run_objects)
+
+        # Returns a report and task to be sent
+        return {'report': output_report, 'task': str(self.cleaned_data['task']).upper(),
                 'instrument': instrument, 'runs': valid_run_objects}

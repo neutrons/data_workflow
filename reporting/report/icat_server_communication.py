@@ -112,6 +112,8 @@ def get_run_info(instrument, ipts, run_number):
                 # Run title
                 if n.nodeName == 'title' and n.hasChildNodes():
                     run_info['title'] = get_text_from_xml(n.childNodes)
+                if n.nodeName == 'proposal' and n.hasChildNodes():
+                    run_info['proposal'] = get_text_from_xml(n.childNodes)
                 # Duration
                 if n.nodeName == 'duration' and n.hasChildNodes():
                     value = get_text_from_xml(n.childNodes)
