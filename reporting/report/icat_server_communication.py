@@ -105,6 +105,7 @@ def get_run_info(instrument, ipts, run_number):
 
         run_info['data_files'] = data_paths
         run_info['reduced_files'] = reduced_paths
+        run_info['proposal'] = None
 
         metadata = dom.getElementsByTagName('metadata')
         if len(metadata) > 0:
