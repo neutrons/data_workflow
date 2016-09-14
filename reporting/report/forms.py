@@ -187,7 +187,7 @@ class ProcessingForm(forms.Form):
         for run in run_list:
             new_run = type('new_run', (object,), {'instrument_id' : instrument,
                                                   'run_number': run,
-                                                  'ipts_id': self.cleaned_data['proposal'],
+                                                  'ipts_id': '',
                                                   'file': ''})
             valid_run_objects.append(new_run)
 

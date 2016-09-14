@@ -132,6 +132,12 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
     if destination is None:
         destination = '/queue/POSTPROCESS.DATA_READY'
 
+    # IPTS name
+    try:
+        ipts = run_id.ipts_id.expt_name.upper()
+    except:
+        ipts = str(run_id.ipts_id)
+
     # Verify that we have a file path.
     # If not, look up ICAT
     file_path = run_id.file
@@ -141,11 +147,10 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
         for _file in run_info['data_files']:
             if _file.endswith('_event.nxs') or _file.endswith('.nxs.h5'):
                 file_path = _file
-    # IPTS name
-    try:
-        ipts = run_id.ipts_id.expt_name.upper()
-    except:
-        ipts = str(run_id.ipts_id)
+        # If we don't have the IPTS, fill it in too
+        if len(ipts) == 0:
+            ipts = run_info['proposal']
+
     # Build up dictionary
     data_dict = {'facility': 'SNS',
                  'instrument': str(instrument_id),
