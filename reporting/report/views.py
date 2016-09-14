@@ -61,8 +61,10 @@ def processing_admin(request):
                 submission_errors = ""
                 for run_obj in output['runs']:
                     try:
+                        is_complete = output.get('is_complete', False)
                         view_util.send_processing_request(output['instrument'], run_obj,
-                                                          user=request.user, destination=output['task'])
+                                                          user=request.user, destination=output['task'],
+                                                          is_complete=is_complete)
                     except:
                         submission_errors += "%s run %s could not be submitted: %s<br>" % \
                             (str(run_obj.instrument_id), str(run_obj.run_number), sys.exc_value)

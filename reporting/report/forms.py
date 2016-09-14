@@ -195,4 +195,4 @@ class ProcessingForm(forms.Form):
 
         # Returns a report and task to be sent
         return {'report': output_report, 'task': str(self.cleaned_data['task']).upper(),
-                'instrument': instrument, 'runs': valid_run_objects}
+                'instrument': instrument, 'runs': valid_run_objects, 'is_complete': True}

@@ -131,7 +131,11 @@ def add_status_entry(headers, data):
 
     # Update the workflow summary
     summary_id = WorkflowSummary.objects.get_summary(run_id)
-    summary_id.update()
+    if "is_complete" in data_dict:
+        summary_id.complete = True
+        summary_id.save()
+    else:
+        summary_id.update()
 
 def add_workflow_status_entry(destination, message):
     """

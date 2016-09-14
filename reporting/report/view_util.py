@@ -122,7 +122,7 @@ def needs_reduction(request, run_id):
 
     return True
 
-def send_processing_request(instrument_id, run_id, user=None, destination=None):
+def send_processing_request(instrument_id, run_id, user=None, destination=None, is_complete=False):
     """
         Send an AMQ message to the workflow manager to reprocess
         the run
@@ -162,6 +162,8 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None):
                  'run_number': run_id.run_number,
                  'data_file': file_path
                 }
+    if is_complete is True:
+        data_dict['is_complete'] = 'true'
     if user is not None:
         data_dict['information'] = "Requested by %s" % user
 
