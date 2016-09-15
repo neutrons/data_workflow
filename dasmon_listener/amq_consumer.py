@@ -45,6 +45,9 @@ from file_handling.models import ReducedImage
 # ACK data
 acks = {}
 
+# Extra logs
+EXTRA_LOGS = True
+
 # Heartbeat delay [secs]
 HEARTBEAT_DELAY = 120
 
@@ -73,7 +76,7 @@ class Listener(stomp.ConnectionListener):
 
         # If we get a STATUS message, store it as such
         if destination.endswith(".ACK"):
-            process_ack(data_dict)
+            process_ack(data_dict, headers)
             return
 
         # Extract the instrument name
@@ -215,7 +218,7 @@ def process_SMS(instrument_id, headers, data):
     except:
         logging.error("Could not process SMS message: %s" % sys.exc_value)
 
-def process_ack(data=None):
+def process_ack(data=None, headers=None):
     """
         Process a ping request ack
         @param data: data that came in with the ack
@@ -232,12 +235,18 @@ def process_ack(data=None):
                                  subject="Client %s disappeared" % proc_name,
                                  message="An AMQ client disappeared")
         elif 'src_name' in data:
+            current_time = time.time()
+            msg_time = 0
+            if headers is not None:
+                msg_time = int(headers.get('timestamp', 0))
+                if msg_time > current_time:
+                    msg_time -= current_time
             proc_name = data['src_name']
             if 'pid' in data:
                 proc_name = '%s:%s' % (proc_name, data['pid'])
             # Start complaining if we don't get an answer before half our heartbeat delay
-            if 'request_time' in data and time.time() - data['request_time'] > 0.5*HEARTBEAT_DELAY:
-                answer_delay = time.time() - data['request_time']
+            if 'request_time' in data and current_time - data['request_time'] > 0.5*HEARTBEAT_DELAY:
+                answer_delay = current_time - data['request_time']
                 logging.error("Client %s took more than %s secs to answer", proc_name, str(answer_delay))
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared" % proc_name)
@@ -245,6 +254,8 @@ def process_ack(data=None):
                              subject="Client %s reappeared" % proc_name,
                              message="An AMQ client reappeared")
             acks[proc_name] = time.time()
+            if EXTRA_LOGS:
+                logging.warning("ACK deltas: msg=%s rcv=%s", msg_time, answer_delay)
     except:
         logging.error("Error processing ack: %s", sys.exc_value)
 
