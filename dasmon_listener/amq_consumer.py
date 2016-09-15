@@ -239,7 +239,7 @@ def process_ack(data=None, headers=None):
             msg_time = 0
             if headers is not None:
                 msg_time = float(headers.get('timestamp', 0))/1000.0
-                if msg_time > current_time:
+                if msg_time > 0:
                     msg_time -= current_time
 
             answer_delay = 0
