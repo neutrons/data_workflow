@@ -236,7 +236,7 @@ def process_ack(data=None, headers=None):
                                  message="An AMQ client disappeared")
         elif 'src_name' in data:
             current_time = time.time()
-            msg_time = 0            
+            msg_time = 0
             if headers is not None:
                 msg_time = int(headers.get('timestamp', 0))
                 if msg_time > current_time:
@@ -260,6 +260,7 @@ def process_ack(data=None, headers=None):
                              message="An AMQ client reappeared")
             acks[proc_name] = time.time()
             if EXTRA_LOGS:
+                logging.warning(str(headers))
                 logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)
     except:
         logging.error("Error processing ack: %s", sys.exc_value)
