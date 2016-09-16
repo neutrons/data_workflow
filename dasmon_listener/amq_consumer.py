@@ -70,10 +70,9 @@ class Listener(stomp.ConnectionListener):
         try:
             data_dict = json.loads(message)
         except:
-            logging.error("Could not decode message from %s" % destination)
+            logging.error("Could not decode message from %s", destination)
             logging.error(sys.exc_value)
             return
-
         # If we get a STATUS message, store it as such
         if destination.endswith(".ACK"):
             process_ack(data_dict, headers)
@@ -94,18 +93,18 @@ class Listener(stomp.ConnectionListener):
                         instrument = Instrument(name=instrument_name)
                         instrument.save()
             if instrument is None:
-                logging.error("Could not extract instrument name from %s" % destination)
+                logging.error("Could not extract instrument name from %s", destination)
                 return
         except:
-            logging.error("Could not extract instrument name from %s" % destination)
+            logging.error("Could not extract instrument name from %s", destination)
             logging.error(str(sys.exc_value))
             return
 
         if "STATUS" in destination:
             if "STS" in destination:
-                store_and_cache(instrument, "system_sts", data_dict["status"])
+                store_and_cache(instrument, "system_sts", data_dict["status"], cache_only=True)
             elif "SMS" in destination:
-                store_and_cache(instrument, "system_sms", data_dict["status"])
+                store_and_cache(instrument, "system_sms", data_dict["status"], cache_only=True)
             elif "status" in data_dict:
                 key = None
                 if "src_id" in data_dict:
@@ -117,9 +116,9 @@ class Listener(stomp.ConnectionListener):
                         key = key[:len(key) - 2]
                     if key.endswith("_0"):
                         key = key[:len(key) - 2]
-                    store_and_cache(instrument, key, data_dict["status"])
+                    store_and_cache(instrument, key, data_dict["status"], cache_only=True)
                     if "pid" in data_dict:
-                        store_and_cache(instrument, "%s_pid" % key, data_dict["pid"])
+                        store_and_cache(instrument, "%s_pid" % key, data_dict["pid"], cache_only=True)
 
         # Process signals
         elif "SIGNAL" in destination:
@@ -145,7 +144,7 @@ class Listener(stomp.ConnectionListener):
                     for item in data_dict[key]:
                         # Protect against old API
                         if not type(data_dict[key][item]) == dict:
-                            store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item], timestamp=timestamp)
+                            store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item], timestamp=timestamp, cache_only=False)
                         else:
                             identifier = None
                             counts = None
@@ -155,7 +154,7 @@ class Listener(stomp.ConnectionListener):
                                 counts = data_dict[key][item]["counts"]
                             if identifier is not None and counts is not None:
                                 parameter_name = "%s_count_%s" % (item, identifier)
-                                store_and_cache(instrument, parameter_name, counts, timestamp=timestamp)
+                                store_and_cache(instrument, parameter_name, counts, timestamp=timestamp, cache_only=False)
                 else:
                     # For this type of status updates, there's no need to deal with old
                     # messages. Just update the cache for messages older than 1 minute.
@@ -184,22 +183,22 @@ def send_message(sender, recipients, subject, message):
         s.sendmail(sender, recipients, msg.as_string())
         s.quit()
     except:
-        logging.error("Could not send message: %s" % sys.exc_value)
+        logging.error("Could not send message: %s", sys.exc_value)
 
 def process_SMS(instrument_id, headers, data):
     """
         Process SMS process information
         The message content looks like this:
 
-           {u'start_sec': u'1460394343', 
-            u'src_id': u'SMS_32162', 
-            u'msg_type': u'2686451712', 
-            u'facility': u'SNS', 
-            u'timestamp': u'1460394348', 
-            u'dest_id': u'', 
-            u'start_nsec': u'554801929', 
-            u'instrument': u'BL16B', 
-            u'reason': u'SMS run stopped', 
+           {u'start_sec': u'1460394343',
+            u'src_id': u'SMS_32162',
+            u'msg_type': u'2686451712',
+            u'facility': u'SNS',
+            u'timestamp': u'1460394348',
+            u'dest_id': u'',
+            u'start_nsec': u'554801929',
+            u'instrument': u'BL16B',
+            u'reason': u'SMS run stopped',
             u'run_number': u'3014'}
 
         @param instrument_id: Instrument object
@@ -216,7 +215,7 @@ def process_SMS(instrument_id, headers, data):
             add_status_entry({'destination':'SMS',
                               'message-id':headers['message-id']}, json.dumps(status_data))
     except:
-        logging.error("Could not process SMS message: %s" % sys.exc_value)
+        logging.error("Could not process SMS message: %s", sys.exc_value)
 
 def process_ack(data=None, headers=None):
     """
@@ -229,7 +228,7 @@ def process_ack(data=None, headers=None):
             for proc_name in acks:
                 # Start complaining if we missed three heartbeats
                 if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0*HEARTBEAT_DELAY:
-                    logging.error("Client %s disappeared" % proc_name)
+                    logging.error("Client %s disappeared", proc_name)
                     acks[proc_name] = None
                     send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
                                  subject="Client %s disappeared" % proc_name,
@@ -254,7 +253,7 @@ def process_ack(data=None, headers=None):
             if 'request_time' in data and answer_delay > 0.5*HEARTBEAT_DELAY:
                 logging.error("Client %s took more than %s secs to answer", proc_name, str(answer_delay))
             if proc_name in acks and acks[proc_name] is None:
-                logging.error("Client %s reappeared" % proc_name)
+                logging.error("Client %s reappeared", proc_name)
                 send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
                              subject="Client %s reappeared" % proc_name,
                              message="An AMQ client reappeared")
@@ -519,7 +518,7 @@ class Client(object):
 
         last_purge_time = None
         last_heartbeat = 0
-        while(True):
+        while True:
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
@@ -559,7 +558,10 @@ class Client(object):
                             from settings import PING_TOPIC, ACK_TOPIC
                             payload = {"reply_to": ACK_TOPIC,
                                        "request_time": time.time()}
+                            t0 = time.time()
                             self.send(PING_TOPIC, json.dumps(payload))
+                            t=time.time() - t0
+                            logging.error("Send time: %s", t)
                             process_ack()
                         else:
                             logging.error("settings.PING_TOPIC is not defined")
