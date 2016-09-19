@@ -51,6 +51,9 @@ EXTRA_LOGS = True
 # Heartbeat delay [secs]
 HEARTBEAT_DELAY = 120
 
+# How often we purge the DB entries
+PURGE_DELAY = 600
+
 class Listener(stomp.ConnectionListener):
     """
         Base listener class for an ActiveMQ client
@@ -59,6 +62,44 @@ class Listener(stomp.ConnectionListener):
         the on_message() method to process incoming
         messages.
     """
+
+    def __init__(self):
+        super(Listener, self).__init__()
+        # Get a snapshot of the current set of instruments
+        # Turn the QuerySet into a list to ensure that the query
+        # is executed now as opposed to every time we need an instrument
+        self._instruments = list(Instrument.objects.all())
+
+        # Do the same thing for the list of parameters
+        self._parameters = list(Parameter.objects.all())
+
+    def retrieve_parameter(self, key):
+        """
+            Retrieve of create a Parameter entry
+        """
+        for key_id in self._parameters:
+            if str(key_id) == key:
+                return key_id
+        # If we haven't found it, create it.
+        key_id = Parameter(name=key)
+        key_id.save()
+        self._parameters.append(key_id)
+        return key_id
+
+    def retrieve_instrument(self, instrument_name):
+        """
+            Retrieve or create an instrument given its name
+        """
+        # Get or create the instrument object from the DB
+        for instrument in self._instruments:
+            if str(instrument) == instrument_name:
+                return instrument
+        # If we haven't found it, create it.
+        instrument = Instrument(name=instrument_name)
+        instrument.save()
+        self._instruments.append(instrument)
+        return instrument
+
     def on_message(self, headers, message):
         """
             Process a message.
@@ -85,16 +126,8 @@ class Listener(stomp.ConnectionListener):
             if len(toks) > 1:
                 if toks[0] == "/TOPIC/%s" % TOPIC_PREFIX:
                     instrument_name = toks[1].lower()
-
-                    # Get or create the instrument object from the DB
-                    try:
-                        instrument = Instrument.objects.get(name=instrument_name)
-                    except Instrument.DoesNotExist:
-                        instrument = Instrument(name=instrument_name)
-                        instrument.save()
-            if instrument is None:
-                logging.error("Could not extract instrument name from %s", destination)
-                return
+                    # Get the instrument object
+                    instrument = self.retrieve_instrument(instrument_name)
         except:
             logging.error("Could not extract instrument name from %s", destination)
             logging.error(str(sys.exc_value))
@@ -102,9 +135,11 @@ class Listener(stomp.ConnectionListener):
 
         if "STATUS" in destination:
             if "STS" in destination:
-                store_and_cache(instrument, "system_sts", data_dict["status"], cache_only=True)
+                key_id = self.retrieve_parameter("system_sts")
+                store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
             elif "SMS" in destination:
-                store_and_cache(instrument, "system_sms", data_dict["status"], cache_only=True)
+                key_id = self.retrieve_parameter("system_sms")
+                store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
             elif "status" in data_dict:
                 key = None
                 if "src_id" in data_dict:
@@ -116,9 +151,11 @@ class Listener(stomp.ConnectionListener):
                         key = key[:len(key) - 2]
                     if key.endswith("_0"):
                         key = key[:len(key) - 2]
-                    store_and_cache(instrument, key, data_dict["status"], cache_only=True)
+                    key_id = self.retrieve_parameter(key)
+                    store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
                     if "pid" in data_dict:
-                        store_and_cache(instrument, "%s_pid" % key, data_dict["pid"], cache_only=True)
+                        key_id = self.retrieve_parameter("%s_pid" % key)
+                        store_and_cache(instrument, key_id, data_dict["pid"], cache_only=True)
 
         # Process signals
         elif "SIGNAL" in destination:
@@ -144,7 +181,8 @@ class Listener(stomp.ConnectionListener):
                     for item in data_dict[key]:
                         # Protect against old API
                         if not type(data_dict[key][item]) == dict:
-                            store_and_cache(instrument, 'monitor_count_%s' % str(item), data_dict[key][item], timestamp=timestamp, cache_only=False)
+                            key_id = self.retrieve_parameter('monitor_count_%s' % str(item))
+                            store_and_cache(instrument, key_id, data_dict[key][item], timestamp=timestamp, cache_only=False)
                         else:
                             identifier = None
                             counts = None
@@ -154,14 +192,16 @@ class Listener(stomp.ConnectionListener):
                                 counts = data_dict[key][item]["counts"]
                             if identifier is not None and counts is not None:
                                 parameter_name = "%s_count_%s" % (item, identifier)
-                                store_and_cache(instrument, parameter_name, counts, timestamp=timestamp, cache_only=False)
+                                key_id = self.retrieve_parameter(parameter_name)
+                                store_and_cache(instrument, key_id, counts, timestamp=timestamp, cache_only=False)
                 else:
                     # For this type of status updates, there's no need to deal with old
                     # messages. Just update the cache for messages older than 1 minute.
                     timestamp_ = float(data_dict['timestamp']) if 'timestamp' in data_dict else time.time()
                     delta_time = time.time() - timestamp_
                     cache_only =  delta_time > 60
-                    store_and_cache(instrument, key, data_dict[key], timestamp=timestamp, cache_only=cache_only)
+                    key_id = self.retrieve_parameter(key)
+                    store_and_cache(instrument, key_id, data_dict[key], timestamp=timestamp, cache_only=cache_only)
 
 def send_message(sender, recipients, subject, message):
     """
@@ -345,34 +385,28 @@ def process_signal(instrument_id, data):
                 item.delete()
 
 
-def store_and_cache(instrument_id, key, value, timestamp=None, cache_only=False):
+def store_and_cache(instrument_id, key_id, value, timestamp=None, cache_only=False):
     """
         Protected store and cache process.
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
-        @param key: key string
+        @param key_id: key Parameter object
         @param value: value for the given key
         @param cache_only: only update cache
     """
     try:
-        store_and_cache_(instrument_id, key, value, timestamp=timestamp, cache_only=cache_only)
+        store_and_cache_(instrument_id, key_id, value, timestamp=timestamp, cache_only=cache_only)
     except:
-        logging.error("Could not store %s %s=%s", str(instrument_id), key, str(value))
+        logging.error("Could not store %s %s=%s", str(instrument_id), str(key_id), str(value))
 
-def store_and_cache_(instrument_id, key, value, timestamp=None, cache_only=False):
+def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=False):
     """
         Store and cache a DASMON parameter
         @param instrument_id: Instrument object
-        @param key: key string
+        @param key_id: key Parameter object
         @param value: value for the given key
         @param cache_only: only update cache
     """
-    try:
-        key_id = Parameter.objects.get(name=key)
-    except:
-        key_id = Parameter(name=key)
-        key_id.save()
-
     # Do bother with parameter that are not monitored
     if key_id.monitored is False:
         return
@@ -434,6 +468,7 @@ class Client(object):
         self._queues = queues
         self._consumer_name = consumer_name
         self._listener = None
+        logging.info("Dasmon Listener client 2.0")
 
     def set_listener(self, listener):
         """
@@ -516,13 +551,20 @@ class Client(object):
             common_instrument = Instrument(name='common')
             common_instrument.save()
 
+        # Retrieve the Parameter object for our own heartbeat
+        try:
+            pid_key_id = Parameter.objects.get(name="system_dasmon_listener_pid")
+        except:
+            pid_key_id = Parameter(name="system_dasmon_listener_pid")
+            pid_key_id.save()
+
         last_purge_time = None
         last_heartbeat = 0
         while True:
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
-                if last_purge_time is None or time.time() - last_purge_time > 120:
+                if last_purge_time is None or time.time() - last_purge_time > PURGE_DELAY:
                     last_purge_time = time.time()
                     # Remove old entries
                     delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
@@ -552,7 +594,7 @@ class Client(object):
                 try:
                     if time.time() - last_heartbeat > HEARTBEAT_DELAY:
                         last_heartbeat = time.time()
-                        store_and_cache(common_instrument, "system_dasmon_listener_pid", str(os.getpid()))
+                        store_and_cache(common_instrument, pid_key_id, str(os.getpid()))
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
                             from settings import PING_TOPIC, ACK_TOPIC
