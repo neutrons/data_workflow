@@ -182,7 +182,9 @@ class ReductionConfigurationDGSForm(BaseReductionConfigurationForm):
 
 
 class ReductionConfigurationSEQForm(ReductionConfigurationDGSForm):
-    
+    """
+        Reduction form for SEQ
+    """
     create_elastic_nxspe = forms.BooleanField(required=False)
     _template_list = ReductionConfigurationDGSForm._template_list + ['create_elastic_nxspe']
 
