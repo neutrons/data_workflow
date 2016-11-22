@@ -188,7 +188,10 @@ def configuration_dgs(request, instrument):
             view_util.reset_to_default(instrument_id)
             return redirect(reverse('reduction:configuration', args=[instrument]))
 
-        options_form = forms.ReductionConfigurationDGSForm(request.POST)
+        if instrument.lower() == 'seq':
+            options_form = forms.ReductionConfigurationSEQForm(request.POST)
+        else:
+            options_form = forms.ReductionConfigurationDGSForm(request.POST)
         options_form.set_instrument(instrument.lower())
         mask_form = MaskFormSet(request.POST)
         if options_form.is_valid() and mask_form.is_valid():
@@ -209,7 +212,10 @@ def configuration_dgs(request, instrument):
         props_list = ReductionProperty.objects.filter(instrument=instrument_id)
         for item in props_list:
             params_dict[str(item.key)] = str(item.value)
-        options_form = forms.ReductionConfigurationDGSForm(initial=params_dict)
+        if instrument.lower() == 'seq':
+            options_form = forms.ReductionConfigurationSEQForm(initial=params_dict)
+        else:
+            options_form = forms.ReductionConfigurationDGSForm(initial=params_dict)
         options_form.set_instrument(instrument.lower())
         mask_list = []
         if 'mask' in params_dict:
@@ -238,7 +244,11 @@ def configuration_dgs(request, instrument):
                        'user_alert':error_msg}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
-    return render(request, 'reduction/configuration_dgs.html', template_values)
+    if instrument.lower() == 'seq':
+        template_file = 'reduction/configuration_seq.html'
+    else:
+        template_file = 'reduction/configuration_dgs.html'
+    return render(request, template_file, template_values)
 
 
 @users.view_util.login_or_local_required

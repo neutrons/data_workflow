@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ instrument }} Configuration {% endblock %}
+
+{% block banner %}{{ instrument }} Configuration {% endblock %}
+
+{% block header %}
+<script>
+  var action_records = {% autoescape off %}{{ action_list }}{% endautoescape %};
+  var default_requested = 0;
+  var last_action = '{{ last_action_time }}';
+  function poll(){
+      $.ajax({ url: "{% url 'reduction:configuration_update' instrument %}?since="+last_action, success: function(data) {
+          if (data.refresh_needed.localeCompare('1')==0) {
+              $('#last_action').replaceWith("<span id='last_action'>"+data.actions[data.actions.length-1].info+" on "+data.actions[data.actions.length-1].time+"</span>");
+              last_action = data.last_action_time;
+          }
+      }, dataType: "json", timeout: 30000, cache: true,
+      statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
+  };
+  $(document).ready( function() {
+      {% if not is_instrument_staff %}
+      $('#submit_button').prop('disabled', 'disabled');
+      $('#reset_button').prop('disabled', 'disabled');
+      new_alert( "Only instrument team members can use this form: contact {{ helpline }}" ); show_alert();
+      {% endif %}
+      setInterval(poll, 10000);
+  });
+  function remove_entry(id, bank_id, tube_id, pixel_id) { 
+      $(id).prop('checked', !$(id).prop('checked')); 
+      $(bank_id).prop('disabled', $(id).prop('checked'));
+      $(tube_id).prop('disabled', $(id).prop('checked'));
+      $(pixel_id).prop('disabled', $(id).prop('checked'));
+  }
+</script>
+{% endblock %}
+    
+{% block summary %}
+<div class='section_divider'>Configuring the automated reduction</div>
+<div class='narrow_section'>
+Instrument team members can use this page to generate a new automated reduction script.
+<ul>
+<li>Click the submit button to create a new automated reduction script.</li>
+<li>Click the reset to populate the form with default values.</li>
+<li>The <i>reduce_{{ instrument }}.py</i> will automatically be overwritten once you click the submit button.</li>
+</ul>
+</div>
+
+<div style="margin-bottom:60px;">
+<p>List of parameters for {{ instrument }} reduction template:</p>
+<form action="" method="POST">{% csrf_token %}
+  <table class="property_table  fixed_table" >
+    <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
+    <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
+    <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{ options_form.grouping.errors }}'{% endif %}>{{options_form.grouping }} </td></tr>
+    <tr><th>Create elastic nxspe</th> <td>{{options_form.create_elastic_nxspe }}</td></tr>
+    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td> 
+      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors }}'{% endif %}>E<sub>min</sub> {{options_form.e_min }} </span> 
+      E<sub>step</sub> {{options_form.e_step }} 
+      E<sub>max</sub> {{options_form.e_max }} </td></tr>
+  </table>
+  <p>
+  {{ mask_form.management_form }}
+  <table class="property_table">
+    <thead>
+      <tr><th>Masked Bank</th> <th>Masked Tube</th> <th>Masked Pixel</th><td class='icon_input'><a href="?extra=1"><span title='Click to add an entry' class="ui-icon ui-icon-circle-plus"></span></a></td></tr>
+    </thead>
+    <tbody>
+    {% for form in mask_form %}
+      <tr class='short_input'>
+        {{ form.id }}<span style='display:none;'>{{ form.remove }}</span>
+        <td {% if form.bank.errors %}class='highlight_row' title='{{ form.bank.errors }}'{% endif %}>{{ form.bank }}</td>
+        <td {% if form.tube.errors %}class='highlight_row' title='{{ form.tube.errors }}'{% endif %}>{{ form.tube }}</td>
+        <td {% if form.pixel.errors %}class='highlight_row' title='{{ form.pixel.errors }}'{% endif %}>{{ form.pixel }}</td>
+        <td class='icon_input'> <span title='Click to remove this entry' class="ui-icon ui-icon-trash" onclick="remove_entry('#{{ form.remove.id_for_label }}', '#{{ form.bank.id_for_label }}', '#{{ form.tube.id_for_label }}', '#{{ form.pixel.id_for_label }}')"></span></td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+<p>
+<span style="float: right; margin-left:15px;" >
+<input id="submit_button" title="Click to create new reduction script" type="submit" name="button_choice" value="submit"/>
+<input id="reset_button" title="Click to populate the form with default values" type="submit" name="button_choice" value="reset"/>
+</span>
+</form>
+</div>
+<p>
+{% endblock %}
+
+{% block content %}
+Latest post-processing log entries for {{ instrument }}:<br><br>
+<span id='last_action'>
+{% if action_list and action_list|length > 0 %}{{ action_list.0.info }} on {{ action_list.0.time }}
+{% else %}No recent changes{% endif %}
+</span>
+<br>
+
+<script>
+function compute_size(id) { 
+    if($(id).val().length > 30) {
+        var len = ($(id).val().length-30)/15;
+        size = 11-Math.round(len); 
+        if(size >= 8) $(id).css("font-size",size + "px")
+    } else $(id).css("font-size","11px");
+}
+compute_size('#id_processed_vanadium');
+compute_size('#id_raw_vanadium');
+$('.font_resize').keyup(function(ev) {
+  compute_size(this);
+});
+</script>
+{% endblock %}

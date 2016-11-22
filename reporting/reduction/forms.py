@@ -181,6 +181,14 @@ class ReductionConfigurationDGSForm(BaseReductionConfigurationForm):
         self.fields['grouping'].choices = _get_choices(instrument)
 
 
+class ReductionConfigurationSEQForm(ReductionConfigurationDGSForm):
+    """
+        Reduction form for SEQ
+    """
+    create_elastic_nxspe = forms.BooleanField(required=False)
+    _template_list = ReductionConfigurationDGSForm._template_list + ['create_elastic_nxspe']
+
+
 class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
     """
         Generic form for Corelli reduction instruments
