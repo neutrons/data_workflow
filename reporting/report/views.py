@@ -8,6 +8,7 @@
 import sys
 import logging
 import json
+import string
 import datetime
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
@@ -229,7 +230,8 @@ def detail(request, instrument, run_id):
     # Fitting URL
     fitting_url = None
     if hasattr(settings, "FITTING_URLS") and instrument.lower() in settings.FITTING_URLS:
-        fitting_url = settings.FITTING_URLS[instrument.lower()] % run_id
+        url_template = string.Template(settings.FITTING_URLS[instrument.lower()])
+        fitting_url = url_template.substitute(run_number=run_id)
 
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
