@@ -228,8 +228,8 @@ def detail(request, instrument, run_id):
 
     # Fitting URL
     fitting_url = None
-    if hasattr(settings, "FITTING_URL") and instrument.lower() in settings.FITTING_URL:
-        fitting_url = settings.FITTING_URL % run_id
+    if hasattr(settings, "FITTING_URLS") and instrument.lower() in settings.FITTING_URLS:
+        fitting_url = settings.FITTING_URLS[instrument.lower()] % run_id
 
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
