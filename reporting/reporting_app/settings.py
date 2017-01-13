@@ -258,6 +258,9 @@ LIVE_DATA_SERVER = "/plots/$instrument/$run_number/update"
 LIVE_DATA_SERVER_DOMAIN = "livedata.sns.gov"
 LIVE_DATA_SERVER_PORT = "443"
 
+# Link out to fitting application
+FITTING_URLS = {}
+
 # Import local settings if available
 try:
     from local_settings import *

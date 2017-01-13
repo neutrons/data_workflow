@@ -94,7 +94,7 @@ tr.alt {
     background: #f6f6f6;
 }
 
-.message_table tr:nth-child(even) {background: #f5ede3;}
+.message_table tr:nth-child(even) {background: #f4f4f4;}
 
 .error_row {
     background: #f8bdb7;

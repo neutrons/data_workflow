@@ -226,11 +226,17 @@ def detail(request, instrument, run_id):
     except:
         prev_url = None
 
+    # Fitting URL
+    fitting_url = None
+    if hasattr(settings, "FITTING_URL") and instrument.lower() in settings.FITTING_URL:
+        fitting_url = settings.FITTING_URL % run_id
+
     template_values = {'instrument':instrument.upper(),
                        'run_object':run_object,
                        'status':status_objects,
                        'breadcrumbs':breadcrumbs,
                        'icat_info':icat_info,
+                       'fitting_url':fitting_url,
                        'reduce_url':reduce_url,
                        'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
                        'prev_url': prev_url,
