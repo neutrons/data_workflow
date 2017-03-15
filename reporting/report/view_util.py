@@ -452,12 +452,13 @@ def get_run_list_dict(run_list):
         logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
     return run_dicts
 
-
-def extract_ascii_from_div(html_data):
+def extract_ascii_from_div(html_data, trace_id=None):
     """
         Extract data from an plot <div>.
         Only returns the first one it finds.
         @param html_data: <div> string
+
+        #TODO: allow to specify which trace to return in cases where we have multiple curves
     """
     try:
         result = re.search(r"newPlot\((.*)\)</script>", html_data)
@@ -466,6 +467,10 @@ def extract_ascii_from_div(html_data):
         ascii_data = ""
         for d in data_list:
             if isinstance(d, list):
+                # Only allow a single trace
+                if trace_id is None and len(d) > 1:
+                    logging.debug("Multiple traces found, and no ID was specified")
+                    return None
                 for trace in d:
                     if 'type' in trace and trace['type'] == 'scatter':
                         x = trace['x']
