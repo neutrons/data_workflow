@@ -104,6 +104,14 @@
   <span style='float:right'>{% if prev_url %}<a href='{{ prev_url|safe }}'>previous</a>{% else %}previous{% endif %} | {% if next_url %}<a href='{{ next_url|safe }}'>next</a>{% else %}next{% endif %}</span>
   <br><br>
   {% if no_icat_info %}
+  {% if run_number == run_object.run_number|stringformat:"i" %}
+  <table class='info_display'>
+    <tbody>
+        <tr><td>Run title</td><td><b>{{ run_title|safe }}</b></td></tr>
+    </tbody>
+  </table>
+  </p>
+  {% endif %}
   <p>
   {{ no_icat_info }}
   <p>
