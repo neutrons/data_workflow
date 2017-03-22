@@ -92,6 +92,22 @@ class ProcessingForm(forms.Form):
         if 'create_as_needed' in initial:
             self.initial['create_as_needed'] = self.fields['create_as_needed'].to_python(initial['create_as_needed'])
 
+    @classmethod
+    def _create_file_path(cls, instrument, ipts, run):
+        """
+            Return a standard file path for a given run
+            @param instrument: instrument model object or string
+            @param ipts: experiment model object or string
+            @param run: run model object or string
+        """
+        if not ActiveInstrument.objects.is_adara(instrument):
+            file_path = "/SNS/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
+            (str(instrument).upper(), ipts, run, str(instrument).upper(), run)
+        else:
+            base_path = "/SNS/%s/%s/nexus/" % (str(instrument).upper(), ipts)
+            file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
+        return file_path
+
     def process(self):
         """
             Process the completed form
@@ -129,17 +145,18 @@ class ProcessingForm(forms.Form):
                 run_obj = DataRun.objects.get(instrument_id=instrument,
                                               ipts_id = ipts,
                                               run_number=run)
+                # In some cases, when the DAS has started acquiring but the run is not
+                # completed, we can have an entry without a file path. When that's the
+                # case, create a standard path before submitting.
+                if len(run_obj.file) == 0:
+                    run_obj.file = ProcessingForm._create_file_path(instrument, ipts, run)
+                    run_obj.save()
                 valid_run_objects.append(run_obj)
             except DataRun.DoesNotExist:
                 invalid_runs.append(run)
                 if self.cleaned_data['create_as_needed']:
                     # Create a file path
-                    if not ActiveInstrument.objects.is_adara(instrument):
-                        file_path = "/SNS/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
-                        (str(instrument).upper(), ipts, run, str(instrument).upper(), run)
-                    else:
-                        base_path = "/SNS/%s/%s/nexus/" % (str(instrument).upper(), ipts)
-                        file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
+                    file_path = ProcessingForm._create_file_path(instrument, ipts, run)
                     new_run = type('new_run', (object,), {'instrument_id' : instrument,
                                                           'run_number': run,
                                                           'ipts_id': ipts,
