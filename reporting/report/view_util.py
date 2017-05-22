@@ -188,6 +188,7 @@ def processing_request(request, instrument, run_id, destination):
         logging.error("Could not send post-processing request: %s", destination)
         logging.error(sys.exc_value)
         return HttpResponseServerError()
+    #return render(request, 'report/processing_request_failure.html', {})
     return redirect(reverse('report:detail', args=[instrument, run_id]))
 
 def retrieve_rates(instrument_id, last_run_id):

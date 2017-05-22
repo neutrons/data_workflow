@@ -252,7 +252,7 @@ REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT'
 
 HELPLINE_EMAIL = 'adara_support@ornl.gov'
 
-INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs')
+INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs', 'ref_m')
 
 LIVE_DATA_SERVER = "/plots/$instrument/$run_number/update"
 LIVE_DATA_SERVER_DOMAIN = "livedata.sns.gov"

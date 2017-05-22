@@ -1,17 +1,18 @@
+#pylint: disable=bare-except, line-too-long, invalid-name
 """
     Forms for auto-reduction configuration
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-from django import forms
-from django.core.exceptions import ValidationError
-from models import ReductionProperty, Choice
-from report.models import Instrument
 import sys
 import re
 import logging
-import view_util
+from django import forms
+from django.core.exceptions import ValidationError
+from report.models import Instrument
+from reduction.models import ReductionProperty, Choice
+import reduction.view_util
 
 def _get_choices(instrument):
     """
@@ -27,7 +28,7 @@ def _get_choices(instrument):
         for item in choices:
             form_choices.append((item.value, item.description))
     except:
-        logging.error("_get_choices: %s instrument or grouping does not exist\n %s" % (instrument.upper(), sys.exc_value))
+        logging.error("_get_choices: %s instrument or grouping does not exist\n %s", instrument.upper(), sys.exc_value)
     return sorted(form_choices, cmp=lambda x, y:cmp(x[0], y[0]))
 
 def validate_integer_list(value):
@@ -84,17 +85,20 @@ class BaseReductionConfigurationForm(forms.Form):
             try:
                 if key in self.cleaned_data:
                     # Make sure we treat booleans properly
-                    if type(self.cleaned_data[key]) == bool and self.cleaned_data[key] is False:
+                    if isinstance(self.cleaned_data[key], bool) and self.cleaned_data[key] is False:
                         value = ''
                     else:
                         value = str(self.cleaned_data[key])
                 else:
                     value = ''
-                view_util.store_property(instrument_id, key, value, user=user)
+                reduction.view_util.store_property(instrument_id, key, value, user=user)
             except:
-                logging.error("BaseReductionConfigurationForm.to_db: %s" % sys.exc_value)
+                logging.error("BaseReductionConfigurationForm.to_db: %s", sys.exc_value)
 
     def to_template(self):
+        """
+            Return a dictionary
+        """
         template_dict = {}
         for key in self._template_list:
             if key in self.cleaned_data:
@@ -208,6 +212,31 @@ class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
         super(ReductionConfigurationCorelliForm, self).__init__(*args, **kwargs)
 
 
+class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
+    """
+        Generic form for REF_M reduction instruments
+    """
+    use_sangle = forms.BooleanField(required=False, initial=True)
+    use_const_q = forms.BooleanField(required=False, initial=False)
+    const_q_cutoff = forms.FloatField(required=True, initial=0.02)
+    fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
+    direct_huber_cut = forms.FloatField(required=True, initial=4.9)
+    force_peak = forms.BooleanField(required=False, initial=False)
+    peak_min = forms.IntegerField(required=True, initial=160)
+    peak_max = forms.IntegerField(required=True, initial=170)
+    force_background = forms.BooleanField(required=False, initial=False)
+    bck_min = forms.IntegerField(required=True, initial=5)
+    bck_max = forms.IntegerField(required=True, initial=100)
+
+    # List of field that are used in the template
+    _template_list = ['use_sangle', 'use_const_q', 'const_q_cutoff', 'fit_peak_in_roi',
+                      'direct_huber_cut', 'force_peak', 'peak_min', 'peak_max',
+                      'force_background', 'bck_min', 'bck_max']
+
+    def __init__(self, *args, **kwargs):
+        super(ReductionConfigurationREFMForm, self).__init__(*args, **kwargs)
+
+
 class MaskForm(forms.Form):
     """
         Simple form for a mask entry.
@@ -233,11 +262,11 @@ class MaskForm(forms.Form):
             lines = value.split('\n')
             for line in lines:
                 if 'MaskBTPParameters' in line:
-                    mask_strings = re.findall("append\((.+)\)", line.strip())
+                    mask_strings = re.findall(r"append\((.+)\)", line.strip())
                     for item in mask_strings:
                         mask_list.append(eval(item.lower()))
         except:
-            logging.error("MaskForm count not parse a command line: %s" % sys.exc_value)
+            logging.error("MaskForm count not parse a command line: %s", sys.exc_value)
         return mask_list
 
     @classmethod
@@ -250,7 +279,7 @@ class MaskForm(forms.Form):
         """
         command_list = ''
         for mask in mask_list:
-            if 'remove' in mask.cleaned_data and mask.cleaned_data['remove'] == True:
+            if 'remove' in mask.cleaned_data and mask.cleaned_data['remove']:
                 continue
             command_str = str(mask)
             if len(command_str) > 0:
@@ -329,7 +358,6 @@ class PlottingForm(forms.Form):
         """
         plot_info = []
         for item in opt_list:
-            entry_dict = {}
             if 'perpendicular_to' in item.cleaned_data and \
                 len(item.cleaned_data['perpendicular_to'].strip()) > 0 and \
                 'minimum' in item.cleaned_data and \
@@ -347,7 +375,7 @@ class PlottingForm(forms.Form):
         """
         dict_list = eval(param_value)
         # Protect against bad DB entry
-        if type(dict_list) == dict:
+        if isinstance(dict_list, dict):
             dict_list = [dict_list]
 
         plot_info = []

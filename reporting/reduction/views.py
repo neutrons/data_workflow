@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, too-many-locals, line-too-long
+#pylint: disable=bare-except, too-many-locals, line-too-long, too-many-branches, too-many-arguments, too-many-statements
 """
     Automated reduction configuration view
 
@@ -39,10 +39,12 @@ def configuration(request, instrument):
     """
     if instrument.lower() in ['seq', 'arcs']:
         return configuration_dgs(request, instrument)
-    if instrument.lower() == 'corelli':
+    elif instrument.lower() == 'corelli':
         return configuration_corelli(request, instrument)
-    if instrument.lower() == 'cncs':
+    elif instrument.lower() == 'cncs':
         return configuration_cncs(request, instrument)
+    elif instrument.lower() == 'ref_m':
+        return configuration_ref_m(request, instrument)
 
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     props_list = ReductionProperty.objects.filter(instrument=instrument_id)
@@ -72,6 +74,73 @@ def configuration(request, instrument):
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, 'reduction/configuration.html', template_values)
+
+@users.view_util.login_or_local_required
+def configuration_ref_m(request, instrument):
+    """
+        View current automated reduction configuration and modification history
+        for a given instrument
+
+        #TODO: redirect to another page if you are not part of the instrument team
+
+        @param request: request object
+        @param instrument: instrument name
+    """
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
+    error_msg = []
+    if request.method == 'POST':
+        if "button_choice" not in request.POST:
+            logging.error("Received incomplete POST request without a button_choice")
+            return redirect(reverse('reduction:configuration', args=[instrument]))
+        elif request.POST["button_choice"]=="reset":
+            # Reset form parameters with default
+            view_util.reset_to_default(instrument_id)
+            return redirect(reverse('reduction:configuration', args=[instrument]))
+
+        options_form = forms.ReductionConfigurationREFMForm(request.POST)
+        options_form.set_instrument(instrument.lower())
+        if options_form.is_valid():
+            options_form.to_db(instrument_id, request.user)
+            # Send ActiveMQ request
+            try:
+                view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
+                return redirect(reverse('reduction:configuration', args=[instrument]))
+            except:
+                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                error_msg.append("Error processing request")
+        else:
+            logging.error("Invalid form %s", options_form.errors)
+    else:
+        params_dict = {}
+        props_list = ReductionProperty.objects.filter(instrument=instrument_id)
+        for item in props_list:
+            params_dict[str(item.key)] = str(item.value)
+        options_form = forms.ReductionConfigurationREFMForm(initial=params_dict)
+        options_form.set_instrument(instrument.lower())
+
+    last_action = datetime.datetime.now().isoformat()
+    action_list = dasmon.view_util.get_latest_updates(instrument_id,
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
+    if len(action_list)>0:
+        last_action = action_list[-1]['timestamp']
+        action_list = action_list[-1:]
+
+    # Breadcrumbs
+    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
+    breadcrumbs += " &rsaquo; configuration"
+
+    template_values = {'instrument': instrument.upper(),
+                       'helpline': settings.HELPLINE_EMAIL,
+                       'options_form': options_form,
+                       'action_list': action_list ,
+                       'last_action_time': last_action,
+                       'breadcrumbs': breadcrumbs,
+                       'user_alert':error_msg}
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    return render(request, 'reduction/configuration_ref_m.html', template_values)
 
 @users.view_util.login_or_local_required
 def configuration_cncs(request, instrument):
