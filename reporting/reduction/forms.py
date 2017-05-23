@@ -219,17 +219,17 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     use_sangle = forms.BooleanField(required=False, initial=True)
     use_const_q = forms.BooleanField(required=False, initial=False)
     use_roi_bck = forms.BooleanField(required=False, initial=False)
-    const_q_cutoff = forms.FloatField(required=True, initial=0.02)
+    const_q_cutoff = forms.FloatField(required=False, initial=0.02)
     use_side_bck = forms.BooleanField(required=False, initial=False)
     bck_width = forms.IntegerField(required=True, initial=10)
     fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
     direct_huber_cut = forms.FloatField(required=True, initial=4.95)
     force_peak = forms.BooleanField(required=False, initial=False)
-    peak_min = forms.IntegerField(required=True, initial=160)
-    peak_max = forms.IntegerField(required=True, initial=170)
+    peak_min = forms.IntegerField(required=False, initial=160)
+    peak_max = forms.IntegerField(required=False, initial=170)
     force_background = forms.BooleanField(required=False, initial=False)
-    bck_min = forms.IntegerField(required=True, initial=5)
-    bck_max = forms.IntegerField(required=True, initial=100)
+    bck_min = forms.IntegerField(required=False, initial=5)
+    bck_max = forms.IntegerField(required=False, initial=100)
 
     # List of field that are used in the template
     _template_list = ['use_sangle', 'use_const_q', 'const_q_cutoff', 'fit_peak_in_roi',
