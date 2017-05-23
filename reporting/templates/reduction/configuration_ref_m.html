@@ -72,7 +72,7 @@ Instrument team members can use this page to generate a new automated reduction 
     <tr><td colspan="2"><br>The ROI in the data file is used to determine the reflectivity peak position.
     If this ROI is invalid, the system will try to find an appropriate region to use.</td></tr>
 
-    <tr><td colspan="2"><br>You can choose to replace the ROI in the data by your own value.
+    <tr><td colspan="2"><br>You can choose to replace the ROI in the data by your own range.
     Check the following box if you want to define your own ROI and use it for peak selection.</td></tr>
     <tr class='tiny_input'><th>Force peak ROI</th><td>{{ options_form.force_peak }} 
                                         <span class='short_label'>Pixel<sub>min</sub></span> {{ options_form.peak_min }} 
@@ -83,14 +83,14 @@ Instrument team members can use this page to generate a new automated reduction 
     a default region will be used.</td></tr>
     <tr><th>Use 2nd ROI</th><td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck.id_for_label }}');">{{ options_form.use_roi_bck }}</td></tr>
 
-    <tr><td colspan="2"><br>You can choose to replace the 2nd ROI in the data by your own value.
-    Check the following box if you want to define your own 2n ROI and use it for background selection.
+    <tr><td colspan="2"><br>You can choose to replace the 2nd ROI in the data by your own range.
+    Check the following box if you want to define your own 2nd ROI and use it for background selection.
     <i>The option to use the 2nd ROI has to be turned ON to use this option.</i></td></tr>
     <tr class='tiny_input'><th>Force background ROI</th><td><span onclick="toggle_roi_bck('#{{ options_form.force_background.id_for_label }}');">{{ options_form.force_background }}</span> 
                                         <span class='short_label'>Bck<sub>min</sub></span> {{ options_form.bck_min }} 
                                         <span class='short_label'>Bck<sub>max</sub></span> {{ options_form.bck_max }}</td></tr>
 
-    <tr><td colspan="2"><br>As an alternative to use the 2nd ROI, you can use a region around the reflected peak to 
+    <tr><td colspan="2"><br>As an alternative to using the 2nd ROI, you can use a region around the reflected peak to 
     estimate the background. Check the following box if you want to use the region on each side of the peak to estimate your background.</td></tr>
     <tr class='tiny_input'><th>Use side background</th><td><span onclick="toggle_roi_bck('#{{ options_form.use_side_bck.id_for_label }}');">{{ options_form.use_side_bck }}</span> 
     Pixels on each side {{ options_form.bck_width }}</td></tr>
@@ -99,10 +99,6 @@ Instrument team members can use this page to generate a new automated reduction 
     a peak within that region and updating the ROI according to the location found.
     Check the following box if you want to find a peak within the ROI and redefine the ROI afterwards.</td></tr>
     <tr><th>Fit peak within ROI</th><td>{{ options_form.fit_peak_in_roi }}</td></tr>
-
-
-
-
 
     <tr><td colspan="2"><br>Check the following box if you want to use SANGLE, otherwise DANGLE will be used.</td></tr>
     <tr><th>Use SANGLE</th><td>{{ options_form.use_sangle }}</td></tr>
