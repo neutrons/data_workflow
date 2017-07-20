@@ -230,12 +230,13 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     force_background = forms.BooleanField(required=False, initial=False)
     bck_min = forms.IntegerField(required=True, initial=5)
     bck_max = forms.IntegerField(required=True, initial=100)
+    skip_quicknxs = forms.BooleanField(required=False, initial=False)
 
     # List of field that are used in the template
     _template_list = ['use_sangle', 'use_const_q', 'const_q_cutoff', 'fit_peak_in_roi',
                       'direct_huber_cut', 'force_peak', 'peak_min', 'peak_max',
                       'force_background', 'bck_min', 'bck_max', 'use_roi_bck',
-                      'use_side_bck', 'bck_width']
+                      'use_side_bck', 'bck_width', 'skip_quicknxs']
 
     def __init__(self, *args, **kwargs):
         super(ReductionConfigurationREFMForm, self).__init__(*args, **kwargs)
