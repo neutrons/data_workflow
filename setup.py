@@ -33,17 +33,4 @@ SETUP_ARGS = dict(
 )
 
 if __name__ == '__main__':
-    # Get the git commit information so we can store the exact version
-    try:
-        git_version = subprocess.check_output(["git", "describe", "--abbrev=100"]).replace('\n','')
-    except:
-        # Could not get git commit information, just install using 
-        # the main version number
-        git_version = workflow.__version__
-        
-    fd = open("workflow/git_version.py", 'w')
-    fd.write("# Git revision information\n")
-    fd.write("__git_version__ = \"%s\"\n" % git_version)
-    fd.close()
-
     setup(**SETUP_ARGS)
