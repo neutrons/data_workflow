@@ -790,7 +790,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     data_dict['status_list'] = status_list
     return data_dict
 
-def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None):
+def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_html=True):
     """
         Get recent runs for all instruments.
         If no run is found in the last few hours (defined by the timeframe parameter),
@@ -821,10 +821,37 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None):
             last_run = runs[0].id
 
         # Create dictionary for each run
-        run_list = report.view_util.get_run_list_dict(runs)
+        if as_html:
+            run_list = report.view_util.get_run_list_dict(runs)
+        else:
+            run_list = get_run_list(runs)
     except:
         logging.error("get_live_runs: %s", str(sys.exc_value))
     return run_list, first_run, last_run
+
+def get_run_list(run_list):
+    """
+        Get a list of run object and transform it into a list of
+        dictionaries that can be used as a simple dictionary that
+        can be shipped as json.
+
+        @param run_list: list of run object (usually a QuerySet)
+    """
+    run_dicts = []
+    try:
+        for r in run_list:
+            s = WorkflowSummary.objects.get(run_id=r)
+            status = 'incomplete'
+            if s.complete is True:
+                status = 'complete'
+            elif r.last_error() is not None:
+                status = 'error'
+            run_dicts.append(dict(run=r.run_number,
+                                  timestamp=timezone.localtime(r.created_on).ctime(),
+                                  status=status))
+    except:
+        logging.error("dasmon.view_util.get_run_list: %s", sys.exc_value)
+    return run_dicts
 
 class SignalEntry(object):
     """

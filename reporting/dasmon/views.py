@@ -200,8 +200,21 @@ def live_runs(request, instrument):
         except:
             # If we can't cast to an integer, use default
             pass
+    # The format query string allows us to return json
+    json_format = request.GET.get('format', 'html') == 'json'
     run_list, first_run, last_run = view_util.get_live_runs(instrument_id=instrument_id,
-                                                            timeframe=timeframe)
+                                                            timeframe=timeframe,
+                                                            as_html=not json_format)
+
+    if json_format:
+        data_info = dict(runs=run_list, instrument=instrument.upper())
+        data_info = view_util.fill_template_values(request, **data_info)
+        data_info['proposal_id'] = str(data_info['proposal_id'])
+
+        response = HttpResponse(json.dumps(data_info), content_type="application/json")
+        response['Connection'] = 'close'
+        response['Content-Length'] = len(response.content)
+        return response
 
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument':instrument.upper(),
