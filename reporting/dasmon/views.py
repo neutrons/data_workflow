@@ -209,7 +209,6 @@ def live_runs(request, instrument):
     if json_format:
         data_info = dict(runs=run_list, instrument=instrument.upper())
         data_info = view_util.fill_template_values(request, **data_info)
-        data_info['proposal_id'] = str(data_info['proposal_id'])
 
         response = HttpResponse(json.dumps(data_info), content_type="application/json")
         response['Connection'] = 'close'
