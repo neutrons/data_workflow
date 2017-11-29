@@ -131,6 +131,12 @@ def legacy_monitor(request, instrument):
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
+
+    # Add most recent reduced data
+    last_run = template_values['last_run']
+    plot_dict = report.view_util.get_plot_template_dict(last_run, instrument=instrument, run_id=last_run.run_number)
+    template_values.update(plot_dict)
+
     return render(request, 'dasmon/legacy_monitor.html', template_values)
 
 @users.view_util.login_or_local_required_401

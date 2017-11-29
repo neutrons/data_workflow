@@ -6,6 +6,7 @@
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
+<script language="javascript" type="text/javascript" src="/static/thirdparty/plotly-1.14.2.min.js"></script>
 
 <script>
     var last_run_id = '{{ last_run.id }}';
@@ -15,16 +16,16 @@
 
     function poll() {
         $.ajax({ url: "{{ update_url }}", success: function(data) {
-        	data.variables = []
+            data.variables = []
             update_from_ajax_data(data);
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
             $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
             $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
-            
+
             run_data = data.run_rate;
             error_data = data.error_rate;
             plot_combined_rates(run_data, error_data);
-            
+
         }, dataType: "json", timeout: 30000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
 
@@ -40,6 +41,23 @@
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
     };
 
+{% if html_data %}
+    var div_data = '';
+    function get_plot_update() {
+        $.ajax({type: "GET",
+                url: "{{update_url}}",
+                success: function(data) {
+                    if (div_data.localeCompare(data) != 0) {
+                        div_data = data;
+                        $('#graph').replaceWith("<div id='graph'>"+data+"</div>");
+                    };
+                },
+                dataType: "html",
+                timeout: 2000
+        })
+    };
+    get_plot_update();
+{% endif %}
 </script>
 {% endblock %}
 
@@ -114,6 +132,12 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
   </table>
   {% endfor %}
   <br>
+
+  {% if html_data %}
+  <p>
+  <h3>Latest results from the automated reduction [hit reload to refresh]</h3>
+  <div id="graph"></div>
+  {% endif %}
 
   <div id="dialog_placeholder"></div>
 
