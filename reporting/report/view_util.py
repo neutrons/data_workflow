@@ -151,12 +151,17 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
         if len(ipts) == 0:
             ipts = run_info['proposal']
 
+    # Get facility from file path
+    toks = file_path.split('/')
+    facility_name = 'SNS'
+    if len(toks) > 1:
+        facility_name = toks[1].upper()
     # Sanity check
     if len(file_path) == 0 or len(ipts) == 0 or ipts is None:
         logging.error("No ICAT information for run %s: message not sent", run_id)
         raise RuntimeError("Run %s not found in ICAT" % str(run_id))
     # Build up dictionary
-    data_dict = {'facility': 'SNS',
+    data_dict = {'facility': facility_name,
                  'instrument': str(instrument_id),
                  'ipts': ipts,
                  'run_number': run_id.run_number,
