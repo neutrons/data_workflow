@@ -340,7 +340,7 @@ def is_acquisition_complete(run_id):
                                             queue_id__name='POSTPROCESS.DATA_READY')
     return len(status_items) > 0
 
-def get_post_processing_status(red_timeout=0.25, yellow_timeout=10):
+def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
     """
         Get the health status of post-processing services
         @param red_timeout: number of hours before declaring a process dead
