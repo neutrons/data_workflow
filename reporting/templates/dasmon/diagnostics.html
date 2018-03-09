@@ -14,8 +14,6 @@
 <li class='status_{{ das_status.pvstreamer }}' id='pvstreamer_status'>PVStreamer</li>
 {% endif %}
 <li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
-<li class='status_{{ das_status.catalog }}' id='catalog_status'>Catalog</li>
-<li class='status_{{ das_status.reduction }}' id='reduction_status'>Reduction</li>
 </ul>
 </div>
 </div>
@@ -130,8 +128,6 @@ Reported conditions:<br>
 <div style="margin-left:20px">
 <table>
   <tbody>
-    <tr><td>Last cataloging status: </td><td>{{post_diagnostics.catalog_status}}</td></tr>
-    <tr><td>Last reduction status: </td><td>{{post_diagnostics.reduction_status}}</td></tr>
 {% for item in post_diagnostics.ar_nodes %}
     <tr><td>{{ item.node }}: </td><td>{{ item.time }}</td></tr>
 {% endfor %}
