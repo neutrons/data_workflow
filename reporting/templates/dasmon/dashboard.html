@@ -24,12 +24,6 @@
         content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
         $('#workflow_status').replaceWith(content);
 
-        content = "<li class='status_"+data.postprocess_status.catalog+"' id='catalog_status'>Catalog</li>";
-        $('#catalog_status').replaceWith(content);
-
-        content = "<li class='status_"+data.postprocess_status.reduction+"' id='reduction_status'>Reduction</li>";
-        $('#reduction_status').replaceWith(content);
-
         for (var i=0; i<data.instruments.length; i++)
         {
            global_system_status_update(data, i);
@@ -74,8 +68,7 @@ List of instruments:<br>
   <table class="dashboard_table">
     <thead>
       <tr>
-        <th style="min-width:75px">Instrument</th> 
-        <th>Sub-systems</th> <th>Processing</th>
+        <th style="min-width:75px">Instrument</th> <th>Processing</th>
       </tr>
     </thead>
     <tbody class='status_box'>
@@ -83,14 +76,6 @@ List of instruments:<br>
       <tr>
         <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a><br>
             <span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-        <td class='diagnostics'>
-          <a href='{{ item.diagnostics_url|safe }}'>
-            <ul>
-              <li class='status_{{ item.dasmon_status }}' id='{{ item.name }}_dasmon_status'>DASMON</li>
-              <li class='status_{{ item.pvstreamer_status }}' id='{{ item.name }}_pvstreamer_status'>PVStreamer</li> 
-            </ul>
-          </a>
-        </td>
         <td>
           <div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div>
         </td>

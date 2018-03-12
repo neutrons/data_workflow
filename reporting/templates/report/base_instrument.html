@@ -22,10 +22,6 @@
       <a href='{{ live_monitor_url|safe }}diagnostics/'>
         <ul>
           <li class='status_text'>Systems:</li>
-{% if is_adara %}
-          <li class='status_{{ das_status.dasmon }}' id='dasmon_status'>DASMON</li>
-          <li class='status_{{ das_status.pvstreamer }}' id='pvstreamer_status'>PVStreamer</li>
-{% endif %}
           <li class='status_{{ das_status.workflow }}' id='workflow_status'>Workflow</li>
         </ul>
       </a>

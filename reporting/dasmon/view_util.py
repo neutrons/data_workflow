@@ -163,7 +163,7 @@ def is_running(instrument_id):
         logging.error("Could not determine running condition: %s", str(sys.exc_value))
     return "Unknown"
 
-def get_system_health(instrument_id=None):
+def get_system_health():
     """
         Get system health status.
         If an instrument_id is provided, the sub-systems relevant to that
@@ -173,9 +173,6 @@ def get_system_health(instrument_id=None):
     """
     das_status = report.view_util.get_post_processing_status()
     das_status['workflow'] = get_workflow_status()
-    if instrument_id is not None:
-        das_status['dasmon'] = get_component_status(instrument_id, process='dasmon')
-        das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
     return das_status
 
 def fill_template_values(request, **template_args):
@@ -212,7 +209,7 @@ def fill_template_values(request, **template_args):
     template_args['dasmon_url'] = None
 
     # Get the system health status
-    template_args['das_status'] = get_system_health(instrument_id)
+    template_args['das_status'] = get_system_health()
     if is_adara:
         # Are we recording or not?
         template_args["recording_status"] = is_running(instrument_id)
