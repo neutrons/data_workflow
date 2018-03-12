@@ -68,14 +68,14 @@ List of instruments:<br>
   <table class="dashboard_table">
     <thead>
       <tr>
-        <th style="min-width:75px">Instrument</th> <th>Processing</th>
+        <th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th>
       </tr>
     </thead>
     <tbody class='status_box'>
     {% for item in instruments %}
       <tr>
-        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a><br>
-            <span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
+        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
+        <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
         <td>
           <div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div>
         </td>
