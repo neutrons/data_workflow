@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %} Instrument Status {% endblock %}
+{% block banner %} Instrument Status {% endblock %}
+
+{% block header %}
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+
+<script>
+  function poll() {
+    $.ajax({ url: "{{ update_url }}", success: function(data) {
+        content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
+        $('#workflow_status').replaceWith(content);
+
+        for (var i=0; i<data.instruments.length; i++)
+        {
+           global_system_status_update(data, i);
+           var content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
+           $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
+        }
+    }, dataType: "json", timeout: 30000, cache: true,
+        statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
+  };
+</script>
+{% endblock %}
+
+{% block bodytop %}
+<script id="source" language="javascript" type="text/javascript">
+    setInterval(poll, 20000);
+</script>
+{% endblock %}
+
+{% block right_side_links %}
+    <span style="float:right">
+    <b>dashboard</b> | <a href="{% url 'dasmon:run_summary' %}">latest runs</a>
+    </span>
+{% endblock %}
+
+{% block summary %}
+<div class='status_box'>
+<div class='diagnostics'>
+  <a href='{{ central_services_url|safe }}'>
+    <ul>
+      <li class='status_text'>Central systems:</li>
+      <li class='status_{{ postprocess_status.workflow }}' id='workflow_status'>Workflow</li>
+    </ul>
+  </a>
+</div>
+</div>
+
+<p>
+List of instruments:<br>
+  <table class="dashboard_table">
+    <thead>
+      <tr>
+        <th style="min-width:75px">Instrument</th> <th>Systems</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody class='status_box'>
+    {% for item in instruments %}
+      <tr>
+        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
+        <td class='diagnostics'>
+          <a href='{{ item.diagnostics_url|safe }}'>
+            <ul>
+              <li class='status_{{ item.dasmon_status }}' id='{{ item.name }}_dasmon_status'>DASMON</li>
+              <li class='status_{{ item.pvstreamer_status }}' id='{{ item.name }}_pvstreamer_status'>PVStreamer</li> 
+            </ul>
+          </a>
+        </td>
+        <td>
+        <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+ {% endblock %}
+{% block nocontent %}{% endblock %}

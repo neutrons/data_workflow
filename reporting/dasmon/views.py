@@ -67,6 +67,27 @@ def dashboard_update(request):
 @cache_control(private=True)
 @users.view_util.monitor
 @vary_on_cookie
+def expert_status(request):
+    """
+        Internal status for development team
+    """
+    # Get the system health status
+    global_status_url = reverse(settings.LANDING_VIEW, args=[])
+
+    template_values = {'instruments': view_util.get_instrument_status_summary(),
+                       'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
+                       'postprocess_status': view_util.get_system_health(),
+                       'update_url': reverse('dasmon:dashboard_update'),
+                       'central_services_url': reverse('dasmon:diagnostics', args=['common'])
+                      }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render(request, 'dasmon/expert_status.html', template_values)
+
+@users.view_util.login_or_local_required
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@users.view_util.monitor
+@vary_on_cookie
 def run_summary(request):
     """
         Dashboard view showing available instruments

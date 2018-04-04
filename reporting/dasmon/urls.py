@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^summary/$',                              views.run_summary,          name='run_summary'),
     url(r'^dashboard/$',                            views.dashboard,            name='dashboard'),
     url(r'^dashboard/update/$',                     views.dashboard_update,     name='dashboard_update'),
+    url(r'^expert/$',                               views.expert_status,        name='expert'),
     url(r'^summary/update/$',                       views.run_summary_update,   name='run_summary_update'),
     url(r'^user_help/',                             views.user_help,            name='user_help'),
     url(r'^notifications/',                         views.notifications,        name='notifications'),
