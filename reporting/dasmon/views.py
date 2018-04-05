@@ -358,7 +358,7 @@ def get_update(request, instrument):
     data_dict['variables'].append(recording_status)
 
     # Get current DAS health status
-    das_status = view_util.get_system_health()
+    das_status = view_util.get_system_health(instrument_id)
     data_dict['das_status'] = das_status
     data_dict['live_plot_data'] = view_util.get_live_variables(request, instrument_id)
 
