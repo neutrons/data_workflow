@@ -1,21 +1,21 @@
+#pylint: disable=bare-except, invalid-name, too-many-locals, too-many-branches, too-many-nested-blocks
 """
     Utilities to communicate with ICAT server
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2015 Oak Ridge National Laboratory
 """
+import sys
 import httplib
-import urllib
 import xml.dom.minidom
 import logging
-import sys
 import datetime
 try:
     from django.conf import settings
     ICAT_DOMAIN = settings.ICAT_DOMAIN
     ICAT_PORT = settings.ICAT_PORT
 except:
-    logging.warning("Could not find ICAT config: %s" % sys.exc_value)
+    logging.warning("Could not find ICAT config: %s", sys.exc_value)
     ICAT_DOMAIN = 'icat.sns.gov'
     ICAT_PORT = 2080
 
@@ -45,41 +45,8 @@ def decode_time(timestamp):
             except:
                 return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S")
     except:
-        logging.error("Could not parse timestamp '%s': %s" % (timestamp, sys.exc_value))
+        logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_value)
         return None
-
-def get_ipts_info(instrument, ipts):
-    """
-        Query ICAT for info about an experiment
-    """
-    run_info = {}
-
-    # Get basic run info
-    try:
-        conn = httplib.HTTPConnection(ICAT_DOMAIN,
-                                      ICAT_PORT, timeout=1.5)
-        conn.request('GET', '/icat-rest-ws/experiment/SNS/%s/%s/meta' % (instrument.upper(),
-                                                                         ipts.upper()))
-        r = conn.getresponse()
-        dom = xml.dom.minidom.parseString(r.read())
-        metadata = dom.getElementsByTagName('proposal')
-        if len(metadata) > 0:
-            for n in metadata[0].childNodes:
-                # Run title
-                if n.nodeName == 'title' and n.hasChildNodes():
-                    run_info['title'] = urllib.unquote(get_text_from_xml(n.childNodes))
-                # Run range
-                if n.nodeName == 'runRange' and n.hasChildNodes():
-                    run_info['run_range'] = get_text_from_xml(n.childNodes)
-                # Time
-                if n.nodeName == 'createTime' and n.hasChildNodes():
-                    timestr = get_text_from_xml(n.childNodes)
-                    run_info['createTime'] = decode_time(timestr)
-    except:
-        run_info['icat_error'] = 'Could not communicate with catalog server'
-        logging.error("Communication with ICAT server failed: %s" % sys.exc_value)
-    logging.error(str(run_info))
-    return run_info
 
 def get_run_info(instrument, ipts, run_number):
     """
@@ -139,6 +106,6 @@ def get_run_info(instrument, ipts, run_number):
                     timestr = get_text_from_xml(n.childNodes)
                     run_info['endTime'] = decode_time(timestr)
     except:
-        logging.error("Communication with ICAT server failed (%s): %s" % (url, sys.exc_value))
+        logging.error("Communication with ICAT server failed (%s): %s", url, sys.exc_value)
 
     return run_info
