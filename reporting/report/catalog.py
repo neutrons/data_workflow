@@ -33,7 +33,23 @@ def decode_time(timestamp):
         logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_value)
         return None
 
-def get_run_info(instrument, ipts, run_number, facility='SNS'):
+def get_run_info(instrument, ipts, run_number):
+    """
+        Legacy issue:
+        Until the facility information is stored in the DB so that we can
+        retrieve the facility from it, we'll have to use the application
+        configuration.
+        :param str instrument: instrument short name
+        :param str ipts: experiment name
+        :param str run_number: run number
+        :param str facility: facility name (SNS or HFIR)
+    """
+    facility = 'SNS'
+    if hasattr(settings, 'FACILITY_INFO'):
+        facility = settings.FACILITY_INFO.get(instrument, 'SNS')
+    return _get_run_info(instrument, ipts, run_number, facility)
+
+def _get_run_info(instrument, ipts, run_number, facility='SNS'):
     """
         Get ONCat info for the specified run
         Notes: At the moment we do not catalog reduced data
