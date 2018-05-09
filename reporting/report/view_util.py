@@ -142,7 +142,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
     # If not, look up ICAT
     file_path = run_id.file
     if len(file_path) == 0:
-        from report.icat_server_communication import get_run_info
+        from report.catalog import get_run_info
         run_info = get_run_info(str(instrument_id), '', run_id.run_number)
         for _file in run_info['data_files']:
             if _file.endswith('_event.nxs') or _file.endswith('.nxs.h5'):

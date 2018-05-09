@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from report.models import Instrument, IPTS, DataRun, StatusQueue
 from dasmon.models import ActiveInstrument
 import logging
-from report.icat_server_communication import get_run_info
+from report.catalog import get_run_info
 
 def validate_integer_list(value):
     """

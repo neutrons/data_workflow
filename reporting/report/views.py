@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 
 from dasmon.models import ActiveInstrument
 from report.models import DataRun, IPTS, Instrument, Error, RunStatus
-from report.icat_server_communication import get_run_info
+from report.catalog import get_run_info
 from report.forms import ProcessingForm
 from . import view_util
 import users.view_util
