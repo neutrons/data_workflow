@@ -1,0 +1,95 @@
+#pylint: disable=bare-except, invalid-name, too-many-nested-blocks, too-many-locals, too-many-branches
+"""
+    Optional utilities to communicate with ONcat.
+    ONcat is an online data catalog used internally at ORNL.
+
+    @author: M. Doucet, Oak Ridge National Laboratory
+    @copyright: 2018 Oak Ridge National Laboratory
+"""
+import sys
+import pyoncat
+import logging
+import datetime
+from django.conf import settings
+
+
+def decode_time(timestamp):
+    """
+        Decode timestamp and return a datetime object
+        :param timestamp: timestamp to decode
+    """
+    try:
+        tz_location = timestamp.rfind('+')
+        if tz_location < 0:
+            tz_location = timestamp.rfind('-')
+        if tz_location > 0:
+            date_time_str = timestamp[:tz_location]
+            # Get rid of fractions of a second
+            sec_location = date_time_str.rfind('.')
+            if sec_location > 0:
+                date_time_str = date_time_str[:sec_location]
+            return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S")
+    except:
+        logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_value)
+        return None
+
+def get_run_info(instrument, ipts, run_number, facility='SNS'):
+    """
+        Get ONCat info for the specified run
+        Notes: At the moment we do not catalog reduced data
+        :param str instrument: instrument short name
+        :param str ipts: experiment name
+        :param str run_number: run number
+        :param str facility: facility name (SNS or HFIR)
+    """
+    run_info = {}
+    try:
+        oncat = pyoncat.ONCat(
+            settings.CATALOG_URL,
+            # Here we're using the machine-to-machine "Client Credentials" flow,
+            # which requires a client ID and secret, but no *user* credentials.
+            flow = pyoncat.CLIENT_CREDENTIALS_FLOW,
+            client_id = settings.CATALOG_ID,
+            client_secret = settings.CATALOG_SECRET,
+        )
+        oncat.login()
+
+        datafiles = oncat.Datafile.list(
+            facility = facility,
+            instrument = instrument,
+
+            # Specifying the exact IPTS that contains the runs you need is optional,
+            # but you should provide one if that information is available -- this will
+            # mean ONCat can respond quicker because it has to look in fewer places.
+            experiment = ipts,
+
+            # We are only interested in the location of "raw" .nxs.h5 files.
+            projection = ['title', 'experiment', 'location',
+                          'metadata.entry.duration',
+                          'metadata.entry.total_counts',
+                          'metadata.entry.proton_charge',
+                          'metadata.entry.start_time',
+                          'metadata.entry.end_time',
+                          ],
+            tags = ['type/raw'],
+            exts = ['.nxs.h5'],
+
+            # Specify the list of ranges of run numbers we want.
+            ranges_q = 'indexed.run_number:%s' % run_number
+        )
+
+        run_info['data_files'] = []
+        for datafile in datafiles:
+            run_info['data_files'].append(datafile.location)
+            if datafile.location.endswith('.nxs.h5'):
+                run_info['title'] = datafiles[0].title
+                run_info['proposal'] = datafiles[0].experiment
+                run_info['duration'] = datafiles[0].metadata['entry']['duration']
+                run_info['totalCounts'] = datafiles[0].metadata['entry']['total_counts']
+                run_info['protonCharge'] = datafiles[0].metadata['entry']['proton_charge']
+                run_info['startTime'] = datafiles[0].metadata['entry']['start_time']
+                run_info['endTime'] = datafiles[0].metadata['entry']['end_time']
+    except:
+        logging.error("Communication with ONCat server failed: %s", sys.exc_value)
+
+    return run_info
