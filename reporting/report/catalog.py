@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, invalid-name, too-many-nested-blocks, too-many-locals, too-many-branches
+#pylint: disable=bare-except, invalid-name, too-many-nested-blocks, too-many-locals, too-many-branches, line-too-long
 """
     Optional utilities to communicate with ONcat.
     ONcat is an online data catalog used internally at ORNL.
@@ -56,7 +56,7 @@ def get_run_info(instrument, ipts, run_number, facility='SNS'):
 
         datafiles = oncat.Datafile.list(
             facility = facility,
-            instrument = instrument,
+            instrument = instrument.upper(),
 
             # Specifying the exact IPTS that contains the runs you need is optional,
             # but you should provide one if that information is available -- this will
@@ -64,7 +64,8 @@ def get_run_info(instrument, ipts, run_number, facility='SNS'):
             experiment = ipts,
 
             # We are only interested in the location of "raw" .nxs.h5 files.
-            projection = ['title', 'experiment', 'location',
+            projection = ['experiment', 'location',
+                          'metadata.entry.title',
                           'metadata.entry.duration',
                           'metadata.entry.total_counts',
                           'metadata.entry.proton_charge',
@@ -72,23 +73,23 @@ def get_run_info(instrument, ipts, run_number, facility='SNS'):
                           'metadata.entry.end_time',
                           ],
             tags = ['type/raw'],
-            exts = ['.nxs.h5'],
+            #exts = ['.nxs.h5'],
 
             # Specify the list of ranges of run numbers we want.
-            ranges_q = 'indexed.run_number:%s' % run_number
+            ranges_q = 'indexed.run_number:%s' % str(run_number)
         )
 
         run_info['data_files'] = []
         for datafile in datafiles:
             run_info['data_files'].append(datafile.location)
             if datafile.location.endswith('.nxs.h5'):
-                run_info['title'] = datafiles[0].title
-                run_info['proposal'] = datafiles[0].experiment
-                run_info['duration'] = datafiles[0].metadata['entry']['duration']
-                run_info['totalCounts'] = datafiles[0].metadata['entry']['total_counts']
-                run_info['protonCharge'] = datafiles[0].metadata['entry']['proton_charge']
-                run_info['startTime'] = datafiles[0].metadata['entry']['start_time']
-                run_info['endTime'] = datafiles[0].metadata['entry']['end_time']
+                run_info['title'] = datafile.metadata.get('entry', {}).get('title', None)
+                run_info['proposal'] = datafile.experiment
+                run_info['duration'] = datafile.metadata.get('entry', {}).get('duration', None)
+                run_info['totalCounts'] = datafile.metadata.get('entry', {}).get('total_counts', None)
+                run_info['protonCharge'] = datafile.metadata.get('entry', {}).get('proton_charge', None)
+                run_info['startTime'] = decode_time(datafile.metadata.get('entry', {}).get('start_time', None))
+                run_info['endTime'] = decode_time(datafile.metadata.get('entry', {}).get('end_time', None))
     except:
         logging.error("Communication with ONCat server failed: %s", sys.exc_value)
 
