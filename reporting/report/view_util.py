@@ -139,13 +139,10 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
         ipts = str(run_id.ipts_id)
 
     # Verify that we have a file path.
-    # If not, look up ICAT
+    # If not, look up the online catalog
     file_path = run_id.file
     if len(file_path) == 0:
-        try:
-            from report.catalog import get_run_info
-        except:
-            from report.icat_server_communication import get_run_info
+        from report.catalog import get_run_info
 
         run_info = get_run_info(str(instrument_id), '', run_id.run_number)
         for _file in run_info['data_files']:
@@ -162,8 +159,8 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
         facility_name = toks[1].upper()
     # Sanity check
     if len(file_path) == 0 or len(ipts) == 0 or ipts is None:
-        logging.error("No ICAT information for run %s: message not sent", run_id)
-        raise RuntimeError("Run %s not found in ICAT" % str(run_id))
+        logging.error("No catalog information for run %s: message not sent", run_id)
+        raise RuntimeError("Run %s not found in catalog" % str(run_id))
     # Build up dictionary
     data_dict = {'facility': facility_name,
                  'instrument': str(instrument_id),

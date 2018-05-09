@@ -11,10 +11,7 @@ from django.core.exceptions import ValidationError
 from report.models import Instrument, IPTS, DataRun, StatusQueue
 from dasmon.models import ActiveInstrument
 import logging
-try:
-    from report.catalog import get_run_info
-except:
-    from report.icat_server_communication import get_run_info
+from report.catalog import get_run_info
 
 def validate_integer_list(value):
     """
@@ -199,7 +196,7 @@ class ProcessingForm(forms.Form):
 
     def _recover_processed_run(self, instrument):
         """
-            Recovery method for when runs exist in ICAT but need to be inserted into the workflow DB
+            Recovery method for when runs exist in the online catalog but need to be inserted into the workflow DB
         """
         # Parse the runs and make sure they all exist
         run_list = validate_integer_list(self.cleaned_data['run_list'])
@@ -211,7 +208,7 @@ class ProcessingForm(forms.Form):
                                                   'file': ''})
             valid_run_objects.append(new_run)
 
-        output_report = "Your runs will be created if they exist in ICAT<br>"
+        output_report = "Your runs will be created if they exist in the online catalog<br>"
 
         # Returns a report and task to be sent
         return {'report': output_report, 'task': str(self.cleaned_data['task']).upper(),
