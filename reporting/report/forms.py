@@ -8,6 +8,7 @@
 import sys
 from django import forms
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from report.models import Instrument, IPTS, DataRun, StatusQueue
 from dasmon.models import ActiveInstrument
 import logging
@@ -100,11 +101,14 @@ class ProcessingForm(forms.Form):
             @param ipts: experiment model object or string
             @param run: run model object or string
         """
+        facility_name = 'SNS'
+        if hasattr(settings, 'FACILITY_INFO'):
+            facility_name = settings.FACILITY_INFO.get(str(instrument), 'SNS')
         if not ActiveInstrument.objects.is_adara(instrument):
-            file_path = "/SNS/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
-            (str(instrument).upper(), ipts, run, str(instrument).upper(), run)
+            file_path = "/%s/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
+            (facility_name, str(instrument).upper(), ipts, run, str(instrument).upper(), run)
         else:
-            base_path = "/SNS/%s/%s/nexus/" % (str(instrument).upper(), ipts)
+            base_path = "/%s/%s/%s/nexus/" % (facility_name, str(instrument).upper(), ipts)
             file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
         return file_path
 
