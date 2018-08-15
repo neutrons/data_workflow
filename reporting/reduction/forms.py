@@ -223,8 +223,8 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     use_side_bck = forms.BooleanField(required=False, initial=False)
     bck_width = forms.IntegerField(required=True, initial=10)
     fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
-    direct_huber_cut = forms.FloatField(required=True, initial=4.95)
     force_peak = forms.BooleanField(required=False, initial=False)
+    plot_in_2D = forms.BooleanField(required=False, initial=False)
     peak_min = forms.IntegerField(required=True, initial=160)
     peak_max = forms.IntegerField(required=True, initial=170)
     force_background = forms.BooleanField(required=False, initial=False)
@@ -234,7 +234,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
 
     # List of field that are used in the template
     _template_list = ['use_sangle', 'use_const_q', 'const_q_cutoff', 'fit_peak_in_roi',
-                      'direct_huber_cut', 'force_peak', 'peak_min', 'peak_max',
+                      'plot_in_2D', 'force_peak', 'peak_min', 'peak_max',
                       'force_background', 'bck_min', 'bck_max', 'use_roi_bck',
                       'use_side_bck', 'bck_width', 'skip_quicknxs']
 

@@ -7,8 +7,11 @@
     @copyright: 2018 Oak Ridge National Laboratory
 """
 import sys
-import pyoncat
 import logging
+try:
+    import pyoncat
+except:
+    logging.error("No ONCat")
 import datetime
 from django.conf import settings
 
