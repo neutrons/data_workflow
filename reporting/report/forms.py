@@ -8,10 +8,11 @@
 import sys
 from django import forms
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from report.models import Instrument, IPTS, DataRun, StatusQueue
 from dasmon.models import ActiveInstrument
 import logging
-from report.icat_server_communication import get_run_info
+from report.catalog import get_run_info
 
 def validate_integer_list(value):
     """
@@ -100,11 +101,14 @@ class ProcessingForm(forms.Form):
             @param ipts: experiment model object or string
             @param run: run model object or string
         """
+        facility_name = 'SNS'
+        if hasattr(settings, 'FACILITY_INFO'):
+            facility_name = settings.FACILITY_INFO.get(str(instrument), 'SNS')
         if not ActiveInstrument.objects.is_adara(instrument):
-            file_path = "/SNS/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
-            (str(instrument).upper(), ipts, run, str(instrument).upper(), run)
+            file_path = "/%s/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
+            (facility_name, str(instrument).upper(), ipts, run, str(instrument).upper(), run)
         else:
-            base_path = "/SNS/%s/%s/nexus/" % (str(instrument).upper(), ipts)
+            base_path = "/%s/%s/%s/nexus/" % (facility_name, str(instrument).upper(), ipts)
             file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
         return file_path
 
@@ -196,7 +200,7 @@ class ProcessingForm(forms.Form):
 
     def _recover_processed_run(self, instrument):
         """
-            Recovery method for when runs exist in ICAT but need to be inserted into the workflow DB
+            Recovery method for when runs exist in the online catalog but need to be inserted into the workflow DB
         """
         # Parse the runs and make sure they all exist
         run_list = validate_integer_list(self.cleaned_data['run_list'])
@@ -208,7 +212,7 @@ class ProcessingForm(forms.Form):
                                                   'file': ''})
             valid_run_objects.append(new_run)
 
-        output_report = "Your runs will be created if they exist in ICAT<br>"
+        output_report = "Your runs will be created if they exist in the online catalog<br>"
 
         # Returns a report and task to be sent
         return {'report': output_report, 'task': str(self.cleaned_data['task']).upper(),

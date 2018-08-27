@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 
 from dasmon.models import ActiveInstrument
 from report.models import DataRun, IPTS, Instrument, Error, RunStatus
-from report.icat_server_communication import get_run_info
+from report.catalog import get_run_info
 from report.forms import ProcessingForm
 from . import view_util
 import users.view_util
@@ -246,7 +246,7 @@ def detail(request, instrument, run_id):
                       }
     template_values.update(plot_template_dict)
     if icat_info == {}:
-        template_values['user_alert'] = ["Could not communicate with ICAT: please notify ICAT support staff"]
+        template_values['user_alert'] = ["Could not communicate with the online catalog"]
     try:
         if 'data_files' not in icat_info or icat_info['data_files'] is None or len(icat_info['data_files'])==0:
             if view_util.is_acquisition_complete(run_object):
@@ -255,7 +255,7 @@ def detail(request, instrument, run_id):
                 template_values['no_icat_info'] = "The final data file for this run is not yet available."
 
     except:
-        logging.error("Could not determine whether we have ICAT info: %s", sys.exc_value)
+        logging.error("Could not determine whether we have catalog info: %s", sys.exc_value)
         template_values['no_icat_info'] = "There is no catalog information for this run yet."
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)

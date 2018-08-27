@@ -157,14 +157,14 @@
     {{ run_object.file|default:"unknown" }}
   {% endif %}
   </ul>
+  {%if icat_info.reduced_files %}
   <p>
   Reduced files:
   <ul>
-  {%if icat_info.reduced_files %}
     {% for item in icat_info.reduced_files %}<li>{{ item|default:"unknown" }}</li>
     {% endfor %}
-  {% endif %}
   </ul>
+  {% endif %}
   {% endif %}
 {% endblock %}
 

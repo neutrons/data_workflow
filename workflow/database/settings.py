@@ -34,13 +34,6 @@ wkflow_passcode = "wkflowmgr"
 worker_user = "worker"
 worker_passcode = "worker"
 
-
-"""
-    ICAT server settings
-"""
-ICAT_DOMAIN = 'icat.sns.gov'
-ICAT_PORT = 2080
-
 # Import local settings if available
 try:
     from local_settings import *
