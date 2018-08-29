@@ -6,19 +6,8 @@
 
 {% block header %}
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
-<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
-<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
-<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 
 <script>
-  var instrument_rates = {
-  {% for item, value in data.items %}
-    {{ item }}: { run_rate: {{ value.run_rate|safe }}, error_rate: {{ value.error_rate|safe }} },{% endfor %}
-  };
-  function plot_rates() {
-    {% for item in instruments %}
-    plot_combined_rates(instrument_rates.{{ item.name|lower }}.run_rate, instrument_rates.{{ item.name|lower }}.error_rate, "runs_per_hour_{{ item.name|lower }}", "summary");{% endfor %}
-  }
   function poll() {
     $.ajax({ url: "{{ update_url }}", success: function(data) {
         content = "<li class='status_"+data.postprocess_status.workflow+"' id='workflow_status'>Workflow</li>";
@@ -30,9 +19,6 @@
            var content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
            $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
         }
-        {% for item in data %}
-        instrument_rates.{{ item|lower }} = data.instrument_rates.{{ item|lower }};{% endfor %}
-        plot_rates();
     }, dataType: "json", timeout: 30000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
   };
@@ -47,7 +33,7 @@
 
 {% block right_side_links %}
     <span style="float:right">
-    <a href="{% url 'dasmon:dashboard' %}">dashboard</a> | <b>extended dashboard</b> | <a href="{% url 'dasmon:run_summary' %}">latest runs</a>
+    <b>dashboard</b> | <a href="{% url 'dasmon:dashboard_complete' %}">extended dashboard</a> | <a href="{% url 'dasmon:run_summary' %}">latest runs</a>
     </span>
 {% endblock %}
 
@@ -65,24 +51,40 @@
 
 <p>
 List of instruments:<br>
-  <table class="dashboard_table">
+<table class="dashboard_table"><tr>
+  <td><table class="dashboard_table">
     <thead>
       <tr>
-        <th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th>
+        <th style="min-width:75px">Instrument</th> <th>Status</th>
       </tr>
     </thead>
     <tbody class='status_box'>
-    {% for item in instruments %}
+    {% for item in instruments_left %}
       <tr>
         <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
         <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-        <td>
-          <div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div>
-        </td>
       </tr>
     {% endfor %}
     </tbody>
-  </table>
-  <script id="source" language="javascript" type="text/javascript">plot_rates();</script>
+  </table></td>
+  <td style="min-width:75px"></td>
+  <td><table class="dashboard_table">
+    <thead>
+      <tr>
+        <th style="min-width:75px">Instrument</th> <th>Status</th>
+      </tr>
+    </thead>
+    <tbody class='status_box'>
+    {% for item in instruments_right %}
+      <tr>
+        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
+        <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></td>
+
+</tr></table>
+
   {% endblock %}
 {% block nocontent %}{% endblock %}

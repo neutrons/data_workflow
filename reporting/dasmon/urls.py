@@ -6,10 +6,10 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$',                                      views.dashboard,            name='dashboard'),
+    url(r'^$',                                      views.dashboard_simple,     name='dashboard'),
     url(r'^update/$',                               views.summary_update,       name='summary_update'),
     url(r'^summary/$',                              views.run_summary,          name='run_summary'),
-    url(r'^dashboard/$',                            views.dashboard,            name='dashboard'),
+    url(r'^dashboard/$',                            views.dashboard,            name='dashboard_complete'),
     url(r'^dashboard/update/$',                     views.dashboard_update,     name='dashboard_update'),
     url(r'^expert/$',                               views.expert_status,        name='expert'),
     url(r'^summary/update/$',                       views.run_summary_update,   name='run_summary_update'),

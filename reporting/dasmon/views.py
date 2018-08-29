@@ -39,11 +39,34 @@ def dashboard(request):
                        'data': view_util.get_dashboard_data(),
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
                        'postprocess_status': view_util.get_system_health(),
-                       'update_url': reverse('dasmon:dashboard_update'),
+                       'update_url': reverse('dasmon:dashboard_update')+'?plots',
                        'central_services_url': reverse('dasmon:diagnostics', args=['common'])
                       }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'dasmon/dashboard.html', template_values)
+
+@users.view_util.login_or_local_required
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@users.view_util.monitor
+@vary_on_cookie
+def dashboard_simple(request):
+    """
+        Dashboard view showing available instruments
+    """
+    # Get the system health status
+    global_status_url = reverse(settings.LANDING_VIEW, args=[])
+    instrument_data = view_util.get_instrument_status_summary()
+    cutoff = int(len(instrument_data)/2)
+    template_values = {'instruments_left': instrument_data[:cutoff],
+                       'instruments_right': instrument_data[cutoff:],
+                       'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
+                       'postprocess_status': view_util.get_system_health(),
+                       'update_url': reverse('dasmon:dashboard_update'),
+                       'central_services_url': reverse('dasmon:diagnostics', args=['common'])
+                      }
+    template_values = users.view_util.fill_template_values(request, **template_values)
+    return render(request, 'dasmon/dashboard_simple.html', template_values)
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -55,8 +78,9 @@ def dashboard_update(request):
     # Get the system health status
     data_dict = {'instruments':view_util.get_instrument_status_summary(),
                  'postprocess_status':view_util.get_system_health(),
-                 'instrument_rates': view_util.get_dashboard_data()
                 }
+    if 'plots' in request.GET:
+        data_dict['instrument_rates'] = view_util.get_dashboard_data()
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
