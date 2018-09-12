@@ -41,10 +41,11 @@ def validate_integer_list(value):
     range_list = value.split(',')
     for value_range in range_list:
         for item in value_range.split('-'):
-            try:
-                int(item.strip())
-            except:
-                raise ValidationError(u'Error parsing %s for a range of integers' % value)
+            if item.strip():
+                try:
+                    int(item.strip())
+                except:
+                    raise ValidationError(u'Error parsing %s for a range of integers' % value)
 
 def validate_float_list(value):
     """
@@ -54,10 +55,11 @@ def validate_float_list(value):
     range_list = value.split(',')
     for value_range in range_list:
         for item in value_range.split('-'):
-            try:
-                float(item.strip())
-            except:
-                raise ValidationError(u'Error parsing %s for a list of numbers' % value)
+            if item.strip():
+                try:
+                    float(item.strip())
+                except:
+                    raise ValidationError(u'Error parsing %s for a list of numbers' % value)
 
 
 class BaseReductionConfigurationForm(forms.Form):
