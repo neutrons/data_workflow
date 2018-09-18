@@ -116,7 +116,7 @@
   {{ no_icat_info }}
   <p>
 
-  {% else %}
+  {% elif icat_info.title %}
   <table class='info_display'>
     <tbody>
         <tr><td>Run title</td><td><b>{{ icat_info.title|default:"unknown" }}</b></td></tr>
