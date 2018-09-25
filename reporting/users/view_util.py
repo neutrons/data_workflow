@@ -131,6 +131,7 @@ def is_instrument_staff(request, instrument_id):
         if request.user is not None and hasattr(request.user, "ldap_user"):
             groups = request.user.ldap_user.group_names
             if u'sns_%s_team' % str(instrument_id).lower() in groups \
+            or u'hfir_%s_team' % str(instrument_id).lower() in groups \
             or u'snsadmin' in groups:
                 return True
     except:
