@@ -139,13 +139,14 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     gamma = forms.FloatField(required=True, initial=90)
     u_vector = forms.CharField(required=False, initial="1,0,0", validators=[validate_float_list])
     v_vector = forms.CharField(required=False, initial="0,0,1", validators=[validate_float_list])
+    auto_tzero_flag = forms.BooleanField(required=False)
 
     # List of field that are used in the template
     _template_list = ['mask', 'sub_directory', 'raw_vanadium', 'processed_vanadium', 'grouping',
                       'vanadium_integration_min', 'vanadium_integration_max',
                       'tib_min', 'tib_max', 't0', 'motor_names', 'temperature_names',
                       'create_elastic_nxspe', 'create_md_nxs',
-                      'alpha', 'beta', 'gamma',
+                      'alpha', 'beta', 'gamma', 'auto_tzero_flag',
                       'u_vector', 'v_vector', 'e_pars_in_mev',
                       'e_min', 'e_step', 'e_max', 'a', 'b', 'c']
 
