@@ -69,7 +69,7 @@ Instrument team members can use this page to generate a new automated reduction 
       <span class='short_label'>E<sub>max</sub></span> {{options_form.e_max }} </td></tr>
     <tr class='tiny_input'><th>TOF offset</th><td> 
       <span {% if options_form.t0.errors %}class='highlight_row' title='{{ options_form.t0.errors|first }}'{% endif %}><span class='short_label'>t<sub>0</sub></span> {{options_form.t0 }} </span> 
-      <span class='short_label'>Auto-fit T0 to get E=0 at elastic peak</span> {{options_form.auto_tzero_flag}}
+      &nbsp<span>Auto-fit t<sub>0</sub> to get E=0 at elastic peak</span> {{options_form.auto_tzero_flag}}
     </td></tr>
     <tr class='tiny_input'><th>Time independent bck</th><td>
       <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.tib_min }} </span> 
