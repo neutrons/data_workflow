@@ -8,7 +8,7 @@ def decode_message(message):
         Decode message and turn it into a dictionnary 
         we can understand.
         
-        Messages from STS are expected to be an absolute path
+        Messages from streaming translation are expected to be an absolute path
         of the following type:
         
         Old system: /SNS/EQSANS/IPTS-1234/.../EQSANS_5678_event.nxs
@@ -19,7 +19,7 @@ def decode_message(message):
     """
     tokens = message.split('/')
     if len(tokens)<6:
-        raise RuntimeError, "Badly formed message from STS\n  %s" % message
+        raise RuntimeError, "Badly formed message from streaming translation\n  %s" % message
     
     # Get the run number
     run_number = 0

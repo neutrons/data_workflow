@@ -134,8 +134,12 @@ class Listener(stomp.ConnectionListener):
             return
 
         if "STATUS" in destination:
+            # STS is the Streaming Translation Service, also referred to as STC.
             if "STS" in destination:
                 key_id = self.retrieve_parameter("system_sts")
+                store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
+            elif "STC" in destination:
+                key_id = self.retrieve_parameter("system_stc")
                 store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
             elif "SMS" in destination:
                 key_id = self.retrieve_parameter("system_sms")

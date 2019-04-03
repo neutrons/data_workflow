@@ -343,7 +343,7 @@ def diagnostics(request, instrument):
         # Actions messages
         if dasmon_diag['dasmon_listener_warning'] \
             and wf_diag['dasmon_listener_warning']:
-            actions.append("Multiple heartbeat message failures: restart dasmon_listener before proceeding")
+            actions.append("Multiple heartbeat message failures: ask Linux Support to restart dasmon_listener before proceeding")
 
     template_values['wf_diagnostics'] = wf_diag
     template_values['post_diagnostics'] = red_diag

@@ -440,7 +440,7 @@ def workflow_diagnostics(timeout=None):
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         wf_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT),
-                                                            _red_message("contact Workflow Manager expert")))
+                                                            _red_message("contact the Neutron Data Sciences Group or Linux Support")))
 
     # Status
     if status_value > 0:
@@ -489,7 +489,7 @@ def postprocessing_diagnostics(timeout=None):
                                           'time':timezone.localtime(last_value.timestamp)})
                     except:
                         nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
-                                      'time':'No heartbeat - contact post-processing expert'})
+                                      'time':'No heartbeat - contact the Neutron Data Sciences Group'})
         red_diag['ar_nodes'] = nodes
     except:
         # No data available
@@ -499,11 +499,11 @@ def postprocessing_diagnostics(timeout=None):
     if post_processing["catalog"] == 1:
         red_conditions.append("The cataloging was slow in responding to latest requests")
     elif post_processing["catalog"] > 1:
-        red_conditions.append("The cataloging is not processing files: %s" % _red_message("contact Auto Reduction expert"))
+        red_conditions.append("The cataloging is not processing files: %s" % _red_message("contact the Neutron Data Sciences Group"))
     if post_processing["reduction"] == 1:
         red_conditions.append("The reduction was slow in responding to latest requests")
     elif post_processing["reduction"] > 1:
-        red_conditions.append("The reduction is not processing files: %s" % _red_message("contact Auto Reduction expert"))
+        red_conditions.append("The reduction is not processing files: %s" % _red_message("contact the Neutron Data Sciences Group"))
 
     red_diag["catalog_status"] = post_processing["catalog"]
     red_diag["reduction_status"] = post_processing["reduction"]
@@ -544,7 +544,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         pv_conditions.append("No %s heartbeat since %s: %s" % (process, df.format(settings.DATETIME_FORMAT),
-                                                               _red_message("ask on-call instrument contact to restart PVStreamer")))
+                                                               _red_message("ask Linux Support or DAS to restart pvsd")))
 
     # Status
     if status_value > 0:
@@ -627,7 +627,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         slow_status = True
         df = dateformat.DateFormat(status_time)
         dasmon_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT),
-                                                                _red_message("ask on-call instrument contact to restart DASMON")))
+                                                                _red_message("ask Linux Support or DAS to restart DASMON")))
 
     # Status
     if status_value > 0:
@@ -638,13 +638,13 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dasmon_conditions.append("The web monitor has not heard from DASMON in a long time: no data available")
 
     if slow_status and slow_pvs and slow_amq:
-        dasmon_conditions.append("DASMON may be down:  %s" % _red_message("ask on-call instrument contact to restart DASMON"))
+        dasmon_conditions.append("DASMON may be down:  %s" % _red_message("ask Linux Support or DAS to restart DASMON"))
 
     if slow_pvs and not slow_status and not slow_amq:
-        dasmon_conditions.append("DASMON is up but not writing to the DB: check PVStreamer")
+        dasmon_conditions.append("DASMON is up but not writing to the DB: check pvsd")
 
     if (slow_status or slow_amq) and not slow_pvs:
-        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" % _red_message("ask on-call instrument contact to restart DASMON"))
+        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" % _red_message("ask Linux Support or DAS to restart DASMON"))
 
     if slow_status and slow_amq:
         dasmon_listener_warning = True
