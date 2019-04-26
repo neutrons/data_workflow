@@ -38,10 +38,6 @@ INSTALLATION_DIR = "/var/www/workflow/app"
 PURGE_TIMEOUT = 7
 IMAGE_PURGE_TIMEOUT = 360
 
-LEGACY_PREFIX = "ADARA"
-LEGACY_INSTRUMENT = "hysa"
-TOPIC_PREFIX = "SNS"
-
 MIN_NOTIFICATION_LEVEL = 3
 
 # Import local settings if available

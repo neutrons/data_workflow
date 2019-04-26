@@ -25,7 +25,6 @@ import settings
 from settings import INSTALLATION_DIR
 from settings import PURGE_TIMEOUT
 from settings import IMAGE_PURGE_TIMEOUT
-from settings import TOPIC_PREFIX
 from settings import MIN_NOTIFICATION_LEVEL
 sys.path.append(INSTALLATION_DIR)
 
@@ -124,10 +123,9 @@ class Listener(stomp.ConnectionListener):
         try:
             toks = destination.upper().split('.')
             if len(toks) > 1:
-                if toks[0] == "/TOPIC/%s" % TOPIC_PREFIX:
-                    instrument_name = toks[1].lower()
-                    # Get the instrument object
-                    instrument = self.retrieve_instrument(instrument_name)
+                instrument_name = toks[1].lower()
+                # Get the instrument object
+                instrument = self.retrieve_instrument(instrument_name)
         except:
             logging.error("Could not extract instrument name from %s", destination)
             logging.error(str(sys.exc_value))
