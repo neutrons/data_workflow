@@ -108,7 +108,7 @@ class ProcessingForm(forms.Form):
             file_path = "/%s/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
             (facility_name, str(instrument).upper(), ipts, run, str(instrument).upper(), run)
         else:
-            base_path = "/%s/%s/%s/nexus/" % (facility_name, str(instrument).upper(), ipts)
+            base_path = "/%s/%s/%s/nexus" % (facility_name, str(instrument).upper(), ipts)
             file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
         return file_path
 
