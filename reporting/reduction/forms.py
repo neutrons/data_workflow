@@ -126,6 +126,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     e_max = forms.FloatField(required=True, initial=0.95)
     tib_min = forms.CharField(required=False, initial="", validators=[validate_float_list])
     tib_max = forms.CharField(required=False, initial="", validators=[validate_float_list])
+    do_tib = forms.BooleanField(required=True)
     t0 = forms.CharField(required=False, initial="", validators=[validate_float_list])
     motor_names = forms.CharField(required=False, initial='huber,SERotator2,OxDilRot,CCR13VRot,SEOCRot,CCR10G2Rot,Ox2WeldRot,ThreeSampleRot')
     temperature_names = forms.CharField(required=False, initial='SampleTemp,sampletemp,SensorC,SensorB,SensorA,temp5,temp8')
@@ -144,7 +145,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     # List of field that are used in the template
     _template_list = ['mask', 'sub_directory', 'raw_vanadium', 'processed_vanadium', 'grouping',
                       'vanadium_integration_min', 'vanadium_integration_max',
-                      'tib_min', 'tib_max', 't0', 'motor_names', 'temperature_names',
+                      'tib_min', 'tib_max', 'do_tib', 't0', 'motor_names', 'temperature_names',
                       'create_elastic_nxspe', 'create_md_nxs',
                       'alpha', 'beta', 'gamma', 'auto_tzero_flag',
                       'u_vector', 'v_vector', 'e_pars_in_mev',

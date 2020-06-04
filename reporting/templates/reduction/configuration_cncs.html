@@ -74,6 +74,7 @@ Instrument team members can use this page to generate a new automated reduction 
     <tr class='tiny_input'><th>Time independent bck</th><td>
       <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.tib_min }} </span> 
       <span {% if options_form.tib_max.errors %}class='highlight_row' title='{{ options_form.tib_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.tib_max }} </span> 
+      &nbsp<span>Perform TIB</span> {{options_form.do_tib}}
       </td></tr>
     <tr class='tiny_input'><th>UB matrix</th><td> 
       <span {% if options_form.a.errors %}class='highlight_row' title='{{ options_form.a.errors|first }}'{% endif %}><span class='short_label'>a</span> {{options_form.a }} </span> 
