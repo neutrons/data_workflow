@@ -106,13 +106,11 @@ Instrument team members can use this page to generate a new automated reduction 
     <!-- tr><td colspan="2"><br>When using constant-Q binning, provide a cutoff above which it will be used.</td></tr -->
     <tr class='tiny_input'><th>Use constant-Q binning</th><td>{{ options_form.use_const_q }} </td></tr>
     <!--  Cutoff (1/&Aring;) {{ options_form.const_q_cutoff }}</td></tr> -->
+    <tr class='tiny_input'><th>Q step</th><td>{{ options_form.q_step }}</td></tr>
 
     <tr><td colspan="2"><br>Check the following box to see 2D plots on the monitor. Loading the page for
     each run will take much longer when this option is turned on.</td></tr>
     <tr class='tiny_input'><th>Show 2D plots</th><td>{{ options_form.plot_in_2D }}</td></tr>
-    <tr><td colspan="2"><br>Check the following box if you want to skip the data file conversion used to produce
-    files readable by the old QuickNXS.</td></tr>
-    <tr class='tiny_input'><th>Skip conversion for QuickNXS</th><td>{{ options_form.skip_quicknxs }} </td></tr>
   </table>
 <p>
 <span style="float: right; margin-left:15px;" >

@@ -235,10 +235,11 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     bck_min = forms.IntegerField(required=True, initial=5)
     bck_max = forms.IntegerField(required=True, initial=100)
     skip_quicknxs = forms.BooleanField(required=False, initial=False)
+    q_step = forms.FloatField(required=False, initial=-0.02)
 
     # List of field that are used in the template
     _template_list = ['use_sangle', 'use_const_q', 'const_q_cutoff', 'fit_peak_in_roi',
-                      'plot_in_2D', 'force_peak', 'peak_min', 'peak_max',
+                      'plot_in_2D', 'force_peak', 'peak_min', 'peak_max', 'q_step',
                       'force_background', 'bck_min', 'bck_max', 'use_roi_bck',
                       'use_side_bck', 'bck_width', 'skip_quicknxs']
 
