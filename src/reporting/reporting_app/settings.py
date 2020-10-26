@@ -149,7 +149,7 @@ AUTH_LDAP_USER_DN_TEMPLATE = ""
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = [ '.ornl.gov', '.sns.gov', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
