@@ -8,7 +8,7 @@ DATABASES['default']['CONN_MAX_AGE']=5
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = False
+DEBUG = os.environ.get('DEBUG')
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (

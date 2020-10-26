@@ -1,18 +1,20 @@
 
+import os
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',      #, 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'reporting_db',                      # Or path to database file if using sqlite3.
-        'USER': 'icat',                      # Not used with sqlite3.
-        'PASSWORD': 'icat',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',           #, 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': os.environ.get('DATABASE_NAME'),                      # Or path to database file if using sqlite3.
+        'USER': os.environ.get('DATABASE_USER'),                      # Not used with sqlite3.
+        'PASSWORD': os.environ.get('DATABASE_PASS'),                  # Not used with sqlite3.
+        'HOST': os.environ.get('DATABASE_HOST'),                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': os.environ.get('DATABASE_PORT'),                      # Set to empty string for default. Not used with sqlite3.
         }
 }
 
-SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
+SECRET_KEY = os.environ.get('APP_SECRET')
 
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = os.environ.get('TIME_ZONE')
 
 USE_TZ = True
 
