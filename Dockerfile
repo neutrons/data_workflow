@@ -9,4 +9,5 @@ WORKDIR /usr/src/data_workflow
 
 COPY ./src/. .
 COPY ./README.md .
+
 RUN pip install --no-cache-dir -r requirements.txt;
