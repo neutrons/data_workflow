@@ -27,7 +27,7 @@ class TestREFMForm(TestCase):
         for key in self.test_fields.keys():
             self.assertTrue(key in form.fields.keys())
 
-    def test_form_filles(self):
+    def test_form_filled(self):
         form = forms.ReductionConfigurationREFMForm(self.test_fields)
         form.full_clean()
         for key, val in self.test_fields.items():
