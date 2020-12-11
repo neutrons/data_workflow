@@ -1,0 +1,19 @@
+name: Trigger ORNL GitLab Pipeline
+on: [push]
+jobs:
+  trigger-ci-job-dev:
+    runs-on: self-hosted
+    steps:
+      - run: curl -X POST -F token=$TOKEN -F ref=$REF $URL 
+        env:
+          TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
+          REF: development
+          URL: ${{ secrets.GITLAB_TRIGGER_URL }}
+  trigger-ci-job-prod:
+    runs-on: self-hosted
+    steps:
+      - run: curl -X POST -F token=$TOKEN -F ref=$REF $URL 
+        env:
+          TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
+          REF: main
+          URL: ${{ secrets.GITLAB_TRIGGER_URL }}
