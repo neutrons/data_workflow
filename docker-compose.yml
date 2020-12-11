@@ -1,6 +1,14 @@
 version: '3'
 
 services:
+
+  nginx:
+    build: ./nginx/.
+    ports:
+      - 80:80
+    volumes:
+      - web-static:/var/www/workflow/static/
+
   web: 
     restart: always
     build: .
@@ -17,6 +25,7 @@ services:
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
       - db
+
   db:
     restart: always
     image: postgres:latest
