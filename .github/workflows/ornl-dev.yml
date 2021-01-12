@@ -1,0 +1,14 @@
+name: Trigger ORNL Development Pipeline
+on: 
+  push:
+    branches:
+      - development
+jobs:
+  ornl-trigger-dev:
+    runs-on: self-hosted
+    steps:
+      - run: curl -X POST -F token=$TOKEN -F ref=$REF $URL 
+        env:
+          TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
+          REF: development
+          URL: ${{ secrets.GITLAB_TRIGGER_URL }}
