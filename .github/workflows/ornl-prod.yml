@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   ornl-trigger-dev:
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     steps:
       - run: curl -X POST -F token=$TOKEN -F ref=$REF $URL 
         env:
