@@ -3,11 +3,12 @@ version: '3'
 services:
 
   nginx:
-    build: ./nginx/.
+    image: nginx
     ports:
       - 80:80
     volumes:
-      - web-static:/var/www/workflow/static/
+      - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
 
   web: 
     restart: always
