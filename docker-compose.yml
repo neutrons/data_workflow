@@ -1,6 +1,15 @@
 version: '3'
 
 services:
+
+  nginx:
+    image: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
+
   web: 
     restart: always
     build: .
@@ -17,6 +26,7 @@ services:
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
       - db
+
   db:
     restart: always
     image: postgres:latest
