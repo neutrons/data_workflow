@@ -3,6 +3,7 @@
 """
     Workflow manager process
 """
+import os
 import sys
 from multiprocessing import Process
 from amq_client import Client
@@ -21,7 +22,6 @@ from settings import LOGGING_LEVEL
 from daemon import Daemon
 from database import transactions
 
-import os
 import argparse
 import logging
 
