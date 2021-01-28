@@ -20,7 +20,7 @@ USE_TZ = True
 
 #Note: Django > 1.7 requires full package path 'workflow.database.report'
 INSTALLED_APPS = (
-    'report',
+    'workflow.database.report',
     )
 
 """
