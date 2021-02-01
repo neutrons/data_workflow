@@ -23,6 +23,19 @@ INSTALLED_APPS = (
     'workflow.database.report',
     )
 
+"""
+    ActiveMQ settings
+"""
+# List of brokers
+brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)] 
+
+icat_user = "icat"
+icat_passcode = "icat"
+wkflow_user = "wkflowmgr"
+wkflow_passcode = "wkflowmgr"
+worker_user = "worker"
+worker_passcode = "worker"
+
 # Import local settings if available
 try:
     from local_settings import *
