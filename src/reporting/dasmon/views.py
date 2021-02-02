@@ -13,6 +13,7 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.template import Context, loader
+from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django import forms
 
@@ -419,7 +420,7 @@ def get_signal_table(request, instrument):
         where the page requests a refresh while the cache hasn't yet been updated.
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    t = loader.get_template('dasmon/signal_table.html').render(ctx)
+    t = render_to_string('dasmon/signal_table.html', ctx)
     template_values = {'signals': view_util.get_signals(instrument_id)}
     template_values['is_instrument_staff'] = users.view_util.is_instrument_staff(request, instrument_id)
     c = Context(template_values)
