@@ -419,7 +419,7 @@ def get_signal_table(request, instrument):
         where the page requests a refresh while the cache hasn't yet been updated.
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    t = loader.get_template('dasmon/signal_table.html')
+    t = loader.get_template('dasmon/signal_table.html').render(ctx)
     template_values = {'signals': view_util.get_signals(instrument_id)}
     template_values['is_instrument_staff'] = users.view_util.is_instrument_staff(request, instrument_id)
     c = Context(template_values)
