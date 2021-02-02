@@ -20,14 +20,14 @@ USE_TZ = True
 
 #Note: Django > 1.7 requires full package path 'workflow.database.report'
 INSTALLED_APPS = (
-    'report',
+    'workflow.database.report',
     )
 
 """
     ActiveMQ settings
 """
 # List of brokers
-brokers = [("localhost", 61613)] 
+brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)] 
 
 icat_user = "icat"
 icat_passcode = "icat"

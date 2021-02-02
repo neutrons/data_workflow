@@ -10,4 +10,4 @@ done
 
 make install
 cd ${SETTINGS_DIR}
-python manage.py runserver 0.0.0.0:8000
+gunicorn reporting_app.wsgi:application --bind 0.0.0.0:8000
