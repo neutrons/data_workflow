@@ -1,4 +1,4 @@
-FROM centos:7.6.1810
+FROM centos:6
 
 RUN yum install -y epel-release; \
     yum groupinstall -y 'development tools'; \
