@@ -1,4 +1,4 @@
-FROM docker.io/library/centos:6
+FROM centos:7.6.1810
 
 RUN yum install -y epel-release; \
     yum groupinstall -y 'development tools'; \
