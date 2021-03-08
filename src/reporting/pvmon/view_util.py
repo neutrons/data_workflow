@@ -29,7 +29,10 @@ def get_live_variables(request, instrument_id, key_id=None):
             for key in live_keys_str:
                 key = key.strip()
                 if len(key) == 0: continue
-                key_ids = PVName.objects.filter(name__iexact=key)
+                # First try exact match, if no match than try case-insensitive exact match
+                key_ids = PVName.objects.filter(name__exact=key)
+                if len(key_ids) == 0:
+                    key_ids = PVName.objects.filter(name__iexact=key)
                 if len(key_ids) > 0:
                     key_id = key_ids[0]
                 else:

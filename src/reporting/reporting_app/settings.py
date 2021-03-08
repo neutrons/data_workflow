@@ -8,7 +8,7 @@ DATABASES['default']['CONN_MAX_AGE']=5
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = False
+DEBUG = os.environ.get('DEBUG')
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -21,7 +21,7 @@ MANAGERS = ADMINS
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = os.environ.get('TIME_ZONE')
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -149,7 +149,7 @@ AUTH_LDAP_USER_DN_TEMPLATE = ""
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = [ '.ornl.gov', '.sns.gov', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ''
