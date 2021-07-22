@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 #pylint: disable=too-many-locals, too-many-statements, bare-except, invalid-name
 """
     Perform DB transactions
@@ -295,4 +297,4 @@ def sql_dump_tasks():
     fd.write(sql)
     fd.close()
 
-    print sql
+    print(sql)

@@ -8,7 +8,7 @@ DATABASES['default']['CONN_MAX_AGE'] = 25
 
 SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
 
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = 'America/New York'
 
 USE_TZ = True
 

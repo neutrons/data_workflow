@@ -38,8 +38,8 @@ clean:
 install: check clean workflow webapp
 
 test: install
-    # Install test directories
-    cp -R reporting/tests $(prefix)/app
+	# Install test directories
+	cp -R reporting/tests $(prefix)/app
 
 dasmonlistener: webapp/core
 	# Install DASMON listener
