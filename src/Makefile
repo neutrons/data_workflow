@@ -84,7 +84,8 @@ ifeq ($(HAS_MIGRATIONS),1)
 	cd $(prefix)/app; python manage.py makemigrations
 	cd $(prefix)/app; python manage.py migrate
 else
-	cd $(prefix)/app; python manage.py syncdb
+	cd $(prefix)/app; python manage.py syncdb --noinput
+	cd $(prefix)/app; echo "from django.contrib.auth.models import User; User.objects.create_superuser('${DATABASE_USER}', 'workflow@example.com', '${DATABASE_PASS}')" | python manage.py shell
 endif
 	
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
@@ -101,3 +102,4 @@ endif
 .PHONY: webapp
 .PHONY: webapp/core
 .PHONY: dasmonlistener
+.PHONY: test
