@@ -89,7 +89,7 @@ else
 endif
 	
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
-	#cd $(prefix)/app; python manage.py createcachetable webcache
+	cd $(prefix)/app; python manage.py createcachetable webcache
 	
 	# Modify and copy the wsgi configuration
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
