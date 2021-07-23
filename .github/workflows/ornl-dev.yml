@@ -2,13 +2,9 @@ name: Trigger ORNL Development Pipeline
 on: 
   push:
     branches:
-      - development
+      - dev
 jobs:
   ornl-trigger-dev:
     runs-on: ubuntu-20.04
     steps:
-      - run: curl -X POST -F token=$TOKEN -F ref=$REF $URL 
-        env:
-          TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
-          REF: development
-          URL: ${{ secrets.GITLAB_TRIGGER_URL }}
+      - run: curl -sX POST -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} -F ref=dev ${{ secrets.GITLAB_TRIGGER_URL }} > /dev/null
