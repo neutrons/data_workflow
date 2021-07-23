@@ -8,6 +8,10 @@ done
   
 >&2 echo "Postgres is up - executing command"
 
-make install
+if [ ! -f /tmp/installed ]; then
+  make install
+  touch /tmp/installed
+fi
 cd ${SETTINGS_DIR}
+
 gunicorn reporting_app.wsgi:application --bind 0.0.0.0:8000
