@@ -9,6 +9,7 @@ done
 >&2 echo "Postgres is up - executing command"
 
 if [ ! -f /tmp/installed ]; then
+  #sed -i '/django_auth_ldap.backend.LDAPBackend/s/^/#/g' reporting/reporting_app/settings.py 
   make install
   touch /tmp/installed
 fi
