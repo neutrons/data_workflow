@@ -85,11 +85,11 @@ ifeq ($(HAS_MIGRATIONS),1)
 	cd $(prefix)/app; python manage.py migrate
 else
 	cd $(prefix)/app; python manage.py syncdb --noinput
-	cd $(prefix)/app; echo "from django.contrib.auth.models import User; User.objects.create_superuser('${DATABASE_USER}', 'workflow@example.com', '${DATABASE_PASS}')" | python manage.py shell
 endif
 	
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
 	cd $(prefix)/app; python manage.py createcachetable webcache
+	cd $(prefix)/app; echo "from django.contrib.auth.models import User; User.objects.create_superuser('${DATABASE_USER}', 'workflow@example.com', '${DATABASE_PASS}')" | python manage.py shell
 	
 	# Modify and copy the wsgi configuration
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d

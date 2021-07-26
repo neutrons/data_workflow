@@ -29,7 +29,7 @@ services:
 
   db:
     restart: always
-    image: postgres:latest
+    image: postgres:9.6.22
     environment:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASS}
