@@ -10,9 +10,11 @@ services:
       - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
       - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
 
-  web: 
+  webmon: 
     restart: always
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.webmon
     expose:
       - "8000"
     ports: 
@@ -20,13 +22,26 @@ services:
     volumes:
       - web-django:/var/www/workflow/app
       - web-static:/var/www/workflow/static/
-      - ./src/docker-entrypoint.sh:/usr/bin/docker-entrypoint.sh
+      - ./src/reporting/docker-entrypoint.sh:/usr/bin/docker-entrypoint.sh
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
       - db
 
+  dasmon: 
+    restart: always
+    build: 
+      context: .
+      dockerfile: Dockerfile.dasmon
+    volumes:
+      - ./src/dasmon_listener/docker-entrypoint.sh:/usr/bin/docker-entrypoint.sh
+    env_file:
+      - .env
+    command: /usr/bin/docker-entrypoint.sh
+    depends_on:
+      - db
+  
   db:
     restart: always
     image: postgres:9.6.22
