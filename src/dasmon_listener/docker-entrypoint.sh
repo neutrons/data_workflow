@@ -8,4 +8,9 @@ done
   
 >&2 echo "Postgres is up - executing command"
 
+if [ ! -f /tmp/installed ]; then
+  make dasmonlistener
+  touch /tmp/installed
+fi
+cd /var/log
 /usr/bin/dasmon_listener start && tail -F /var/log/dasmon_listener.log
