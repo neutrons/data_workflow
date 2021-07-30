@@ -15,4 +15,3 @@ RUN make clean; \
     make dasmonlistener
 
 WORKDIR /var/log
-CMD /usr/bin/dasmon_listener start && tail -F /var/log/dasmon_listener.log
