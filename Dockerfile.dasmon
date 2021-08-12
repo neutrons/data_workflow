@@ -10,9 +10,3 @@ RUN yum install -y epel-release; \
 WORKDIR /usr/src/data_workflow
 COPY ./src/. .
 COPY README.md .
-
-RUN make clean; \
-    make dasmonlistener
-
-WORKDIR /var/log
-CMD /usr/bin/dasmon_listener start && tail -F /var/log/dasmon_listener.log
