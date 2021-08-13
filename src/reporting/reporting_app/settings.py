@@ -3,7 +3,8 @@ import os
 import django
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
-DATABASES['default']['CONN_MAX_AGE']=5
+#DATABASES['default']['CONN_MAX_AGE']=5
+DATABASES['default']['CONN_MAX_AGE']=None
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
