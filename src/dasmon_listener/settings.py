@@ -4,8 +4,8 @@ import django
 
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
-#DATABASES['default']['CONN_MAX_AGE'] = 25
-DATABASES['default']['CONN_MAX_AGE'] = None
+DATABASES['default']['CONN_MAX_AGE'] = 25
+#DATABASES['default']['CONN_MAX_AGE'] = None
 
 SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
 
