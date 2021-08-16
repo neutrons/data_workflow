@@ -14,7 +14,4 @@ if [ ! -f /tmp/installed ]; then
 fi
 cd ${SETTINGS_DIR}
 
-# let's try apache
-# gunicorn reporting_app.wsgi:application --bind 0.0.0.0:8000
-
-/usr/sbin/httpd -DFOREGROUND
+gunicorn reporting_app.wsgi:application --bind 0.0.0.0:8000
