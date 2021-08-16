@@ -17,4 +17,4 @@ cd ${SETTINGS_DIR}
 # let's try apache
 # gunicorn reporting_app.wsgi:application --bind 0.0.0.0:8000
 
-mod_wsgi-express start-server /usr/src/data_workflow/reporting/reporting_app/wsgi.py --user apache --group apache
+/usr/sbin/httpd -DFOREGROUND
