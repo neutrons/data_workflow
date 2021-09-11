@@ -126,7 +126,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     e_max = forms.FloatField(required=True, initial=0.95)
     tib_min = forms.CharField(required=False, initial="", validators=[validate_float_list])
     tib_max = forms.CharField(required=False, initial="", validators=[validate_float_list])
-    do_tib = forms.BooleanField(required=True)
+    do_tib = forms.BooleanField(required=False)
     t0 = forms.CharField(required=False, initial="", validators=[validate_float_list])
     motor_names = forms.CharField(required=False, initial='huber,SERotator2,OxDilRot,CCR13VRot,SEOCRot,CCR10G2Rot,Ox2WeldRot,ThreeSampleRot')
     temperature_names = forms.CharField(required=False, initial='SampleTemp,sampletemp,SensorC,SensorB,SensorA,temp5,temp8')
