@@ -1,8 +1,8 @@
 name: Trigger ORNL Development Pipeline
-on: 
+on:
   push:
     branches:
-      - dev
+      - next
 jobs:
   ornl-trigger-dev:
     runs-on: ubuntu-20.04
