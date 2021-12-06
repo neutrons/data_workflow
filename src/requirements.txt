@@ -34,7 +34,7 @@ pycurl==7.19.0
 pygobject==3.22.0
 pygpgme==0.3
 pyliblzma==0.5.3
-python-ldap==2.4.15
+python-ldap==3.4.0
 pytz==2018.7
 pyxattr==0.5.1
 requests==2.18.4
