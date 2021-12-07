@@ -1,13 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class TruncatingCharField(models.CharField):
     def get_prep_value(self, value):
-        value = super(TruncatingCharField,self).get_prep_value(value)
+        value = super(TruncatingCharField, self).get_prep_value(value)
         if value:
             return value[:self.max_length]
         return value
-    
+
+
 class PageView(models.Model):
     user = models.ForeignKey(User, null=True)
     view = TruncatingCharField(max_length=64)
@@ -15,12 +17,14 @@ class PageView(models.Model):
     ip = models.CharField(max_length=64)
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
 
+
 class DeveloperNode(models.Model):
     """
         Table of IP names recognized as developer nodes
     """
     ip = models.CharField(max_length=64)
-    
+
+
 class SiteNotification(models.Model):
     message = models.TextField()
     is_active = models.BooleanField(default=False)

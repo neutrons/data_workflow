@@ -7,6 +7,7 @@ import sys
 from django.conf import settings
 import logging
 
+
 def send_activemq_message(destination, data):
     """
         Send an AMQ message to the workflow manager.
@@ -16,7 +17,7 @@ def send_activemq_message(destination, data):
     """
     from workflow.settings import brokers, icat_user, icat_passcode
     import stomp
-    if stomp.__version__[0]<4:
+    if stomp.__version__[0] < 4:
         # Shuffle the brokers so that we make sure we never get stuck
         # regardless of configuration and network problem.
         import random
@@ -35,6 +36,7 @@ def send_activemq_message(destination, data):
         conn.connect(icat_user, icat_passcode, wait=True)
         conn.send(destination, data, persistent='true')
     conn.disconnect()
+
 
 def reduction_setup_url(instrument):
     """

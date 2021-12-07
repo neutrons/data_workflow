@@ -1,4 +1,3 @@
-#pylint: disable=bare-except, too-many-locals, line-too-long, too-many-branches, too-many-arguments, too-many-statements
 """
     Automated reduction configuration view
 
@@ -26,6 +25,7 @@ from . import view_util
 import users.view_util
 import dasmon.view_util
 
+
 @users.view_util.login_or_local_required
 def configuration(request, instrument):
     """
@@ -52,28 +52,30 @@ def configuration(request, instrument):
     for item in props_list:
         params_list.append({"key": str(item.key),
                             "raw_value": str(item.value),
-                            "value": "<form action='javascript:void(0);' onsubmit='update(this);'><input type='hidden' name='key' value='%s'><input title='Hit enter to apply changes to your local session' type='text' name='value' value='%s'></form>" % (str(item.key), str(item.value))})
+                            "value": "<form action='javascript:void(0);' onsubmit='update(this);'><input type='hidden' name='key' value='%s'><input title='Hit enter to apply changes to your local session' type='text' name='value' value='%s'></form>" % (str(item.key), str(item.value))})  # noqa: E501
 
     last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
-                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
-    if len(action_list)>0:
-        last_action = action_list[len(action_list)-1]['timestamp']
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX + 'postprocessing')
+    if len(action_list) > 0:
+        last_action = action_list[len(action_list) - 1]['timestamp']
 
     # Breadcrumbs
-    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse('report:instrument_summary', args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
                        'helpline': settings.HELPLINE_EMAIL,
                        'params_list': params_list,
-                       'action_list': action_list ,
+                       'action_list': action_list,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, 'reduction/configuration.html', template_values)
+
 
 @users.view_util.login_or_local_required
 def configuration_ref_m(request, instrument):
@@ -93,7 +95,7 @@ def configuration_ref_m(request, instrument):
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
             return redirect(reverse('reduction:configuration', args=[instrument]))
-        elif request.POST["button_choice"]=="reset":
+        elif request.POST["button_choice"] == "reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
             return redirect(reverse('reduction:configuration', args=[instrument]))
@@ -121,26 +123,28 @@ def configuration_ref_m(request, instrument):
 
     last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
-                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
-    if len(action_list)>0:
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX + 'postprocessing')
+    if len(action_list) > 0:
         last_action = action_list[-1]['timestamp']
         action_list = action_list[-1:]
 
     # Breadcrumbs
-    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse('report:instrument_summary', args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
                        'helpline': settings.HELPLINE_EMAIL,
                        'options_form': options_form,
-                       'action_list': action_list ,
+                       'action_list': action_list,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
-                       'user_alert':error_msg}
+                       'user_alert': error_msg}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, 'reduction/configuration_ref_m.html', template_values)
+
 
 @users.view_util.login_or_local_required
 def configuration_cncs(request, instrument):
@@ -160,7 +164,7 @@ def configuration_cncs(request, instrument):
         extra = int(request.GET.get('extra', default_extra))
     except:
         extra = default_extra
-    #pylint: disable=invalid-name
+    # pylint: disable=invalid-name
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
 
     error_msg = []
@@ -168,7 +172,7 @@ def configuration_cncs(request, instrument):
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
             return redirect(reverse('reduction:configuration', args=[instrument]))
-        elif request.POST["button_choice"]=="reset":
+        elif request.POST["button_choice"] == "reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
             return redirect(reverse('reduction:configuration', args=[instrument]))
@@ -203,24 +207,25 @@ def configuration_cncs(request, instrument):
 
     last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
-                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
-    if len(action_list)>0:
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX + 'postprocessing')
+    if len(action_list) > 0:
         last_action = action_list[-1]['timestamp']
         action_list = action_list[-1:]
 
     # Breadcrumbs
-    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse('report:instrument_summary', args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
                        'helpline': settings.HELPLINE_EMAIL,
                        'options_form': options_form,
                        'mask_form': mask_form,
-                       'action_list': action_list ,
+                       'action_list': action_list,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
-                       'user_alert':error_msg}
+                       'user_alert': error_msg}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, 'reduction/configuration_cncs.html', template_values)
@@ -244,7 +249,7 @@ def configuration_dgs(request, instrument):
         extra = int(request.GET.get('extra', default_extra))
     except:
         extra = default_extra
-    #pylint: disable=invalid-name
+    # pylint: disable=invalid-name
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra)
 
     error_msg = []
@@ -252,7 +257,7 @@ def configuration_dgs(request, instrument):
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
             return redirect(reverse('reduction:configuration', args=[instrument]))
-        elif request.POST["button_choice"]=="reset":
+        elif request.POST["button_choice"] == "reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
             return redirect(reverse('reduction:configuration', args=[instrument]))
@@ -293,24 +298,25 @@ def configuration_dgs(request, instrument):
 
     last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
-                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
-    if len(action_list)>0:
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX + 'postprocessing')
+    if len(action_list) > 0:
         last_action = action_list[-1]['timestamp']
         action_list = action_list[-1:]
 
     # Breadcrumbs
-    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse('report:instrument_summary', args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
                        'helpline': settings.HELPLINE_EMAIL,
                        'options_form': options_form,
                        'mask_form': mask_form,
-                       'action_list': action_list ,
+                       'action_list': action_list,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
-                       'user_alert':error_msg}
+                       'user_alert': error_msg}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     if instrument.lower() == 'seq':
@@ -342,7 +348,7 @@ def configuration_corelli(request, instrument):
         extra_orientation = int(request.GET.get('extra_orientation', default_extra))
     except:
         extra_orientation = default_extra
-    #pylint: disable=invalid-name
+    # pylint: disable=invalid-name
     MaskFormSet = formset_factory(forms.MaskForm, extra=extra_mask)
     PlotFormSet = formset_factory(forms.PlottingForm, extra=extra_orientation)
 
@@ -351,7 +357,7 @@ def configuration_corelli(request, instrument):
         if "button_choice" not in request.POST:
             logging.error("Received incomplete POST request without a button_choice")
             return redirect(reverse('reduction:configuration', args=[instrument]))
-        elif request.POST["button_choice"]=="reset":
+        elif request.POST["button_choice"] == "reset":
             # Reset form parameters with default
             view_util.reset_to_default(instrument_id)
             return redirect(reverse('reduction:configuration', args=[instrument]))
@@ -397,14 +403,15 @@ def configuration_corelli(request, instrument):
 
     last_action = datetime.datetime.now().isoformat()
     action_list = dasmon.view_util.get_latest_updates(instrument_id,
-                                                      message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing')
-    if len(action_list)>0:
+                                                      message_channel=settings.SYSTEM_STATUS_PREFIX + 'postprocessing')
+    if len(action_list) > 0:
         last_action = action_list[-1]['timestamp']
         action_list = action_list[-1:]
 
     # Breadcrumbs
-    breadcrumbs =  "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (reverse('report:instrument_summary',args=[instrument]), instrument)
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse('report:instrument_summary', args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; configuration"
 
     template_values = {'instrument': instrument.upper(),
@@ -412,13 +419,14 @@ def configuration_corelli(request, instrument):
                        'options_form': options_form,
                        'mask_form': mask_form,
                        'plot_form': plot_form,
-                       'action_list': action_list ,
+                       'action_list': action_list,
                        'last_action_time': last_action,
                        'breadcrumbs': breadcrumbs,
-                       'user_alert':error_msg}
+                       'user_alert': error_msg}
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, 'reduction/configuration_corelli.html', template_values)
+
 
 @csrf_exempt
 @users.view_util.login_or_local_required_401
@@ -443,7 +451,7 @@ def configuration_change(request, instrument):
         # Check whether the user wants to install the default script
         if 'use_default' in request.POST:
             try:
-                template_dict['use_default'] = int(request.POST['use_default'])==1
+                template_dict['use_default'] = int(request.POST['use_default']) == 1
             except:
                 logging.error("Error parsing use_default parameter: %s", sys.exc_value)
         # Send ActiveMQ request
@@ -458,8 +466,9 @@ def configuration_change(request, instrument):
     response['Connection'] = 'close'
     return response
 
+
 @users.view_util.login_or_local_required_401
-#@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+# @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def configuration_update(request, instrument):
     """
         AJAX call that returns an updated list of recent actions taken
@@ -471,15 +480,16 @@ def configuration_update(request, instrument):
     last_action = request.GET.get('since', '0')
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     action_list = []
-    if last_action is not '0':
+    if last_action != '0':
         start_time = dateparse.parse_datetime(last_action)
         start_time = timezone.make_aware(start_time, timezone.utc)
         action_list = dasmon.view_util.get_latest_updates(instrument_id,
-                                                          message_channel=settings.SYSTEM_STATUS_PREFIX+'postprocessing',
+                                                          message_channel=settings.SYSTEM_STATUS_PREFIX +
+                                                          'postprocessing',
                                                           start_time=start_time)
     data_dict = {'last_action_time': last_action, 'refresh_needed': '0'}
-    if len(action_list)>0:
-        data_dict['last_action_time'] = action_list[len(action_list)-1]['timestamp']
+    if len(action_list) > 0:
+        data_dict['last_action_time'] = action_list[len(action_list) - 1]['timestamp']
         data_dict['refresh_needed'] = '1'
     data_dict['actions'] = action_list
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")

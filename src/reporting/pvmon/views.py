@@ -16,6 +16,7 @@ import report.view_util
 import users.view_util
 import dasmon.view_util
 
+
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
@@ -30,13 +31,14 @@ def pv_monitor(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
     # DASMON Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
-            reverse('report:instrument_summary', args=[instrument]), instrument.lower(), "monitor")
-    template_values = {'instrument':instrument.upper(),
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; <a href='%s'>%s</a> &rsaquo; %s" % (
+        reverse(settings.LANDING_VIEW),
+        reverse('report:instrument_summary', args=[instrument]), instrument.lower(), "monitor")
+    template_values = {'instrument': instrument.upper(),
                        'breadcrumbs': breadcrumbs,
-                       'update_url':reverse('pvmon:get_update', args=[instrument]),
-                       'key_value_pairs':view_util.get_cached_variables(instrument_id, True),
-                      }
+                       'update_url': reverse('pvmon:get_update', args=[instrument]),
+                       'key_value_pairs': view_util.get_cached_variables(instrument_id, True),
+                       }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
@@ -67,7 +69,7 @@ def get_update(request, instrument):
     recording_status = {"key": "recording_status",
                         "value": dasmon.view_util.is_running(instrument_id),
                         "timestamp": df.format(settings.DATETIME_FORMAT),
-                       }
+                        }
     data_dict['variables'].append(recording_status)
 
     # Get current DAS health status

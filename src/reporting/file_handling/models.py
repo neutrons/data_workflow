@@ -11,15 +11,16 @@ from django.conf import settings
 from django.dispatch import receiver
 import os
 
+
 class JsonData(models.Model):
     """
         Table of JSON data received from the reduction
     """
-    ## DataRun this run status belongs to
+    # DataRun this run status belongs to
     run_id = models.ForeignKey(DataRun)
-    ## JSON data
+    # JSON data
     data = models.TextField()
-    ## Original name
+    # Original name
     name = models.CharField(max_length=100)
     created_on = models.DateTimeField('Timestamp', auto_now=True)
 
@@ -29,11 +30,11 @@ class ReducedImage(models.Model):
         Table of image files corresponding to plots of reduced
         data for a given run.
     """
-    ## DataRun this run status belongs to
+    # DataRun this run status belongs to
     run_id = models.ForeignKey(DataRun)
-    ## Data file
+    # Data file
     file = models.FileField(upload_to='images', storage=FileSystemStorage())
-    ## Original name
+    # Original name
     name = models.CharField(max_length=100)
     created_on = models.DateTimeField('Timestamp', auto_now=True)
 
@@ -59,6 +60,8 @@ class ReducedImage(models.Model):
     file_size.short_description = "Bytes"
 
 # These two auto-delete files from filesystem when they are unneeded:
+
+
 @receiver(models.signals.post_delete, sender=ReducedImage)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
     """
@@ -68,6 +71,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     if instance.file:
         if os.path.isfile(instance.file.path):
             os.remove(instance.file.path)
+
 
 @receiver(models.signals.pre_save, sender=ReducedImage)
 def auto_delete_file_on_change(sender, instance, **kwargs):

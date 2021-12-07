@@ -6,6 +6,7 @@
 from django.db import models
 from report.models import Instrument
 
+
 class Parameter(models.Model):
     """
         Table holding the names of the measured quantities
@@ -41,6 +42,7 @@ class ActiveInstrumentManager(models.Manager):
     """
         Table of options for instruments
     """
+
     def is_alive(self, instrument_id):
         """
             Returns True if the instrument should be presented as part of the suite of instruments
@@ -107,6 +109,7 @@ class Signal(models.Model):
     message = models.CharField(max_length=250)
     level = models.IntegerField()
     timestamp = models.DateTimeField('timestamp')
+
 
 class LegacyURL(models.Model):
     """

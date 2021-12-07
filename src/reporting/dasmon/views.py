@@ -1,4 +1,4 @@
-#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except
+# pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except
 """
     Live monitoring
 """
@@ -16,13 +16,14 @@ from django.template import Context, loader
 from django.contrib.auth.decorators import login_required
 from django import forms
 
-from report.models import Instrument, DataRun
+from report.models import Instrument
 import report.view_util
 from users.models import SiteNotification
 import users.view_util
 from dasmon.models import ActiveInstrument, Signal, UserNotification
 from . import view_util
 from . import legacy_status
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -39,11 +40,12 @@ def dashboard(request):
                        'data': view_util.get_dashboard_data(),
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
                        'postprocess_status': view_util.get_system_health(),
-                       'update_url': reverse('dasmon:dashboard_update')+'?plots',
+                       'update_url': reverse('dasmon:dashboard_update') + '?plots',
                        'central_services_url': reverse('dasmon:diagnostics', args=['common'])
-                      }
+                       }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'dasmon/dashboard.html', template_values)
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -57,16 +59,17 @@ def dashboard_simple(request):
     # Get the system health status
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
     instrument_data = view_util.get_instrument_status_summary()
-    cutoff = int(len(instrument_data)/2)
+    cutoff = int(len(instrument_data) / 2)
     template_values = {'instruments_left': instrument_data[:cutoff],
                        'instruments_right': instrument_data[cutoff:],
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
                        'postprocess_status': view_util.get_system_health(),
                        'update_url': reverse('dasmon:dashboard_update'),
                        'central_services_url': reverse('dasmon:diagnostics', args=['common'])
-                      }
+                       }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'dasmon/dashboard_simple.html', template_values)
+
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -76,15 +79,16 @@ def dashboard_update(request):
          Response to AJAX call to get updated health info for all instruments
     """
     # Get the system health status
-    data_dict = {'instruments':view_util.get_instrument_status_summary(),
-                 'postprocess_status':view_util.get_system_health(),
-                }
+    data_dict = {'instruments': view_util.get_instrument_status_summary(),
+                 'postprocess_status': view_util.get_system_health(),
+                 }
     if 'plots' in request.GET:
         data_dict['instrument_rates'] = view_util.get_dashboard_data()
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -103,9 +107,10 @@ def expert_status(request):
                        'postprocess_status': view_util.get_system_health(),
                        'update_url': reverse('dasmon:dashboard_update'),
                        'central_services_url': reverse('dasmon:diagnostics', args=['common'])
-                      }
+                       }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'dasmon/expert_status.html', template_values)
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -129,9 +134,10 @@ def run_summary(request):
                        'base_instrument_url': base_instr_url,
                        'base_run_url': base_run_url,
                        'breadcrumbs': "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
-                      }
+                       }
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'dasmon/run_summary.html', template_values)
+
 
 @users.view_util.login_or_local_required_401
 def run_summary_update(request):
@@ -145,6 +151,7 @@ def run_summary_update(request):
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
     return response
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
@@ -162,10 +169,10 @@ def legacy_monitor(request, instrument):
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     kvp = legacy_status.get_ops_status(instrument_id)
     template_values = {'instrument': instrument.upper(),
-                       'breadcrumbs':breadcrumbs,
+                       'breadcrumbs': breadcrumbs,
                        'update_url': update_url,
                        'legacy_update_url': legacy_update_url,
-                       'key_value_pairs':kvp}
+                       'key_value_pairs': kvp}
     if len(kvp) == 0:
         inst_url = legacy_status.get_legacy_url(instrument_id)
         template_values['user_alert'] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
@@ -184,6 +191,7 @@ def legacy_monitor(request, instrument):
 
     return render(request, 'dasmon/legacy_monitor.html', template_values)
 
+
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
@@ -196,6 +204,7 @@ def get_legacy_data(request, instrument):
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     return response
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
@@ -215,11 +224,11 @@ def live_monitor(request, instrument):
 
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {'instrument': instrument.upper(),
-                       'breadcrumbs':breadcrumbs,
+                       'breadcrumbs': breadcrumbs,
                        'update_url': update_url,
                        'pv_url': pv_url,
                        'key_value_pairs': view_util.get_cached_variables(instrument_id, monitored_only=True),
-                      }
+                       }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
@@ -227,6 +236,7 @@ def live_monitor(request, instrument):
     template_values['signals_url'] = reverse('dasmon:get_signal_table', args=[instrument])
 
     return render(request, 'dasmon/live_monitor.html', template_values)
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
@@ -267,13 +277,13 @@ def live_runs(request, instrument):
         return response
 
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
-    template_values = {'instrument':instrument.upper(),
-                       'breadcrumbs':breadcrumbs,
-                       'update_url':update_url,
-                       'run_list':run_list,
-                       'first_run_id':first_run,
+    template_values = {'instrument': instrument.upper(),
+                       'breadcrumbs': breadcrumbs,
+                       'update_url': update_url,
+                       'run_list': run_list,
+                       'first_run_id': first_run,
                        'last_run_id': last_run
-                      }
+                       }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
@@ -297,7 +307,7 @@ def user_help(request):
                        'hysa_live_monitor_url': hysa_live_monitor_url,
                        'hysa_live_runs_url': hysa_live_runs_url,
                        'breadcrumbs': breadcrumbs,
-                      }
+                       }
     template_values = users.view_util.fill_template_values(request, **template_values)
 
     return render(request, 'dasmon/help.html', template_values)
@@ -322,9 +332,9 @@ def diagnostics(request, instrument):
     red_diag = view_util.postprocessing_diagnostics()
 
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id, 'diagnostics')
-    template_values = {'instrument':instrument.upper(),
-                       'breadcrumbs':breadcrumbs,
-                      }
+    template_values = {'instrument': instrument.upper(),
+                       'breadcrumbs': breadcrumbs,
+                       }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
@@ -342,8 +352,9 @@ def diagnostics(request, instrument):
             template_values['pvsd_diagnostics'] = view_util.pvstreamer_diagnostics(instrument_id, process='pvsd')
         # Actions messages
         if dasmon_diag['dasmon_listener_warning'] \
-            and wf_diag['dasmon_listener_warning']:
-            actions.append("Multiple heartbeat message failures: ask Linux Support to restart dasmon_listener before proceeding")
+                and wf_diag['dasmon_listener_warning']:
+            actions.append(
+                "Multiple heartbeat message failures: ask Linux Support to restart dasmon_listener before proceeding")
 
     template_values['wf_diagnostics'] = wf_diag
     template_values['post_diagnostics'] = red_diag
@@ -378,7 +389,7 @@ def get_update(request, instrument):
     recording_status = {"key": "recording_status",
                         "value": view_util.is_running(instrument_id),
                         "timestamp": df.format(settings.DATETIME_FORMAT),
-                       }
+                        }
     data_dict['variables'].append(recording_status)
 
     # Get current DAS health status
@@ -400,9 +411,9 @@ def summary_update(request):
          Response to AJAX call to get updated health info for all instruments
     """
     # Get the system health status
-    data_dict = {'instruments':view_util.get_instrument_status_summary(),
-                 'postprocess_status':view_util.get_system_health()
-                }
+    data_dict = {'instruments': view_util.get_instrument_status_summary(),
+                 'postprocess_status': view_util.get_system_health()
+                 }
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)
@@ -445,6 +456,7 @@ def acknowledge_signal(request, instrument, sig_id):
     except:
         logging.error("ACK signal %s/%s: %s" % (instrument, sig_id, sys.exc_value))
     return HttpResponse()
+
 
 @login_required
 def notifications(request):

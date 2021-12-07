@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, invalid-name, too-many-nested-blocks, too-many-locals, too-many-branches, line-too-long
+# pylint: disable=bare-except, invalid-name, too-many-nested-blocks, too-many-locals, too-many-branches, line-too-long
 """
     Optional utilities to communicate with ONcat.
     ONcat is an online data catalog used internally at ORNL.
@@ -36,6 +36,7 @@ def decode_time(timestamp):
         logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_value)
         return None
 
+
 def get_run_info(instrument, ipts, run_number):
     """
         Legacy issue:
@@ -52,6 +53,7 @@ def get_run_info(instrument, ipts, run_number):
         facility = settings.FACILITY_INFO.get(instrument, 'SNS')
     return _get_run_info(instrument, ipts, run_number, facility)
 
+
 def _get_run_info(instrument, ipts, run_number, facility='SNS'):
     """
         Get ONCat info for the specified run
@@ -67,35 +69,35 @@ def _get_run_info(instrument, ipts, run_number, facility='SNS'):
             settings.CATALOG_URL,
             # Here we're using the machine-to-machine "Client Credentials" flow,
             # which requires a client ID and secret, but no *user* credentials.
-            flow = pyoncat.CLIENT_CREDENTIALS_FLOW,
-            client_id = settings.CATALOG_ID,
-            client_secret = settings.CATALOG_SECRET,
+            flow=pyoncat.CLIENT_CREDENTIALS_FLOW,
+            client_id=settings.CATALOG_ID,
+            client_secret=settings.CATALOG_SECRET,
         )
         oncat.login()
 
         datafiles = oncat.Datafile.list(
-            facility = facility,
-            instrument = instrument.upper(),
+            facility=facility,
+            instrument=instrument.upper(),
 
             # Specifying the exact IPTS that contains the runs you need is optional,
             # but you should provide one if that information is available -- this will
             # mean ONCat can respond quicker because it has to look in fewer places.
-            experiment = ipts,
+            experiment=ipts,
 
             # We are only interested in the location of "raw" .nxs.h5 files.
-            projection = ['experiment', 'location',
-                          'metadata.entry.title',
-                          'metadata.entry.duration',
-                          'metadata.entry.total_counts',
-                          'metadata.entry.proton_charge',
-                          'metadata.entry.start_time',
-                          'metadata.entry.end_time',
-                          ],
-            tags = ['type/raw'],
-            #exts = ['.nxs.h5'],
+            projection=['experiment', 'location',
+                        'metadata.entry.title',
+                        'metadata.entry.duration',
+                        'metadata.entry.total_counts',
+                        'metadata.entry.proton_charge',
+                        'metadata.entry.start_time',
+                        'metadata.entry.end_time',
+                        ],
+            tags=['type/raw'],
+            # exts = ['.nxs.h5'],
 
             # Specify the list of ranges of run numbers we want.
-            ranges_q = 'indexed.run_number:%s' % str(run_number)
+            ranges_q='indexed.run_number:%s' % str(run_number)
         )
 
         run_info['data_files'] = []

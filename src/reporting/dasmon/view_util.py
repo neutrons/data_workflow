@@ -1,4 +1,3 @@
-#pylint: disable=too-many-branches, too-many-lines, line-too-long, too-many-locals, too-many-statements, bare-except, invalid-name
 """
     Status monitor utilities to support 'dasmon' views
 
@@ -21,6 +20,7 @@ import report.view_util
 import pvmon.view_util
 import users.view_util
 
+
 def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
     """
         Create breadcrumbs for a live monitoring view
@@ -36,6 +36,7 @@ def get_monitor_breadcrumbs(instrument_id, current_view='monitor'):
         breadcrumbs += " &rsaquo; %s" % instrument_id.name
     breadcrumbs += " &rsaquo; %s" % current_view
     return breadcrumbs
+
 
 def get_cached_variables(instrument_id, monitored_only=False):
     """
@@ -69,10 +70,11 @@ def get_cached_variables(instrument_id, monitored_only=False):
             variable_dict = {"key": str(kvp.key_id),
                              "value": string_value,
                              "timestamp": df.format(settings.DATETIME_FORMAT),
-                            }
+                             }
             key_value_pairs.append(variable_dict)
 
     return key_value_pairs
+
 
 def _prune_title_string(value):
     """
@@ -93,6 +95,7 @@ def _prune_title_string(value):
             return pruned
     except:
         return value
+
 
 def get_latest(instrument_id, key_id):
     """
@@ -121,6 +124,7 @@ def get_latest(instrument_id, key_id):
         cached.save()
 
     return last_value
+
 
 def is_running(instrument_id):
     """
@@ -163,6 +167,7 @@ def is_running(instrument_id):
         logging.error("Could not determine running condition: %s", str(sys.exc_value))
     return "Unknown"
 
+
 def get_system_health(instrument_id=None):
     """
         Get system health status.
@@ -177,6 +182,7 @@ def get_system_health(instrument_id=None):
         das_status['dasmon'] = get_component_status(instrument_id, process='dasmon')
         das_status['pvstreamer'] = get_pvstreamer_status(instrument_id)
     return das_status
+
 
 def fill_template_values(request, **template_args):
     """
@@ -206,7 +212,7 @@ def fill_template_values(request, **template_args):
     template_args['live_pv_url'] = reverse('pvmon:pv_monitor', args=[instr])
     template_args['legacy_url'] = reverse('dasmon:legacy_monitor', args=[instr])
 
-    #template_args["help_url"] = reverse('dasmon:user_help')
+    # template_args["help_url"] = reverse('dasmon:user_help')
 
     # The DAS monitor link is filled out by report.view_util but we don't need it here
     template_args['dasmon_url'] = None
@@ -223,6 +229,7 @@ def fill_template_values(request, **template_args):
         template_args["run_title"] = _find_value(instrument_id, "run_title", '', prune=True)
 
     return template_args
+
 
 def _find_value(instrument_id, dasmon_name, default='-', prune=False):
     """
@@ -243,6 +250,7 @@ def _find_value(instrument_id, dasmon_name, default='-', prune=False):
         # pylint: disable=pointless-except
         pass
     return _value
+
 
 def get_live_variables(request, instrument_id):
     """
@@ -269,7 +277,8 @@ def get_live_variables(request, instrument_id):
     two_hours = now - datetime.timedelta(seconds=plot_timeframe)
     for key in live_keys:
         key = key.strip()
-        if len(key) == 0: continue
+        if len(key) == 0:
+            continue
         try:
             data_list = []
             key_id = Parameter.objects.get(name=key)
@@ -300,6 +309,7 @@ def get_live_variables(request, instrument_id):
             logging.warning("Could not process %s: %s", key, str(sys.exc_value))
     return data_dict
 
+
 def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
     """
         Get the health status of PVStreamer
@@ -313,6 +323,7 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
     if ActiveInstrument.objects.has_pvstreamer(instrument_id):
         pvstreamer_status = get_component_status(instrument_id, red_timeout, yellow_timeout, process='pvstreamer')
     return max(pvstreamer_status, pvsd_status)
+
 
 def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, process='dasmon'):
     """
@@ -351,6 +362,7 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
         return 1
     return 0
 
+
 def get_workflow_status(red_timeout=1, yellow_timeout=None):
     """
         Get the health status of Workflow Manager
@@ -378,6 +390,7 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
     elif timezone.now() - last_value.timestamp > delta_short:
         return 1
     return 0
+
 
 def workflow_diagnostics(timeout=None):
     """
@@ -440,7 +453,7 @@ def workflow_diagnostics(timeout=None):
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         wf_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT),
-                                                            _red_message("contact the Neutron Data Sciences Group or Linux Support")))
+                             _red_message("contact the Neutron Data Sciences Group or Linux Support")))
 
     # Status
     if status_value > 0:
@@ -459,6 +472,7 @@ def workflow_diagnostics(timeout=None):
 
     return wf_diag
 
+
 def postprocessing_diagnostics(timeout=None):
     """
         Diagnostics for the auto-reduction and cataloging
@@ -466,7 +480,6 @@ def postprocessing_diagnostics(timeout=None):
     """
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
-    delay_time = datetime.timedelta(seconds=timeout)
 
     red_diag = {}
     red_conditions = []
@@ -480,16 +493,20 @@ def postprocessing_diagnostics(timeout=None):
                 if item.name.startswith(settings.SYSTEM_STATUS_PREFIX + node_prefix):
                     try:
                         if item.name.endswith('_pid'):
-                            last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
-                            nodes.append({'node':'%s PID %s' % (item.name[len(settings.SYSTEM_STATUS_PREFIX):len(item.name) - 4], last_value.value),
-                                          'time':timezone.localtime(last_value.timestamp)})
+                            last_value = StatusCache.objects.filter(
+                                instrument_id=common_services, key_id=item).latest('timestamp')
+                            nodes.append({'node': '%s PID %s' %
+                                          (item.name[len(settings.SYSTEM_STATUS_PREFIX):len(item.name) - 4],
+                                           last_value.value),
+                                          'time': timezone.localtime(last_value.timestamp)})
                         else:
-                            last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest('timestamp')
-                            nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
-                                          'time':timezone.localtime(last_value.timestamp)})
+                            last_value = StatusCache.objects.filter(
+                                instrument_id=common_services, key_id=item).latest('timestamp')
+                            nodes.append({'node': item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                                          'time': timezone.localtime(last_value.timestamp)})
                     except:
-                        nodes.append({'node':item.name[len(settings.SYSTEM_STATUS_PREFIX):],
-                                      'time':'No heartbeat - contact the Neutron Data Sciences Group'})
+                        nodes.append({'node': item.name[len(settings.SYSTEM_STATUS_PREFIX):],
+                                      'time': 'No heartbeat - contact the Neutron Data Sciences Group'})
         red_diag['ar_nodes'] = nodes
     except:
         # No data available
@@ -499,11 +516,13 @@ def postprocessing_diagnostics(timeout=None):
     if post_processing["catalog"] == 1:
         red_conditions.append("The cataloging was slow in responding to latest requests")
     elif post_processing["catalog"] > 1:
-        red_conditions.append("The cataloging is not processing files: %s" % _red_message("contact the Neutron Data Sciences Group"))
+        red_conditions.append("The cataloging is not processing files: %s" %
+                              _red_message("contact the Neutron Data Sciences Group"))
     if post_processing["reduction"] == 1:
         red_conditions.append("The reduction was slow in responding to latest requests")
     elif post_processing["reduction"] > 1:
-        red_conditions.append("The reduction is not processing files: %s" % _red_message("contact the Neutron Data Sciences Group"))
+        red_conditions.append("The reduction is not processing files: %s" %
+                              _red_message("contact the Neutron Data Sciences Group"))
 
     red_diag["catalog_status"] = post_processing["catalog"]
     red_diag["reduction_status"] = post_processing["reduction"]
@@ -544,7 +563,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         pv_conditions.append("No %s heartbeat since %s: %s" % (process, df.format(settings.DATETIME_FORMAT),
-                                                               _red_message("ask Linux Support or DAS to restart pvsd")))
+                             _red_message("ask Linux Support or DAS to restart pvsd")))
 
     # Status
     if status_value > 0:
@@ -560,6 +579,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
     pv_diag["dasmon_listener_warning"] = dasmon_listener_warning
 
     return pv_diag
+
 
 def dasmon_diagnostics(instrument_id, timeout=None):
     """
@@ -588,7 +608,8 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     last_pv_timestamp = 0
     try:
         latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
-        last_pv_time = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.get_current_timezone())
+        last_pv_time = datetime.datetime.fromtimestamp(
+            latest.update_time).replace(tzinfo=timezone.get_current_timezone())
         last_pv_timestamp = latest.update_time
     except:
         # No data available, keep defaults
@@ -627,7 +648,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         slow_status = True
         df = dateformat.DateFormat(status_time)
         dasmon_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT),
-                                                                _red_message("ask Linux Support or DAS to restart DASMON")))
+                                 _red_message("ask Linux Support or DAS to restart DASMON")))
 
     # Status
     if status_value > 0:
@@ -644,7 +665,8 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dasmon_conditions.append("DASMON is up but not writing to the DB: check pvsd")
 
     if (slow_status or slow_amq) and not slow_pvs:
-        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" % _red_message("ask Linux Support or DAS to restart DASMON"))
+        dasmon_conditions.append("DASMON is up and is writing to the DB, but not communicating through AMQ: %s" %
+                                 _red_message("ask Linux Support or DAS to restart DASMON"))
 
     if slow_status and slow_amq:
         dasmon_listener_warning = True
@@ -658,8 +680,10 @@ def dasmon_diagnostics(instrument_id, timeout=None):
 
     return dasmon_diag
 
+
 def _red_message(msg):
     return "<span class='red'><b>%s</b></span>" % str(msg)
+
 
 def get_completeness_status(instrument_id):
     """
@@ -683,8 +707,9 @@ def get_completeness_status(instrument_id):
         if latest_run_id is None:
             return STATUS_UNKNOWN
 
-        latest_runs = DataRun.objects.filter(instrument_id=instrument_id,
-                                             run_number__gte=latest_run_id.run_number - 3).order_by("created_on").reverse()
+        latest_runs = DataRun.objects.filter(
+            instrument_id=instrument_id,
+            run_number__gte=latest_run_id.run_number - 3).order_by("created_on").reverse()
 
         # We need at least 3 runs for a meaningful status
         if len(latest_runs) == 0:
@@ -723,6 +748,7 @@ def get_completeness_status(instrument_id):
         logging.error(sys.exc_value)
         return STATUS_UNKNOWN
 
+
 def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     """
          Get updated information about the latest runs
@@ -735,7 +761,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     since_run_id = None
     run_list = []
 
-    if request.GET.has_key('since') and request.GET.has_key('complete_since'):
+    if 'since' in request.GET and 'complete_since' in request.GET:
         since = request.GET.get('since', '0')
         try:
             since = int(since)
@@ -770,25 +796,26 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
 
             run_dict = {"key": "run_id_%s" % str(r.id),
                         "value": status,
-                       }
+                        }
             status_list.append(run_dict)
 
             if since_run_id.created_on < r.created_on:
                 localtime = timezone.localtime(r.created_on)
                 df = dateformat.DateFormat(localtime)
                 reduce_url = reverse('report:submit_for_reduction', args=[str(r.instrument_id), r.run_number])
-                expt_dict = {"run":r.run_number,
-                             "timestamp":df.format(settings.DATETIME_FORMAT),
-                             "last_error":status,
-                             "run_id":r.id,
-                             "reduce_url": "<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>" % (r.run_number, reduce_url, r.run_number),
-                             "instrument_id":str(r.instrument_id)
-                            }
+                expt_dict = {"run": r.run_number,
+                             "timestamp": df.format(settings.DATETIME_FORMAT),
+                             "last_error": status,
+                             "run_id": r.id,
+                             "reduce_url": "<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>" % (r.run_number, reduce_url, r.run_number),  # noqa: E501
+                             "instrument_id": str(r.instrument_id)
+                             }
                 update_list.append(expt_dict)
     data_dict['run_list'] = update_list
     data_dict['refresh_needed'] = '1' if len(update_list) > 0 else '0'
     data_dict['status_list'] = status_list
     return data_dict
+
 
 def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_html=True):
     """
@@ -813,7 +840,8 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
             runs = DataRun.objects.filter(created_on__gte=oldest_time).order_by('created_on').reverse()
         if len(runs) == 0:
             if instrument_id is not None:
-                runs = DataRun.objects.filter(instrument_id=instrument_id).order_by('created_on').reverse()[:number_of_entries]
+                runs = DataRun.objects.filter(instrument_id=instrument_id).order_by(
+                    'created_on').reverse()[:number_of_entries]
             else:
                 runs = DataRun.objects.order_by('created_on').reverse()[:number_of_entries]
         if len(runs) > 0:
@@ -828,6 +856,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
     except:
         logging.error("get_live_runs: %s", str(sys.exc_value))
     return run_list, first_run, last_run
+
 
 def get_run_list(run_list):
     """
@@ -853,10 +882,12 @@ def get_run_list(run_list):
         logging.error("dasmon.view_util.get_run_list: %s", sys.exc_value)
     return run_dicts
 
+
 class SignalEntry(object):
     """
         Utility class representing a DASMON signal
     """
+
     def __init__(self, name='', status='', assert_time='', key='', ack_url=''):
         self.name = name
         self.status = status
@@ -864,6 +895,7 @@ class SignalEntry(object):
         self.key = key
         self.ack_url = ack_url
         self.data = None
+
 
 def get_signals(instrument_id):
     """
@@ -934,6 +966,7 @@ def get_signals(instrument_id):
         logging.error("Could not sort monitored PV list: %s", str(sys.exc_value))
     return sig_alerts
 
+
 def get_instrument_status_summary():
     """
         Create an instrument status dictionary that can be used
@@ -970,8 +1003,9 @@ def get_instrument_status_summary():
                                 'pvstreamer_status': pvstreamer_status,
                                 'completeness': completeness,
                                 'completeness_msg': message
-                               })
+                                })
     return instrument_list
+
 
 def get_dashboard_data():
     """
@@ -984,8 +1018,9 @@ def get_dashboard_data():
             continue
         last_run_id = DataRun.objects.get_last_cached_run(i)
         r_rate, e_rate = report.view_util.retrieve_rates(i, last_run_id)
-        data_dict[i.name] = {'run_rate':r_rate, 'error_rate':e_rate}
+        data_dict[i.name] = {'run_rate': r_rate, 'error_rate': e_rate}
     return data_dict
+
 
 def add_status_entry(instrument_id, message_channel, value):
     """
@@ -1004,6 +1039,7 @@ def add_status_entry(instrument_id, message_channel, value):
         update.save()
     except:
         logging.error("add_status_entry: could add parameter for %s", message_channel)
+
 
 def get_latest_updates(instrument_id, message_channel,
                        timeframe=2.0, number_of_entries=10,
@@ -1050,6 +1086,7 @@ def get_latest_updates(instrument_id, message_channel,
                               'timestamp': timezone.make_naive(item.timestamp, timezone.utc).isoformat()})
     return template_data
 
+
 def get_instruments_for_user(request):
     """
         Get the list of instruments for a given user
@@ -1058,7 +1095,7 @@ def get_instruments_for_user(request):
     instrument_list = []
     for instrument_id in Instrument.objects.all().order_by('name'):
         if not ActiveInstrument.objects.is_alive(instrument_id) or \
-            not ActiveInstrument.objects.is_adara(instrument_id):
+                not ActiveInstrument.objects.is_adara(instrument_id):
             continue
         instrument_name = str(instrument_id).upper()
 
@@ -1079,7 +1116,7 @@ def get_instruments_for_user(request):
             if request.user is not None and hasattr(request.user, "ldap_user"):
                 groups = request.user.ldap_user.group_names
                 if u'sns_%s_team' % instrument_name.lower() in groups \
-                or u'snsadmin' in groups:
+                        or u'snsadmin' in groups:
                     instrument_list.append(instrument_name)
         except:
             # Couldn't find the user in the instrument LDAP group
@@ -1087,4 +1124,3 @@ def get_instruments_for_user(request):
             pass
 
     return instrument_list
-

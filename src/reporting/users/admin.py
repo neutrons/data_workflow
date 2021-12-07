@@ -3,9 +3,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 import socket
-from django.conf import settings
 import logging
 import sys
+
 
 class NonDeveloperUsers(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
@@ -32,7 +32,7 @@ class NonDeveloperUsers(admin.SimpleListFilter):
         Returns the filtered queryset based on the value
         provided in the query string and retrievable via
         `self.value()`.
-        """ 
+        """
         if self.value() == 'non_developers':
             try:
                 nodes = DeveloperNode.objects.all().values_list('ip', flat=True)
@@ -41,7 +41,8 @@ class NonDeveloperUsers(admin.SimpleListFilter):
                 logging.error(sys.exc_value)
 
         return queryset
- 
+
+
 class PageViewAdmin(admin.ModelAdmin):
     list_filter = ('user', 'view', NonDeveloperUsers)
     list_display = ('user', 'view', 'ip', 'get_host', 'path', 'timestamp')
@@ -53,19 +54,21 @@ class PageViewAdmin(admin.ModelAdmin):
             return "unknown"
     get_host.short_description = "Host"
 
+
 class DeveloperNodeAdmin(admin.ModelAdmin):
     list_display = ('id', 'ip', 'get_host')
-    
+
     def get_host(self, view):
         try:
             return socket.gethostbyaddr(view.ip)[0]
         except:
             return "unknown"
     get_host.short_description = "Host"
-    
+
+
 class SNSUserAdmin(UserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'get_groups', 'is_staff', 'is_superuser')
-    
+
     def get_groups(self, user):
         groups = []
         for g in user.groups.all():
@@ -73,16 +76,14 @@ class SNSUserAdmin(UserAdmin):
         return ', '.join(groups)
     get_groups.short_description = "Groups"
 
+
 class SiteNotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'message', 'is_active')
     list_editable = ('message', 'is_active')
+
 
 admin.site.unregister(User)
 admin.site.register(User, SNSUserAdmin)
 admin.site.register(PageView, PageViewAdmin)
 admin.site.register(DeveloperNode, DeveloperNodeAdmin)
 admin.site.register(SiteNotification, SiteNotificationAdmin)
-
-
-
-
