@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, line-too-long
+# pylint: disable=bare-except, line-too-long
 """
     ActiveMQ listener class for the workflow manager
 """
@@ -12,13 +12,13 @@ class Listener(stomp.ConnectionListener):
     """
         AMQ listener for the workflow manager
     """
-    ## AMQ connection to send messages
+    # AMQ connection to send messages
     _send_connection = None
-    ## List of brokers
+    # List of brokers
     _brokers = None
-    ## AMQ user name
+    # AMQ user name
     _user = None
-    ## AMQ passcode
+    # AMQ passcode
     _passcode = None
 
     def __init__(self, use_db_tasks=False, auto_ack=True):
@@ -26,7 +26,7 @@ class Listener(stomp.ConnectionListener):
             Initialization
             @param use_db_task: if True, a task definition will be looked for in the DB when executing the action
         """
-        ## If True, the DB will be queried for task definition
+        # If True, the DB will be queried for task definition
         self._use_db_tasks = use_db_tasks
         self._auto_ack = auto_ack
 
@@ -77,7 +77,7 @@ class Listener(stomp.ConnectionListener):
         """
         if self._send_connection is None or self._send_connection.is_connected() is False:
             logging.info("[workflow_send_connection] Attempting to connect to ActiveMQ broker")
-            if stomp.__version__[0]<4:
+            if stomp.__version__[0] < 4:
                 conn = stomp.Connection(host_and_ports=self._brokers,
                                         user=self._user,
                                         passcode=self._passcode,

@@ -1,10 +1,15 @@
-#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, too-many-statements, too-many-branches
+# pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, too-many-statements, too-many-branches
 """
     DASMON ActiveMQ consumer class
 
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+from file_handling.models import ReducedImage
+from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
+from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification
+from django.utils import timezone
+import django
 import sys
 import time
 import stomp
@@ -14,6 +19,11 @@ import os
 import datetime
 import smtplib
 from email.mime.text import MIMEText
+import settings
+from settings import INSTALLATION_DIR
+from settings import PURGE_TIMEOUT
+from settings import IMAGE_PURGE_TIMEOUT
+from settings import MIN_NOTIFICATION_LEVEL
 
 if os.path.isfile("settings.py"):
     logging.warning("Using local settings.py file")
@@ -21,25 +31,15 @@ if os.path.isfile("settings.py"):
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
 
-import settings
-from settings import INSTALLATION_DIR
-from settings import PURGE_TIMEOUT
-from settings import IMAGE_PURGE_TIMEOUT
-from settings import MIN_NOTIFICATION_LEVEL
 sys.path.append(INSTALLATION_DIR)
 
-import django
 if django.VERSION[1] >= 7:
     django.setup()
-from django.utils import timezone
 
-from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification
-from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
 try:
     from report.models import Instrument
 except:
     from workflow.database.report.models import Instrument
-from file_handling.models import ReducedImage
 
 # ACK data
 acks = {}
@@ -52,6 +52,7 @@ HEARTBEAT_DELAY = 120
 
 # How often we purge the DB entries
 PURGE_DELAY = 600
+
 
 class Listener(stomp.ConnectionListener):
     """
@@ -174,9 +175,9 @@ class Listener(stomp.ConnectionListener):
         else:
             timestamp = None
             # Uncomment the following when the DB has migrated to editable timestamps for AMQ message entries
-            #if 'timestamp_micro' in data_dict:
+            # if 'timestamp_micro' in data_dict:
             #    timestamp = data_dict['timestamp_micro']
-            #elif 'timestamp' in data_dict:
+            # elif 'timestamp' in data_dict:
             #    timestamp = data_dict['timestamp']
             for key in data_dict:
                 if key == 'monitors' and type(data_dict[key]) == dict:
@@ -184,7 +185,8 @@ class Listener(stomp.ConnectionListener):
                         # Protect against old API
                         if not type(data_dict[key][item]) == dict:
                             key_id = self.retrieve_parameter('monitor_count_%s' % str(item))
-                            store_and_cache(instrument, key_id, data_dict[key][item], timestamp=timestamp, cache_only=False)
+                            store_and_cache(instrument, key_id, data_dict[key]
+                                            [item], timestamp=timestamp, cache_only=False)
                         else:
                             identifier = None
                             counts = None
@@ -201,9 +203,10 @@ class Listener(stomp.ConnectionListener):
                     # messages. Just update the cache for messages older than 1 minute.
                     timestamp_ = float(data_dict['timestamp']) if 'timestamp' in data_dict else time.time()
                     delta_time = time.time() - timestamp_
-                    cache_only =  delta_time > 60
+                    cache_only = delta_time > 60
                     key_id = self.retrieve_parameter(key)
                     store_and_cache(instrument, key_id, data_dict[key], timestamp=timestamp, cache_only=cache_only)
+
 
 def send_message(sender, recipients, subject, message):
     """
@@ -226,6 +229,7 @@ def send_message(sender, recipients, subject, message):
         s.quit()
     except:
         logging.error("Could not send message: %s", sys.exc_value)
+
 
 def process_SMS(instrument_id, headers, data):
     """
@@ -254,10 +258,11 @@ def process_SMS(instrument_id, headers, data):
                            'information': data['reason'],
                            'data_file': "",
                            'run_number': data['run_number']}
-            add_status_entry({'destination':'SMS',
-                              'message-id':headers['message-id']}, json.dumps(status_data))
+            add_status_entry({'destination': 'SMS',
+                              'message-id': headers['message-id']}, json.dumps(status_data))
     except:
         logging.error("Could not process SMS message: %s", sys.exc_value)
+
 
 def process_ack(data=None, headers=None):
     """
@@ -269,7 +274,7 @@ def process_ack(data=None, headers=None):
         if data is None:
             for proc_name in acks:
                 # Start complaining if we missed three heartbeats
-                if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0*HEARTBEAT_DELAY:
+                if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0 * HEARTBEAT_DELAY:
                     logging.error("Client %s disappeared", proc_name)
                     acks[proc_name] = None
                     send_message(sender=FROM_EMAIL, recipients=ALERT_EMAIL,
@@ -279,7 +284,7 @@ def process_ack(data=None, headers=None):
             current_time = time.time()
             msg_time = 0
             if headers is not None:
-                msg_time = float(headers.get('timestamp', 0))/1000.0
+                msg_time = float(headers.get('timestamp', 0)) / 1000.0
                 if msg_time > 0:
                     msg_time = current_time - msg_time
 
@@ -292,7 +297,7 @@ def process_ack(data=None, headers=None):
                 proc_name = '%s:%s' % (proc_name, data['pid'])
 
             # Start complaining if we don't get an answer before half our heartbeat delay
-            if 'request_time' in data and answer_delay > 0.5*HEARTBEAT_DELAY:
+            if 'request_time' in data and answer_delay > 0.5 * HEARTBEAT_DELAY:
                 logging.error("Client %s took more than %s secs to answer", proc_name, str(answer_delay))
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared", proc_name)
@@ -304,6 +309,7 @@ def process_ack(data=None, headers=None):
                 logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)
     except:
         logging.error("Error processing ack: %s", sys.exc_value)
+
 
 def notify_users(instrument_id, signal):
     """
@@ -324,6 +330,7 @@ def notify_users(instrument_id, signal):
                          message=message)
     except:
         logging.error("Failed to notify users: %s", sys.exc_value)
+
 
 def process_signal(instrument_id, data):
     """
@@ -401,6 +408,7 @@ def store_and_cache(instrument_id, key_id, value, timestamp=None, cache_only=Fal
     except:
         logging.error("Could not store %s %s=%s", str(instrument_id), str(key_id), str(value))
 
+
 def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=False):
     """
         Store and cache a DASMON parameter
@@ -426,7 +434,8 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
         # Force the timestamp value as needed
         if timestamp is not None:
             try:
-                datetime_timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
+                datetime_timestamp = datetime.datetime.fromtimestamp(
+                    timestamp).replace(tzinfo=timezone.get_current_timezone())
                 status_entry.timestamp = datetime_timestamp
             except:
                 logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_value)
@@ -572,7 +581,7 @@ class Client(object):
                     delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
                     cutoff = timezone.now() - delta_time
                     StatusVariable.objects.filter(timestamp__lte=cutoff).delete()
-                    #StatusCache.objects.filter(timestamp__lte=cutoff).delete()
+                    # StatusCache.objects.filter(timestamp__lte=cutoff).delete()
 
                     # Remove old PVMON entries: first, the float values
                     PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
@@ -583,7 +592,8 @@ class Client(object):
                             item.delete()
                     # Remove old PVMON entries: second, the string values
                     PVString.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
-                    old_entries = PVStringCache.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
+                    old_entries = PVStringCache.objects.filter(
+                        update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument,
                                                                 pv_name=item.name)) == 0:
@@ -604,7 +614,7 @@ class Client(object):
                                        "request_time": time.time()}
                             t0 = time.time()
                             self.send(PING_TOPIC, json.dumps(payload))
-                            t=time.time() - t0
+                            t = time.time() - t0
                             logging.error("Send time: %s", t)
                             process_ack()
                         else:
