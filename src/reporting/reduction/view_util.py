@@ -13,6 +13,7 @@ import reporting_app.view_util
 import dasmon.view_util
 import urllib
 
+
 def reduction_setup_url(instrument):
     """
         Return a URL for the reduction setup if it's enabled
@@ -22,6 +23,7 @@ def reduction_setup_url(instrument):
     if instrument.lower() in settings.INSTRUMENT_REDUCTION_SETUP:
         return reverse('reduction:configuration', args=[instrument])
     return None
+
 
 def store_property(instrument_id, key, value, user=None):
     """
@@ -34,12 +36,12 @@ def store_property(instrument_id, key, value, user=None):
     """
     props = ReductionProperty.objects.filter(instrument=instrument_id, key=key)
     changed_prop = None
-    if len(props)==1:
+    if len(props) == 1:
         if not props[0].value == value:
             props[0].value = value
             props[0].save()
             changed_prop = props[0]
-    elif len(props)>1:
+    elif len(props) > 1:
         logging.error("store_property: more than one property named %s", key)
     else:
         changed_prop = ReductionProperty(instrument=instrument_id, key=str(key), value=str(value))
@@ -49,6 +51,7 @@ def store_property(instrument_id, key, value, user=None):
                                      value=value,
                                      user=user)
         modif.save()
+
 
 def reset_to_default(instrument_id):
     """
@@ -60,9 +63,10 @@ def reset_to_default(instrument_id):
     props_list = ReductionProperty.objects.filter(instrument=instrument_id)
     for item in props_list:
         default_list = PropertyDefault.objects.filter(property=item)
-        if len(default_list)>0:
+        if len(default_list) > 0:
             item.value = default_list[0].value
             item.save()
+
 
 def send_template_request(instrument_id, template_dict, user='unknown'):
     """
@@ -77,7 +81,7 @@ def send_template_request(instrument_id, template_dict, user='unknown'):
         if type(template_dict['use_default']) == bool:
             use_default = template_dict['use_default']
         else:
-            use_default = template_dict['use_default'].lower()=='true'
+            use_default = template_dict['use_default'].lower() == 'true'
 
     encoded_dict = {}
     for key, value in template_dict.items():
@@ -88,7 +92,7 @@ def send_template_request(instrument_id, template_dict, user='unknown'):
 
     # Send ActiveMQ request
     dasmon.view_util.add_status_entry(instrument_id,
-                                      settings.SYSTEM_STATUS_PREFIX+'postprocessing',
+                                      settings.SYSTEM_STATUS_PREFIX + 'postprocessing',
                                       "Script requested by %s" % user)
 
     data_dict = {"instrument": str(instrument_id).upper(),

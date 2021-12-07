@@ -1,4 +1,4 @@
-#pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, unused-argument
+# pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, unused-argument
 """
     Report views
 
@@ -35,10 +35,10 @@ def processing_admin(request):
         Form to let admins easily reprocess parts of the workflow
     """
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
-    template_values = {'breadcrumbs':breadcrumbs, 'notes': ''}
+    template_values = {'breadcrumbs': breadcrumbs, 'notes': ''}
     template_values = users.view_util.fill_template_values(request, **template_values)
 
-    instruments = [ str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
+    instruments = [str(i) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i)]
     instrument = instruments[0]
 
     if request.method == 'POST':
@@ -58,7 +58,7 @@ def processing_admin(request):
 
             # Submit task and append success outcome to notes.
             if 'runs' in output and 'instrument' in output \
-                and 'task' in output and output['task'] is not None:
+                    and 'task' in output and output['task'] is not None:
                 submission_errors = ""
                 for run_obj in output['runs']:
                     try:
@@ -83,7 +83,7 @@ def processing_admin(request):
 
     # Get list of available experiments
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    ipts = [ str(i) for i in IPTS.objects.filter(instruments=instrument_id) ]
+    ipts = [str(i) for i in IPTS.objects.filter(instruments=instrument_id)]
 
     template_values['form'] = processing_form
     template_values['experiment_list'] = ipts
@@ -148,6 +148,7 @@ def summary(request):
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'report/global_summary.html', template_values)
 
+
 @login_required
 def download_reduced_data(request, instrument, run_id):
     """
@@ -165,6 +166,7 @@ def download_reduced_data(request, instrument, run_id):
     response = HttpResponse(ascii_data, content_type="text/plain")
     response['Content-Disposition'] = 'attachment; filename=%s_%s.txt' % (instrument.upper(), run_id)
     return response
+
 
 @users.view_util.login_or_local_required
 def detail(request, instrument, run_id):
@@ -188,10 +190,10 @@ def detail(request, instrument, run_id):
                                                       str(run_object.ipts_id).lower())
     breadcrumbs += " &rsaquo; run %s" % run_id
     if users.view_util.is_experiment_member(request, instrument_id, run_object.ipts_id) is False:
-        template_values = {'instrument':instrument.upper(),
-                           'run_object':run_object,
+        template_values = {'instrument': instrument.upper(),
+                           'run_object': run_object,
                            'helpline': settings.HELPLINE_EMAIL,
-                           'breadcrumbs':breadcrumbs}
+                           'breadcrumbs': breadcrumbs}
         template_values = users.view_util.fill_template_values(request, **template_values)
         template_values = dasmon.view_util.fill_template_values(request, **template_values)
         return render(request, 'report/private_data.html', template_values)
@@ -233,22 +235,22 @@ def detail(request, instrument, run_id):
         url_template = string.Template(settings.FITTING_URLS[instrument.lower()])
         fitting_url = url_template.substitute(run_number=run_id)
 
-    template_values = {'instrument':instrument.upper(),
-                       'run_object':run_object,
-                       'status':status_objects,
-                       'breadcrumbs':breadcrumbs,
-                       'icat_info':icat_info,
-                       'fitting_url':fitting_url,
-                       'reduce_url':reduce_url,
-                       'reduction_setup_url':reporting_app.view_util.reduction_setup_url(instrument),
+    template_values = {'instrument': instrument.upper(),
+                       'run_object': run_object,
+                       'status': status_objects,
+                       'breadcrumbs': breadcrumbs,
+                       'icat_info': icat_info,
+                       'fitting_url': fitting_url,
+                       'reduce_url': reduce_url,
+                       'reduction_setup_url': reporting_app.view_util.reduction_setup_url(instrument),
                        'prev_url': prev_url,
                        'next_url': next_url,
-                      }
+                       }
     template_values.update(plot_template_dict)
     if icat_info == {}:
         template_values['user_alert'] = ["Could not communicate with the online catalog"]
     try:
-        if 'data_files' not in icat_info or icat_info['data_files'] is None or len(icat_info['data_files'])==0:
+        if 'data_files' not in icat_info or icat_info['data_files'] is None or len(icat_info['data_files']) == 0:
             if view_util.is_acquisition_complete(run_object):
                 template_values['no_icat_info'] = "There is no catalog information for this run yet."
             else:
@@ -261,6 +263,7 @@ def detail(request, instrument, run_id):
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, 'report/detail.html', template_values)
 
+
 @login_required
 def submit_for_reduction(request, instrument, run_id):
     """
@@ -270,6 +273,7 @@ def submit_for_reduction(request, instrument, run_id):
     """
     return view_util.processing_request(request, instrument, run_id,
                                         destination='/queue/REDUCTION.REQUEST')
+
 
 @login_required
 def submit_for_post_processing(request, instrument, run_id):
@@ -281,6 +285,7 @@ def submit_for_post_processing(request, instrument, run_id):
     return view_util.processing_request(request, instrument, run_id,
                                         destination='/queue/POSTPROCESS.DATA_READY')
 
+
 @login_required
 def submit_for_cataloging(request, instrument, run_id):
     """
@@ -290,6 +295,7 @@ def submit_for_cataloging(request, instrument, run_id):
     """
     return view_util.processing_request(request, instrument, run_id,
                                         destination='/queue/CATALOG.REQUEST')
+
 
 @users.view_util.login_or_local_required
 def instrument_summary(request, instrument):
@@ -329,16 +335,17 @@ def instrument_summary(request, instrument):
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (reverse(settings.LANDING_VIEW),
                                                          instrument.lower())
 
-    template_values = {'instrument':instrument.upper(),
+    template_values = {'instrument': instrument.upper(),
                        'expt_list': expt_list,
-                       'breadcrumbs':breadcrumbs,
+                       'breadcrumbs': breadcrumbs,
                        'error_url': error_url,
-                       'update_url':update_url,
-                       'last_expt_created':last_expt_created,
-                      }
+                       'update_url': update_url,
+                       'last_expt_created': last_expt_created,
+                       }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'report/instrument.html', template_values)
+
 
 @users.view_util.login_or_local_required
 def ipts_summary(request, instrument, ipts):
@@ -385,10 +392,11 @@ def ipts_summary(request, instrument, ipts):
                        'ipts_url': ipts_url,
                        'update_url': update_url,
                        'first_run_id': first_run_id,
-                      }
+                       }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'report/ipts_summary.html', template_values)
+
 
 @users.view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
@@ -401,7 +409,7 @@ def live_errors(request, instrument):
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
-    #TODO: let the user pick the timeframe for the errors.
+    # TODO: let the user pick the timeframe for the errors.
     # Pick 30 days for now.
     time_period = 30
     delta_time = datetime.timedelta(days=time_period)
@@ -415,10 +423,11 @@ def live_errors(request, instrument):
     for err in error_query:
         localtime = timezone.localtime(err.run_status_id.created_on)
         df = dateformat.DateFormat(localtime)
-        error_list.append({'experiment': str("<a href='%s'>%s</a>" % (reverse('report:ipts_summary',
-                                                                              args=[instrument,
-                                                                                    err.run_status_id.run_id.ipts_id.expt_name]),
-                                                                      err.run_status_id.run_id.ipts_id.expt_name)),
+        error_list.append({'experiment': str("<a href='%s'>%s</a>" %
+                                             (reverse('report:ipts_summary',
+                                                      args=[instrument,
+                                                            err.run_status_id.run_id.ipts_id.expt_name]),
+                                              err.run_status_id.run_id.ipts_id.expt_name)),
                            'run': str("<a href='%s'>%s</a>" % (reverse('report:detail',
                                                                        args=[instrument,
                                                                              err.run_status_id.run_id.run_number]),
@@ -437,17 +446,18 @@ def live_errors(request, instrument):
                                                               args=[instrument]), instrument)
     breadcrumbs += " &rsaquo; errors"
 
-    template_values = {'instrument':instrument.upper(),
-                       'error_list':error_list,
+    template_values = {'instrument': instrument.upper(),
+                       'error_list': error_list,
                        'last_error_id': last_error_id,
-                       'breadcrumbs':breadcrumbs,
-                       'instrument_url':instrument_url,
-                       'update_url':update_url,
-                       'time_period':time_period
-                      }
+                       'breadcrumbs': breadcrumbs,
+                       'instrument_url': instrument_url,
+                       'update_url': update_url,
+                       'time_period': time_period
+                       }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     return render(request, 'report/live_errors.html', template_values)
+
 
 @users.view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
@@ -500,12 +510,12 @@ def get_instrument_update(request, instrument):
             if since_expt_id.created_on < e.created_on:
                 localtime = timezone.localtime(e.created_on)
                 df = dateformat.DateFormat(localtime)
-                expt_dict = {"ipts":e.expt_name.upper(),
-                             "n_runs":e.number_of_runs(),
-                             "created_on":df.format(settings.DATETIME_FORMAT),
+                expt_dict = {"ipts": e.expt_name.upper(),
+                             "n_runs": e.number_of_runs(),
+                             "created_on": df.format(settings.DATETIME_FORMAT),
                              "timestamp": e.created_on.isoformat(),
-                             "ipts_id":e.id,
-                            }
+                             "ipts_id": e.id,
+                             }
                 update_list.append(expt_dict)
     data_dict['expt_list'] = update_list
     data_dict['refresh_needed'] = '1' if len(update_list) > 0 else '0'
@@ -548,13 +558,13 @@ def get_error_update(request, instrument):
                 if last_error_id.run_status_id.created_on < e.run_status_id.created_on:
                     localtime = timezone.localtime(e.run_status_id.created_on)
                     df = dateformat.DateFormat(localtime)
-                    err_dict = {"run":e.run_status_id.run_id.run_number,
-                                "ipts":e.run_status_id.run_id.ipts_id.expt_name,
-                                "description":e.description,
-                                "created_on":df.format(settings.DATETIME_FORMAT),
-                                "timestamp":e.run_status_id.created_on.isoformat(),
-                                "error_id":e.id,
-                               }
+                    err_dict = {"run": e.run_status_id.run_id.run_number,
+                                "ipts": e.run_status_id.run_id.ipts_id.expt_name,
+                                "description": e.description,
+                                "created_on": df.format(settings.DATETIME_FORMAT),
+                                "timestamp": e.run_status_id.created_on.isoformat(),
+                                "error_id": e.id,
+                                }
                     err_list.append(err_dict)
             data_dict['last_error_id'] = last_error_id_number
     data_dict['errors'] = err_list

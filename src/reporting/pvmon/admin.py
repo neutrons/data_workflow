@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django import forms
 import datetime
 
+
 def add_monitored(modeladmin, request, queryset):
     """
         Action used to easily add a monitored variable by typing its name
@@ -16,7 +17,10 @@ def add_monitored(modeladmin, request, queryset):
     instrument_id = get_object_or_404(Instrument, name=request.POST['instrument'].lower())
     m = MonitoredVariable(instrument=instrument_id, pv_name=pv_name)
     m.save()
+
+
 add_monitored.short_description = "Add monitored"
+
 
 class UpdateActionForm(ActionForm):
     instrument = forms.ChoiceField(required=True, choices=[])
@@ -25,8 +29,10 @@ class UpdateActionForm(ActionForm):
     def __init__(self, *args, **kwargs):
         super(UpdateActionForm, self).__init__(*args, **kwargs)
         # Get the list of available instruments
-        instruments = [ (str(i), str(i)) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
+        instruments = [(str(i), str(i)) for i in Instrument.objects.all().order_by(
+            'name') if ActiveInstrument.objects.is_alive(i)]
         self.fields['instrument'].choices = instruments
+
 
 class PVAdmin(admin.ModelAdmin):
     list_filter = ('instrument', 'name', 'status')
@@ -36,15 +42,18 @@ class PVAdmin(admin.ModelAdmin):
         return datetime.datetime.fromtimestamp(pv.update_time)
     get_timestamp.short_description = "Time"
 
+
 class PVNameAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'monitored')
     list_editable = ('monitored',)
+
 
 class MonitoredVariableAdmin(admin.ModelAdmin):
     list_display = ('id', 'instrument', 'pv_name', 'rule_name')
     list_editable = ('pv_name', 'rule_name')
     action_form = UpdateActionForm
     actions = [add_monitored]
+
 
 admin.site.register(PVName, PVNameAdmin)
 admin.site.register(PV, PVAdmin)

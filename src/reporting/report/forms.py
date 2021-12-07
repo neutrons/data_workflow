@@ -1,4 +1,4 @@
-#pylint: disable=invalid-name, line-too-long, too-many-branches
+# pylint: disable=invalid-name, line-too-long, too-many-branches
 """
     Forms for auto-reduction configuration
 
@@ -12,7 +12,7 @@ from django.conf import settings
 from report.models import Instrument, IPTS, DataRun, StatusQueue
 from dasmon.models import ActiveInstrument
 import logging
-from report.catalog import get_run_info
+
 
 def validate_integer_list(value):
     """
@@ -27,7 +27,7 @@ def validate_integer_list(value):
             range_toks = item.split('-')
             if len(range_toks) == 2:
                 try:
-                    value_list.extend(range(int(range_toks[0]), int(range_toks[1])+1))
+                    value_list.extend(range(int(range_toks[0]), int(range_toks[1]) + 1))
                 except:
                     logging.error(sys.exc_value)
                     raise ValidationError(u'Error parsing %s for a range of integers' % value)
@@ -44,6 +44,7 @@ def validate_integer_list(value):
 
     return value_list
 
+
 class ProcessingForm(forms.Form):
     """
         Form to send a post-processing request
@@ -58,14 +59,15 @@ class ProcessingForm(forms.Form):
         super(ProcessingForm, self).__init__(*args, **kwargs)
 
         # Get the list of available instruments
-        instruments = [ (str(i), str(i)) for i in Instrument.objects.all().order_by('name') if ActiveInstrument.objects.is_alive(i) ]
+        instruments = [(str(i), str(i)) for i in Instrument.objects.all().order_by(
+            'name') if ActiveInstrument.objects.is_alive(i)]
         self.fields['instrument'].choices = instruments
 
         # Get the list of available inputs
         queue_ids = StatusQueue.objects.filter(is_workflow_input=True)
-        tasks = [ (str(q), str(q)) for q in queue_ids if (str(q).endswith('REQUEST') or \
-                                                          str(q).endswith('DATA_READY') or \
-                                                          str(q).endswith('NOT_NEEDED'))]
+        tasks = [(str(q), str(q)) for q in queue_ids if (str(q).endswith('REQUEST') or
+                                                         str(q).endswith('DATA_READY') or
+                                                         str(q).endswith('NOT_NEEDED'))]
         self.fields['task'].choices = tasks
 
     def set_initial(self, initial):
@@ -106,7 +108,7 @@ class ProcessingForm(forms.Form):
             facility_name = settings.FACILITY_INFO.get(str(instrument), 'SNS')
         if not ActiveInstrument.objects.is_adara(instrument):
             file_path = "/%s/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % \
-            (facility_name, str(instrument).upper(), ipts, run, str(instrument).upper(), run)
+                (facility_name, str(instrument).upper(), ipts, run, str(instrument).upper(), run)
         else:
             base_path = "/%s/%s/%s/nexus" % (facility_name, str(instrument).upper(), ipts)
             file_path = "%s/%s_%s.nxs.h5" % (base_path, str(instrument).upper(), run)
@@ -147,7 +149,7 @@ class ProcessingForm(forms.Form):
         for run in run_list:
             try:
                 run_obj = DataRun.objects.get(instrument_id=instrument,
-                                              ipts_id = ipts,
+                                              ipts_id=ipts,
                                               run_number=run)
                 # In some cases, when the DAS has started acquiring but the run is not
                 # completed, we can have an entry without a file path. When that's the
@@ -161,7 +163,7 @@ class ProcessingForm(forms.Form):
                 if self.cleaned_data['create_as_needed']:
                     # Create a file path
                     file_path = ProcessingForm._create_file_path(instrument, ipts, run)
-                    new_run = type('new_run', (object,), {'instrument_id' : instrument,
+                    new_run = type('new_run', (object,), {'instrument_id': instrument,
                                                           'run_number': run,
                                                           'ipts_id': ipts,
                                                           'file': file_path})
@@ -173,7 +175,7 @@ class ProcessingForm(forms.Form):
             has_ipts_mismatch = False
             for run in invalid_runs:
                 run_list = DataRun.objects.filter(instrument_id=instrument, run_number=run)
-                if len(run_list)>0:
+                if len(run_list) > 0:
                     output_report += "Run %s was found in experiment %s<br>" % (run, run_list[0].ipts_id)
                     has_ipts_mismatch = True
 
@@ -206,7 +208,7 @@ class ProcessingForm(forms.Form):
         run_list = validate_integer_list(self.cleaned_data['run_list'])
         valid_run_objects = []
         for run in run_list:
-            new_run = type('new_run', (object,), {'instrument_id' : instrument,
+            new_run = type('new_run', (object,), {'instrument_id': instrument,
                                                   'run_number': run,
                                                   'ipts_id': '',
                                                   'file': ''})

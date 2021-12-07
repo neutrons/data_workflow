@@ -20,6 +20,7 @@ from django import forms
 from django.core.files.base import ContentFile
 from django.contrib.auth import login, authenticate
 
+
 class UploadFileForm(forms.Form):
     """
         Simple form to select a data file on the user's machine

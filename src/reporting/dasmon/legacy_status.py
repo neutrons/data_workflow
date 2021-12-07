@@ -11,6 +11,8 @@ import sys
 from dasmon.models import LegacyURL
 
 STATUS_HOST = 'neutrons.ornl.gov'
+
+
 def get_ops_status(instrument_id):
     """
         Pull the legacy status information
@@ -35,14 +37,17 @@ def get_ops_status(instrument_id):
             keys = data[group].keys()
             keys.sort()
             for item in keys:
-                key_value_pairs.append({'key':item.replace(' ', '_').replace('(%)', '[pct]').replace('(', '[').replace(')', ']').replace('#', ''),
-                                        'value': data[group][item]})
-            organized_data.append({'group':group,
-                                   'data':key_value_pairs})
+                key_value_pairs.append(
+                    {'key': item.replace(' ', '_').replace('(%)', '[pct]')
+                     .replace('(', '[').replace(')', ']').replace('#', ''),
+                     'value': data[group][item]})
+            organized_data.append({'group': group,
+                                   'data': key_value_pairs})
         return organized_data
     except:
         logging.warning("Could not get legacy DAS status: %s" % sys.exc_value)
         return []
+
 
 def get_legacy_url(instrument_id, include_domain=True):
     """

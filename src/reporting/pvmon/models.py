@@ -7,6 +7,7 @@
 from django.db import models
 from report.models import Instrument
 
+
 class PVName(models.Model):
     """
         Table holding the Process Variable names
@@ -16,6 +17,7 @@ class PVName(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class PV(models.Model):
     """
@@ -30,6 +32,7 @@ class PV(models.Model):
     class Meta:
         verbose_name_plural = "PVs"
 
+
 class PVCache(models.Model):
     """
         Table holding the latest values
@@ -42,6 +45,7 @@ class PVCache(models.Model):
 
     class Meta:
         verbose_name_plural = "PV cache"
+
 
 class PVString(models.Model):
     """
@@ -56,6 +60,7 @@ class PVString(models.Model):
     class Meta:
         verbose_name_plural = "PV strings"
 
+
 class PVStringCache(models.Model):
     """
         Table holding the latest string values
@@ -68,6 +73,7 @@ class PVStringCache(models.Model):
 
     class Meta:
         verbose_name_plural = "PV string cache"
+
 
 class MonitoredVariable(models.Model):
     """

@@ -3,8 +3,8 @@ import os
 import django
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
-DATABASES['default']['CONN_MAX_AGE']=5
-#DATABASES['default']['CONN_MAX_AGE']=None
+DATABASES['default']['CONN_MAX_AGE'] = 5
+# DATABASES['default']['CONN_MAX_AGE']=None
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,8 +62,8 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-                    os.path.abspath(os.path.join(os.path.dirname(__file__),'..','static')),
-                    os.path.join(os.path.dirname(django.__file__),'contrib','admin','static'),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static')),
+    os.path.join(os.path.dirname(django.__file__), 'contrib', 'admin', 'static'),
 )
 
 # List of finder classes that know how to find static files in
@@ -71,7 +71,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -81,10 +81,10 @@ SECRET_KEY = '-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    #     'django.template.loaders.eggs.Loader',
 )
 TEMPLATE_DIRS = (
-                 os.path.abspath(os.path.join(os.path.dirname(__file__),'..','templates')),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates')),
 )
 # ------ End of template settings for Django 1.6 ------
 
@@ -113,7 +113,7 @@ MIDDLEWARE_CLASSES = (
     'users.mobile_detection.DetectMobileBrowser',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 ROOT_URLCONF = 'reporting_app.urls'
@@ -137,13 +137,13 @@ INSTALLED_APPS = (
     'pvmon',
     'file_handling',
     'reduction',
-    #'debug_toolbar',
+    # 'debug_toolbar',
 )
 
 AUTHENTICATION_BACKENDS = (
-                           'django_auth_ldap.backend.LDAPBackend',
-                           'django.contrib.auth.backends.ModelBackend',
-                           )
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 AUTH_LDAP_SERVER_URI = ""
 AUTH_LDAP_USER_DN_TEMPLATE = ""
@@ -162,14 +162,14 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'standard': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
     },
     'handlers': {
-        'console':{
-            'level':'INFO',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
     },
@@ -180,9 +180,9 @@ LOGGING = {
             'propagate': True
         },
         'django': {
-            'handlers':['console'],
+            'handlers': ['console'],
             'propagate': True,
-            'level':'WARN',
+            'level': 'WARN',
         },
         'django.db.backends': {
             'handlers': ['console'],
@@ -222,16 +222,16 @@ SLOW_PAGE_CACHE_TIMEOUT = 60
 # If the tables IDs are always incrementing, use 'id' below
 # otherwise use 'timestamp'
 DASMON_SQL_SORT = 'id'
-#DASMON_SQL_SORT = 'timestamp'
+# DASMON_SQL_SORT = 'timestamp'
 
 # REPORTING SETTINGS
-## Amount of time displayed when plotting a live PV [seconds]
-PVMON_PLOT_TIME_RANGE = 2*60*60
-## Max number of old PV points to show when there were no points in defined time range
+# Amount of time displayed when plotting a live PV [seconds]
+PVMON_PLOT_TIME_RANGE = 2 * 60 * 60
+# Max number of old PV points to show when there were no points in defined time range
 PVMON_NUMBER_OF_OLD_PTS = 20
-## Amount of time displayed when plotting a live PV
-DASMON_PLOT_TIME_RANGE = 2*60*60
-## Max number of old PV points to show when there were no points in defined time range
+# Amount of time displayed when plotting a live PV
+DASMON_PLOT_TIME_RANGE = 2 * 60 * 60
+# Max number of old PV points to show when there were no points in defined time range
 DASMON_NUMBER_OF_OLD_PTS = 20
 
 # MONITORING OPTION
@@ -239,16 +239,16 @@ MONITOR_ON = True
 
 HEARTBEAT_TIMEOUT = 15
 
-## Prefix for status parameter names for monitored sub-systems
+# Prefix for status parameter names for monitored sub-systems
 SYSTEM_STATUS_PREFIX = 'system_'
 
-## Instrument team user group suffix
+# Instrument team user group suffix
 INSTRUMENT_TEAM_SUFFIX = 'InstrumentTeam'
 
-## Post-processing node prefix values (autoreduction and cataloging)
+# Post-processing node prefix values (autoreduction and cataloging)
 POSTPROCESS_NODE_PREFIX = ['autoreducer', 'fermi']
 
-## ActiveMQ queue for generating a new reduction script
+# ActiveMQ queue for generating a new reduction script
 REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT'
 
 HELPLINE_EMAIL = 'adara_support@ornl.gov'
@@ -264,7 +264,7 @@ FITTING_URLS = {}
 
 # Import local settings if available
 try:
-    from local_settings import *
+    from local_settings import *  # noqa: F401, F403
     LOCAL_SETTINGS = True
 except ImportError, e:
     LOCAL_SETTINGS = False

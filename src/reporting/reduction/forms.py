@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, line-too-long, invalid-name
+# pylint: disable=bare-except, line-too-long, invalid-name
 """
     Forms for auto-reduction configuration
 
@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from report.models import Instrument
 from reduction.models import ReductionProperty, Choice
 import reduction.view_util
+
 
 def _get_choices(instrument):
     """
@@ -29,7 +30,8 @@ def _get_choices(instrument):
             form_choices.append((item.value, item.description))
     except:
         logging.error("_get_choices: %s instrument or grouping does not exist\n %s", instrument.upper(), sys.exc_value)
-    return sorted(form_choices, cmp=lambda x, y:cmp(x[0], y[0]))
+    return sorted(form_choices, cmp=lambda x, y: cmp(x[0], y[0]))
+
 
 def validate_integer_list(value):
     """
@@ -46,6 +48,7 @@ def validate_integer_list(value):
                     int(item.strip())
                 except:
                     raise ValidationError(u'Error parsing %s for a range of integers' % value)
+
 
 def validate_float_list(value):
     """
@@ -66,6 +69,7 @@ class BaseReductionConfigurationForm(forms.Form):
     """
         Base class for reduction form
     """
+
     def __init__(self, *args, **kwargs):
         super(BaseReductionConfigurationForm, self).__init__(*args, **kwargs)
 
@@ -109,14 +113,16 @@ class BaseReductionConfigurationForm(forms.Form):
                 template_dict[key] = ''
         return template_dict
 
+
 class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     """
         Generic form for DGS reduction instruments
     """
     mask = forms.CharField(required=False, initial='')
-    sub_directory = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
-    raw_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
-    processed_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
+    sub_directory = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class': 'font_resize'}))
+    raw_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class': 'font_resize'}))
+    processed_vanadium = forms.CharField(required=False, initial='',
+                                         widget=forms.TextInput(attrs={'class': 'font_resize'}))
     vanadium_integration_min = forms.FloatField(required=True, initial=84000)
     vanadium_integration_max = forms.FloatField(required=True, initial=94000)
     grouping = forms.ChoiceField(choices=[])
@@ -128,8 +134,10 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     tib_max = forms.CharField(required=False, initial="", validators=[validate_float_list])
     do_tib = forms.BooleanField(required=False)
     t0 = forms.CharField(required=False, initial="", validators=[validate_float_list])
-    motor_names = forms.CharField(required=False, initial='huber,SERotator2,OxDilRot,CCR13VRot,SEOCRot,CCR10G2Rot,Ox2WeldRot,ThreeSampleRot')
-    temperature_names = forms.CharField(required=False, initial='SampleTemp,sampletemp,SensorC,SensorB,SensorA,temp5,temp8')
+    motor_names = forms.CharField(
+        required=False, initial='huber,SERotator2,OxDilRot,CCR13VRot,SEOCRot,CCR10G2Rot,Ox2WeldRot,ThreeSampleRot')
+    temperature_names = forms.CharField(
+        required=False, initial='SampleTemp,sampletemp,SensorC,SensorB,SensorA,temp5,temp8')
     create_elastic_nxspe = forms.BooleanField(required=False)
     create_md_nxs = forms.BooleanField(required=False)
     a = forms.FloatField(required=True, initial=7.76)
@@ -167,8 +175,9 @@ class ReductionConfigurationDGSForm(BaseReductionConfigurationForm):
         Generic form for DGS reduction instruments
     """
     mask = forms.CharField(required=False, initial='')
-    raw_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
-    processed_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
+    raw_vanadium = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class': 'font_resize'}))
+    processed_vanadium = forms.CharField(required=False, initial='',
+                                         widget=forms.TextInput(attrs={'class': 'font_resize'}))
     grouping = forms.ChoiceField(choices=[])
     e_min = forms.FloatField(required=True, initial=-0.2)
     e_step = forms.FloatField(required=True, initial=0.015)
@@ -202,10 +211,12 @@ class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
         Generic form for Corelli reduction instruments
     """
     mask = forms.CharField(required=False, initial='')
-    plot_requests = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
-    ub_matrix_file = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
-    vanadium_flux_file = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
-    vanadium_SA_file = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class' : 'font_resize'}))
+    plot_requests = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class': 'font_resize'}))
+    ub_matrix_file = forms.CharField(required=False, initial='', widget=forms.TextInput(attrs={'class': 'font_resize'}))
+    vanadium_flux_file = forms.CharField(required=False, initial='',
+                                         widget=forms.TextInput(attrs={'class': 'font_resize'}))
+    vanadium_SA_file = forms.CharField(required=False, initial='',
+                                       widget=forms.TextInput(attrs={'class': 'font_resize'}))
     useCC = forms.BooleanField(required=False)
 
     # List of field that are used in the template
@@ -371,7 +382,7 @@ class PlottingForm(forms.Form):
             if 'perpendicular_to' in item.cleaned_data and \
                 len(item.cleaned_data['perpendicular_to'].strip()) > 0 and \
                 'minimum' in item.cleaned_data and \
-                'maximum' in item.cleaned_data:
+                    'maximum' in item.cleaned_data:
                 plot_info.append({'PerpendicularTo': str(item.cleaned_data['perpendicular_to']),
                                   'Minimum': str(item.cleaned_data['minimum']),
                                   'Maximum': str(item.cleaned_data['maximum'])})
@@ -393,7 +404,7 @@ class PlottingForm(forms.Form):
             entry_dict = {}
             if 'PerpendicularTo' in plot and \
                 'Minimum' in plot and \
-                'Maximum' in plot:
+                    'Maximum' in plot:
                 entry_dict['perpendicular_to'] = plot['PerpendicularTo']
                 try:
                     entry_dict['minimum'] = float(plot['Minimum'])
@@ -405,4 +416,3 @@ class PlottingForm(forms.Form):
                     entry_dict['maximum'] = 0.05
                 plot_info.append(entry_dict)
         return plot_info
-

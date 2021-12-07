@@ -1,4 +1,3 @@
-#pylint: disable=bare-except, invalid-name, too-many-nested-blocks, unused-argument, line-too-long, consider-using-enumerate
 """
     Status monitor utilities to support 'report' views
 
@@ -14,7 +13,8 @@ import string
 import httplib
 import re
 import hashlib
-from report.models import DataRun, RunStatus, IPTS, Instrument, Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary
+from report.models import (DataRun, RunStatus, IPTS, Instrument,
+                           Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary)
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
@@ -25,6 +25,7 @@ from django.core.cache import cache
 
 import dasmon.view_util
 import reporting_app.view_util
+
 
 def generate_key(instrument, run_id):
     """
@@ -42,6 +43,7 @@ def generate_key(instrument, run_id):
         h.update("%s%s%s" % (instrument.upper(), secret_key, run_id))
         return h.hexdigest()
 
+
 def append_key(input_url, instrument, run_id):
     """
         Append a live data secret key to a url
@@ -55,6 +57,7 @@ def append_key(input_url, instrument, run_id):
     # Determine whether this is the first query string argument of the url
     delimiter = '&' if '/?' in input_url else '?'
     return "%s%skey=%s" % (input_url, delimiter, client_key)
+
 
 def fill_template_values(request, **template_args):
     """
@@ -98,6 +101,7 @@ def fill_template_values(request, **template_args):
 
     return template_args
 
+
 def needs_reduction(request, run_id):
     """
         Determine whether we need a reduction link to
@@ -117,10 +121,11 @@ def needs_reduction(request, run_id):
                                 input_queue_id=red_queue)
     if len(tasks) == 1 and \
         (tasks[0].task_class is None or len(tasks[0].task_class) == 0) \
-        and len(tasks[0].task_queue_ids.all()) == 0:
+            and len(tasks[0].task_queue_ids.all()) == 0:
         return False
 
     return True
+
 
 def send_processing_request(instrument_id, run_id, user=None, destination=None, is_complete=False):
     """
@@ -169,7 +174,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
                  'ipts': ipts,
                  'run_number': run_id.run_number,
                  'data_file': file_path
-                }
+                 }
     if is_complete is True:
         data_dict['is_complete'] = 'true'
     if user is not None:
@@ -178,6 +183,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
     data = json.dumps(data_dict)
     reporting_app.view_util.send_activemq_message(destination, data)
     logging.info("Reduction requested: %s", str(data))
+
 
 def processing_request(request, instrument, run_id, destination):
     """
@@ -196,8 +202,9 @@ def processing_request(request, instrument, run_id, destination):
         logging.error("Could not send post-processing request: %s", destination)
         logging.error(sys.exc_value)
         return HttpResponseServerError()
-    #return render(request, 'report/processing_request_failure.html', {})
+    # return render(request, 'report/processing_request_failure.html', {})
     return redirect(reverse('report:detail', args=[instrument, run_id]))
+
 
 def retrieve_rates(instrument_id, last_run_id):
     """
@@ -236,6 +243,7 @@ def retrieve_rates(instrument_id, last_run_id):
 
     return runs, errors
 
+
 @transaction.atomic
 def run_rate(instrument_id, n_hours=24):
     """
@@ -267,6 +275,7 @@ def run_rate(instrument_id, n_hours=24):
             running_sum += n
             runs.append([-i, n])
         return runs
+
 
 @transaction.atomic
 def error_rate(instrument_id, n_hours=24):
@@ -301,6 +310,7 @@ def error_rate(instrument_id, n_hours=24):
             errors.append([-i, n])
         return errors
 
+
 def get_current_status(instrument_id):
     """
         Get current status information such as the last
@@ -318,7 +328,7 @@ def get_current_status(instrument_id):
         last_expt_id = last_run_id.ipts_id
 
     r_rate, e_rate = retrieve_rates(instrument_id, last_run_id)
-    data_dict = {'run_rate':r_rate, 'error_rate':e_rate}
+    data_dict = {'run_rate': r_rate, 'error_rate': e_rate}
 
     if last_run_id is not None:
         localtime = timezone.localtime(last_run_id.created_on)
@@ -333,6 +343,7 @@ def get_current_status(instrument_id):
 
     return data_dict
 
+
 def is_acquisition_complete(run_id):
     """
         Determine whether the acquisition is complete and post-processing
@@ -343,6 +354,7 @@ def is_acquisition_complete(run_id):
                                             queue_id__name='POSTPROCESS.DATA_READY')
     return len(status_items) > 0
 
+
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
     """
         Get the health status of post-processing services
@@ -351,9 +363,9 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
     """
     # The cataloging and reduction status is more confusing than anything,
     # so we are phasing it out.
-    return {"catalog":0, "reduction":0}
+    return {"catalog": 0, "reduction": 0}
 
-    status_dict = {"catalog":2, "reduction":2}
+    status_dict = {"catalog": 2, "reduction": 2}
     delta_short = datetime.timedelta(seconds=yellow_timeout)
     delta_long = datetime.timedelta(hours=red_timeout)
 
@@ -408,6 +420,7 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
 
     return status_dict
 
+
 def get_run_status_text(run_id, show_error=False, use_element_id=False):
     """
         Get a textual description of the current status
@@ -437,6 +450,7 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
         logging.error("report.view_util.get_run_status_text: %s", sys.exc_value)
     return status
 
+
 def get_run_list_dict(run_list):
     """
         Get a list of run object and transform it into a list of
@@ -456,14 +470,16 @@ def get_run_list_dict(run_list):
 
             run_dicts.append({"instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
                               "run": str("<a href='%s'>%s</a>" % (run_url, r.run_number)),
-                              "reduce_url": str("<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>" % (r.run_number, reduce_url, r.run_number)),
+                              "reduce_url": str("<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>"  # noqa: E501
+                                                % (r.run_number, reduce_url, r.run_number)),
                               "run_id": r.id,
                               "timestamp": str(df.format(settings.DATETIME_FORMAT)),
                               "status": get_run_status_text(r, use_element_id=True)
-                             })
+                              })
     except:
         logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
     return run_dicts
+
 
 def extract_ascii_from_div(html_data, trace_id=None):
     """
@@ -488,8 +504,8 @@ def extract_ascii_from_div(html_data, trace_id=None):
                     if 'type' in trace and trace['type'] == 'scatter':
                         x = trace['x']
                         y = trace['y']
-                        dx = [0]*len(x)
-                        dy = [0]*len(y)
+                        dx = [0] * len(x)
+                        dy = [0] * len(y)
                         if 'error_x' in trace and 'array' in trace['error_x']:
                             dx = trace['error_x']['array']
                         if 'error_y' in trace and 'array' in trace['error_y']:
@@ -502,6 +518,7 @@ def extract_ascii_from_div(html_data, trace_id=None):
         # Unable to extract data from <div>
         logging.debug("Unable to extract data from <div>: %s", sys.exc_value)
     return None
+
 
 def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     """
@@ -520,7 +537,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     url_template = string.Template(settings.LIVE_DATA_SERVER)
     live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
     live_data_url = "https://%s:%s%s" % (settings.LIVE_DATA_SERVER_DOMAIN,
-                               settings.LIVE_DATA_SERVER_PORT, live_data_url)
+                                         settings.LIVE_DATA_SERVER_PORT, live_data_url)
 
     # First option: html data
     html_data = get_plot_data_from_server(instrument, run_id, 'html')
@@ -551,6 +568,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     plot_dict['image_url'] = get_local_image_url(run_object)
     return plot_dict
 
+
 def get_local_image_url(run_object):
     """
         Get url for plot data served by this application
@@ -567,6 +585,7 @@ def get_local_image_url(run_object):
     except:
         logging.error("Error finding reduced image: %s", sys.exc_value)
     return image_url
+
 
 def get_plot_data_from_server(instrument, run_id, data_type='json'):
     """
@@ -590,6 +609,7 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
         logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
     return json_data
 
+
 def get_local_plot_data(run_object):
     """
         Get json data served by this application
@@ -602,11 +622,12 @@ def get_local_plot_data(run_object):
         json_data_list = JsonData.objects.filter(run_id=run_object)
         if len(json_data_list) > 0:
             json_data_entry = json_data_list.latest('created_on')
-            if json_data_entry is not None :
+            if json_data_entry is not None:
                 json_data = json_data_entry.data
     except:
         logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
     return json_data
+
 
 def extract_d3_data_from_json(json_data):
     """
@@ -647,7 +668,7 @@ def extract_d3_data_from_json(json_data):
                         x_label = data_dict['main_output']['axes']['xlabel']
                     if 'ylabel' in data_dict['main_output']['axes']:
                         y_label = data_dict['main_output']['axes']['ylabel']
-                if len(data_dict['main_output']['data']['1'])>3:
+                if len(data_dict['main_output']['data']['1']) > 3:
                     dx = data_dict['main_output']['data']['1'][3]
                     plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
                 else:
@@ -655,6 +676,7 @@ def extract_d3_data_from_json(json_data):
     except:
         logging.error("Error finding reduced json data: %s", sys.exc_value)
     return plot_data, x_label, y_label
+
 
 def find_skipped_runs(instrument_id, start_run_number=0):
     """

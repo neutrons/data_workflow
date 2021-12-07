@@ -9,6 +9,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.conf import settings
 from users.view_util import fill_template_values
 
+
 def perform_login(request):
     """
         Perform user authentication
@@ -20,7 +21,7 @@ def perform_login(request):
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
         if user is not None and not user.is_anonymous():
-            login(request,user)
+            login(request, user)
         else:
             login_failure = "Invalid username or password"
 
@@ -39,6 +40,7 @@ def perform_login(request):
                            'login_failure': login_failure}
         template_values = fill_template_values(request, **template_values)
         return render(request, 'users/authenticate.html', template_values)
+
 
 def perform_logout(request):
     """

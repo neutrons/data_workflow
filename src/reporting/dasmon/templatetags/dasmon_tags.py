@@ -1,5 +1,7 @@
 from django import template
 register = template.Library()
+
+
 @register.filter(name='is_number')
 def is_number(value):
     try:
@@ -7,7 +9,8 @@ def is_number(value):
         return True
     except:
         return False
-    
+
+
 @register.filter(name='strip')
 def strip(value):
     try:

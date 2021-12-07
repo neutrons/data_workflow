@@ -1,4 +1,4 @@
-#pylint: disable=too-many-branches, line-too-long, too-many-locals, too-many-statements, bare-except, invalid-name
+# pylint: disable=too-many-branches, line-too-long, too-many-locals, too-many-statements, bare-except, invalid-name
 """
     Utilities to compile the PVs stored in the web monitor DB.
 
@@ -12,6 +12,7 @@ from django.conf import settings
 import datetime
 import logging
 import time
+
 
 def get_live_variables(request, instrument_id, key_id=None):
     """
@@ -28,7 +29,8 @@ def get_live_variables(request, instrument_id, key_id=None):
             live_keys = []
             for key in live_keys_str:
                 key = key.strip()
-                if len(key) == 0: continue
+                if len(key) == 0:
+                    continue
                 # First try exact match, if no match than try case-insensitive exact match
                 key_ids = PVName.objects.filter(name__exact=key)
                 if len(key_ids) == 0:
@@ -93,6 +95,7 @@ def get_live_variables(request, instrument_id, key_id=None):
             logging.warning("Could not process %s: %s", key, str(sys.exc_value))
     return data_dict
 
+
 def get_cached_variables(instrument_id, monitored_only=False):
     """
         Get cached PV values for a given instrument
@@ -115,7 +118,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
                 item = {'key': str(kvp.name),
                         'value': string_value,
                         'timestamp': df.format(settings.DATETIME_FORMAT),
-                       }
+                        }
                 key_value_pairs.append(item)
 
     key_value_pairs = []
@@ -130,4 +133,3 @@ def get_cached_variables(instrument_id, monitored_only=False):
     _process_pvs(values)
 
     return key_value_pairs
-
