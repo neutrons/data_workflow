@@ -1,11 +1,18 @@
-FROM centos:7.6.1810
+FROM ubuntu:18.04
 
-RUN yum install -y epel-release; \
-    yum groupinstall -y 'development tools'; \
-    yum install -y python-pip python-devel \
-    postgresql-devel postgresql-contrib; \
-    pip install django==1.6.11 stomp.py==4.0.12 psycopg2==2.5.3; \
-    yum clean all; rm -rf /var/cache/yum
+ARG TERM=linux
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt -y update && \
+    apt -y upgrade
+
+RUN apt install -y \
+    python3-django \
+    python3-stomp \
+    python3-psycopg2 \
+    postgresql \
+    build-essential \
+    python3-setuptools
 
 WORKDIR /usr/src/data_workflow
 COPY ./src/. .

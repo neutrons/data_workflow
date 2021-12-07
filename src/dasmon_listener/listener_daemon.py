@@ -19,14 +19,14 @@ fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
 
 
-from amq_consumer import Client, Listener  # noqa: E402
+from .amq_consumer import Client, Listener  # noqa: E402
 
 # Daemon imports
 from workflow.daemon import Daemon  # noqa: E402
-from settings import brokers  # noqa: E402
-from settings import amq_user  # noqa: E402
-from settings import amq_pwd  # noqa: E402
-from settings import queues  # noqa: E402
+from .settings import brokers  # noqa: E402
+from .settings import amq_user  # noqa: E402
+from .settings import amq_pwd  # noqa: E402
+from .settings import queues  # noqa: E402
 
 
 class DasMonListenerDaemon(Daemon):

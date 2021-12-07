@@ -14,4 +14,4 @@ if [ ! -f /tmp/installed ]; then
 fi
 cd ${SETTINGS_DIR}
 
-gunicorn reporting_app.wsgi:application --bind 0.0.0.0:8000
+gunicorn3 reporting_app.wsgi:application --bind 0.0.0.0:8000

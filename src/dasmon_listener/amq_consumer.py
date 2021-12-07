@@ -21,11 +21,11 @@ if os.path.isfile("settings.py"):
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
 
-import settings  # noqa: E402
-from settings import INSTALLATION_DIR  # noqa: E402
-from settings import PURGE_TIMEOUT  # noqa: E402
-from settings import IMAGE_PURGE_TIMEOUT  # noqa: E402
-from settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
+from . import settings  # noqa: E402
+from .settings import INSTALLATION_DIR  # noqa: E402
+from .settings import PURGE_TIMEOUT  # noqa: E402
+from .settings import IMAGE_PURGE_TIMEOUT  # noqa: E402
+from .settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
 
 sys.path.append(INSTALLATION_DIR)
 
