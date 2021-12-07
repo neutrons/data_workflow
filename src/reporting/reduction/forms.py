@@ -8,6 +8,7 @@
 import sys
 import re
 import logging
+import functools
 from django import forms
 from django.core.exceptions import ValidationError
 from report.models import Instrument
@@ -30,7 +31,7 @@ def _get_choices(instrument):
             form_choices.append((item.value, item.description))
     except:
         logging.error("_get_choices: %s instrument or grouping does not exist\n %s", instrument.upper(), sys.exc_value)
-    return sorted(form_choices, cmp=lambda x, y: cmp(x[0], y[0]))
+    return sorted(form_choices, key=functools.cmp_to_key(lambda x, y: (x[0], y[0])))
 
 
 def validate_integer_list(value):
