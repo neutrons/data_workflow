@@ -5,10 +5,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-from file_handling.models import ReducedImage
-from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable
-from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification
-from django.utils import timezone
 import django
 import sys
 import time
@@ -19,11 +15,6 @@ import os
 import datetime
 import smtplib
 from email.mime.text import MIMEText
-import settings
-from settings import INSTALLATION_DIR
-from settings import PURGE_TIMEOUT
-from settings import IMAGE_PURGE_TIMEOUT
-from settings import MIN_NOTIFICATION_LEVEL
 
 if os.path.isfile("settings.py"):
     logging.warning("Using local settings.py file")
@@ -31,15 +22,26 @@ if os.path.isfile("settings.py"):
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
 
+import settings  # noqa: E402
+from settings import INSTALLATION_DIR  # noqa: E402
+from settings import PURGE_TIMEOUT  # noqa: E402
+from settings import IMAGE_PURGE_TIMEOUT  # noqa: E402
+from settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
+
 sys.path.append(INSTALLATION_DIR)
 
 if django.VERSION[1] >= 7:
     django.setup()
+from django.utils import timezone  # noqa: E402
 
+from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification  # noqa: E402
+from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable  # noqa: E402
 try:
     from report.models import Instrument
 except:
     from workflow.database.report.models import Instrument
+from file_handling.models import ReducedImage  # noqa: E402
+
 
 # ACK data
 acks = {}
