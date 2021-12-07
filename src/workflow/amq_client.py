@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, too-many-instance-attributes, too-many-arguments, invalid-name, line-too-long
+# pylint: disable=bare-except, too-many-instance-attributes, too-many-arguments, invalid-name, line-too-long
 """
     ActiveMQ workflow manager client
 
@@ -18,6 +18,7 @@ try:
     from . import __version__ as version
 except:
     version = 'development'
+
 
 class Client(object):
     """
@@ -56,14 +57,14 @@ class Client(object):
         if self._queues is None:
             self._queues = get_message_queues(True)
 
-        ## Delay between workflow check [in seconds]
-        self._workflow_check_delay = 60.0*60.0*check_frequency
+        # Delay between workflow check [in seconds]
+        self._workflow_check_delay = 60.0 * 60.0 * check_frequency
         self._workflow_check_start = time.time()
         self._workflow_check = workflow_check
         self._workflow_recovery = workflow_recovery
         self._flexible_tasks = flexible_tasks
 
-        ## Listener used for dealing with incoming messages
+        # Listener used for dealing with incoming messages
         self._listener = None
 
         startup_msg = "Starting Workflow Manager client %s\n" % self._consumer_name
@@ -75,7 +76,8 @@ class Client(object):
             startup_msg += "  Time between checks: %s seconds\n" % str(self._workflow_check_delay)
             startup_msg += "  Recovery enabled?    %s\n" % str(self._workflow_recovery)
             if self._workflow_recovery:
-                startup_msg += "  Delay since last activity before attempting recovery: %s seconds\n" % str(self._workflow_check_delay)
+                startup_msg += "  Delay since last activity before attempting recovery: %s seconds\n" % str(
+                    self._workflow_check_delay)
         logging.info(startup_msg)
 
     def set_listener(self, listener):
@@ -105,7 +107,7 @@ class Client(object):
         if consumer_name is None:
             consumer_name = self._consumer_name
         logging.info("[%s] Connecting to %s", consumer_name, str(self._brokers))
-        if stomp.__version__[0]<4:
+        if stomp.__version__[0] < 4:
             conn = stomp.Connection(host_and_ports=self._brokers,
                                     user=self._user,
                                     passcode=self._passcode,
@@ -180,13 +182,13 @@ class Client(object):
                 time.sleep(waiting_period)
 
                 try:
-                    if time.time()-last_heartbeat>5:
+                    if time.time() - last_heartbeat > 5:
                         last_heartbeat = time.time()
                         data_dict = {"src_name": "workflowmgr",
                                      "status": "0",
                                      "pid": str(os.getpid())}
                         message = json.dumps(data_dict)
-                        if stomp.__version__[0]<4:
+                        if stomp.__version__[0] < 4:
                             self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0",
                                                   message=message,
                                                   persistent='false')
@@ -197,7 +199,7 @@ class Client(object):
                     logging.error("Problem sending heartbeat: %s", sys.exc_value)
 
                 # Check for workflow completion
-                if time.time()-self._workflow_check_start>self._workflow_check_delay:
+                if time.time() - self._workflow_check_start > self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
             except:

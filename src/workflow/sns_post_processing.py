@@ -1,14 +1,19 @@
 #!/usr/bin/env python
-#pylint: disable=invalid-name, line-too-long, too-many-arguments
+# pylint: disable=invalid-name, line-too-long, too-many-arguments
 """
     Workflow manager process
 """
 import os
 import sys
+import argparse
+import logging
 from multiprocessing import Process
 from amq_client import Client
 from amq_listener import Listener
-from settings import brokers
+from settings import brokers, LOGGING_LEVEL
+from daemon import Daemon
+from database import transactions
+
 
 # Backward compatibility protection
 import settings
@@ -17,13 +22,6 @@ if hasattr(settings, 'wkflow_user') and hasattr(settings, 'wkflow_passcode'):
 else:
     from settings import icat_user as wkflow_user
     from settings import icat_passcode as wkflow_passcode
-
-from settings import LOGGING_LEVEL
-from daemon import Daemon
-from database import transactions
-
-import argparse
-import logging
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)
@@ -42,6 +40,7 @@ class WorkflowDaemon(Daemon):
     """
         Workflow daemon
     """
+
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null',
                  check_frequency=None, workflow_recovery=False, flexible_tasks=False):
         """
@@ -83,6 +82,7 @@ class WorkflowDaemon(Daemon):
         c.set_listener(listener)
         c.listen_and_wait(0.1)
 
+
 def run_daemon(pid_file, stdout_file, stderr_file, check_frequency, recover, flexible_tasks, command):
     """
         Start daemon
@@ -99,6 +99,7 @@ def run_daemon(pid_file, stdout_file, stderr_file, check_frequency, recover, fle
         daemon.stop()
     elif command == 'restart':
         daemon.restart()
+
 
 def run():
     """
@@ -184,10 +185,10 @@ def run():
     number_of_processes = 1
     if number_of_processes == 1:
         run_daemon('/tmp/workflow.pid', stdout_file, stderr_file,
-                                        check_frequency,
-                                        recover,
-                                        flexible_tasks,
-                                        namespace.command)
+                   check_frequency,
+                   recover,
+                   flexible_tasks,
+                   namespace.command)
     else:
         for i in range(number_of_processes):
             p = Process(target=run_daemon, args=('/tmp/workflow%d.pid' % i, stdout_file, stderr_file,
@@ -199,6 +200,7 @@ def run():
             p.join()
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     run()

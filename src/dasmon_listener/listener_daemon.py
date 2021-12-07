@@ -1,6 +1,12 @@
 """
     DASMON listener daemon
 """
+from settings import queues
+from settings import amq_pwd
+from settings import amq_user
+from settings import brokers
+from workflow.daemon import Daemon
+from amq_consumer import Client, Listener
 import sys
 import argparse
 
@@ -18,19 +24,15 @@ fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
 
-from amq_consumer import Client, Listener
 
 # Daemon imports
-from workflow.daemon import Daemon
-from settings import brokers
-from settings import amq_user
-from settings import amq_pwd
-from settings import queues
+
 
 class DasMonListenerDaemon(Daemon):
     """
         DASMON listener daemon
     """
+
     def run(self):
         """
             Run the dasmon listener daemon
@@ -39,6 +41,7 @@ class DasMonListenerDaemon(Daemon):
                    queues, "dasmon_listener")
         c.set_listener(Listener())
         c.listen_and_wait(0.01)
+
 
 def run():
     """
@@ -64,6 +67,7 @@ def run():
         daemon.restart()
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     run()

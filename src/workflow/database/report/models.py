@@ -1,6 +1,7 @@
 from django.db import models
 import json
 
+
 class InstrumentManager(models.Manager):
     def find_instrument(self, instrument):
         """
@@ -49,6 +50,7 @@ class Instrument(models.Model):
         """
         return IPTS.objects.filter(instruments=self).count()
 
+
 class IPTSManager(models.Manager):
 
     def ipts_for_instrument(self, instrument_id):
@@ -58,12 +60,14 @@ class IPTSManager(models.Manager):
         """
             Get the last experiment object for a given instrument.
             Returns None if nothing was found.
-            @param instrument_id: Instrument object 
+            @param instrument_id: Instrument object
         """
-        ipts_query = super(IPTSManager, self).get_queryset().filter(instruments=instrument_id).order_by('created_on').reverse()
-        if len(ipts_query)>0:
+        ipts_query = super(IPTSManager, self).get_queryset().filter(
+            instruments=instrument_id).order_by('created_on').reverse()
+        if len(ipts_query) > 0:
             return ipts_query[0]
         return None
+
 
 class IPTS(models.Model):
     """
@@ -91,6 +95,7 @@ class IPTS(models.Model):
             return DataRun.objects.filter(ipts_id=self).distinct().count()
         return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id).distinct().count()
 
+
 class DataRunManager(models.Manager):
 
     def get_last_run(self, instrument_id, ipts_id=None):
@@ -103,8 +108,9 @@ class DataRunManager(models.Manager):
         if ipts_id is None:
             last_run_query = super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id)
         else:
-            last_run_query = super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id, ipts_id=ipts_id)
-        if len(last_run_query)>0:
+            last_run_query = super(DataRunManager, self).get_queryset().filter(
+                instrument_id=instrument_id, ipts_id=ipts_id)
+        if len(last_run_query) > 0:
             last_run_query = last_run_query.order_by('created_on').reverse()
             return last_run_query[0]
         return None
@@ -126,6 +132,7 @@ class DataRunManager(models.Manager):
                 instrument = InstrumentStatus(instrument_id=instrument_id, last_run_id=last_run_id)
                 instrument.save()
         return last_run_id
+
 
 class DataRun(models.Model):
     """
@@ -152,9 +159,9 @@ class DataRun(models.Model):
         """
         # Create a run object
         run_id = cls(run_number=run_number,
-                    instrument_id=instrument_id,
-                    ipts_id=ipts_id,
-                    file=file)
+                     instrument_id=instrument_id,
+                     ipts_id=ipts_id,
+                     file=file)
         run_id.save()
 
         # Update the instrument status
@@ -185,9 +192,9 @@ class DataRun(models.Model):
         """
             Return last error
         """
-        errors = Error.objects.filter(run_status_id__run_id=self)#.order_by('-run_status_id__created_on')        
-        if len(errors)>0:
-            return errors[len(errors)-1].description
+        errors = Error.objects.filter(run_status_id__run_id=self)  # .order_by('-run_status_id__created_on')
+        if len(errors) > 0:
+            return errors[len(errors) - 1].description
         return None
 
     def json_encode(self):
@@ -198,6 +205,7 @@ class DataRun(models.Model):
                            "ipts": str(self.ipts_id),
                            "run_number": self.run_number,
                            "data_file": self.file})
+
 
 class StatusQueue(models.Model):
     """
@@ -224,7 +232,7 @@ class RunStatusManager(models.Manager):
             @param status_description: status message, as a string
         """
         status_ids = StatusQueue.objects.filter(name__startswith=status_description)
-        if len(status_ids)>0:
+        if len(status_ids) > 0:
             status_id = status_ids[0]
             return super(RunStatusManager, self).get_queryset().filter(run_id=run_id, queue_id=status_id)
         return []
@@ -235,7 +243,7 @@ class RunStatusManager(models.Manager):
             @param run_id: DataRun object
         """
         timestamps = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by('-created_on')
-        if len(timestamps)>0:
+        if len(timestamps) > 0:
             return timestamps[0].created_on
         return None
 
@@ -246,19 +254,20 @@ class RunStatusManager(models.Manager):
                 return item.last_error()
         return None
 
+
 class RunStatus(models.Model):
     """
         Map ActiveMQ messages, which have a header like this:
-        headers: {'expires': '0', 'timestamp': '1344613053723', 
-                  'destination': '/queue/POSTPROCESS.DATA_READY', 
-                  'persistent': 'true', 'priority': '5', 
+        headers: {'expires': '0', 'timestamp': '1344613053723',
+                  'destination': '/queue/POSTPROCESS.DATA_READY',
+                  'persistent': 'true', 'priority': '5',
                   'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
     """
-    ## DataRun this run status belongs to
+    # DataRun this run status belongs to
     run_id = models.ForeignKey(DataRun)
-    ## Long name for this status
+    # Long name for this status
     queue_id = models.ForeignKey(StatusQueue)
-    ## ActiveMQ message ID
+    # ActiveMQ message ID
     message_id = models.CharField(max_length=100, null=True)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
 
@@ -276,7 +285,7 @@ class RunStatus(models.Model):
             Return the last available information object for this status
         """
         info_list = Information.objects.filter(run_status_id=self)
-        if len(info_list)>0:
+        if len(info_list) > 0:
             return info_list[0]
         return None
 
@@ -285,12 +294,13 @@ class RunStatus(models.Model):
             Return the last available error object for this status
         """
         error_list = Error.objects.filter(run_status_id=self)
-        if len(error_list)>0:
+        if len(error_list) > 0:
             return error_list[0]
         return None
 
     def has_errors(self):
-        return Error.objects.filter(run_status_id=self).count()>0
+        return Error.objects.filter(run_status_id=self).count() > 0
+
 
 class WorkflowSummaryManager(models.Manager):
 
@@ -306,9 +316,10 @@ class WorkflowSummaryManager(models.Manager):
             @param run_id: DataRun object
         """
         run_list = super(WorkflowSummaryManager, self).get_queryset().filter(run_id=run_id)
-        if len(run_list)>0:
+        if len(run_list) > 0:
             return run_list[0]
         return None
+
 
 class WorkflowSummary(models.Model):
     """
@@ -351,27 +362,27 @@ class WorkflowSummary(models.Model):
         self.complete = False
 
         # Look for cataloging status
-        if len(RunStatus.objects.status(self.run_id, 'CATALOG.COMPLETE'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'CATALOG.COMPLETE')) > 0:
             self.cataloged = True
-        if len(RunStatus.objects.status(self.run_id, 'CATALOG.STARTED'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'CATALOG.STARTED')) > 0:
             self.catalog_started = True
 
         # Check whether we need reduction (default is no)
-        if len(RunStatus.objects.status(self.run_id, 'REDUCTION.NOT_NEEDED'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'REDUCTION.NOT_NEEDED')) > 0:
             self.reduction_needed = False
-        elif len(RunStatus.objects.status(self.run_id, 'REDUCTION.DISABLED'))>0:
+        elif len(RunStatus.objects.status(self.run_id, 'REDUCTION.DISABLED')) > 0:
             self.reduction_needed = False
 
         # Look for reduction status
-        if len(RunStatus.objects.status(self.run_id, 'REDUCTION.COMPLETE'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'REDUCTION.COMPLETE')) > 0:
             self.reduced = True
-        if len(RunStatus.objects.status(self.run_id, 'REDUCTION.STARTED'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'REDUCTION.STARTED')) > 0:
             self.reduction_started = True
 
         # Look for status of reduced data cataloging
-        if len(RunStatus.objects.status(self.run_id, 'REDUCTION_CATALOG.COMPLETE'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'REDUCTION_CATALOG.COMPLETE')) > 0:
             self.reduction_cataloged = True
-        if len(RunStatus.objects.status(self.run_id, 'REDUCTION_CATALOG.STARTED'))>0:
+        if len(RunStatus.objects.status(self.run_id, 'REDUCTION_CATALOG.STARTED')) > 0:
             self.reduction_catalog_started = True
 
         # Determine overall status
@@ -386,7 +397,7 @@ class WorkflowSummary(models.Model):
 class Error(models.Model):
     """
         Details of a particular error event
-    """   
+    """
     run_status_id = models.ForeignKey(RunStatus)
     description = models.CharField(max_length=200, null=True)
 
@@ -438,21 +449,22 @@ class TaskManager(models.Manager):
 
         return sql
 
+
 class Task(models.Model):
     """
         Define a task
     """
-    ## Instrument ID
+    # Instrument ID
     instrument_id = models.ForeignKey(Instrument)
-    ## Message queue that starts this task
+    # Message queue that starts this task
     input_queue_id = models.ForeignKey(StatusQueue)
-    ## Python class to be instantiated and run
+    # Python class to be instantiated and run
     task_class = models.CharField(max_length=50, null=True, blank=True)
-    ## Output messages to be sent
+    # Output messages to be sent
     task_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_task_queue_ids+', blank=True)
-    ## Expected success messages from tasks
+    # Expected success messages from tasks
     # Map one-to-one with task queue IDs
-    success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+', blank=True) 
+    success_queue_ids = models.ManyToManyField(StatusQueue, related_name='_task_success_queue_ids+', blank=True)
     objects = TaskManager()
 
     class Meta:
@@ -479,6 +491,7 @@ class Task(models.Model):
                            "task_class": self.task_class,
                            "task_queues": [str(q) for q in self.task_queue_ids.all()],
                            "success_queues": [str(q) for q in self.success_queue_ids.all()]})
+
 
 class InstrumentStatus(models.Model):
     """

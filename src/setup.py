@@ -1,6 +1,5 @@
 from setuptools import setup
 import workflow
-import subprocess
 
 SETUP_ARGS = dict(
     name="workflow",
@@ -13,8 +12,8 @@ SETUP_ARGS = dict(
     long_description=open('README.md').read(),
     platforms=['POSIX'],
     options={'clean': {'all': 1}},
-    zip_safe = False,
-    entry_points = {'console_scripts':["workflowmgr = workflow.sns_post_processing:run",]},
+    zip_safe=False,
+    entry_points={'console_scripts': ["workflowmgr = workflow.sns_post_processing:run", ]},
     packages=["workflow", "workflow.database", "workflow.database.report"],
         classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -28,7 +27,7 @@ SETUP_ARGS = dict(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Distributed Computing',
         'Topic :: System :: Networking',
-        ],
+    ],
 
 )
 
