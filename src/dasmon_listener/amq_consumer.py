@@ -5,7 +5,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import django
 import sys
 import time
 import stomp
@@ -30,6 +29,7 @@ from settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
 
 sys.path.append(INSTALLATION_DIR)
 
+import django  # noqa: E402
 if django.VERSION[1] >= 7:
     django.setup()
 from django.utils import timezone  # noqa: E402

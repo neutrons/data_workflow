@@ -1,12 +1,6 @@
 """
     DASMON listener daemon
 """
-from settings import queues
-from settings import amq_pwd
-from settings import amq_user
-from settings import brokers
-from workflow.daemon import Daemon
-from amq_consumer import Client, Listener
 import sys
 import argparse
 
@@ -25,7 +19,14 @@ fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
 
 
+from amq_consumer import Client, Listener  # noqa: E402
+
 # Daemon imports
+from workflow.daemon import Daemon  # noqa: E402
+from settings import brokers  # noqa: E402
+from settings import amq_user  # noqa: E402
+from settings import amq_pwd  # noqa: E402
+from settings import queues  # noqa: E402
 
 
 class DasMonListenerDaemon(Daemon):

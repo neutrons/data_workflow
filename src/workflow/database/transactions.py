@@ -2,8 +2,6 @@
 """
     Perform DB transactions
 """
-from django.db import transaction
-import django
 import six
 import sys
 import os
@@ -12,6 +10,7 @@ import logging
 import traceback
 # The workflow modules must be on the python path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "workflow.database.settings")
+import django  # noqa: E402
 if django.VERSION[1] >= 7:
     django.setup()
     from workflow.database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
@@ -23,6 +22,8 @@ else:
     # Import your models for use in your script
     from report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
     from report.models import IPTS, Instrument, Error, Information, Task
+
+from django.db import transaction  # noqa: E402
 
 
 @transaction.atomic
