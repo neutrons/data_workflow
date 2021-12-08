@@ -1,7 +1,4 @@
 # Django settings for reporting_app project.
-from workflow.database.settings import icat_passcode as amq_pwd  # noqa: F401
-from workflow.database.settings import icat_user as amq_user  # noqa: F401
-from workflow.database.settings import brokers  # noqa: F401
 import os  # noqa: F401
 import django  # noqa: F401
 
@@ -25,6 +22,9 @@ INSTALLED_APPS = (
     ActiveMQ settings
 """
 # List of brokers
+from workflow.database.settings import brokers  # noqa: F401, E402
+from workflow.database.settings import icat_user as amq_user  # noqa: F401, E402
+from workflow.database.settings import icat_passcode as amq_pwd  # noqa: F401, E402
 
 PING_TOPIC = "/topic/SNS.COMMON.STATUS.PING"
 ACK_TOPIC = "/topic/SNS.COMMON.STATUS.ACK"
