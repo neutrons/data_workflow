@@ -92,7 +92,7 @@ def get_live_variables(request, instrument_id, key_id=None):
             data_dict.append([key, data_list])
         except:
             # Could not find data for this key
-            logging.warning("Could not process %s: %s", key, str(sys.exc_value))
+            logging.warning("Could not process %s: %s", key, str(sys.exc_info()[1]))
     return data_dict
 
 

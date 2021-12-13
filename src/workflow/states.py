@@ -4,10 +4,10 @@
     To add an action for a specific queue, add a StateAction class
     with the name of the queue in lower-case, replacing periods with underscores.
 """
-from state_utilities import logged_action
-from settings import POSTPROCESS_ERROR, CATALOG_DATA_READY
-from settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
-from database import transactions
+from .state_utilities import logged_action
+from .settings import POSTPROCESS_ERROR, CATALOG_DATA_READY
+from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
+from .database import transactions
 import json
 import logging
 import sys
@@ -60,7 +60,7 @@ class StateAction(object):
                 exec("from %s import %s as action_cls" % (module, cls))
                 action_cls(connection=self._send_connection)(headers, message)  # noqa: F821
             except:
-                logging.error("Task [%s] failed: %s" % (headers["destination"], sys.exc_value))
+                logging.error("Task [%s] failed: %s" % (headers["destination"], sys.exc_info()[1]))
         if 'task_queues' in task_def:
             for item in task_def['task_queues']:
                 destination = '/queue/%s' % item

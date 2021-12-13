@@ -33,7 +33,7 @@ def decode_time(timestamp):
                 date_time_str = date_time_str[:sec_location]
             return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S")
     except:
-        logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_value)
+        logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_info()[1])
         return None
 
 
@@ -112,6 +112,6 @@ def _get_run_info(instrument, ipts, run_number, facility='SNS'):
                 run_info['startTime'] = decode_time(datafile.metadata.get('entry', {}).get('start_time', None))
                 run_info['endTime'] = decode_time(datafile.metadata.get('entry', {}).get('end_time', None))
     except:
-        logging.error("Communication with ONCat server failed: %s", sys.exc_value)
+        logging.error("Communication with ONCat server failed: %s", sys.exc_info()[1])
 
     return run_info

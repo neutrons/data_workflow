@@ -8,22 +8,22 @@ import sys
 import argparse
 import logging
 from multiprocessing import Process
-from amq_client import Client
-from amq_listener import Listener
-from settings import brokers
+from .amq_client import Client
+from .amq_listener import Listener
+from .settings import brokers
 
 
 # Backward compatibility protection
-import settings
+from . import settings
 if hasattr(settings, 'wkflow_user') and hasattr(settings, 'wkflow_passcode'):
-    from settings import wkflow_user, wkflow_passcode
+    from .settings import wkflow_user, wkflow_passcode
 else:
-    from settings import icat_user as wkflow_user
-    from settings import icat_passcode as wkflow_passcode
+    from .settings import icat_user as wkflow_user
+    from .settings import icat_passcode as wkflow_passcode
 
-from settings import LOGGING_LEVEL  # noqa: F401
-from daemon import Daemon  # noqa: F401
-from database import transactions  # noqa: F401
+from .settings import LOGGING_LEVEL  # noqa: F401
+from .daemon import Daemon  # noqa: F401
+from .database import transactions  # noqa: F401
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)

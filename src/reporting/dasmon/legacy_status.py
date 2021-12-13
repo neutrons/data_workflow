@@ -30,12 +30,10 @@ def get_ops_status(instrument_id):
         r = conn.getresponse()
         data = json.loads(r.read())
         organized_data = []
-        groups = data.keys()
-        groups.sort()
+        groups = sorted(data.keys())
         for group in groups:
             key_value_pairs = []
-            keys = data[group].keys()
-            keys.sort()
+            keys = sorted(data[group].keys())
             for item in keys:
                 key_value_pairs.append(
                     {'key': item.replace(' ', '_').replace('(%)', '[pct]')
@@ -45,7 +43,7 @@ def get_ops_status(instrument_id):
                                    'data': key_value_pairs})
         return organized_data
     except:
-        logging.warning("Could not get legacy DAS status: %s" % sys.exc_value)
+        logging.warning("Could not get legacy DAS status: %s" % sys.exc_info()[1])
         return []
 
 

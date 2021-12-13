@@ -109,7 +109,7 @@ def configuration_ref_m(request, instrument):
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
                 error_msg.append("Error processing request")
         else:
             logging.error("Invalid form %s", options_form.errors)
@@ -189,7 +189,7 @@ def configuration_cncs(request, instrument):
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
                 error_msg.append("Error processing request")
         else:
             logging.error("Invalid form %s %s", options_form.errors, mask_form.errors)
@@ -277,7 +277,7 @@ def configuration_dgs(request, instrument):
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
                 error_msg.append("Error processing request")
         else:
             logging.error("Invalid form %s %s", options_form.errors, mask_form.errors)
@@ -376,7 +376,7 @@ def configuration_corelli(request, instrument):
                 view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse('reduction:configuration', args=[instrument]))
             except:
-                logging.error("Error sending AMQ script request: %s", sys.exc_value)
+                logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
                 error_msg.append("Error processing request")
         else:
             logging.error("Invalid form %s %s", options_form.errors, mask_form.errors)
@@ -392,12 +392,12 @@ def configuration_corelli(request, instrument):
             try:
                 mask_list = forms.MaskForm.from_dict_list(params_dict['mask'])
             except:
-                logging.error("Error evaluating the mask information: %s", sys.exc_value)
+                logging.error("Error evaluating the mask information: %s", sys.exc_info()[1])
         if 'plot_requests' in params_dict:
             try:
                 plot_list = forms.PlottingForm.from_dict_list(params_dict['plot_requests'])
             except:
-                logging.error("Error evaluating the plotting information: %s", sys.exc_value)
+                logging.error("Error evaluating the plotting information: %s", sys.exc_info()[1])
         mask_form = MaskFormSet(initial=mask_list)
         plot_form = PlotFormSet(initial=plot_list)
 
@@ -446,19 +446,19 @@ def configuration_change(request, instrument):
                 template_dict[item['key']] = item['value']
                 view_util.store_property(instrument_id, item['key'], item['value'], user=request.user)
             except:
-                logging.error("config_change: %s", sys.exc_value)
+                logging.error("config_change: %s", sys.exc_info()[1])
 
         # Check whether the user wants to install the default script
         if 'use_default' in request.POST:
             try:
                 template_dict['use_default'] = int(request.POST['use_default']) == 1
             except:
-                logging.error("Error parsing use_default parameter: %s", sys.exc_value)
+                logging.error("Error parsing use_default parameter: %s", sys.exc_info()[1])
         # Send ActiveMQ request
         try:
             view_util.send_template_request(instrument_id, template_dict, user=request.user)
         except:
-            logging.error("Error sending AMQ script request: %s", sys.exc_value)
+            logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
             return HttpResponse("Error processing request", status=500)
 
     data_dict = {}

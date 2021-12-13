@@ -454,7 +454,7 @@ def acknowledge_signal(request, instrument, sig_id):
         sig_object = get_object_or_404(Signal, id=sig_id)
         sig_object.delete()
     except:
-        logging.error("ACK signal %s/%s: %s" % (instrument, sig_id, sys.exc_value))
+        logging.error("ACK signal %s/%s: %s" % (instrument, sig_id, sys.exc_info()[1]))
     return HttpResponse()
 
 
@@ -509,12 +509,12 @@ def notifications(request):
                         user_options.save()
                     except:
                         alert_list.append("Could not find instrument %s" % item)
-                        logging.error("Notification registration failed: %s", sys.exc_value)
+                        logging.error("Notification registration failed: %s", sys.exc_info()[1])
                 alert_list.append("Your changes have been saved.")
 
             except:
                 alert_list.append("There was a problem processing your request.")
-                logging.error("Error processing notification settings: %s", sys.exc_value)
+                logging.error("Error processing notification settings: %s", sys.exc_info()[1])
         else:
             alert_list.append("Your form is invalid. Please modify your entries and re-submit.")
             logging.error("Invalid form %s", options_form.errors)

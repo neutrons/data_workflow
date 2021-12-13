@@ -50,5 +50,5 @@ def reduction_setup_url(instrument):
             import reduction.view_util
             return reduction.view_util.reduction_setup_url(instrument)
     except:
-        logging.error("Error getting reduction setup url: %s", sys.exc_value)
+        logging.error("Error getting reduction setup url: %s", sys.exc_info()[1])
     return None

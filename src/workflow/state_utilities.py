@@ -1,5 +1,5 @@
 import logging
-from database import transactions
+from .database import transactions
 import json
 
 

@@ -12,7 +12,9 @@ import six
 from reduction.models import ReductionProperty, PropertyModification, PropertyDefault
 import reporting_app.view_util
 import dasmon.view_util
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 
 
 def reduction_setup_url(instrument):
@@ -87,7 +89,7 @@ def send_template_request(instrument_id, template_dict, user='unknown'):
     encoded_dict = {}
     for key, value in template_dict.items():
         if isinstance(value, six.string_types):
-            encoded_dict[key] = urllib.quote_plus(value)
+            encoded_dict[key] = urllib.parse.quote_plus(value)
         else:
             encoded_dict[key] = value
 

@@ -39,7 +39,7 @@ class NonDeveloperUsers(admin.SimpleListFilter):
                 nodes = DeveloperNode.objects.all().values_list('ip', flat=True)
                 return queryset.exclude(user__is_staff=True).exclude(ip__in=nodes)
             except:
-                logging.error(sys.exc_value)
+                logging.error(sys.exc_info()[1])
 
         return queryset
 

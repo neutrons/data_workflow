@@ -12,8 +12,8 @@ import logging
 import json
 import os
 
-from database.transactions import get_message_queues
-from workflow_process import WorkflowProcess
+from .database.transactions import get_message_queues
+from .workflow_process import WorkflowProcess
 try:
     from . import __version__ as version
 except:
@@ -158,7 +158,7 @@ class Client(object):
                                 recovery=self._workflow_recovery,
                                 allowed_lag=self._workflow_check_delay).verify_workflow()
             except:
-                logging.error("Workflow verification failed: %s", sys.exc_value)
+                logging.error("Workflow verification failed: %s", sys.exc_info()[1])
 
     def listen_and_wait(self, waiting_period=1.0):
         """
@@ -171,7 +171,7 @@ class Client(object):
             self.connect()
             self.verify_workflow()
         except:
-            logging.error("Problem starting AMQ client: %s", sys.exc_value)
+            logging.error("Problem starting AMQ client: %s", sys.exc_info()[1])
 
         last_heartbeat = 0
         while True:
@@ -196,12 +196,12 @@ class Client(object):
                             self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message,
                                                   persistent='false')
                 except:
-                    logging.error("Problem sending heartbeat: %s", sys.exc_value)
+                    logging.error("Problem sending heartbeat: %s", sys.exc_info()[1])
 
                 # Check for workflow completion
                 if time.time() - self._workflow_check_start > self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
             except:
-                logging.error("Problem connecting to AMQ broker: %s", sys.exc_value)
+                logging.error("Problem connecting to AMQ broker: %s", sys.exc_info()[1])
                 time.sleep(5.0)

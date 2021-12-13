@@ -113,7 +113,7 @@ def needs_reduction(request, run_id):
     try:
         red_queue = StatusQueue.objects.get(name="REDUCTION.DATA_READY")
     except StatusQueue.DoesNotExist:
-        logging.error(sys.exc_value)
+        logging.error(sys.exc_info()[1])
         return False
 
     # Check whether we have a task for this queue
@@ -200,7 +200,7 @@ def processing_request(request, instrument, run_id, destination):
                                 destination=destination)
     except:
         logging.error("Could not send post-processing request: %s", destination)
-        logging.error(sys.exc_value)
+        logging.error(sys.exc_info()[1])
         return HttpResponseServerError()
     # return render(request, 'report/processing_request_failure.html', {})
     return redirect(reverse('report:detail', args=[instrument, run_id]))
@@ -262,7 +262,7 @@ def run_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:
         connection.close()
-        logging.error("Run rate (%s): %s", str(instrument_id), sys.exc_value)
+        logging.error("Run rate (%s): %s", str(instrument_id), sys.exc_info()[1])
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -295,7 +295,7 @@ def error_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:
         connection.close()
-        logging.error("Error rate (%s): %s", str(instrument_id), sys.exc_value)
+        logging.error("Error rate (%s): %s", str(instrument_id), sys.exc_info()[1])
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -416,7 +416,7 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
             status_dict["reduction"] = 0
     except:
         logging.error("Could not determine post-processing status")
-        logging.error(sys.exc_value)
+        logging.error(sys.exc_info()[1])
 
     return status_dict
 
@@ -447,7 +447,7 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
             else:
                 status = "<span %s class='red'>incomplete</span>" % element_id
     except:
-        logging.error("report.view_util.get_run_status_text: %s", sys.exc_value)
+        logging.error("report.view_util.get_run_status_text: %s", sys.exc_info()[1])
     return status
 
 
@@ -477,7 +477,7 @@ def get_run_list_dict(run_list):
                               "status": get_run_status_text(r, use_element_id=True)
                               })
     except:
-        logging.error("report.view_util.get_run_list_dict: %s", sys.exc_value)
+        logging.error("report.view_util.get_run_list_dict: %s", sys.exc_info()[1])
     return run_dicts
 
 
@@ -516,7 +516,7 @@ def extract_ascii_from_div(html_data, trace_id=None):
                 return ascii_data
     except:
         # Unable to extract data from <div>
-        logging.debug("Unable to extract data from <div>: %s", sys.exc_value)
+        logging.debug("Unable to extract data from <div>: %s", sys.exc_info()[1])
     return None
 
 
@@ -583,7 +583,7 @@ def get_local_image_url(run_object):
             if image is not None and bool(image.file) and os.path.isfile(image.file.path):
                 image_url = image.file.url
     except:
-        logging.error("Error finding reduced image: %s", sys.exc_value)
+        logging.error("Error finding reduced image: %s", sys.exc_info()[1])
     return image_url
 
 
@@ -606,7 +606,7 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
         if data_request.status == 200:
             json_data = data_request.read()
     except:
-        logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
     return json_data
 
 
@@ -625,7 +625,7 @@ def get_local_plot_data(run_object):
             if json_data_entry is not None:
                 json_data = json_data_entry.data
     except:
-        logging.error("Could not pull data from live data server:\n%s", sys.exc_value)
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
     return json_data
 
 
@@ -638,8 +638,8 @@ def extract_d3_data_from_json(json_data):
         @param json_data: json data block
     """
     plot_data = None
-    x_label = u"Q [1/\u00C5]"
-    y_label = u"Absolute reflectivity"
+    x_label = "Q [1/\u00C5]"
+    y_label = "Absolute reflectivity"
 
     # Return dummy data if not data is coming in.
     if json_data is None:
@@ -674,7 +674,7 @@ def extract_d3_data_from_json(json_data):
                 else:
                     plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
     except:
-        logging.error("Error finding reduced json data: %s", sys.exc_value)
+        logging.error("Error finding reduced json data: %s", sys.exc_info()[1])
     return plot_data, x_label, y_label
 
 
@@ -696,5 +696,5 @@ def find_skipped_runs(instrument_id, start_run_number=0):
             if len(query_set) == 0:
                 missing_runs.append(i)
     except:
-        logging.error("Error finding missing runs: %s", sys.exc_value)
+        logging.error("Error finding missing runs: %s", sys.exc_info()[1])
     return missing_runs
