@@ -1,18 +1,7 @@
-FROM ubuntu:18.04
+FROM continuumio/miniconda3
 
-ARG TERM=linux
-ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt -y update && \
-    apt -y upgrade
-
-RUN apt install -y \
-    python3-django \
-    python3-stomp \
-    python3-psycopg2 \
-    postgresql \
-    build-essential \
-    python3-setuptools
+COPY environment_dasmon.yml .
+RUN conda env update --name base --file environment_dasmon.yml
 
 WORKDIR /usr/src/data_workflow
 COPY ./src/. .

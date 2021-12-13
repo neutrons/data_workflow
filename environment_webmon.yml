@@ -1,0 +1,48 @@
+name: webmon
+channels:
+- conda-forge
+dependencies:
+- make
+- python=3.7
+- django=1.11.25
+- stomp.py=4.1.23
+- psycopg2=2.8.6
+- setuptools
+- postgresql
+- oauthlib
+- requests-oauthlib
+- requests
+- amqp
+- billiard
+- certifi
+- chardet
+- decorator
+- contextlib2
+- docopt
+- gunicorn
+- idna
+- ipython_genutils
+- jsonschema
+- jupyter_core
+- kitchen
+- kombu
+- nbformat
+- plotly
+- pyasn1
+- pyasn1-modules
+- pycurl
+- gpgme
+- pytz
+- xattr
+- retrying
+- six
+- traitlets
+- urllib3
+- vine
+- httplib2
+- gunicorn
+- python-ldap
+- pip
+- pip:
+  - django-auth-ldap==1.6.0
+  - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl
