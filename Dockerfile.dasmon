@@ -10,3 +10,6 @@ RUN yum install -y epel-release; \
 WORKDIR /usr/src/data_workflow
 COPY ./src/. .
 COPY README.md .
+
+# Only do this for testing, comment out for production
+RUN echo 'brokers = [("activemq", 61613)]' > dasmon_listener/local_settings.py

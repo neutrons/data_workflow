@@ -40,7 +40,7 @@ services:
       - .env
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
-      - db
+      - webmon
   
   db:
     restart: always
@@ -52,7 +52,13 @@ services:
       - "${DATABASE_PORT}:${DATABASE_PORT}"
     volumes:
       - db-data:/var/lib/postgresql/data/
-        
+
+  activemq:
+    restart: always
+    image: rmohr/activemq
+    volumes:
+      - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
+
 volumes:
   web-django:
   web-static:
