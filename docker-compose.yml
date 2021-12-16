@@ -2,9 +2,9 @@ version: '3'
 services:
 
   nginx:
-    image: nginx
+    image: code.ornl.gov:4567/rse/images/nginx:1.21.1
     ports:
-      - 80:80
+      - "80:80"
     volumes:
       - web-static:/var/www/workflow/static
       - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
@@ -20,7 +20,6 @@ services:
     ports: 
       - "8000:8000"
     volumes:
-      - web-django:/var/www/workflow/app
       - web-static:/var/www/workflow/static/
       - ./src/reporting/docker-entrypoint.sh:/usr/bin/docker-entrypoint.sh
     env_file:
