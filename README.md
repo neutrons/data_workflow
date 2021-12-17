@@ -82,6 +82,7 @@ Here are the recommended steps to setup your dev environment:
   - Start the Django shell with
     > `cd /var/www/workflow/app; python manage.py shell`
   - Add a new super user with
+    > `from django.contrib.auth.models import User`
     > `User.objects.create_superuser('testdev', 'testdev@testdev.com', 'testdev')`
   - Exit the shell
   - Exit the container
