@@ -58,15 +58,27 @@ Here are the recommended steps to setup your dev environment:
 - Copy the database dump, `dump.sql` to your local system. (asking on Slack chanel for the location of the file)
 - Clone the repository as usual.
 - Install `docker` and `docker-compose` if they are not present on your system.
-  - On Ubuntu, `docker-compose` is not shipped with the system `docker` package.
-  - Grab the pre-build binary for `docker-compose` on the official Github repo and put it in a location in your `$PATH` (such as `/usr/local/bin` or `$HOME/bin`)
 - Cleanup containers, volumes and images from previous run (skip this step if this is the first time)
   - Use `docker container prune` to prune all stopped containers
   - Use `docker volume prune` to prune all volumes
   - [Optional] Use `docker image prune` to remove all images
 - Modify the default web cache name to avoid conflicts with `dump.sql`
-  - In `src/reporting/reporting_app/settings.py` , change L210 into `'LOCATION': 'webcache_dev'`
-  - In `src/Makefile`, change L91 into `cd $(prefix)/app; python manage.py createcachetable webcache_dev`
+  - In `src/reporting/reporting_app/settings.py` , change
+  ```
+  'LOCATION': 'webcache'
+  ```
+  into
+  ```
+  'LOCATION': 'webcache_dev'
+  ```
+  - In `src/Makefile`, change 
+  ```
+  cd $(prefix)/app; python manage.py createcachetable webcache
+  ```
+  into 
+  ```
+  cd $(prefix)/app; python manage.py createcachetable webcache_dev
+  ```
 - Move to the directory that contains `docker-compose.yml` (the root of repo)
 - Spin up the database container in the background with
   > `docker-compose up db -d`
