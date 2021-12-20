@@ -6,8 +6,8 @@ dependencies:
 - python=3.7
 - django=1.11.25
 - stomp.py=4.1.23
-- psycopg2=2.8.6
 - setuptools
+- psycopg2-binary>=2.8
 - postgresql
 - oauthlib
 - requests-oauthlib
@@ -43,6 +43,7 @@ dependencies:
 - gunicorn
 - python-ldap
 - pip
+- gcc
 - pip:
   - django-auth-ldap==1.6.0
   - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl
