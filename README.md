@@ -83,7 +83,7 @@ Here are the recommended steps to setup your dev environment:
 - Spin up the database container in the background with
   > `docker-compose up db -d`
 - Import `dump.sql` to the database container with 
-  > `docker exec -i data_workflow-db-1 /bin/bash -c "PGPASSWORD=workflow psql --username workflow workflow" < dump.sql`
+  > `docker exec -i data_workflow-db-1 /bin/bash -c "PGPASSWORD=workflow psql --username postgres postgres" < dump.sql`
   - this process will take roughly about 10 to 20 min depending on the hardware.
 - Spin up the WebMonitor container in the background with
   > `docker-compose up webmon -d`
