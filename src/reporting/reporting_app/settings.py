@@ -264,7 +264,7 @@ FITTING_URLS = {}
 
 # Import local settings if available
 try:
-    from local_settings import *  # noqa: F401, F403
+    from .local_settings import *  # noqa: F401, F403
     LOCAL_SETTINGS = True
 except ImportError:
     LOCAL_SETTINGS = False

@@ -20,8 +20,8 @@ else:
     sys.path.append(os.path.dirname(__file__))
 
     # Import your models for use in your script
-    from report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
-    from report.models import IPTS, Instrument, Error, Information, Task
+    from .report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
+    from .report.models import IPTS, Instrument, Error, Information, Task
 
 from django.db import transaction  # noqa: E402
 
@@ -83,7 +83,7 @@ def add_status_entry(headers, data):
             ipts_id.save()
     except:
         traceback.print_exc()
-        logging.error(sys.exc_value)
+        logging.error(sys.exc_info()[1])
 
     # Check whether we already have an entry for this run
     run_number = int(data_dict["run_number"])
@@ -170,7 +170,7 @@ def get_task(message_headers, message_data):
     try:
         data_dict = json.loads(message_data)
     except:
-        logging.error("transactions.get_task expects JSON-encoded message: %s", sys.exc_value)
+        logging.error("transactions.get_task expects JSON-encoded message: %s", sys.exc_info()[1])
         return None
 
     # Look for instrument

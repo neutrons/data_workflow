@@ -30,7 +30,8 @@ def _get_choices(instrument):
         for item in choices:
             form_choices.append((item.value, item.description))
     except:
-        logging.error("_get_choices: %s instrument or grouping does not exist\n %s", instrument.upper(), sys.exc_value)
+        logging.error("_get_choices: %s instrument or grouping does not exist\n %s",
+                      instrument.upper(), sys.exc_info()[1])
     return sorted(form_choices, key=functools.cmp_to_key(lambda x, y: (x[0], y[0])))
 
 
@@ -48,7 +49,7 @@ def validate_integer_list(value):
                 try:
                     int(item.strip())
                 except:
-                    raise ValidationError(u'Error parsing %s for a range of integers' % value)
+                    raise ValidationError('Error parsing %s for a range of integers' % value)
 
 
 def validate_float_list(value):
@@ -63,7 +64,7 @@ def validate_float_list(value):
                 try:
                     float(item.strip())
                 except:
-                    raise ValidationError(u'Error parsing %s for a list of numbers' % value)
+                    raise ValidationError('Error parsing %s for a list of numbers' % value)
 
 
 class BaseReductionConfigurationForm(forms.Form):
@@ -100,7 +101,7 @@ class BaseReductionConfigurationForm(forms.Form):
                     value = ''
                 reduction.view_util.store_property(instrument_id, key, value, user=user)
             except:
-                logging.error("BaseReductionConfigurationForm.to_db: %s", sys.exc_value)
+                logging.error("BaseReductionConfigurationForm.to_db: %s", sys.exc_info()[1])
 
     def to_template(self):
         """
@@ -288,7 +289,7 @@ class MaskForm(forms.Form):
                     for item in mask_strings:
                         mask_list.append(eval(item.lower()))
         except:
-            logging.error("MaskForm count not parse a command line: %s", sys.exc_value)
+            logging.error("MaskForm count not parse a command line: %s", sys.exc_info()[1])
         return mask_list
 
     @classmethod

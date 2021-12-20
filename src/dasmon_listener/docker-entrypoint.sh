@@ -14,5 +14,5 @@ fi
 
 cd /var/log
 sleep 20
-/usr/bin/dasmon_listener start
+/opt/conda/bin/dasmon_listener start
 tail -F /var/log/dasmon_listener.log

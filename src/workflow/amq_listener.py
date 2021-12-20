@@ -5,7 +5,7 @@
 import sys
 import stomp
 import logging
-import states
+from . import states
 
 
 class Listener(stomp.ConnectionListener):
@@ -59,7 +59,7 @@ class Listener(stomp.ConnectionListener):
                                         use_db_task=self._use_db_tasks)
             action(headers, message)
         except:
-            logging.error("Listener failed to process message: %s", str(sys.exc_value))
+            logging.error("Listener failed to process message: %s", str(sys.exc_info()[1]))
             logging.error("  Message: %s: %s", headers['destination'], str(message))
         if not self._auto_ack:
             connection.ack(headers['message-id'], headers['subscription'])

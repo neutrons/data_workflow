@@ -1,11 +1,7 @@
-FROM centos:7.6.1810
+FROM continuumio/miniconda3
 
-RUN yum install -y epel-release; \
-    yum groupinstall -y 'development tools'; \
-    yum install -y python-pip python-devel \
-    postgresql-devel postgresql-contrib; \
-    pip install django==1.6.11 stomp.py==4.0.12 psycopg2==2.5.3; \
-    yum clean all; rm -rf /var/cache/yum
+COPY environment_dasmon.yml .
+RUN conda env update --name base --file environment_dasmon.yml
 
 WORKDIR /usr/src/data_workflow
 COPY ./src/. .

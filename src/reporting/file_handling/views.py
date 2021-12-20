@@ -9,7 +9,9 @@ from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-import urllib2
+import urllib.request
+import urllib.parse
+import urllib.error
 import os
 import logging
 from report.models import DataRun, Instrument
@@ -61,7 +63,7 @@ def upload_image(request, instrument, run_id):
             else:
                 # A file URL is provided, fetch it from the URL
                 data_url = request.POST['data_url']
-                f = urllib2.urlopen(urllib2.Request(url=data_url))
+                f = urllib.request.urlopen(urllib.Request(url=data_url))
                 file_name = data_url
                 raw_content = f.read()
             file_content = ContentFile(raw_content)

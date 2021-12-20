@@ -29,18 +29,18 @@ def validate_integer_list(value):
                 try:
                     value_list.extend(range(int(range_toks[0]), int(range_toks[1]) + 1))
                 except:
-                    logging.error(sys.exc_value)
-                    raise ValidationError(u'Error parsing %s for a range of integers' % value)
+                    logging.error(sys.exc_info()[1])
+                    raise ValidationError('Error parsing %s for a range of integers' % value)
             else:
                 logging.error("Found more than two tokens around -")
-                raise ValidationError(u'Error parsing %s for a range of integers' % value)
+                raise ValidationError('Error parsing %s for a range of integers' % value)
 
         else:
             try:
                 value_list.append(int(item))
             except:
-                logging.error(sys.exc_value)
-                raise ValidationError(u'Error parsing %s for a range of integers' % value)
+                logging.error(sys.exc_info()[1])
+                raise ValidationError('Error parsing %s for a range of integers' % value)
 
     return value_list
 
@@ -194,7 +194,7 @@ class ProcessingForm(forms.Form):
         try:
             queue = StatusQueue.objects.get(name=self.cleaned_data['task'])
         except StatusQueue.DoesNotExist:
-            logging.error(sys.exc_value)
+            logging.error(sys.exc_info()[1])
 
         # Returns a report and task to be sent
         return {'report': output_report, 'task': str(queue),

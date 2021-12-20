@@ -16,6 +16,8 @@ USE_TZ = True
 INSTALLED_APPS = (
     'report',
     'dasmon',
+    'pvmon',
+    'file_handling',
 )
 
 """
@@ -43,7 +45,7 @@ MIN_NOTIFICATION_LEVEL = 3
 
 # Import local settings if available
 try:
-    from local_settings import *  # noqa: F401, F403
+    from .local_settings import *  # noqa: F401, F403
 except ImportError:
     LOCAL_SETTINGS = False
     pass

@@ -68,8 +68,8 @@ def processing_admin(request):
                                                           is_complete=is_complete)
                     except:
                         submission_errors += "%s run %s could not be submitted: %s<br>" % \
-                            (str(run_obj.instrument_id), str(run_obj.run_number), sys.exc_value)
-                        logging.error(sys.exc_value)
+                            (str(run_obj.instrument_id), str(run_obj.run_number), sys.exc_info()[1])
+                        logging.error(sys.exc_info()[1])
                 template_values['notes'] += submission_errors
                 if len(submission_errors) == 0:
                     template_values['notes'] += "<b>All tasks were submitted</b><br>"
@@ -257,7 +257,7 @@ def detail(request, instrument, run_id):
                 template_values['no_icat_info'] = "The final data file for this run is not yet available."
 
     except:
-        logging.error("Could not determine whether we have catalog info: %s", sys.exc_value)
+        logging.error("Could not determine whether we have catalog info: %s", sys.exc_info()[1])
         template_values['no_icat_info'] = "There is no catalog information for this run yet."
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)

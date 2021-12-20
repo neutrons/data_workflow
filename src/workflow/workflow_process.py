@@ -5,17 +5,17 @@ import json
 import logging
 import datetime
 
-from database import transactions
+from .database import transactions
 from django.utils.timezone import utc
 
 import django
 if django.VERSION[1] >= 7:
     from workflow.database.report.models import WorkflowSummary, RunStatus
 else:
-    from database.report.models import WorkflowSummary, RunStatus
-from states import StateAction  # noqa: F401
-from settings import POSTPROCESS_INFO, CATALOG_DATA_READY  # noqa: F401
-from settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY  # noqa: F401
+    from .database.report.models import WorkflowSummary, RunStatus
+from .states import StateAction  # noqa: F401
+from .settings import POSTPROCESS_INFO, CATALOG_DATA_READY  # noqa: F401
+from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY  # noqa: F401
 
 
 class WorkflowProcess(StateAction):

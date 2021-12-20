@@ -14,7 +14,7 @@ class StatusVariableAdmin(admin.ModelAdmin):
             try:
                 return datetime.datetime.fromtimestamp(int(obj.value))
             except:
-                logging.error(sys.exc_value)
+                logging.error(sys.exc_info()[1])
                 return 'error'
         return '-'
 

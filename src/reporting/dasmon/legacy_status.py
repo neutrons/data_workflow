@@ -4,7 +4,7 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2015 Oak Ridge National Laboratory
 """
-import httplib
+import httplib2
 import json
 import logging
 import sys
@@ -25,17 +25,15 @@ def get_ops_status(instrument_id):
             status_host = toks[2]
         else:
             status_host = STATUS_HOST
-        conn = httplib.HTTPSConnection(status_host, timeout=0.5)
+        conn = httplib2.HTTPSConnection(status_host, timeout=0.5)
         conn.request('GET', url)
         r = conn.getresponse()
         data = json.loads(r.read())
         organized_data = []
-        groups = data.keys()
-        groups.sort()
+        groups = sorted(data.keys())
         for group in groups:
             key_value_pairs = []
-            keys = data[group].keys()
-            keys.sort()
+            keys = sorted(data[group].keys())
             for item in keys:
                 key_value_pairs.append(
                     {'key': item.replace(' ', '_').replace('(%)', '[pct]')
@@ -45,7 +43,7 @@ def get_ops_status(instrument_id):
                                    'data': key_value_pairs})
         return organized_data
     except:
-        logging.warning("Could not get legacy DAS status: %s" % sys.exc_value)
+        logging.warning("Could not get legacy DAS status: %s" % sys.exc_info()[1])
         return []
 
 

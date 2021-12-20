@@ -164,7 +164,7 @@ def is_running(instrument_id):
         else:
             return "Stopped"
     except:
-        logging.error("Could not determine running condition: %s", str(sys.exc_value))
+        logging.error("Could not determine running condition: %s", str(sys.exc_info()[1]))
     return "Unknown"
 
 
@@ -306,7 +306,7 @@ def get_live_variables(request, instrument_id):
             data_dict.append([key, data_list])
         except:
             # Could not find data for this key
-            logging.warning("Could not process %s: %s", key, str(sys.exc_value))
+            logging.warning("Could not process %s: %s", key, str(sys.exc_info()[1]))
     return data_dict
 
 
@@ -432,7 +432,7 @@ def workflow_diagnostics(timeout=None):
                 process_list.append({'pid': item.value,
                                      'time': timezone.localtime(item.timestamp)})
     except:
-        logging.error("workflow_diagnostics: %s", str(sys.exc_value))
+        logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
 
     dasmon_listener_list = []
     try:
@@ -446,7 +446,7 @@ def workflow_diagnostics(timeout=None):
                 dasmon_listener_list.append({'pid': item.value,
                                              'time': timezone.localtime(item.timestamp)})
     except:
-        logging.error("workflow_diagnostics: %s", str(sys.exc_value))
+        logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Heartbeat
     if timezone.now() - status_time > delay_time:
@@ -556,7 +556,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
         status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        logging.error("pvstreamer_diagnostics: %s", str(sys.exc_value))
+        logging.error("pvstreamer_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Heartbeat
     if timezone.now() - status_time > delay_time:
@@ -601,7 +601,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         status_time = timezone.localtime(last_value.timestamp)
     except:
         # No data available, keep defaults
-        logging.error("dasmon_diagnostics: %s", str(sys.exc_value))
+        logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Recent PVs, which come from DASMON straight to the DB
     last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -613,7 +613,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         last_pv_timestamp = latest.update_time
     except:
         # No data available, keep defaults
-        logging.error("dasmon_diagnostics: %s", str(sys.exc_value))
+        logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Recent AMQ messages
     last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -745,7 +745,7 @@ def get_completeness_status(instrument_id):
         return STATUS_WARNING
     except:
         logging.error("Output data completeness status")
-        logging.error(sys.exc_value)
+        logging.error(sys.exc_info()[1])
         return STATUS_UNKNOWN
 
 
@@ -785,7 +785,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 run_list = DataRun.objects.filter(id__gte=complete_since).order_by('created_on').reverse()
         except:
             # Invalid value for complete_since
-            logging.error("get_live_runs_update: %s", str(sys.exc_value))
+            logging.error("get_live_runs_update: %s", str(sys.exc_info()[1]))
 
     status_list = []
     update_list = []
@@ -854,7 +854,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
         else:
             run_list = get_run_list(runs)
     except:
-        logging.error("get_live_runs: %s", str(sys.exc_value))
+        logging.error("get_live_runs: %s", str(sys.exc_info()[1]))
     return run_list, first_run, last_run
 
 
@@ -879,7 +879,7 @@ def get_run_list(run_list):
                                   timestamp=timezone.localtime(r.created_on).ctime(),
                                   status=status))
     except:
-        logging.error("dasmon.view_util.get_run_list: %s", sys.exc_value)
+        logging.error("dasmon.view_util.get_run_list: %s", sys.exc_info()[1])
     return run_dicts
 
 
@@ -905,7 +905,7 @@ def get_signals(instrument_id):
     try:
         signals = Signal.objects.filter(instrument_id=instrument_id)
     except:
-        logging.error("Error reading signals: %s", str(sys.exc_value))
+        logging.error("Error reading signals: %s", str(sys.exc_info()[1]))
         return []
 
     sig_alerts = []
@@ -921,7 +921,7 @@ def get_signals(instrument_id):
                 sig_entry.key = str(monitored[0].pv_name)
         except:
             # Could not find an entry for this signal
-            logging.error("Problem finding PV for signal: %s", str(sys.exc_value))
+            logging.error("Problem finding PV for signal: %s", str(sys.exc_info()[1]))
 
         sig_alerts.append(sig_entry)
 
@@ -954,16 +954,16 @@ def get_signals(instrument_id):
                 for point in data[0][1]:
                     data_list.append('%g:%g' % (point[0], point[1]))
             except:
-                logging.error(sys.exc_value)
+                logging.error(sys.exc_info()[1])
             sig_entry.data = ','.join(data_list)
             sig_alerts.append(sig_entry)
     except:
-        logging.error("Could not process monitored PVs: %s", str(sys.exc_value))
+        logging.error("Could not process monitored PVs: %s", str(sys.exc_info()[1]))
 
     try:
         return sorted(sig_alerts, key=lambda s: str(s.name).lower())
     except:
-        logging.error("Could not sort monitored PV list: %s", str(sys.exc_value))
+        logging.error("Could not sort monitored PV list: %s", str(sys.exc_info()[1]))
     return sig_alerts
 
 
@@ -982,12 +982,12 @@ def get_instrument_status_summary():
             try:
                 das_status = get_component_status(i, process='dasmon')
             except:
-                logging.error(sys.exc_value)
+                logging.error(sys.exc_info()[1])
                 das_status = 2
             try:
                 pvstreamer_status = get_pvstreamer_status(i)
             except:
-                logging.error(sys.exc_value)
+                logging.error(sys.exc_info()[1])
                 pvstreamer_status = 2
         else:
             dasmon_url = reverse('dasmon:live_runs', args=[i.name])
@@ -1115,8 +1115,8 @@ def get_instruments_for_user(request):
         try:
             if request.user is not None and hasattr(request.user, "ldap_user"):
                 groups = request.user.ldap_user.group_names
-                if u'sns_%s_team' % instrument_name.lower() in groups \
-                        or u'snsadmin' in groups:
+                if 'sns_%s_team' % instrument_name.lower() in groups \
+                        or 'snsadmin' in groups:
                     instrument_list.append(instrument_name)
         except:
             # Couldn't find the user in the instrument LDAP group

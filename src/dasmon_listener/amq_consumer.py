@@ -21,11 +21,11 @@ if os.path.isfile("settings.py"):
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
 
-import settings  # noqa: E402
-from settings import INSTALLATION_DIR  # noqa: E402
-from settings import PURGE_TIMEOUT  # noqa: E402
-from settings import IMAGE_PURGE_TIMEOUT  # noqa: E402
-from settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
+from . import settings  # noqa: E402
+from .settings import INSTALLATION_DIR  # noqa: E402
+from .settings import PURGE_TIMEOUT  # noqa: E402
+from .settings import IMAGE_PURGE_TIMEOUT  # noqa: E402
+from .settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
 
 sys.path.append(INSTALLATION_DIR)
 
@@ -114,7 +114,7 @@ class Listener(stomp.ConnectionListener):
             data_dict = json.loads(message)
         except:
             logging.error("Could not decode message from %s", destination)
-            logging.error(sys.exc_value)
+            logging.error(sys.exc_info()[1])
             return
         # If we get a STATUS message, store it as such
         if destination.endswith(".ACK"):
@@ -131,7 +131,7 @@ class Listener(stomp.ConnectionListener):
                 instrument = self.retrieve_instrument(instrument_name)
         except:
             logging.error("Could not extract instrument name from %s", destination)
-            logging.error(str(sys.exc_value))
+            logging.error(str(sys.exc_info()[1]))
             return
 
         if "STATUS" in destination:
@@ -169,7 +169,7 @@ class Listener(stomp.ConnectionListener):
                 process_signal(instrument, data_dict)
             except:
                 logging.error("Could not process signal: %s", str(data_dict))
-                logging.error(sys.exc_value)
+                logging.error(sys.exc_info()[1])
 
         elif "APP.SMS" in destination:
             process_SMS(instrument, headers, data_dict)
@@ -230,7 +230,7 @@ def send_message(sender, recipients, subject, message):
         s.sendmail(sender, recipients, msg.as_string())
         s.quit()
     except:
-        logging.error("Could not send message: %s", sys.exc_value)
+        logging.error("Could not send message: %s", sys.exc_info()[1])
 
 
 def process_SMS(instrument_id, headers, data):
@@ -263,7 +263,7 @@ def process_SMS(instrument_id, headers, data):
             add_status_entry({'destination': 'SMS',
                               'message-id': headers['message-id']}, json.dumps(status_data))
     except:
-        logging.error("Could not process SMS message: %s", sys.exc_value)
+        logging.error("Could not process SMS message: %s", sys.exc_info()[1])
 
 
 def process_ack(data=None, headers=None):
@@ -272,7 +272,7 @@ def process_ack(data=None, headers=None):
         @param data: data that came in with the ack
     """
     try:
-        from settings import ALERT_EMAIL, FROM_EMAIL
+        from .settings import ALERT_EMAIL, FROM_EMAIL
         if data is None:
             for proc_name in acks:
                 # Start complaining if we missed three heartbeats
@@ -310,7 +310,7 @@ def process_ack(data=None, headers=None):
             if EXTRA_LOGS:
                 logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)
     except:
-        logging.error("Error processing ack: %s", sys.exc_value)
+        logging.error("Error processing ack: %s", sys.exc_info()[1])
 
 
 def notify_users(instrument_id, signal):
@@ -331,7 +331,7 @@ def notify_users(instrument_id, signal):
                          subject="New alert on %s" % str(instrument_id).upper(),
                          message=message)
     except:
-        logging.error("Failed to notify users: %s", sys.exc_value)
+        logging.error("Failed to notify users: %s", sys.exc_info()[1])
 
 
 def process_signal(instrument_id, data):
@@ -440,7 +440,7 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
                     timestamp).replace(tzinfo=timezone.get_current_timezone())
                 status_entry.timestamp = datetime_timestamp
             except:
-                logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_value)
+                logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_info()[1])
         status_entry.save()
         datetime_timestamp = status_entry.timestamp
 
@@ -611,7 +611,7 @@ class Client(object):
                         store_and_cache(common_instrument, pid_key_id, str(os.getpid()))
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
-                            from settings import PING_TOPIC, ACK_TOPIC
+                            from .settings import PING_TOPIC, ACK_TOPIC
                             payload = {"reply_to": ACK_TOPIC,
                                        "request_time": time.time()}
                             t0 = time.time()
@@ -622,9 +622,9 @@ class Client(object):
                         else:
                             logging.error("settings.PING_TOPIC is not defined")
                 except:
-                    logging.error("Problem writing heartbeat %s", sys.exc_value)
+                    logging.error("Problem writing heartbeat %s", sys.exc_info()[1])
             except:
-                logging.error("Problem connecting to AMQ broker %s", sys.exc_value)
+                logging.error("Problem connecting to AMQ broker %s", sys.exc_info()[1])
                 time.sleep(5.0)
 
     def send(self, destination, message, persistent='false'):

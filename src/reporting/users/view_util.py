@@ -109,7 +109,7 @@ def login_or_local_required_401(fn):
                 return fn(request, *args, **kws)
             return HttpResponse(status=401)
         except:
-            logging.error("[%s]: %s", request.path, sys.exc_value)
+            logging.error("[%s]: %s", request.path, sys.exc_info()[1])
             return HttpResponse(status=500)
     return request_processor
 
@@ -135,9 +135,9 @@ def is_instrument_staff(request, instrument_id):
     try:
         if request.user is not None and hasattr(request.user, "ldap_user"):
             groups = request.user.ldap_user.group_names
-            if u'sns_%s_team' % str(instrument_id).lower() in groups \
-                    or u'hfir_%s_team' % str(instrument_id).lower() in groups \
-                    or u'snsadmin' in groups:
+            if 'sns_%s_team' % str(instrument_id).lower() in groups \
+                    or 'hfir_%s_team' % str(instrument_id).lower() in groups \
+                    or 'snsadmin' in groups:
                 return True
     except:
         # Couldn't find the user in the instrument LDAP group
@@ -159,10 +159,10 @@ def is_experiment_member(request, instrument_id, experiment_id):
     try:
         if request.user is not None and hasattr(request.user, "ldap_user"):
             groups = request.user.ldap_user.group_names
-            return u'sns_%s_team' % str(instrument_id).lower() in groups \
-                or u'sns-ihc' in groups \
-                or u'snsadmin' in groups \
-                or u'%s' % experiment_id.expt_name.upper() in groups \
+            return 'sns_%s_team' % str(instrument_id).lower() in groups \
+                or 'sns-ihc' in groups \
+                or 'snsadmin' in groups \
+                or '%s' % experiment_id.expt_name.upper() in groups \
                 or is_instrument_staff(request, instrument_id)
     except:
         logging.error("Error determining whether user %s is part of %s", str(request.user), str(experiment_id))
