@@ -45,6 +45,7 @@ services:
     restart: always
     image: postgres:9.6.22
     environment:
+      POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASS}
     ports:
