@@ -49,3 +49,61 @@ SNS data workflow manager and reporting app
 	use them automatically.
 
 [![DOI Badge](https://zenodo.org/badge/4139/neutrons/data_workflow.png)](http://dx.doi.org/10.5281/zenodo.10054)
+
+## Setup Dev Environment with docker-compose
+
+During the modernization of WebMon, the developers can setup a local development environment using a database dump from the production database.
+Here are the recommended steps to setup your dev environment:
+
+- Copy the database dump, `dump.sql` to your local system. (asking on Slack chanel for the location of the file)
+- Clone the repository as usual.
+- Install `docker` and `docker-compose` if they are not present on your system.
+- Cleanup containers, volumes and images from previous run (skip this step if this is the first time)
+  - Use `docker container prune` to prune all stopped containers
+  - Use `docker volume prune` to prune all volumes
+  - [Optional] Use `docker image prune` to remove all images
+- Modify the default web cache name to avoid conflicts with `dump.sql`
+  - In `src/reporting/reporting_app/settings.py` , change
+  ```
+  'LOCATION': 'webcache'
+  ```
+  into
+  ```
+  'LOCATION': 'webcache_dev'
+  ```
+  - In `src/Makefile`, change 
+  ```
+  cd $(prefix)/app; python manage.py createcachetable webcache
+  ```
+  into 
+  ```
+  cd $(prefix)/app; python manage.py createcachetable webcache_dev
+  ```
+- Move to the directory that contains `docker-compose.yml` (the root of repo)
+- Spin up the database container in the background with
+  > `docker-compose up db -d`
+- Import `dump.sql` to the database container with 
+  > `docker exec -i data_workflow-db-1 /bin/bash -c "PGPASSWORD=workflow psql --username postgres postgres" < dump.sql`
+  - this process will take roughly about 10 to 20 min depending on the hardware.
+- Spin up the WebMonitor container in the background with
+  > `docker-compose up webmon -d`
+  - ignore the errors regarding database updating failed (if you see any)
+- Add a new database super user for development
+  - Access the WebMon container with
+    > `docker exec -it data_workflow-webmon-1 /bin/bash`
+  - Start the Django shell with
+    > `cd /var/www/workflow/app; python manage.py shell`
+  - Add a new super user with
+    > `from django.contrib.auth.models import User`  
+    > `User.objects.create_superuser('testdev', 'testdev@testdev.com', 'testdev')`
+  - Exit the shell
+  - Exit the container
+- Spin up the rest of the system with
+  > docker-compose up --build
+  - Keep this running in your terminal so that you can see the real time log from all containers
+  - `--build` will ensure any local changes will be updated in containers at the cost of increasing the startup time
+- Open a browser and go to `localhost:8000` to see the login page
+- Log in with the newly added super user
+  - user name: `testdev`
+  - password: `testdev`
+- After editing the source code, you 
