@@ -15,7 +15,7 @@ class PVName(models.Model):
     name = models.CharField(max_length=50, unique=True)
     monitored = models.BooleanField(default=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 

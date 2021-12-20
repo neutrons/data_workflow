@@ -15,4 +15,5 @@ fi
 cd /var/log
 sleep 20
 /opt/conda/bin/dasmon_listener start
-tail -F /var/log/dasmon_listener.log
+/opt/conda/bin/workflowmgr start
+tail -F /var/log/dasmon_listener.log -F /var/log/workflow.log

@@ -481,6 +481,13 @@ class Client(object):
         self._queues = queues
         self._consumer_name = consumer_name
         self._listener = None
+        # Get or create the "common" instrument object from the DB.
+        # This dummy instrument is used for heartbeats and central services.
+        try:
+            self.common_instrument = Instrument.objects.get(name='common')
+        except Instrument.DoesNotExist:
+            self.common_instrument = Instrument(name='common')
+            self.common_instrument.save()
         logging.info("Dasmon Listener client 2.0")
 
     def set_listener(self, listener):
@@ -556,13 +563,6 @@ class Client(object):
             terminated.
             @param waiting_period: sleep time between connection to a broker
         """
-        # Get or create the "common" instrument object from the DB.
-        # This dummy instrument is used for heartbeats and central services.
-        try:
-            common_instrument = Instrument.objects.get(name='common')
-        except Instrument.DoesNotExist:
-            common_instrument = Instrument(name='common')
-            common_instrument.save()
 
         # Retrieve the Parameter object for our own heartbeat
         try:
@@ -608,7 +608,7 @@ class Client(object):
                 try:
                     if time.time() - last_heartbeat > HEARTBEAT_DELAY:
                         last_heartbeat = time.time()
-                        store_and_cache(common_instrument, pid_key_id, str(os.getpid()))
+                        store_and_cache(self.common_instrument, pid_key_id, str(os.getpid()))
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
                             from .settings import PING_TOPIC, ACK_TOPIC
