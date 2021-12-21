@@ -26,7 +26,7 @@ class WorkflowProcess(StateAction):
             @param recovery: if True, the system will try to recover from workflow problems
             @param allowed_lag: minimum number of seconds since last activity needed before identifying a problem
         """
-        super(WorkflowProcess, self).__init__(connection=connection)
+        super().__init__(connection=connection)
         self._recovery = recovery
         # Amount of time allowed before we start worrying about workflow issues
         if allowed_lag is None:

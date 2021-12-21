@@ -55,7 +55,7 @@ class WorkflowDaemon(Daemon):
             @param workflow_recovery: if True, the manager will try to recover from failures
             @param flexible_tasks: if True, the DB will define tasks as oppose to using hard-coded tasks
         """
-        super(WorkflowDaemon, self).__init__(pidfile, stdin, stdout, stderr)
+        super().__init__(pidfile, stdin, stdout, stderr)
         self._check_frequency = check_frequency
         self._workflow_recovery = workflow_recovery
         self._flexible_tasks = flexible_tasks

@@ -66,7 +66,7 @@ class Listener(stomp.ConnectionListener):
     """
 
     def __init__(self):
-        super(Listener, self).__init__()
+        super().__init__()
         # Get a snapshot of the current set of instruments
         # Turn the QuerySet into a list to ensure that the query
         # is executed now as opposed to every time we need an instrument
@@ -102,12 +102,13 @@ class Listener(stomp.ConnectionListener):
         self._instruments.append(instrument)
         return instrument
 
-    def on_message(self, headers, message):
+    def on_message(self, frame):
         """
             Process a message.
-            @param headers: message headers
-            @param message: JSON-encoded message content
+            @param frame: stomp.utils.Frame
         """
+        headers = frame.headers
+        message = frame.body
         destination = headers["destination"]
         # Load the JSON message into a dictionary
         try:
@@ -459,7 +460,7 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
         last_value.save()
 
 
-class Client(object):
+class Client:
     """
         ActiveMQ client
         Holds the connection to a broker
@@ -510,19 +511,9 @@ class Client(object):
                 listener = self._listener
 
         logging.info("[%s] Connecting to %s", self._consumer_name, str(self._brokers))
-        if stomp.__version__[0] < 4:
-            conn = stomp.Connection(host_and_ports=self._brokers,
-                                    user=self._user,
-                                    passcode=self._passcode,
-                                    wait_on_receipt=True)
-            conn.set_listener(self._consumer_name, listener)
-            conn.start()
-            conn.connect()
-        else:
-            conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
-            conn.set_listener(self._consumer_name, listener)
-            conn.start()
-            conn.connect(self._user, self._passcode, wait=True)
+        conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
+        conn.set_listener(self._consumer_name, listener)
+        conn.connect(self._user, self._passcode, wait=True)
         # Give the connection threads a little breather
         time.sleep(0.5)
         return conn
@@ -638,7 +629,4 @@ class Client(object):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        if stomp.__version__[0] < 4:
-            self._connection.send(destination=destination, message=message, persistent=persistent)
-        else:
-            self._connection.send(destination, message, persistent=persistent)
+        self._connection.send(destination, message, persistent=persistent)

@@ -27,7 +27,7 @@ class UpdateActionForm(ActionForm):
     pv_name = forms.CharField(required=True, initial='')
 
     def __init__(self, *args, **kwargs):
-        super(UpdateActionForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Get the list of available instruments
         instruments = [(str(i), str(i)) for i in Instrument.objects.all().order_by(
             'name') if ActiveInstrument.objects.is_alive(i)]
