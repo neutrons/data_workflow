@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 import logging
 import json
-import six
 from reduction.models import ReductionProperty, PropertyModification, PropertyDefault
 import reporting_app.view_util
 import dasmon.view_util
@@ -88,7 +87,7 @@ def send_template_request(instrument_id, template_dict, user='unknown'):
 
     encoded_dict = {}
     for key, value in template_dict.items():
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             encoded_dict[key] = urllib.parse.quote_plus(value)
         else:
             encoded_dict[key] = value

@@ -30,8 +30,7 @@ from .settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
 sys.path.append(INSTALLATION_DIR)
 
 import django  # noqa: E402
-if django.VERSION[1] >= 7:
-    django.setup()
+django.setup()
 from django.utils import timezone  # noqa: E402
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification  # noqa: E402
