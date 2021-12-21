@@ -15,7 +15,7 @@ class ReductionProperty(models.Model):
     class Meta:
         verbose_name_plural = "Reduction properties"
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s.%s" % (self.instrument, self.key)
 
 
@@ -48,5 +48,5 @@ class Choice(models.Model):
     description = models.TextField()
     value = models.TextField()
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s.%s[%s]" % (self.instrument, self.property, self.description)

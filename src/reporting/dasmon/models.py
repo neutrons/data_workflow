@@ -14,7 +14,7 @@ class Parameter(models.Model):
     name = models.CharField(max_length=128, unique=True)
     monitored = models.BooleanField(default=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 

@@ -35,7 +35,7 @@ class Instrument(models.Model):
     class Meta:
         app_label = 'report'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def number_of_runs(self):
@@ -82,7 +82,7 @@ class IPTS(models.Model):
         verbose_name_plural = "IPTS"
         app_label = 'report'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.expt_name
 
     def number_of_runs(self, instrument_id=None):
@@ -148,7 +148,7 @@ class DataRun(models.Model):
     class Meta:
         app_label = 'report'
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s_%d" % (self.instrument_id, self.run_number)
 
     @classmethod
@@ -218,7 +218,7 @@ class StatusQueue(models.Model):
     class Meta:
         app_label = 'report'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -277,7 +277,7 @@ class RunStatus(models.Model):
         verbose_name_plural = "Run status"
         app_label = 'report'
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (str(self.run_id), str(self.queue_id))
 
     def last_info(self):
@@ -347,7 +347,7 @@ class WorkflowSummary(models.Model):
         verbose_name_plural = "Workflow summaries"
         app_label = 'report'
 
-    def __unicode__(self):
+    def __str__(self):
         if self.complete is True:
             return "%s: complete" % str(self.run_id)
         else:

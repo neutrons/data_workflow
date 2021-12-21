@@ -2,22 +2,23 @@ version: '3'
 services:
 
   nginx:
-    image: code.ornl.gov:4567/rse/images/nginx:1.21.1
+    image: nginx
     ports:
       - "80:80"
     volumes:
       - web-static:/var/www/workflow/static
       - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
       - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
+    depends_on:
+      - webmon
 
   webmon: 
-    restart: always
     build: 
       context: .
       dockerfile: Dockerfile.webmon
     expose:
       - "8000"
-    ports: 
+    ports:
       - "8000:8000"
     volumes:
       - web-static:/var/www/workflow/static/
@@ -29,7 +30,6 @@ services:
       - db
 
   dasmon: 
-    restart: always
     build: 
       context: .
       dockerfile: Dockerfile.dasmon
@@ -42,9 +42,9 @@ services:
       - webmon
   
   db:
-    restart: always
     image: postgres:14
     environment:
+      POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASS}
     ports:
@@ -53,7 +53,9 @@ services:
       - db-data:/var/lib/postgresql/data/
 
   activemq:
-    restart: always
+    ports:
+      - "61613:61613"
+      - "8161:8161"
     image: rmohr/activemq
     volumes:
       - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml

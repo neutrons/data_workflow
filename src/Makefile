@@ -86,6 +86,11 @@ webapp: webapp/core
 	# Modify and copy the wsgi configuration
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
 
+	# pass the init sql script to dbshell
+	cd $(prefix)/app; python3 manage.py dbshell < report/sql/indices.sql 
+	cd $(prefix)/app; python3 manage.py dbshell < report/sql/statusqueue.sql
+	cd $(prefix)/app; python3 manage.py dbshell < report/sql/stored_procs.sql
+
 	@echo "\n\nReady to go: run apachectl restart\n"
 
 .PHONY: check
