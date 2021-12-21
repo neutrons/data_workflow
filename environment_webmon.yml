@@ -43,7 +43,6 @@ dependencies:
 - gunicorn
 - python-ldap
 - pip
-- gcc
 - pip:
   - django-auth-ldap==1.6.0
   - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl

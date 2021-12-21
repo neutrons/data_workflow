@@ -8,5 +8,4 @@ dependencies:
 - stomp.py=4.1.23
 - setuptools
 - postgresql
-- gcc
 - psycopg2-binary>=2.8
