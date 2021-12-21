@@ -139,8 +139,8 @@ class DataRun(models.Model):
         TODO: run number should be unique for a given instrument
     """
     run_number = models.IntegerField()
-    ipts_id = models.ForeignKey(IPTS,on_delete=models.DO_NOTHING)
-    instrument_id = models.ForeignKey(Instrument,on_delete=models.DO_NOTHING)
+    ipts_id = models.ForeignKey(IPTS, on_delete=models.DO_NOTHING)
+    instrument_id = models.ForeignKey(Instrument, on_delete=models.DO_NOTHING)
     file = models.CharField(max_length=128)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = DataRunManager()
