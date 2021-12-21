@@ -56,7 +56,7 @@ class ProcessingForm(forms.Form):
     task = forms.ChoiceField(required=True, choices=[])
 
     def __init__(self, *args, **kwargs):
-        super(ProcessingForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Get the list of available instruments
         instruments = [(str(i), str(i)) for i in Instrument.objects.all().order_by(

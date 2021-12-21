@@ -20,7 +20,7 @@ except:
     version = 'development'
 
 
-class Client(object):
+class Client:
     """
         ActiveMQ client
         Holds the connection to a broker
@@ -107,19 +107,9 @@ class Client(object):
         if consumer_name is None:
             consumer_name = self._consumer_name
         logging.info("[%s] Connecting to %s", consumer_name, str(self._brokers))
-        if stomp.__version__[0] < 4:
-            conn = stomp.Connection(host_and_ports=self._brokers,
-                                    user=self._user,
-                                    passcode=self._passcode,
-                                    wait_on_receipt=True)
-            conn.set_listener(consumer_name, self._listener)
-            conn.start()
-            conn.connect()
-        else:
-            conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
-            conn.set_listener(consumer_name, self._listener)
-            conn.start()
-            conn.connect(self._user, self._passcode, wait=True)
+        conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
+        conn.set_listener(consumer_name, self._listener)
+        conn.connect(self._user, self._passcode, wait=True)
         # Give the connection threads a little breather
         time.sleep(0.5)
         return conn
@@ -188,13 +178,8 @@ class Client(object):
                                      "status": "0",
                                      "pid": str(os.getpid())}
                         message = json.dumps(data_dict)
-                        if stomp.__version__[0] < 4:
-                            self._connection.send(destination="/topic/SNS.COMMON.STATUS.WORKFLOW.0",
-                                                  message=message,
-                                                  persistent='false')
-                        else:
-                            self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message,
-                                                  persistent='false')
+                        self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message,
+                                              persistent='false')
                 except:
                     logging.error("Problem sending heartbeat: %s", sys.exc_info()[1])
 

@@ -11,7 +11,7 @@ from signal import SIGTERM
 import logging
 
 
-class Daemon(object):
+class Daemon:
     """
     A generic daemon class.
 

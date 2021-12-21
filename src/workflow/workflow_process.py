@@ -8,11 +8,7 @@ import datetime
 from .database import transactions
 from django.utils.timezone import utc
 
-import django
-if django.VERSION[1] >= 7:
-    from workflow.database.report.models import WorkflowSummary, RunStatus
-else:
-    from .database.report.models import WorkflowSummary, RunStatus
+from workflow.database.report.models import WorkflowSummary, RunStatus
 from .states import StateAction  # noqa: F401
 from .settings import POSTPROCESS_INFO, CATALOG_DATA_READY  # noqa: F401
 from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY  # noqa: F401
@@ -26,7 +22,7 @@ class WorkflowProcess(StateAction):
             @param recovery: if True, the system will try to recover from workflow problems
             @param allowed_lag: minimum number of seconds since last activity needed before identifying a problem
         """
-        super(WorkflowProcess, self).__init__(connection=connection)
+        super().__init__(connection=connection)
         self._recovery = recovery
         # Amount of time allowed before we start worrying about workflow issues
         if allowed_lag is None:
