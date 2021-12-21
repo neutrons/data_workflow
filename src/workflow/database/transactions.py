@@ -2,7 +2,6 @@
 """
     Perform DB transactions
 """
-import six
 import sys
 import os
 import json
@@ -11,17 +10,9 @@ import traceback
 # The workflow modules must be on the python path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "workflow.database.settings")
 import django  # noqa: E402
-if django.VERSION[1] >= 7:
-    django.setup()
-    from workflow.database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
-    from workflow.database.report.models import IPTS, Instrument, Error, Information, Task
-else:
-    # The report database module must be on the python path for Django to find it
-    sys.path.append(os.path.dirname(__file__))
-
-    # Import your models for use in your script
-    from .report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary
-    from .report.models import IPTS, Instrument, Error, Information, Task
+django.setup()
+from workflow.database.report.models import DataRun, RunStatus, StatusQueue, WorkflowSummary  # noqa: E402
+from workflow.database.report.models import IPTS, Instrument, Error, Information, Task  # noqa: E402
 
 from django.db import transaction  # noqa: E402
 
@@ -245,7 +236,7 @@ def add_task(instrument, input_queue, task_class='', task_queues=None, success_q
         return
 
     # Find task queues
-    if isinstance(task_queues, (six.string_types)):
+    if isinstance(task_queues, str):
         task_queues = [task_queues]
     task_queue_ids = _get_queue_ids(task_queues)
     if task_queue_ids is None:
@@ -253,7 +244,7 @@ def add_task(instrument, input_queue, task_class='', task_queues=None, success_q
         return
 
     # Find success queues
-    if isinstance(success_queues, (six.string_types)):
+    if isinstance(success_queues, str):
         success_queues = [success_queues]
     success_queue_ids = _get_queue_ids(success_queues)
     if success_queue_ids is None:

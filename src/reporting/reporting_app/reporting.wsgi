@@ -10,10 +10,5 @@ if app_path not in sys.path:
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'reporting_app.settings'
 
-import django
-if django.VERSION[1]<7:
-    import django.core.handlers.wsgi
-    application = django.core.handlers.wsgi.WSGIHandler()
-else:
-    from django.core.wsgi import get_wsgi_application
-    application = get_wsgi_application() 
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
