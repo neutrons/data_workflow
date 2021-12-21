@@ -7,7 +7,7 @@ class ReductionProperty(models.Model):
     """
         Table of template properties for reduction scripts
     """
-    instrument = models.ForeignKey(Instrument)
+    instrument = models.ForeignKey(Instrument, on_delete=models.DO_NOTHING)
     key = models.TextField()
     value = models.TextField(blank=True)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
@@ -24,9 +24,9 @@ class PropertyModification(models.Model):
         Table of actions taken by users to modify the reduction
         property table.
     """
-    property = models.ForeignKey(ReductionProperty)
+    property = models.ForeignKey(ReductionProperty, on_delete=models.DO_NOTHING)
     value = models.TextField(blank=True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
 
 
@@ -34,7 +34,7 @@ class PropertyDefault(models.Model):
     """
         Table of default values
     """
-    property = models.ForeignKey(ReductionProperty, unique=True)
+    property = models.ForeignKey(ReductionProperty, unique=True, on_delete=models.DO_NOTHING)
     value = models.TextField(blank=True)
     timestamp = models.DateTimeField('timestamp', auto_now=True)
 
@@ -43,8 +43,8 @@ class Choice(models.Model):
     """
         Table of choices for forms
     """
-    instrument = models.ForeignKey(Instrument)
-    property = models.ForeignKey(ReductionProperty)
+    instrument = models.ForeignKey(Instrument, on_delete=models.DO_NOTHING)
+    property = models.ForeignKey(ReductionProperty, on_delete=models.DO_NOTHING)
     description = models.TextField()
     value = models.TextField()
 

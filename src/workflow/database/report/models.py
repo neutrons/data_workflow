@@ -139,8 +139,8 @@ class DataRun(models.Model):
         TODO: run number should be unique for a given instrument
     """
     run_number = models.IntegerField()
-    ipts_id = models.ForeignKey(IPTS)
-    instrument_id = models.ForeignKey(Instrument)
+    ipts_id = models.ForeignKey(IPTS,on_delete=models.DO_NOTHING)
+    instrument_id = models.ForeignKey(Instrument,on_delete=models.DO_NOTHING)
     file = models.CharField(max_length=128)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
     objects = DataRunManager()
@@ -264,9 +264,9 @@ class RunStatus(models.Model):
                   'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
     """
     # DataRun this run status belongs to
-    run_id = models.ForeignKey(DataRun)
+    run_id = models.ForeignKey(DataRun, on_delete=models.DO_NOTHING)
     # Long name for this status
-    queue_id = models.ForeignKey(StatusQueue)
+    queue_id = models.ForeignKey(StatusQueue, on_delete=models.DO_NOTHING)
     # ActiveMQ message ID
     message_id = models.CharField(max_length=100, null=True)
     created_on = models.DateTimeField('Timestamp', auto_now_add=True)
@@ -325,7 +325,7 @@ class WorkflowSummary(models.Model):
     """
         Overall status of the workflow for a given run
     """
-    run_id = models.ForeignKey(DataRun, unique=True)
+    run_id = models.ForeignKey(DataRun, unique=True, on_delete=models.DO_NOTHING)
 
     # Overall status of the workflow for this run
     complete = models.BooleanField(default=False)
@@ -398,7 +398,7 @@ class Error(models.Model):
     """
         Details of a particular error event
     """
-    run_status_id = models.ForeignKey(RunStatus)
+    run_status_id = models.ForeignKey(RunStatus, on_delete=models.DO_NOTHING)
     description = models.CharField(max_length=200, null=True)
 
     class Meta:
@@ -409,7 +409,7 @@ class Information(models.Model):
     """
         Extra information associated with a status update
     """
-    run_status_id = models.ForeignKey(RunStatus)
+    run_status_id = models.ForeignKey(RunStatus, on_delete=models.DO_NOTHING)
     description = models.CharField(max_length=200, null=True)
 
     class Meta:
@@ -455,9 +455,9 @@ class Task(models.Model):
         Define a task
     """
     # Instrument ID
-    instrument_id = models.ForeignKey(Instrument)
+    instrument_id = models.ForeignKey(Instrument, on_delete=models.DO_NOTHING)
     # Message queue that starts this task
-    input_queue_id = models.ForeignKey(StatusQueue)
+    input_queue_id = models.ForeignKey(StatusQueue, on_delete=models.DO_NOTHING)
     # Python class to be instantiated and run
     task_class = models.CharField(max_length=50, null=True, blank=True)
     # Output messages to be sent
@@ -498,8 +498,8 @@ class InstrumentStatus(models.Model):
         Cache the latest information for each instrument.
         This can be used to quickly access status information.
     """
-    instrument_id = models.ForeignKey(Instrument, unique=True)
-    last_run_id = models.ForeignKey(DataRun, null=True)
+    instrument_id = models.ForeignKey(Instrument, unique=True, on_delete=models.DO_NOTHING)
+    last_run_id = models.ForeignKey(DataRun, null=True, on_delete=models.DO_NOTHING)
 
     class Meta:
         verbose_name_plural = "Instrument status"
