@@ -38,7 +38,7 @@ class Listener(stomp.ConnectionListener):
         self._user = user
         self._passcode = passcode
 
-    def on_message(self, headers, message):
+    def on_message(self, frame):
         """
             Process a message.
             Example of an ActiveMQ header:
@@ -47,9 +47,10 @@ class Listener(stomp.ConnectionListener):
                       'persistent': 'true', 'priority': '5',
                       'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
 
-            @param headers: message headers
-            @param message: JSON-encoded message content
+            @param frame: stomp.utils.Frame
         """
+        headers = frame.headers
+        message = frame.body
         logging.debug("Recv: %s", headers['destination'])
 
         # Execute the appropriate action
@@ -77,16 +78,7 @@ class Listener(stomp.ConnectionListener):
         """
         if self._send_connection is None or self._send_connection.is_connected() is False:
             logging.info("[workflow_send_connection] Attempting to connect to ActiveMQ broker")
-            if stomp.__version__[0] < 4:
-                conn = stomp.Connection(host_and_ports=self._brokers,
-                                        user=self._user,
-                                        passcode=self._passcode,
-                                        wait_on_receipt=True)
-                conn.start()
-                conn.connect()
-            else:
-                conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
-                conn.start()
-                conn.connect(self._user, self._passcode, wait=True)
+            conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
+            conn.connect(self._user, self._passcode, wait=True)
             self._send_connection = conn
         return self._send_connection

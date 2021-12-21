@@ -474,7 +474,7 @@ def notifications(request):
         instruments = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
 
         def __init__(self, *args, **kwargs):
-            super(NotificationForm, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             options = ()
             for i in instrument_list:
                 options += ((i, i),)

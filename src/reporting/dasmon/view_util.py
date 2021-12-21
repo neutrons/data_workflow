@@ -883,7 +883,7 @@ def get_run_list(run_list):
     return run_dicts
 
 
-class SignalEntry(object):
+class SignalEntry:
     """
         Utility class representing a DASMON signal
     """

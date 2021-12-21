@@ -73,7 +73,7 @@ class BaseReductionConfigurationForm(forms.Form):
     """
 
     def __init__(self, *args, **kwargs):
-        super(BaseReductionConfigurationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_instrument(self, instrument):
         """
@@ -162,7 +162,7 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
                       'e_min', 'e_step', 'e_max', 'a', 'b', 'c']
 
     def __init__(self, *args, **kwargs):
-        super(ReductionConfigurationCNCSForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_instrument(self, instrument):
         """
@@ -190,7 +190,7 @@ class ReductionConfigurationDGSForm(BaseReductionConfigurationForm):
                       'e_min', 'e_step', 'e_max']
 
     def __init__(self, *args, **kwargs):
-        super(ReductionConfigurationDGSForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_instrument(self, instrument):
         """
@@ -226,7 +226,7 @@ class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
                       'vanadium_SA_file', 'useCC']
 
     def __init__(self, *args, **kwargs):
-        super(ReductionConfigurationCorelliForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
@@ -257,7 +257,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
                       'use_side_bck', 'bck_width', 'skip_quicknxs']
 
     def __init__(self, *args, **kwargs):
-        super(ReductionConfigurationREFMForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class MaskForm(forms.Form):

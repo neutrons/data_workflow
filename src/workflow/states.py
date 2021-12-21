@@ -11,10 +11,9 @@ from .database import transactions
 import json
 import logging
 import sys
-import stomp
 
 
-class StateAction(object):
+class StateAction:
     """
         Base class for processing messages
     """
@@ -94,12 +93,7 @@ class StateAction(object):
         """
         logging.debug("Send: %s" % destination)
         if self._send_connection is not None:
-            if stomp.__version__[0] < 4:
-                self._send_connection.send(destination=destination,
-                                           message=message,
-                                           persistent=persistent)
-            else:
-                self._send_connection.send(destination, message, persistent=persistent)
+            self._send_connection.send(destination, message, persistent=persistent)
             headers = {'destination': destination,
                        'message-id': ''}
             transactions.add_status_entry(headers, message)
