@@ -1,4 +1,4 @@
-#pylint: disable=bare-except, too-many-arguments, invalid-name
+# pylint: disable=bare-except, too-many-arguments, invalid-name
 """
     AMQ test client
 """
@@ -27,6 +27,7 @@ logging.getLogger().addHandler(fh)
 # ACK data
 acks = {}
 
+
 class Listener(stomp.ConnectionListener):
     """
         Base listener class for an ActiveMQ client
@@ -36,6 +37,7 @@ class Listener(stomp.ConnectionListener):
         messages.
     """
     _connection = None
+
     def set_connection(self, connection):
         """
             Set the AMQ connection
@@ -76,7 +78,7 @@ def process_ack(data=None):
             proc_name = data['src_name']
             delta_time = time.time() - data['request_time']
             logging.warning("Delta time: %s", delta_time)
-            if  delta_time > 60:
+            if delta_time > 60:
                 logging.error("Client %s took more than 60 secs to answer", proc_name)
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared", proc_name)
@@ -90,6 +92,7 @@ class Client(object):
         ActiveMQ client
         Holds the connection to a broker
     """
+
     def __init__(self, brokers, user, passcode,
                  queues=None, consumer_name="amq_consumer"):
         """
@@ -209,7 +212,7 @@ class Client(object):
 
 if __name__ == "__main__":
     logging.warning("Starting")
-    c = Client(amq_brokers, amq_user, amq_pwd, amq_queues, "amq_looper")
-    l = Listener()
-    c.set_listener(l)
-    c.listen_and_wait()
+    client = Client(amq_brokers, amq_user, amq_pwd, amq_queues, "amq_looper")
+    listener = Listener()
+    client.set_listener(listener)
+    client.listen_and_wait()
