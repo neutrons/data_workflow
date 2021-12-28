@@ -5,7 +5,7 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 import logging
 import json
 from reduction.models import ReductionProperty, PropertyModification, PropertyDefault

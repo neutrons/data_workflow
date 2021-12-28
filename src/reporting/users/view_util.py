@@ -3,7 +3,7 @@
     View utility functions for user management
 """
 import sys
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
@@ -25,7 +25,7 @@ def fill_template_values(request, **template_args):
         Only the arguments common to all pages will be filled.
     """
     template_args['user'] = request.user
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if hasattr(settings, 'GRAVATAR_URL'):
             if type(settings.ALLOWED_DOMAIN) is tuple and len(settings.ALLOWED_DOMAIN) > 0:
                 domain = settings.ALLOWED_DOMAIN[0]
@@ -53,7 +53,7 @@ def _check_credentials(request):
         Internal utility method to check whether a user has access to a view
     """
     # If we don't allow guests but the user is authenticated, return the function
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return True
 
     # If we allow users on a domain, check the user's IP
@@ -176,7 +176,7 @@ def monitor(fn):
     def request_processor(request, *args, **kws):
         if settings.MONITOR_ON:
             user = None
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 user = request.user
 
             visit = PageView(user=user,

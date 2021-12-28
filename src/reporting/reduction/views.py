@@ -11,7 +11,7 @@ import json
 import datetime
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.conf import settings
 from django.utils import dateparse, timezone

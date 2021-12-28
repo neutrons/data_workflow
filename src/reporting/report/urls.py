@@ -5,6 +5,8 @@
 from django.conf.urls import url
 from . import views
 
+app_name = 'report'
+
 urlpatterns = [
     url(r'^$', views.summary, name='summary'),
     url(r'^processing$', views.processing_admin, name='processing_admin'),

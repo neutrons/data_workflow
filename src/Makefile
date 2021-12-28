@@ -18,12 +18,6 @@ check:
 	@python3 -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 	#@python3 -c "import pyoncat" || pip install https://oncat.ornl.gov/packages/PyONCat-1.0rc4-py2.py3-none-any.whl
 
-ifeq ($(DJANGO_COMPATIBLE),1)
-	@echo "Detected Django >= 1.6"
-else
-	$(error Detected Django < 1.6. The web monitor requires at least Django 1.6)
-endif
-
 workflow: check
 	# Install the workflow manager, which defines the database schema
 	python3 setup.py install
