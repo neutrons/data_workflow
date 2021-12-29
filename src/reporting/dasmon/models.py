@@ -22,8 +22,8 @@ class StatusVariable(models.Model):
     """
         Table containing key-value pairs from the DASMON
     """
-    instrument_id = models.ForeignKey(Instrument)
-    key_id = models.ForeignKey(Parameter)
+    instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
+    key_id = models.ForeignKey(Parameter, on_delete=models.CASCADE)
     value = models.CharField(max_length=128)
     timestamp = models.DateTimeField('timestamp', auto_now_add=True)
 
@@ -32,8 +32,8 @@ class StatusCache(models.Model):
     """
         Table of cached status variable values
     """
-    instrument_id = models.ForeignKey(Instrument)
-    key_id = models.ForeignKey(Parameter)
+    instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
+    key_id = models.ForeignKey(Parameter, on_delete=models.CASCADE)
     value = models.CharField(max_length=128)
     timestamp = models.DateTimeField('timestamp')
 
@@ -91,7 +91,7 @@ class ActiveInstrument(models.Model):
         Table containing the list of instruments that are expecting to
         have their DAS turned ON
     """
-    instrument_id = models.ForeignKey(Instrument, unique=True)
+    instrument_id = models.ForeignKey(Instrument, unique=True, on_delete=models.CASCADE)
     is_alive = models.BooleanField(default=True)
     is_adara = models.BooleanField(default=True)
     has_pvsd = models.BooleanField(default=False)
@@ -103,7 +103,7 @@ class Signal(models.Model):
     """
         Table of signals received from DASMON
     """
-    instrument_id = models.ForeignKey(Instrument)
+    instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
     source = models.CharField(max_length=40)
     message = models.CharField(max_length=250)
@@ -115,7 +115,7 @@ class LegacyURL(models.Model):
     """
         Table of URLs pointing to the legacy instrument status service
     """
-    instrument_id = models.ForeignKey(Instrument, unique=True)
+    instrument_id = models.ForeignKey(Instrument, unique=True, on_delete=models.CASCADE)
     url = models.CharField(max_length=128)
     long_name = models.CharField(max_length=40)
 

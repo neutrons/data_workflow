@@ -42,7 +42,7 @@ services:
       - webmon
   
   db:
-    image: postgres:9.6.22
+    image: postgres:14
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}

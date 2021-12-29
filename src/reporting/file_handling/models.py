@@ -17,7 +17,7 @@ class JsonData(models.Model):
         Table of JSON data received from the reduction
     """
     # DataRun this run status belongs to
-    run_id = models.ForeignKey(DataRun)
+    run_id = models.ForeignKey(DataRun, on_delete=models.CASCADE)
     # JSON data
     data = models.TextField()
     # Original name
@@ -31,7 +31,7 @@ class ReducedImage(models.Model):
         data for a given run.
     """
     # DataRun this run status belongs to
-    run_id = models.ForeignKey(DataRun)
+    run_id = models.ForeignKey(DataRun, on_delete=models.CASCADE)
     # Data file
     file = models.FileField(upload_to='images', storage=FileSystemStorage())
     # Original name

@@ -23,8 +23,8 @@ class PV(models.Model):
     """
         Table holding values
     """
-    instrument = models.ForeignKey(Instrument, null=True)
-    name = models.ForeignKey(PVName)
+    instrument = models.ForeignKey(Instrument, null=True, on_delete=models.CASCADE)
+    name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.FloatField()
     status = models.IntegerField()
     update_time = models.IntegerField()
@@ -37,8 +37,8 @@ class PVCache(models.Model):
     """
         Table holding the latest values
     """
-    instrument = models.ForeignKey(Instrument, null=True)
-    name = models.ForeignKey(PVName)
+    instrument = models.ForeignKey(Instrument, null=True, on_delete=models.CASCADE)
+    name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.FloatField()
     status = models.IntegerField()
     update_time = models.IntegerField()
@@ -51,8 +51,8 @@ class PVString(models.Model):
     """
         Table holding string values
     """
-    instrument = models.ForeignKey(Instrument, null=True)
-    name = models.ForeignKey(PVName)
+    instrument = models.ForeignKey(Instrument, null=True, on_delete=models.CASCADE)
+    name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.TextField()
     status = models.IntegerField()
     update_time = models.IntegerField()
@@ -65,8 +65,8 @@ class PVStringCache(models.Model):
     """
         Table holding the latest string values
     """
-    instrument = models.ForeignKey(Instrument, null=True)
-    name = models.ForeignKey(PVName)
+    instrument = models.ForeignKey(Instrument, null=True, on_delete=models.CASCADE)
+    name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.TextField()
     status = models.IntegerField()
     update_time = models.IntegerField()
@@ -80,6 +80,6 @@ class MonitoredVariable(models.Model):
         Table of PVs that need special monitoring
         and might have DASMON rules associated with them
     """
-    instrument = models.ForeignKey(Instrument)
-    pv_name = models.ForeignKey(PVName, null=True, blank=True)
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
+    pv_name = models.ForeignKey(PVName, null=True, blank=True, on_delete=models.CASCADE)
     rule_name = models.CharField(max_length=50, default='', blank=True)
