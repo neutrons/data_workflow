@@ -11,7 +11,7 @@ class TruncatingCharField(models.CharField):
 
 
 class PageView(models.Model):
-    user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     view = TruncatingCharField(max_length=64)
     path = TruncatingCharField(max_length=128)
     ip = models.CharField(max_length=64)
