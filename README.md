@@ -112,3 +112,11 @@ Here are the recommended steps to setup your dev environment:
   - user name: `testdev`
   - password: `testdev`
 - After editing the source code, you 
+
+
+## Running unit tests
+
+- `conda env create -f environment_webmon.yml`
+- `conda activate webmon`
+- `python -m pip install -r requirements_test.txt`
+- `python -m pytest src`
