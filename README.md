@@ -1,3 +1,6 @@
+
+[![CI](https://github.com/neutrons/data_workflow/actions/workflows/ci.yml/badge.svg?branch=next)](https://github.com/neutrons/data_workflow/actions/workflows/ci.yml?query=branch:next)
+[![codecov](https://codecov.io/gh/neutrons/data_workflow/branch/next/graph/badge.svg?token=q1f07RUI88)](https://codecov.io/gh/neutrons/data_workflow)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5504/badge)](https://bestpractices.coreinfrastructure.org/projects/5504)
 
 Data Workflow Manager
