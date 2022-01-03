@@ -1,0 +1,23 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        mamba-version: "*"
+        environment-file: environment_webmon.yml
+    - name: Install testing requirements
+      run: mamba install --yes --file requirements_test.txt
+    - name: Test with pytest
+      run: cd src/reporting && python -m pytest --cov .. --cov-report=xml --cov-report=term
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
