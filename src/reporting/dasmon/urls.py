@@ -5,6 +5,8 @@
 from django.conf.urls import url
 from . import views
 
+app_name = 'dasmon'
+
 urlpatterns = [
     url(r'^$', views.dashboard_simple, name='dashboard'),
     url(r'^update/$', views.summary_update, name='summary_update'),

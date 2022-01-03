@@ -2,8 +2,8 @@
     Live PV monitoring
 """
 from django.http import HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
-from django.core.urlresolvers import reverse
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.utils import dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
@@ -43,7 +43,7 @@ def pv_monitor(request, instrument):
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
 
-    return render_to_response('pvmon/pv_monitor.html', template_values)
+    return render(request, 'pvmon/pv_monitor.html', template_values)
 
 
 @users.view_util.login_or_local_required_401

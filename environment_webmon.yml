@@ -4,7 +4,7 @@ channels:
 dependencies:
 - make
 - python=3.7
-- django=1.11.25
+- django=3.2
 - stomp.py=7.0.0
 - setuptools
 - psycopg2-binary=2.8.6
@@ -15,8 +15,8 @@ dependencies:
 - urllib3
 - httplib2
 - gunicorn
-- python-ldap
+- python-ldap>=3.1
 - pip
 - pip:
-  - django-auth-ldap==1.6.0
+  - django-auth-ldap==4.0.0
   - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl

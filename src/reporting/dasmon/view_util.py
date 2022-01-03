@@ -9,7 +9,7 @@ from report.models import Instrument, DataRun, WorkflowSummary
 from dasmon.models import Parameter, StatusVariable, StatusCache, ActiveInstrument, Signal
 from pvmon.models import PVCache, PVStringCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import dateformat, timezone
 from django.contrib.auth.models import Group
 from django.conf import settings

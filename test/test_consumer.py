@@ -1,10 +1,7 @@
 """
     Dummy client to simulate the worker nodes
 """
-import time
-import stomp
-import sys
-from workflow.settings import brokers, icat_user, icat_passcode 
+from workflow.settings import brokers, icat_user, icat_passcode
 from consumer import Consumer
 
 queues = ['CATALOG.DATA_READY',

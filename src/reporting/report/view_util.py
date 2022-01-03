@@ -15,7 +15,7 @@ import re
 import hashlib
 from report.models import (DataRun, RunStatus, IPTS, Instrument,
                            Error, StatusQueue, Task, InstrumentStatus, WorkflowSummary)
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import dateformat, timezone

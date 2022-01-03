@@ -6,7 +6,7 @@
 """
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 import urllib.request
@@ -48,11 +48,11 @@ def upload_image(request, instrument, run_id):
         if form.is_valid():
             user = authenticate(username=request.POST['username'],
                                 password=request.POST['password'])
-            if user is not None and not user.is_anonymous():
+            if user is not None and not user.is_anonymous:
                 login(request, user)
             else:
                 return HttpResponse(status=401)
-            if not request.user.is_authenticated():
+            if not request.user.is_authenticated:
                 return HttpResponse(status=401)
 
             # Prepare to save data to disk

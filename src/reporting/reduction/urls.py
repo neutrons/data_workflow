@@ -5,6 +5,8 @@
 from django.conf.urls import url
 from . import views
 
+app_name = 'reduction'
+
 urlpatterns = [
     url(r'^(?P<instrument>[\w]+)/$', views.configuration, name='configuration'),
     url(r'^(?P<instrument>[\w]+)/change$', views.configuration_change, name='configuration_change'),
