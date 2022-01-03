@@ -3,7 +3,7 @@
 Data Workflow Manager
 ---------------------
 
-SNS data wo\rkflow manager and reporting app
+SNS data workflow manager and reporting app
 
 	Dependencies: stomp (http://code.google.com/p/stomppy/)
 	              django (https://www.djangoproject.com/)
