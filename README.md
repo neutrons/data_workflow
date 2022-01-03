@@ -1,3 +1,5 @@
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5504/badge)](https://bestpractices.coreinfrastructure.org/projects/5504)
+
 Data Workflow Manager
 ---------------------
 
