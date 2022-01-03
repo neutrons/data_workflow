@@ -1,7 +1,9 @@
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5504/badge)](https://bestpractices.coreinfrastructure.org/projects/5504)
+
 Data Workflow Manager
 ---------------------
 
-SNS data workflow manager and reporting app
+SNS data wo\rkflow manager and reporting app
 
 	Dependencies: stomp (http://code.google.com/p/stomppy/)
 	              django (https://www.djangoproject.com/)
