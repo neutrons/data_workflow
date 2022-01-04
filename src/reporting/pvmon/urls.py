@@ -2,12 +2,12 @@
 """
     Define url structure
 """
-from django.conf.urls import url
+from django.conf.urls import re_path
 from . import views
 
-app_name = 'pvmon'
+app_name = "pvmon"
 
 urlpatterns = [
-    url(r'^(?P<instrument>[\w]+)/$', views.pv_monitor, name='pv_monitor'),
-    url(r'^(?P<instrument>[\w]+)/update/$', views.get_update, name='get_update'),
+    re_path(r"^(?P<instrument>[\w]+)/$", views.pv_monitor, name="pv_monitor"),
+    re_path(r"^(?P<instrument>[\w]+)/update/$", views.get_update, name="get_update"),
 ]

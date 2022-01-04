@@ -2,11 +2,15 @@
 """
     Define url structure
 """
-from django.conf.urls import url
+from django.conf.urls import re_path
 from . import views
 
-app_name = 'file_handling'
+app_name = "file_handling"
 
 urlpatterns = [
-    url(r'^(?P<instrument>[\w]+)/(?P<run_id>\d+)/submit_reduced/$', views.upload_image, name='upload_image'),
+    re_path(
+        r"^(?P<instrument>[\w]+)/(?P<run_id>\d+)/submit_reduced/$",
+        views.upload_image,
+        name="upload_image",
+    ),
 ]
