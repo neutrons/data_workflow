@@ -53,7 +53,10 @@ def get_cached_variables(instrument_id, monitored_only=False):
             # Exclude top variables
             if monitored_only and str(kvp.key_id) in top_variables:
                 continue
-            localtime = timezone.localtime(kvp.timestamp)
+            try:
+                localtime = timezone.localtime(kvp.timestamp)
+            except:
+                localtime = kvp.timestamp
             df = dateformat.DateFormat(localtime)
 
             # Check whether we have a number
@@ -414,7 +417,10 @@ def workflow_diagnostics(timeout=None):
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + 'workflowmgr')
         last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest('timestamp')
         status_value = int(last_value.value)
-        status_time = timezone.localtime(last_value.timestamp)
+        try:
+            status_time = timezone.localtime(last_value.timestamp)
+        except:
+            status_time = last_value.timestamp
     except:
         # No data available, keep defaults
         if common_services is None:
@@ -449,7 +455,15 @@ def workflow_diagnostics(timeout=None):
         logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Heartbeat
-    if timezone.now() - status_time > delay_time:
+    # NOTE:
+    #   The time entry inside db might or might not have the time zone info.
+    #   This try-except block is trying to bypassing it, but it might lead to
+    #   some unexpected errors when the time is recorded inconsistently.
+    try:
+        time_diff = timezone.now() - status_time
+    except:
+        time_diff = timezone.now() - status_time.replace(tzinfo=None)
+    if time_diff > delay_time:
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         wf_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT),
@@ -553,13 +567,20 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process='pvstreamer'):
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + process)
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         status_value = int(last_value.value)
-        status_time = timezone.localtime(last_value.timestamp)
+        try:
+            status_time = timezone.localtime(last_value.timestamp)
+        except:
+            status_time = last_value.timestamp
     except:
         # No data available, keep defaults
         logging.error("pvstreamer_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Heartbeat
-    if timezone.now() - status_time > delay_time:
+    try:
+        timediff = timezone.now() - status_time
+    except:
+        timediff = timezone.now() - status_time.replace(tzinfo=None)
+    if timediff > delay_time:
         dasmon_listener_warning = True
         df = dateformat.DateFormat(status_time)
         pv_conditions.append("No %s heartbeat since %s: %s" % (process, df.format(settings.DATETIME_FORMAT),
@@ -598,7 +619,10 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + 'dasmon')
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest('timestamp')
         status_value = int(last_value.value)
-        status_time = timezone.localtime(last_value.timestamp)
+        try:
+            status_time = timezone.localtime(last_value.timestamp)
+        except:
+            status_time = last_value.timestamp
     except:
         # No data available, keep defaults
         logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
@@ -619,7 +643,10 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         latest = StatusCache.objects.filter(instrument_id=instrument_id).latest("timestamp")
-        last_amq_time = timezone.localtime(latest.timestamp)
+        try:
+            last_amq_time = timezone.localtime(latest.timestamp)
+        except:
+            last_amq_time = latest.timestamp
     except:
         # No data available, keep defaults
         # pylint: disable=pointless-except
@@ -800,7 +827,10 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
             status_list.append(run_dict)
 
             if since_run_id.created_on < r.created_on:
-                localtime = timezone.localtime(r.created_on)
+                try:
+                    localtime = timezone.localtime(r.created_on)
+                except:
+                    localtime = r.created_on
                 df = dateformat.DateFormat(localtime)
                 reduce_url = reverse('report:submit_for_reduction', args=[str(r.instrument_id), r.run_number])
                 expt_dict = {"run": r.run_number,
@@ -875,8 +905,13 @@ def get_run_list(run_list):
                 status = 'complete'
             elif r.last_error() is not None:
                 status = 'error'
+            # workaround for timezone issue
+            try:
+                _t = timezone.localtime(r.created_on).ctime()
+            except:
+                _t = r.created_on.ctime()
             run_dicts.append(dict(run=r.run_number,
-                                  timestamp=timezone.localtime(r.created_on).ctime(),
+                                  timestamp=_t,
                                   status=status))
     except:
         logging.error("dasmon.view_util.get_run_list: %s", sys.exc_info()[1])
@@ -1079,11 +1114,18 @@ def get_latest_updates(instrument_id, message_channel,
 
     template_data = []
     for item in update_list:
-        localtime = timezone.localtime(item.timestamp)
+        try:
+            localtime = timezone.localtime(item.timestamp)
+        except:
+            localtime = item.timestamp
         df = dateformat.DateFormat(localtime)
+        try:
+            ts = timezone.make_naive(item.timestamp, timezone.utc).isoformat()
+        except:
+            ts = item.timestamp.isoformat()
         template_data.append({'info': str(item.value),
                               'time': str(df.format(settings.DATETIME_FORMAT)),
-                              'timestamp': timezone.make_naive(item.timestamp, timezone.utc).isoformat()})
+                              'timestamp': ts})
     return template_data
 
 
@@ -1101,8 +1143,8 @@ def get_instruments_for_user(request):
 
         # Django groups
         try:
-            instr_group = Group.objects.get(name="%s%s" % (instrument_name,
-                                                           settings.INSTRUMENT_TEAM_SUFFIX))
+            gp_name = "%s%s" % (instrument_name, settings.INSTRUMENT_TEAM_SUFFIX)
+            instr_group = Group.objects.get(name=gp_name)
             if instr_group in request.user.groups.all():
                 instrument_list.append(instrument_name)
                 continue

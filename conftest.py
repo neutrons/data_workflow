@@ -29,4 +29,22 @@ def pytest_configure():
                 }
             }
         },
+        #
+        LANDING_VIEW="dasmon:dashboard",
+        ROOT_URLCONF="reporting_app.urls",
+        SLOW_PAGE_CACHE_TIMEOUT = 60,
+        FAST_PAGE_CACHE_TIMEOUT = 10,
+        HEARTBEAT_TIMEOUT = 15,
+        SYSTEM_STATUS_PREFIX = 'system_',
+        # Amount of time displayed when plotting a live PV
+        DASMON_PLOT_TIME_RANGE = 2 * 60 * 60,
+        DASMON_SQL_SORT = 'id',
+        # Max number of old PV points to show when there were no points in defined time range
+        DASMON_NUMBER_OF_OLD_PTS = 20,
+        # Post-processing node prefix values (autoreduction and cataloging)
+        POSTPROCESS_NODE_PREFIX = ['autoreducer', 'fermi'],
+        # Timeout value for cached run and error rates, in seconds
+        RUN_RATE_CACHE_TIMEOUT = 120,
+        # Instrument team user group suffix
+        INSTRUMENT_TEAM_SUFFIX = 'InstrumentTeam'
     )
