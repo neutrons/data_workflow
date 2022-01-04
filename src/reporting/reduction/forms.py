@@ -161,9 +161,6 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
                       'u_vector', 'v_vector', 'e_pars_in_mev',
                       'e_min', 'e_step', 'e_max', 'a', 'b', 'c']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def set_instrument(self, instrument):
         """
             Populate instrument-specific options.
@@ -188,9 +185,6 @@ class ReductionConfigurationDGSForm(BaseReductionConfigurationForm):
     # List of field that are used in the template
     _template_list = ['mask', 'raw_vanadium', 'processed_vanadium', 'grouping',
                       'e_min', 'e_step', 'e_max']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def set_instrument(self, instrument):
         """
@@ -225,9 +219,6 @@ class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
     _template_list = ['mask', 'plot_requests', 'ub_matrix_file', 'vanadium_flux_file',
                       'vanadium_SA_file', 'useCC']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 
 class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     """
@@ -255,9 +246,6 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
                       'plot_in_2D', 'force_peak', 'peak_min', 'peak_max', 'q_step',
                       'force_background', 'bck_min', 'bck_max', 'use_roi_bck',
                       'use_side_bck', 'bck_width', 'skip_quicknxs']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
 class MaskForm(forms.Form):
@@ -338,8 +326,8 @@ class MaskForm(forms.Form):
         mask_info = []
         for mask in dict_list:
             entry_dict = {}
-            for k in mask.keys():
-                entry_dict[k.lower()] = mask[k]
+            for k, v in mask.items():
+                entry_dict[k.lower()] = v
             mask_info.append(entry_dict)
         return mask_info
 
