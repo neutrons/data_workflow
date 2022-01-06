@@ -665,13 +665,21 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dasmon_conditions.append("No PV updates in the past %s seconds" % str(time.time() - last_pv_timestamp))
 
     # Recent AMQ
-    if timezone.now() - last_amq_time > delay_time:
+    try:
+        dt = timezone.now() - last_amq_time
+    except:
+        dt = timezone.now().replace(tzinfo=None) - last_amq_time.replace(tzinfo=None)
+    if dt > delay_time:
         slow_amq = True
         df = dateformat.DateFormat(last_amq_time)
         dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % df.format(settings.DATETIME_FORMAT))
 
     # Heartbeat
-    if timezone.now() - status_time > delay_time:
+    try:
+        dt = timezone.now() - status_time
+    except:
+        dt = timezone.now().replace(tzinfo=None) - status_time.replace(tzinfo=None)
+    if dt > delay_time:
         slow_status = True
         df = dateformat.DateFormat(status_time)
         dasmon_conditions.append("No heartbeat since %s: %s" % (df.format(settings.DATETIME_FORMAT),

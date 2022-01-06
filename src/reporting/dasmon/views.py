@@ -433,8 +433,7 @@ def get_signal_table(request, instrument):
     t = loader.get_template('dasmon/signal_table.html')
     template_values = {'signals': view_util.get_signals(instrument_id)}
     template_values['is_instrument_staff'] = users.view_util.is_instrument_staff(request, instrument_id)
-    c = Context(template_values)
-    resp = t.render(c)
+    resp = t.render(template_values)
     response = HttpResponse(resp, content_type="text/html")
     response['Connection'] = 'close'
     response['Content-Length'] = len(response.content)

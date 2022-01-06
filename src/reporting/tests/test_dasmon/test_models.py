@@ -1,7 +1,7 @@
 import pytest
 from django.test import TestCase
-import time
 from datetime import datetime
+from django.utils import timezone
 
 from report.models import Instrument
 from dasmon.models import Parameter
@@ -57,12 +57,11 @@ class StatusCacheTest(TestCase):
         instrument.save()
         parameter = Parameter.objects.create(name="testParam")
         parameter.save()
-        currenttime = time.localtime()
         StatusCache.objects.create(
             instrument_id=instrument,
             key_id=parameter,
             value="testvalue",
-            timestamp=time.strftime("%Y-%m-%d %H:%M:%S", currenttime),
+            timestamp=timezone.now(),
         )
 
     def test_value(self):
@@ -117,14 +116,13 @@ class SignalTest(TestCase):
     def setUpTestData(cls):
         instrument = Instrument.objects.create(name="testInst")
         instrument.save()
-        currenttime = time.localtime()
         Signal.objects.create(
             instrument_id=instrument,
             name="testSignal",
             source="testSource",
             message="testMessage",
             level=1,
-            timestamp=time.strftime("%Y-%m-%d %H:%M:%S", currenttime),
+            timestamp=timezone.now(),
         )
 
     def test_name(self):

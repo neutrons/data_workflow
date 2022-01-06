@@ -1,4 +1,5 @@
 from django.conf import settings
+import os
 
 
 def pytest_configure():
@@ -30,6 +31,21 @@ def pytest_configure():
             }
         },
         #
+        MIDDLEWARE = (
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.csrf.CsrfViewMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+            # 'users.mobile_detection.DetectMobileBrowser',
+            # Uncomment the next line for simple clickjacking protection:
+            # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+            # 'debug_toolbar.middleware.DebugToolbarMiddleware',
+        ),
+        AUTHENTICATION_BACKENDS = (
+            'django.contrib.auth.backends.ModelBackend',
+        ),
+        #
         LANDING_VIEW="dasmon:dashboard",
         ROOT_URLCONF="reporting_app.urls",
         SLOW_PAGE_CACHE_TIMEOUT = 60,
@@ -46,5 +62,31 @@ def pytest_configure():
         # Timeout value for cached run and error rates, in seconds
         RUN_RATE_CACHE_TIMEOUT = 120,
         # Instrument team user group suffix
-        INSTRUMENT_TEAM_SUFFIX = 'InstrumentTeam'
+        INSTRUMENT_TEAM_SUFFIX = 'InstrumentTeam',
+        # MONITORING OPTION
+        MONITOR_ON = True,
+        #
+        TEMPLATES = [
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [os.path.abspath("./src/reporting/templates")],
+                'APP_DIRS': True,
+                'OPTIONS': {
+                    'context_processors': [
+                        'django.template.context_processors.debug',
+                        'django.template.context_processors.request',
+                        'django.contrib.auth.context_processors.auth',
+                        'django.contrib.messages.context_processors.messages',
+                    ],
+                },
+            },
+        ],
+        #
+        LIVE_DATA_SERVER = "/plots/$instrument/$run_number/update",
+        LIVE_DATA_SERVER_DOMAIN = "livedata.sns.gov",
+        LIVE_DATA_SERVER_PORT = "443",
+        #
+        USE_TZ = True,
+        #
+        HELPLINE_EMAIL = 'adara_support@ornl.gov',
     )

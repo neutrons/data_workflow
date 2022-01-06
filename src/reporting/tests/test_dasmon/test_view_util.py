@@ -6,9 +6,9 @@ import django
 import dasmon
 import report
 import users
-import time
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.utils import timezone
 
 from report.models import Instrument
 from dasmon.models import ActiveInstrument
@@ -60,12 +60,10 @@ class ViewUtilTest(TestCase):
                 instrument_id=inst,
                 key_id=p,
                 value=v,
-                timestamp="2022-01-04 16:13:14",
+                timestamp=timezone.now(),
             )
 
         # add common services
-        current_time = time.localtime()
-        current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", current_time)
         common = Instrument.objects.create(name="common")
         common.save()
         name_workflowmgr = settings.SYSTEM_STATUS_PREFIX + "workflowmgr"
@@ -80,7 +78,7 @@ class ViewUtilTest(TestCase):
             instrument_id=common,
             key_id=para_workflowmgr,
             value=0,
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
 
     @classmethod
@@ -103,7 +101,6 @@ class ViewUtilTest(TestCase):
         ref_val = {
             "key": "testParam",
             "value": "testValue",
-            "timestamp": "Jan. 4, 2022, 4:13 p.m.",
         }
 
         # test the function
@@ -111,26 +108,12 @@ class ViewUtilTest(TestCase):
 
         pairs = get_cached_variables(inst, monitored_only=False)
         pairs_monitoredOnly = get_cached_variables(inst, monitored_only=True)
-
-        # Terminal output:
-        # print(pairs)
-        # [{'key': 'cnt_rate', 'value': '1', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'},
-        #  {'key': 'proposal_id', 'value': '2', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'},
-        #  {'key': 'run_number', 'value': '0', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'},
-        #  {'key': 'run_title', 'value': 'testRunTitle', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'},
-        #  {'key': 'testParam', 'value': 'testValue', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'}]
-        # print(pairs_monitoredOnly)
-        # [{'key': 'cnt_rate', 'value': '1', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'},
-        #  {'key': 'testParam', 'value': 'testValue', 'timestamp': 'Jan. 4, 2022, 4:13 p.m.'}]
-
         for d in pairs:
             if d["key"] == "testParam":
                 assert d["value"] == ref_val["value"]
-                assert d["timestamp"] == ref_val["timestamp"]
         for d in pairs_monitoredOnly:
             if d["key"] == "testParam":
                 assert d["value"] == ref_val["value"]
-                assert d["timestamp"] == ref_val["timestamp"]
 
     def test_get_latest(self):
         inst = Instrument.objects.get(id=1)
@@ -158,8 +141,6 @@ class ViewUtilTest(TestCase):
     def test_is_running(self):
         from dasmon.view_util import is_running
 
-        current_time = time.localtime()
-        current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", current_time)
         # -- Unknown
         # NOTE: the status of this instrument should be unknown as we never
         #       add it to the table
@@ -187,7 +168,7 @@ class ViewUtilTest(TestCase):
             instrument_id=inst_recording,
             key_id=para_recording,
             value="true",
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         assert is_running(inst_recording) == "Recording"
         # -- Paused
@@ -216,13 +197,13 @@ class ViewUtilTest(TestCase):
             instrument_id=inst_paused,
             key_id=para_recording,
             value="true",
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         StatusCache.objects.create(
             instrument_id=inst_paused,
             key_id=para_paused,
             value="true",
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         assert is_running(inst_paused) == "Paused"
         # -- Stopped
@@ -249,13 +230,13 @@ class ViewUtilTest(TestCase):
             instrument_id=inst_stopped,
             key_id=para_recording,
             value="false",
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         StatusCache.objects.create(
             instrument_id=inst_stopped,
             key_id=para_paused,
             value="false",
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         assert is_running(inst_stopped) == "Stopped"
 
@@ -281,7 +262,7 @@ class ViewUtilTest(TestCase):
         from dasmon.view_util import get_workflow_status
 
         # -- trigger red
-        status = get_workflow_status(0)
+        status = get_workflow_status(red_timeout=0)
         assert status == 2
         # -- trigger yellow
         status = get_workflow_status(red_timeout=65535, yellow_timeout=0)
@@ -325,13 +306,11 @@ class ViewUtilTest(TestCase):
             key_id=para_adara_nonresponsive,
             value=2,
         )
-        current_time = time.localtime()
-        current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", current_time)
         StatusCache.objects.create(
             instrument_id=inst_adara_nonresponsive,
             key_id=para_adara_nonresponsive,
             value=2,
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         cmpt_status = get_component_status(inst_adara_nonresponsive, process="test")
         assert cmpt_status == 2
@@ -356,13 +335,11 @@ class ViewUtilTest(TestCase):
             key_id=para_adara_responsive,
             value=0,
         )
-        current_time = time.localtime()
-        current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", current_time)
         StatusCache.objects.create(
             instrument_id=inst,
             key_id=para_adara_responsive,
             value=0,
-            timestamp=current_time_str,
+            timestamp=timezone.now(),
         )
         cmpt_status = get_component_status(inst, red_timeout=0, process="ok")
         assert cmpt_status == 2
@@ -508,13 +485,11 @@ class ViewUtilTest(TestCase):
             key_id=para,
             value=0,
         )
-        currenttime = time.localtime()
-        currenttime = time.strftime("%Y-%m-%d %H:%M:%S", currenttime)
         StatusCache.objects.create(
             instrument_id=inst,
             key_id=para,
             value=0,
-            timestamp=currenttime,
+            timestamp=timezone.now(),
         )
         # test
         pvstreamer_diag = pvstreamer_diagnostics(inst, process="pvstreamer_test")
@@ -547,13 +522,11 @@ class ViewUtilTest(TestCase):
             key_id=para,
             value=0,
         )
-        currenttime = time.localtime()
-        currenttime = time.strftime("%Y-%m-%d %H:%M:%S", currenttime)
         StatusCache.objects.create(
             instrument_id=inst,
             key_id=para,
             value=0,
-            timestamp=currenttime,
+            timestamp=timezone.now(),
         )
         # test
         dasmon_diag = dasmon_diagnostics(inst)
@@ -733,7 +706,7 @@ class ViewUtilTest(TestCase):
                 reduced=True,
                 reduction_cataloged=True,
                 reduction_catalog_started=True,
-            )
+            ).save()
         # test
         run_list = get_run_list(runs)
         assert len(run_list) == 4
@@ -745,8 +718,6 @@ class ViewUtilTest(TestCase):
         from dasmon.view_util import get_signals
 
         # make signals
-        current_time = time.localtime()
-        current_time_str = time.strftime("%Y-%m-%d %H:%M:%S", current_time)
         inst = Instrument.objects.create(name="testinst_getsignals")
         inst.save()
         for i in range(4):
@@ -756,7 +727,7 @@ class ViewUtilTest(TestCase):
                 source=f"src_{i}",
                 message=f"msg_{i}",
                 level=i,
-                timestamp=current_time_str,
+                timestamp=timezone.now(),
             )
             sig.save()
         # test
