@@ -12,7 +12,7 @@ from django.utils import dateformat, timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
-from django.template import Context, loader
+from django.template import loader
 from django.contrib.auth.decorators import login_required
 from django import forms
 
