@@ -2,13 +2,21 @@
 """
     Define url structure
 """
-from django.conf.urls import url
+from django.conf.urls import re_path
 from . import views
 
-app_name = 'reduction'
+app_name = "reduction"
 
 urlpatterns = [
-    url(r'^(?P<instrument>[\w]+)/$', views.configuration, name='configuration'),
-    url(r'^(?P<instrument>[\w]+)/change$', views.configuration_change, name='configuration_change'),
-    url(r'^(?P<instrument>[\w]+)/update$', views.configuration_update, name='configuration_update'),
+    re_path(r"^(?P<instrument>[\w]+)/$", views.configuration, name="configuration"),
+    re_path(
+        r"^(?P<instrument>[\w]+)/change$",
+        views.configuration_change,
+        name="configuration_change",
+    ),
+    re_path(
+        r"^(?P<instrument>[\w]+)/update$",
+        views.configuration_update,
+        name="configuration_update",
+    ),
 ]

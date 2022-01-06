@@ -25,7 +25,7 @@ def get_ops_status(instrument_id):
             status_host = toks[2]
         else:
             status_host = STATUS_HOST
-        conn = httplib2.HTTPSConnection(status_host, timeout=0.5)
+        conn = httplib2.HTTPSConnectionWithTimeout(status_host, timeout=0.5)
         conn.request('GET', url)
         r = conn.getresponse()
         data = json.loads(r.read())
