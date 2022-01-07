@@ -57,6 +57,10 @@ def pytest_configure():
         DASMON_SQL_SORT = 'id',
         # Max number of old PV points to show when there were no points in defined time range
         DASMON_NUMBER_OF_OLD_PTS = 20,
+        # Amount of time displayed when plotting a live PV [seconds]
+        PVMON_PLOT_TIME_RANGE = 2 * 60 * 60,
+        # Max number of old PV points to show when there were no points in defined time range
+        PVMON_NUMBER_OF_OLD_PTS = 20,
         # Post-processing node prefix values (autoreduction and cataloging)
         POSTPROCESS_NODE_PREFIX = ['autoreducer', 'fermi'],
         # Timeout value for cached run and error rates, in seconds
