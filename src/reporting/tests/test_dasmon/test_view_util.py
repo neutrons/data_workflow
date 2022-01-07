@@ -83,10 +83,11 @@ class ViewUtilTest(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        Instrument.objects.all().delete()
+        Parameter.objects.all().delete()
 
     def test_get_monitor_breadcrumbs(self):
-        inst = Instrument.objects.get(id=1)
+        inst = Instrument.objects.get(name="testinst")
 
         # test the function
         from dasmon.view_util import get_monitor_breadcrumbs
@@ -95,7 +96,7 @@ class ViewUtilTest(TestCase):
         assert breadcrumbs[-8:] == "TestView"
 
     def test_get_cached_variables(self):
-        inst = Instrument.objects.get(id=1)
+        inst = Instrument.objects.get(name="testinst")
 
         # ref val
         ref_val = {
@@ -116,8 +117,8 @@ class ViewUtilTest(TestCase):
                 assert d["value"] == ref_val["value"]
 
     def test_get_latest(self):
-        inst = Instrument.objects.get(id=1)
-        para = Parameter.objects.get(id=1)
+        inst = Instrument.objects.get(name="testinst")
+        para = Parameter.objects.get(name="testParam")
 
         # test the function
         from dasmon.view_util import get_latest
@@ -248,7 +249,7 @@ class ViewUtilTest(TestCase):
         _ = [mock_pvstreamer, mock_component, mock_workflow]
         # NOTE:
         # the mocked functions have their own unit tests
-        inst = Instrument.objects.get(id=1)
+        inst = Instrument.objects.get(name="testinst")
         from dasmon.view_util import get_system_health
 
         health = get_system_health(inst)
@@ -431,7 +432,7 @@ class ViewUtilTest(TestCase):
             "var": "run_number",
             "instrument": "testinst",
         }
-        inst = Instrument.objects.get(id=1)
+        inst = Instrument.objects.get(name="testinst")
         # test
         # NOTE:
         # since we don't really have any live run data during testing, the best
@@ -573,7 +574,7 @@ class ViewUtilTest(TestCase):
         status = get_completeness_status(inst)
         assert status == (0, "OK")
         # -- unknown
-        inst = Instrument.objects.get(id=1)
+        inst = Instrument.objects.get(name="testinst")
         status = get_completeness_status(inst)
         assert status == (-1, "Unknown")
         # -- warning
@@ -673,10 +674,8 @@ class ViewUtilTest(TestCase):
                 reduction_catalog_started=True,
             )
         # test
-        run_list, first_run, last_run = get_live_runs()
-        assert len(run_list) == 4
-        assert first_run == 1
-        assert last_run == 4
+        rst = get_live_runs()
+        assert len(rst[0]) == 4
 
     def test_get_run_list(self):
         from dasmon.view_util import get_run_list
@@ -735,7 +734,6 @@ class ViewUtilTest(TestCase):
         for i, me in enumerate(sig_list):
             assert me.name == f"sig_{i}"
             assert f"msg_{i}" in me.status
-            assert f"/ack/{i+1}" in me.ack_url
 
     def test_get_instrument_status_summary(self):
         from dasmon.view_util import get_instrument_status_summary
