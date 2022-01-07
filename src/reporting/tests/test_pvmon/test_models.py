@@ -38,6 +38,11 @@ class PVTest(TestCase):
             update_time=1,
         )
 
+    @classmethod
+    def tearDownClass(cls):
+        Instrument.objects.get(name="testInst").delete()
+        PVName.objects.get(name="testPV").delete()
+
     def test_value(self):
         pv = PV.objects.get(id=1)
         self.assertEqual(pv.value, 1.0)
@@ -65,6 +70,11 @@ class PVCacheTest(TestCase):
             status=0,
             update_time=1,
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        Instrument.objects.get(name="testInst").delete()
+        PVName.objects.get(name="testPV").delete()
 
     def test_value(self):
         pv = PVCache.objects.get(id=1)
@@ -94,6 +104,11 @@ class PVStringTest(TestCase):
             update_time=1,
         )
 
+    @classmethod
+    def tearDownClass(cls):
+        Instrument.objects.get(name="testInst").delete()
+        PVName.objects.get(name="testPV").delete()
+
     def test_value(self):
         pv = PVString.objects.get(id=1)
         self.assertEqual(pv.value, "test")
@@ -122,6 +137,11 @@ class PVStringCacheTest(TestCase):
             update_time=1,
         )
 
+    @classmethod
+    def tearDownClass(cls):
+        Instrument.objects.get(name="testInst").delete()
+        PVName.objects.get(name="testPV").delete()
+
     def test_value(self):
         pv = PVStringCache.objects.get(id=1)
         self.assertEqual(pv.value, "test")
@@ -147,6 +167,11 @@ class MonitoredVariableTest(TestCase):
             pv_name=pvname,
             rule_name="testRule",
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        Instrument.objects.get(name="testInst").delete()
+        PVName.objects.get(name="testPV").delete()
 
     def test_rule_name(self):
         pv = MonitoredVariable.objects.get(id=1)
