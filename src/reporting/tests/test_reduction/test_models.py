@@ -29,6 +29,10 @@ class TestModels(TestCase):
                               description='description',
                               value='choice')
 
+    @classmethod
+    def classTearDown(cls):
+        Instrument.objects.all().delete()
+
     def test_ReductionProperty(self):
         rp = ReductionProperty.objects.get(id=1)
         self.assertEqual(str(rp), 'inst.key')
