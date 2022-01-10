@@ -27,7 +27,7 @@ import dasmon.view_util
 import reporting_app.view_util
 
 
-def generate_key(instrument, run_id):
+def generate_key(instrument: str, run_id: int):
     """
         Generate a secret key for a run on a given instrument
         @param instrument: instrument name
@@ -40,7 +40,7 @@ def generate_key(instrument, run_id):
         return None
     else:
         h = hashlib.sha1()
-        h.update("%s%s%s" % (instrument.upper(), secret_key, run_id))
+        h.update(("%s%s%s" % (instrument.upper(), secret_key, run_id)).encode("utf-8"))
         return h.hexdigest()
 
 
@@ -365,61 +365,6 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
     # so we are phasing it out.
     return {"catalog": 0, "reduction": 0}
 
-    status_dict = {"catalog": 2, "reduction": 2}
-    delta_short = datetime.timedelta(seconds=yellow_timeout)
-    delta_long = datetime.timedelta(hours=red_timeout)
-
-    try:
-        run_ids = InstrumentStatus.objects.all().values_list('last_run_id')
-        latest_run = RunStatus.objects.filter(run_id__in=run_ids,
-                                              queue_id__name='POSTPROCESS.DATA_READY').latest('created_on')
-
-        # If we didn't get a CATALOG.STARTED message within a few seconds,
-        # the cataloging agent has a problem
-        try:
-            latest_catalog_start = RunStatus.objects.filter(queue_id__name='CATALOG.STARTED',
-                                                            run_id=latest_run.run_id).latest('created_on')
-            time_catalog_start = latest_catalog_start.created_on
-        except:
-            time_catalog_start = timezone.now()
-
-        if time_catalog_start - latest_run.created_on > delta_long:
-            logging.error("Very slow reduction response: %s", str(latest_run.run_id))
-            status_dict["catalog"] = 2
-        elif time_catalog_start - latest_run.created_on > delta_short:
-            elapsed_time = time_catalog_start - latest_run.created_on
-            logging.error("Slow reduction response: %s [%s sec]", str(latest_run.run_id), str(elapsed_time))
-            status_dict["catalog"] = 1
-        else:
-            status_dict["catalog"] = 0
-
-        # If we didn't get a REDUCTION.STARTED message within a few seconds,
-        # the cataloging agent has a problem
-        try:
-            latest_reduction_ready = RunStatus.objects.filter(queue_id__name='REDUCTION.DATA_READY',
-                                                              run_id=latest_run.run_id).latest('created_on')
-            time_reduction_ready = latest_reduction_ready.created_on
-        except:
-            time_reduction_ready = timezone.now()
-        try:
-            latest_reduction_start = RunStatus.objects.filter(queue_id__name='REDUCTION.STARTED',
-                                                              run_id=latest_run.run_id).latest('created_on')
-            time_reduction_start = latest_reduction_start.created_on
-        except:
-            time_reduction_start = timezone.now()
-
-        if time_reduction_start - time_reduction_ready > delta_long:
-            status_dict["reduction"] = 2
-        elif time_reduction_start - time_reduction_ready > delta_short:
-            status_dict["reduction"] = 1
-        else:
-            status_dict["reduction"] = 0
-    except:
-        logging.error("Could not determine post-processing status")
-        logging.error(sys.exc_info()[1])
-
-    return status_dict
-
 
 def get_run_status_text(run_id, show_error=False, use_element_id=False):
     """
@@ -600,7 +545,7 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
         live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
         live_data_url += "/%s/" % data_type
         live_data_url = append_key(live_data_url, instrument, run_id)
-        conn = httplib2.HTTPSConnection(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
+        conn = httplib2.HTTPSConnectionWithTimeout(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
         conn.request('GET', live_data_url)
         data_request = conn.getresponse()
         if data_request.status == 200:
