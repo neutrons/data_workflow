@@ -148,9 +148,6 @@ class ViewUtilTest(TestCase):
             instrument_id=inst,
             input_queue_id=sq_DataReady,
         ).save()
-        tks = Task.objects.filter(
-            instrument_id=run_id.instrument_id, input_queue_id=sq_DataReady
-        )
         rst = needs_reduction(request, run_id)
         self.assertFalse(rst)
 
@@ -263,7 +260,7 @@ class ViewUtilTest(TestCase):
             run_number=65535,
             ipts_id=ipts,
             instrument_id=inst,
-            file=f"/tmp/test_65535.nxs",
+            file="/tmp/test_65535.nxs",
         )
         run.save()
         WorkflowSummary.objects.create(
@@ -293,7 +290,7 @@ class ViewUtilTest(TestCase):
         # NOTE: the actual html page has a lot of other meta info
         #       inserted in the newPlot func, which might break this func
         #       during production (so far it hasn't happend yet)
-        html_data = r"""Plotly.newPlot([{"name": "sp-1", "type": "scatter", "visible": true, 
+        html_data = r"""Plotly.newPlot([{"name": "sp-1", "type": "scatter", "visible": true,
             "x": [1.098439161783472, 1.0993178366492713, 1.100197214393798],
             "y": [32.900697887235374, 33.88348428512092, 34.96296658992418]}],
             {"margin": {"b": 40, "l": 40, "r": 0, "t": 0},
