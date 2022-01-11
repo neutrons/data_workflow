@@ -93,4 +93,8 @@ def pytest_configure():
         USE_TZ = True,
         #
         HELPLINE_EMAIL = 'adara_support@ornl.gov',
+        #
+        CATALOG_URL="catalog.test.xyz",
+        CATALOG_ID="test",
+        CATALOG_SECRET="test",
     )
