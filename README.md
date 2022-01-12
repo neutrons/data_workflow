@@ -82,5 +82,5 @@ Here are the recommended steps to setup your dev environment:
 
 - `conda env create --file conda_environment.yml` or `conda env update --file conda_environment.yml` if the environment already exists
 - `conda activate webmon`
-- `python -m pip install -r requirements_test.txt`
+- `conda env update --file conda_development.yml`
 - `python -m pytest src`

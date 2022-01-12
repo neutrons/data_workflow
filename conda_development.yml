@@ -1,0 +1,9 @@
+channels:
+- conda-forge
+dependencies:
+- pytest
+- pytest-django
+- pytest-cov
+- pip
+- pip:
+  - pytest-pythonpath
