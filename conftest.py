@@ -38,7 +38,6 @@ def pytest_configure():
             'django.middleware.csrf.CsrfViewMiddleware',
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django.contrib.messages.middleware.MessageMiddleware',
-            # 'users.mobile_detection.DetectMobileBrowser',
             # Uncomment the next line for simple clickjacking protection:
             # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
             # 'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -100,4 +99,6 @@ def pytest_configure():
         CATALOG_URL="catalog.test.xyz",
         CATALOG_ID="test",
         CATALOG_SECRET="test",
+        INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs', 'ref_m'),
+        REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT',
     )
