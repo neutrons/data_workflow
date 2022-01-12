@@ -234,14 +234,14 @@ class TestAMQConsumer(unittest.TestCase):
 
         value = (
             "the max string length is one-hundred and twenty eight, "
-            + "this string should be longer than that and cause it to cut off the end of this sentence"
+            + "this string should be longer than that and cause it to cut off the end of this sentence"  # noqa: W503
         )
         store_and_cache_(instrument_id, key_id, value, None, False)
         statusVariableMock.assert_called_with(
             instrument_id=instrument_id,
             key_id=key_id,
             value="the max string length is one-hundred and twenty eight,"
-            + " this string should be longer than that and cause it to cut off the end of",
+            + " this string should be longer than that and cause it to cut off the end of",  # noqa: W503
         )
 
         # called with valuestring of size 128
@@ -258,7 +258,7 @@ class TestAMQConsumer(unittest.TestCase):
 
         value = (
             "the max string length is one-hundred and twenty eight,"
-            + " this string should be longer than that and cause it to cut off the end of this sentence"
+            + " this string should be longer than that and cause it to cut off the end of this sentence"  # noqa: W503
         )
         store_and_cache_(instrument_id, key_id, value, None, True)
         statusVariableMock.assert_not_called()
