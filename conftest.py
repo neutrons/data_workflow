@@ -93,4 +93,6 @@ def pytest_configure():
         USE_TZ = True,
         #
         HELPLINE_EMAIL = 'adara_support@ornl.gov',
+        INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs', 'ref_m'),
+        REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT',
     )
