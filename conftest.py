@@ -1,3 +1,4 @@
+from re import DEBUG
 from django.conf import settings
 import os
 
@@ -44,6 +45,8 @@ def pytest_configure():
         AUTHENTICATION_BACKENDS = (
             'django.contrib.auth.backends.ModelBackend',
         ),
+        #
+        DEBUG=True,
         #
         LANDING_VIEW="dasmon:dashboard",
         ROOT_URLCONF="reporting_app.urls",
@@ -92,6 +95,10 @@ def pytest_configure():
         USE_TZ = True,
         #
         HELPLINE_EMAIL = 'adara_support@ornl.gov',
+        #
+        CATALOG_URL="catalog.test.xyz",
+        CATALOG_ID="test",
+        CATALOG_SECRET="test",
         INSTRUMENT_REDUCTION_SETUP = ('seq', 'arcs', 'corelli', 'cncs', 'ref_m'),
         REDUCTION_SCRIPT_CREATION_QUEUE = '/queue/REDUCTION.CREATE_SCRIPT',
     )
