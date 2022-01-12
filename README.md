@@ -80,7 +80,7 @@ Here are the recommended steps to setup your dev environment:
 
 ## Running unit tests
 
-- `conda env create -f environment_webmon.yml`
+- `conda env create --file conda_environment.yml` or `conda env update --file conda_environment.yml` if the environment already exists
 - `conda activate webmon`
 - `python -m pip install -r requirements_test.txt`
 - `python -m pytest src`

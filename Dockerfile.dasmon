@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3
 
-COPY environment_dasmon.yml .
-RUN conda env update --name base --file environment_dasmon.yml
+COPY conda_environment.yml .
+RUN conda env update --name base --file conda_environment.yml
 
 WORKDIR /usr/src/data_workflow
 COPY ./src/. .
