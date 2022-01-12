@@ -42,7 +42,7 @@ class ViewUtilTest(TestCase):
                 file=f"tmp/test_{run_number}.nxs",
             )
             run.save()
-            rs = RunStatus(
+            rs = RunStatus.objects.create(
                 run_id=run,
                 queue_id=sq,
                 message_id=f"msg: test_run_{run_number}",

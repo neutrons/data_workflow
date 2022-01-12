@@ -1,3 +1,4 @@
+from re import DEBUG
 from django.conf import settings
 import os
 
@@ -45,6 +46,8 @@ def pytest_configure():
         AUTHENTICATION_BACKENDS = (
             'django.contrib.auth.backends.ModelBackend',
         ),
+        #
+        DEBUG=True,
         #
         LANDING_VIEW="dasmon:dashboard",
         ROOT_URLCONF="reporting_app.urls",
