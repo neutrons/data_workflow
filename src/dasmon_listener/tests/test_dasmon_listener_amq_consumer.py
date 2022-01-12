@@ -9,13 +9,19 @@ values = {"test_key": "test_value"}
 
 class TestAMQConsumer(unittest.TestCase):
     def get_listener(self):
-        with mock.patch("report.models.Instrument.objects") as instrumentMock: # noqa: F841
-            with mock.patch("dasmon.models.Parameter.objects") as parameterMock: # noqa: F841
+        with mock.patch(
+            "report.models.Instrument.objects"
+        ) as instrumentMock:  # noqa: F841
+            with mock.patch(
+                "dasmon.models.Parameter.objects"
+            ) as parameterMock:  # noqa: F841
                 listener = Listener()
                 return listener
 
     def get_client(self):
-        with mock.patch("report.models.Instrument.objects") as instrumentMock: # noqa: F841
+        with mock.patch(
+            "report.models.Instrument.objects"
+        ) as instrumentMock:  # noqa: F841
             client = Client(None, None, None)
             return client
 
@@ -200,7 +206,7 @@ class TestAMQConsumer(unittest.TestCase):
 
     @mock.patch("dasmon_listener.amq_consumer.Parameter.objects.get")
     def test_listen_and_wait(self, parameterMock):
-        client = self.get_client() # noqa: F841
+        client = self.get_client()  # noqa: F841
 
     #   client.listen_and_wait()
     #   need to either refactor the code such that testable parts are
@@ -226,8 +232,10 @@ class TestAMQConsumer(unittest.TestCase):
         key_id = mock.Mock()
         key_id.monitored = True
 
-        value = "the max string length is one-hundred and twenty eight, " \
-        + "this string should be longer than that and cause it to cut off the end of this sentence"
+        value = (
+            "the max string length is one-hundred and twenty eight, "
+            + "this string should be longer than that and cause it to cut off the end of this sentence"
+        )
         store_and_cache_(instrument_id, key_id, value, None, False)
         statusVariableMock.assert_called_with(
             instrument_id=instrument_id,
@@ -248,8 +256,10 @@ class TestAMQConsumer(unittest.TestCase):
         key_id = mock.Mock()
         key_id.monitored = True
 
-        value = "the max string length is one-hundred and twenty eight," \
-        + " this string should be longer than that and cause it to cut off the end of this sentence"
+        value = (
+            "the max string length is one-hundred and twenty eight,"
+            + " this string should be longer than that and cause it to cut off the end of this sentence"
+        )
         store_and_cache_(instrument_id, key_id, value, None, True)
         statusVariableMock.assert_not_called()
 
