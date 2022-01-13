@@ -73,13 +73,13 @@ webapp: webapp/core
 
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
 	cd $(prefix)/app; python3 manage.py createcachetable webcache
-	cd $(prefix)/app; echo "from django.contrib.auth.models import User; User.objects.create_superuser('${DATABASE_USER}', 'workflow@example.com', '${DATABASE_PASS}')" | python3 manage.py shell
+	cd $(prefix)/app; python3 manage.py ensure_adminuser --username=${DATABASE_USER} --email='workflow@example.com' --password=${DATABASE_PASS}
 
 	# Modify and copy the wsgi configuration
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
 
 	# pass the init sql script to dbshell
-	cd $(prefix)/app; python3 manage.py dbshell < report/sql/indices.sql 
+	cd $(prefix)/app; python3 manage.py dbshell < report/sql/indices.sql
 	cd $(prefix)/app; python3 manage.py dbshell < report/sql/statusqueue.sql
 	cd $(prefix)/app; python3 manage.py dbshell < report/sql/stored_procs.sql
 
