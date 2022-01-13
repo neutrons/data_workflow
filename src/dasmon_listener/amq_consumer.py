@@ -165,7 +165,7 @@ class Listener(stomp.ConnectionListener):
         # Process signals
         elif "SIGNAL" in destination:
             try:
-                logging.warn("SIGNAL: %s: %s", destination, str(data_dict))
+                logging.warning("SIGNAL: %s: %s", destination, str(data_dict))
                 process_signal(instrument, data_dict)
             except:
                 logging.error("Could not process signal: %s", str(data_dict))
