@@ -37,10 +37,9 @@ dasmonlistener: webapp/core
 
 webapp/core: workflow
 	# Make sure the install directories exist
-	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
-	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
-	test -d $(prefix)/static || mkdir -m 0755 $(prefix)/static
-	test -d $(prefix)/static/web_monitor || mkdir -m 0755 $(prefix)/static/web_monitor
+	# this will create parent directories
+	mkdir -m 0755 -p $(prefix)/app
+	mkdir -m 0755 -p $(prefix)/static/web_monitor
 
 	# The following should be done with the proper apache user
 	#chgrp apache $(prefix)/static/web_monitor
