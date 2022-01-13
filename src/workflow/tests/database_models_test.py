@@ -1,4 +1,4 @@
-from workflow.database.report.models import InstrumentManager, DataRunManager
+from workflow.database.report.models import DataRun, InstrumentManager, DataRunManager, WorkflowSummary
 
 import unittest.mock as mock
 import unittest
@@ -88,4 +88,143 @@ class TestModelsDataRunManager(unittest.TestCase):
         datarunObjectsMock.get_last_run.assert_called()
         instrumentStatusSaveMock.assert_called()
 
+class TestModelsWorkflowSummary(unittest.TestCase):
 
+    @mock.patch('django.db.models')
+    @mock.patch('workflow.database.report.models.RunStatus.objects')
+    def test_update_catalog(self, runStatusObjectsMock, djangoModelsMock):
+        djangoModelsMock.ForeignKey = mock.MagicMock()
+        workflowSummary = WorkflowSummary()
+        workflowSummary.save = mock.MagicMock()
+        workflowSummary.run_id = DataRun()
+
+        def status_lookup(run_id, param_string):
+            vals = {'CATALOG.COMPLETE':1,
+            'CATALOG.STARTED':0,
+            'REDUCTION.NOT_NEEDED':0,
+            'REDUCTION.DISABLED':0,
+            'REDUCTION.COMPLETE':0,
+            'REDUCTION.STARTED':0,
+            'REDUCTION_CATALOG.COMPLETE':0,
+            'REDUCTION_CATALOG.STARTED':0}
+
+            lenMock = mock.MagicMock()
+            lenMock.__len__.return_value = vals[param_string]
+            return lenMock
+
+
+        runStatusObjectsMock.status.side_effect= status_lookup
+        workflowSummary.update()
+        self.assertTrue(workflowSummary.cataloged)
+        self.assertFalse(workflowSummary.catalog_started)
+
+    @mock.patch('django.db.models')
+    @mock.patch('workflow.database.report.models.RunStatus.objects')
+    def test_update_reduction_need(self, runStatusObjectsMock, djangoModelsMock):
+        djangoModelsMock.ForeignKey = mock.MagicMock()
+        workflowSummary = WorkflowSummary()
+        workflowSummary.save = mock.MagicMock()
+        workflowSummary.run_id = DataRun()
+
+        def status_lookup(run_id, param_string):
+            vals = {'CATALOG.COMPLETE':0,
+            'CATALOG.STARTED':0,
+            'REDUCTION.NOT_NEEDED':1,
+            'REDUCTION.DISABLED':1,
+            'REDUCTION.COMPLETE':0,
+            'REDUCTION.STARTED':0,
+            'REDUCTION_CATALOG.COMPLETE':0,
+            'REDUCTION_CATALOG.STARTED':0}
+
+            lenMock = mock.MagicMock()
+            lenMock.__len__.return_value = vals[param_string]
+            return lenMock
+
+
+        runStatusObjectsMock.status.side_effect= status_lookup
+        workflowSummary.update()
+        self.assertFalse(workflowSummary.reduction_needed)
+
+    @mock.patch('django.db.models')
+    @mock.patch('workflow.database.report.models.RunStatus.objects')
+    def test_update_reduction_status(self, runStatusObjectsMock, djangoModelsMock):
+        djangoModelsMock.ForeignKey = mock.MagicMock()
+        workflowSummary = WorkflowSummary()
+        workflowSummary.save = mock.MagicMock()
+        workflowSummary.run_id = DataRun()
+
+        def status_lookup(run_id, param_string):
+            vals = {'CATALOG.COMPLETE':0,
+            'CATALOG.STARTED':0,
+            'REDUCTION.NOT_NEEDED':0,
+            'REDUCTION.DISABLED':0,
+            'REDUCTION.COMPLETE':1,
+            'REDUCTION.STARTED':1,
+            'REDUCTION_CATALOG.COMPLETE':0,
+            'REDUCTION_CATALOG.STARTED':0}
+
+            lenMock = mock.MagicMock()
+            lenMock.__len__.return_value = vals[param_string]
+            return lenMock
+
+
+        runStatusObjectsMock.status.side_effect= status_lookup
+        workflowSummary.update()
+        self.assertTrue(workflowSummary.reduced)
+        self.assertTrue(workflowSummary.reduction_started)
+
+    @mock.patch('django.db.models')
+    @mock.patch('workflow.database.report.models.RunStatus.objects')
+    def test_update_reduction_catalog(self, runStatusObjectsMock, djangoModelsMock):
+        djangoModelsMock.ForeignKey = mock.MagicMock()
+        workflowSummary = WorkflowSummary()
+        workflowSummary.save = mock.MagicMock()
+        workflowSummary.run_id = DataRun()
+
+        def status_lookup(run_id, param_string):
+            vals = {'CATALOG.COMPLETE':0,
+            'CATALOG.STARTED':0,
+            'REDUCTION.NOT_NEEDED':0,
+            'REDUCTION.DISABLED':0,
+            'REDUCTION.COMPLETE':0,
+            'REDUCTION.STARTED':0,
+            'REDUCTION_CATALOG.COMPLETE':1,
+            'REDUCTION_CATALOG.STARTED':1}
+
+            lenMock = mock.MagicMock()
+            lenMock.__len__.return_value = vals[param_string]
+            return lenMock
+
+
+        runStatusObjectsMock.status.side_effect= status_lookup
+        workflowSummary.update()
+        self.assertTrue(workflowSummary.reduction_cataloged)
+        self.assertTrue(workflowSummary.reduction_catalog_started)
+
+    @mock.patch('django.db.models')
+    @mock.patch('workflow.database.report.models.RunStatus.objects')
+    def test_update_overall(self, runStatusObjectsMock, djangoModelsMock):
+        djangoModelsMock.ForeignKey = mock.MagicMock()
+        workflowSummary = WorkflowSummary()
+        workflowSummary.save = mock.MagicMock()
+        workflowSummary.run_id = DataRun()
+
+        def status_lookup(run_id, param_string):
+            vals = {'CATALOG.COMPLETE':1,
+            'CATALOG.STARTED':0,
+            'REDUCTION.NOT_NEEDED':1,
+            'REDUCTION.DISABLED':0,
+            'REDUCTION.COMPLETE':0,
+            'REDUCTION.STARTED':0,
+            'REDUCTION_CATALOG.COMPLETE':1,
+            'REDUCTION_CATALOG.STARTED':1}
+
+            lenMock = mock.MagicMock()
+            lenMock.__len__.return_value = vals[param_string]
+            return lenMock
+
+
+        runStatusObjectsMock.status.side_effect= status_lookup
+        workflowSummary.update()
+        self.assertTrue(workflowSummary.complete)
+        
