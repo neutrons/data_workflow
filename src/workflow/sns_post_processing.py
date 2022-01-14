@@ -8,9 +8,9 @@ import sys
 import argparse
 import logging
 from multiprocessing import Process
-from .amq_client import Client
-from .amq_listener import Listener
-from .settings import brokers
+from workflow.amq_client import Client
+from workflow.amq_listener import Listener
+from workflow.settings import brokers
 
 
 # Backward compatibility protection
