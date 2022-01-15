@@ -5,7 +5,6 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 import sys
-import os
 import logging
 import json
 import datetime

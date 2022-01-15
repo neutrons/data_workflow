@@ -57,13 +57,6 @@ class ViewUtilTest(TestCase):
                 reduction_cataloged=True,
                 reduction_catalog_started=True,
             )
-            img = ReducedImage.objects.create(
-                run_id=run,
-                name=f"img_run{run_number}",
-                file=f"tmp/img_run{run_number}.png",
-            )
-            img.save()
-            # image.file.save(file_name, file_content)
 
     @classmethod
     def tearDownClass(cls):
@@ -72,7 +65,6 @@ class ViewUtilTest(TestCase):
         StatusQueue.objects.get(name="test").delete()
         DataRun.objects.all().delete()
         WorkflowSummary.objects.all().delete()
-        ReducedImage.objects.all().delete()
 
     def test_generate_key(self):
         from report.view_util import generate_key
@@ -313,7 +305,6 @@ class ViewUtilTest(TestCase):
         mockGetDataFromServer.return_value = "test_html"
         rst = get_plot_template_dict(run, inst, run_id)
         self.assertTrue("html_data" in rst.keys())
-
 
     @mock.patch("httplib2.HTTPSConnectionWithTimeout")
     def test_get_plot_data_from_server(self, mockHTTPSCon):
