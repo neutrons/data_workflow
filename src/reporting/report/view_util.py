@@ -495,7 +495,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     json_data = get_plot_data_from_server(instrument, run_id, 'json')
 
     # Third, local json data for the d3 plots
-    if json data:
+    if json_data:
         plot_dict['update_url'] = append_key("%s/json/" % live_data_url, instrument, run_id)
 
     plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
