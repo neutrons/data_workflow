@@ -497,7 +497,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
 
     # Third, local json data for the d3 plots
     if json_data is None:
-        json_data = get_local_plot_data(run_object)
+        raise RuntimeError('Find out how to handle this situation.')
     else:
         plot_dict['update_url'] = append_key("%s/json/" % live_data_url, instrument, run_id)
 
@@ -532,7 +532,6 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
     except:
         logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
     return json_data
-
 
 
 def extract_d3_data_from_json(json_data):

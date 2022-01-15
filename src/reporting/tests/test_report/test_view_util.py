@@ -332,16 +332,6 @@ class ViewUtilTest(TestCase):
         rst = get_plot_data_from_server(inst, run)
         self.assertEqual(rst, "test")
 
-    def test_get_local_plot_data(self):
-        from report.view_util import get_local_plot_data
-
-        inst = Instrument.objects.get(name="test_instrument")
-        run = DataRun.objects.get(run_number=1, instrument_id=inst)
-        JsonData.objects.create(run_id=run, data="test_data", name="test").save()
-        #
-        rst = get_local_plot_data(run)
-        self.assertEqual(rst, "test_data")
-
     def test_extract_d3_data_from_json(self):
         from report.view_util import extract_d3_data_from_json
 
