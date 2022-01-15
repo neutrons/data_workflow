@@ -2,8 +2,6 @@ import pytest
 from unittest import mock
 from django.test import TestCase
 
-from file_handling.models import ReducedImage
-from file_handling.models import JsonData
 from report.models import Instrument
 from report.models import DataRun
 from report.models import RunStatus
@@ -315,18 +313,7 @@ class ViewUtilTest(TestCase):
         mockGetDataFromServer.return_value = "test_html"
         rst = get_plot_template_dict(run, inst, run_id)
         self.assertTrue("html_data" in rst.keys())
-        self.assertTrue("image_url" in rst.keys())
 
-    @mock.patch(("os.path.isfile"), return_value=True)
-    def test_get_local_image_url(self, mockOSIsFile):
-        from report.view_util import get_local_image_url
-
-        _ = mockOSIsFile
-
-        inst = Instrument.objects.get(name="test_instrument")
-        run = DataRun.objects.get(run_number=1, instrument_id=inst)
-        rst = get_local_image_url(run)
-        self.assertEqual(rst, "/tmp/img_run1.png")
 
     @mock.patch("httplib2.HTTPSConnectionWithTimeout")
     def test_get_plot_data_from_server(self, mockHTTPSCon):

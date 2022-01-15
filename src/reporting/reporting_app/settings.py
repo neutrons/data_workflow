@@ -135,7 +135,6 @@ INSTALLED_APPS = (
     'users',
     'dasmon',
     'pvmon',
-    'file_handling',
     'reduction',
     # 'debug_toolbar',
 )

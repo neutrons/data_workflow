@@ -53,7 +53,6 @@ webapp/core: workflow
 	cp -R reporting/dasmon $(prefix)/app
 	cp -R reporting/reduction $(prefix)/app
 	cp -R reporting/pvmon $(prefix)/app
-	cp -R reporting/file_handling $(prefix)/app
 	cp -R reporting/static $(prefix)/app
 	cp -R reporting/users $(prefix)/app
 	cp -R reporting/templates $(prefix)/app

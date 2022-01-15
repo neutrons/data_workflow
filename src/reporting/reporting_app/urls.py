@@ -18,7 +18,6 @@ urlpatterns = [
     path('dasmon/', include('dasmon.urls', namespace='dasmon')),
     path('reduction/', include('reduction.urls', namespace='reduction')),
     path('pvmon/', include('pvmon.urls', namespace='pvmon')),
-    path('files/', include('file_handling.urls', namespace='file_handling')),
     path('users/', include('users.urls', namespace='users')),
     path('database/', admin.site.urls),
 ]
