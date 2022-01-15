@@ -19,7 +19,6 @@ def pytest_configure():
             'users',
             'dasmon',
             'pvmon',
-            'file_handling',
             'reduction',
         ),
         SECRET_KEY='-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn',
