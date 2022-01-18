@@ -17,7 +17,6 @@ INSTALLED_APPS = (
     'report',
     'dasmon',
     'pvmon',
-    'file_handling',
 )
 
 """

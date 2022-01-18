@@ -39,7 +39,6 @@ try:
     from report.models import Instrument
 except:
     from workflow.database.report.models import Instrument
-from file_handling.models import ReducedImage  # noqa: E402
 
 
 # ACK data
@@ -593,7 +592,6 @@ class Client:
                     # Remove old images
                     delta_time = datetime.timedelta(days=IMAGE_PURGE_TIMEOUT)
                     cutoff = timezone.now() - delta_time
-                    ReducedImage.objects.filter(created_on__lte=cutoff).delete()
                 time.sleep(waiting_period)
                 try:
                     if time.time() - last_heartbeat > HEARTBEAT_DELAY:

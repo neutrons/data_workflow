@@ -5,7 +5,6 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 import sys
-import os
 import logging
 import json
 import datetime
@@ -472,8 +471,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
         @param instrument: instrument name
         @param run_id: run_number
     """
-    plot_dict = {'image_url': None,
-                 'plot_data': None,
+    plot_dict = {'plot_data': None,
                  'html_data': None,
                  'plot_label_x': '',
                  'plot_label_y': '',
@@ -497,9 +495,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     json_data = get_plot_data_from_server(instrument, run_id, 'json')
 
     # Third, local json data for the d3 plots
-    if json_data is None:
-        json_data = get_local_plot_data(run_object)
-    else:
+    if json_data:
         plot_dict['update_url'] = append_key("%s/json/" % live_data_url, instrument, run_id)
 
     plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
@@ -509,27 +505,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
         plot_dict['plot_label_y'] = y_label
         return plot_dict
 
-    # Fourth, get a local image
-    plot_dict['image_url'] = get_local_image_url(run_object)
     return plot_dict
-
-
-def get_local_image_url(run_object):
-    """
-        Get url for plot data served by this application
-        @param run_object: DataRun object
-    """
-    image_url = None
-    try:
-        from file_handling.models import ReducedImage
-        images = ReducedImage.objects.filter(run_id=run_object)
-        if len(images) > 0:
-            image = images.latest('created_on')
-            if image is not None and bool(image.file) and os.path.isfile(image.file.path):
-                image_url = image.file.url
-    except:
-        logging.error("Error finding reduced image: %s", sys.exc_info()[1])
-    return image_url
 
 
 def get_plot_data_from_server(instrument, run_id, data_type='json'):
@@ -550,25 +526,6 @@ def get_plot_data_from_server(instrument, run_id, data_type='json'):
         data_request = conn.getresponse()
         if data_request.status == 200:
             json_data = data_request.read()
-    except:
-        logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
-    return json_data
-
-
-def get_local_plot_data(run_object):
-    """
-        Get json data served by this application
-        @param run_object: DataRun object
-    """
-    from file_handling.models import JsonData
-    json_data = None
-
-    try:
-        json_data_list = JsonData.objects.filter(run_id=run_object)
-        if len(json_data_list) > 0:
-            json_data_entry = json_data_list.latest('created_on')
-            if json_data_entry is not None:
-                json_data = json_data_entry.data
     except:
         logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
     return json_data

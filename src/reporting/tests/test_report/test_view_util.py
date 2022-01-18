@@ -2,8 +2,6 @@ import pytest
 from unittest import mock
 from django.test import TestCase
 
-from file_handling.models import ReducedImage
-from file_handling.models import JsonData
 from report.models import Instrument
 from report.models import DataRun
 from report.models import RunStatus
@@ -59,13 +57,6 @@ class ViewUtilTest(TestCase):
                 reduction_cataloged=True,
                 reduction_catalog_started=True,
             )
-            img = ReducedImage.objects.create(
-                run_id=run,
-                name=f"img_run{run_number}",
-                file=f"tmp/img_run{run_number}.png",
-            )
-            img.save()
-            # image.file.save(file_name, file_content)
 
     @classmethod
     def tearDownClass(cls):
@@ -74,7 +65,6 @@ class ViewUtilTest(TestCase):
         StatusQueue.objects.get(name="test").delete()
         DataRun.objects.all().delete()
         WorkflowSummary.objects.all().delete()
-        ReducedImage.objects.all().delete()
 
     def test_generate_key(self):
         from report.view_util import generate_key
@@ -315,18 +305,6 @@ class ViewUtilTest(TestCase):
         mockGetDataFromServer.return_value = "test_html"
         rst = get_plot_template_dict(run, inst, run_id)
         self.assertTrue("html_data" in rst.keys())
-        self.assertTrue("image_url" in rst.keys())
-
-    @mock.patch(("os.path.isfile"), return_value=True)
-    def test_get_local_image_url(self, mockOSIsFile):
-        from report.view_util import get_local_image_url
-
-        _ = mockOSIsFile
-
-        inst = Instrument.objects.get(name="test_instrument")
-        run = DataRun.objects.get(run_number=1, instrument_id=inst)
-        rst = get_local_image_url(run)
-        self.assertEqual(rst, "/tmp/img_run1.png")
 
     @mock.patch("httplib2.HTTPSConnectionWithTimeout")
     def test_get_plot_data_from_server(self, mockHTTPSCon):
@@ -344,16 +322,6 @@ class ViewUtilTest(TestCase):
         run = DataRun.objects.get(run_number=1, instrument_id=inst)
         rst = get_plot_data_from_server(inst, run)
         self.assertEqual(rst, "test")
-
-    def test_get_local_plot_data(self):
-        from report.view_util import get_local_plot_data
-
-        inst = Instrument.objects.get(name="test_instrument")
-        run = DataRun.objects.get(run_number=1, instrument_id=inst)
-        JsonData.objects.create(run_id=run, data="test_data", name="test").save()
-        #
-        rst = get_local_plot_data(run)
-        self.assertEqual(rst, "test_data")
 
     def test_extract_d3_data_from_json(self):
         from report.view_util import extract_d3_data_from_json
