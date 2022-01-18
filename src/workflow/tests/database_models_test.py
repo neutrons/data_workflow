@@ -6,10 +6,10 @@ from workflow.database.report.models import (
 )
 
 import unittest.mock as mock
-import unittest
+from django.test import TestCase
 
 
-class TestModelsInstrumentManager(unittest.TestCase):
+class TestModelsInstrumentManager(TestCase):
     @mock.patch("django.db.models.Manager.get_queryset")
     def test_sql_dump(self, managerQuerySetMock):
         itemMock = mock.Mock()
@@ -31,7 +31,7 @@ class TestModelsInstrumentManager(unittest.TestCase):
         )
 
 
-class TestModelsDataRunManager(unittest.TestCase):
+class TestModelsDataRunManager(TestCase):
     @mock.patch("django.db.models.Manager.get_queryset")
     def test_filter_with_both_ids(self, managerQuerySetMock):
         filterMock = mock.MagicMock()
@@ -101,7 +101,7 @@ class TestModelsDataRunManager(unittest.TestCase):
         instrumentStatusSaveMock.assert_called()
 
 
-class TestModelsWorkflowSummary(unittest.TestCase):
+class TestModelsWorkflowSummary(TestCase):
     @mock.patch("django.db.models")
     @mock.patch("workflow.database.report.models.RunStatus.objects")
     def test_update_catalog(self, runStatusObjectsMock, djangoModelsMock):
