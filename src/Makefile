@@ -23,14 +23,14 @@ workflow: check
 	python3 setup.py install
 
 clean:
-	python3 setup.py clean
-	python3 setup_dasmon_listener.py clean
+	test -f setup.py && python3 setup.py clean
+	test -f setup_dasmon_listener.py && python3 setup_dasmon_listener.py clean
 	rm -fR *.pyc
 	rm -fR build/
 
 install: check clean workflow webapp
 
-dasmonlistener: webapp/core
+dasmonlistener: workflow
 	# Install DASMON listener
 	python3 setup_dasmon_listener.py clean
 	python3 setup_dasmon_listener.py install
@@ -47,7 +47,6 @@ webapp/core: workflow
 
 	# Install application code
 	cp reporting/manage.py $(prefix)/app
-	cp -R dasmon_listener $(prefix)/app
 	cp -R reporting/report $(prefix)/app
 	cp -R reporting/dasmon $(prefix)/app
 	cp -R reporting/reduction $(prefix)/app

@@ -12,8 +12,8 @@ services:
     depends_on:
       - webmon
 
-  webmon: 
-    build: 
+  webmon:
+    build:
       context: .
       dockerfile: Dockerfile.webmon
     expose:
@@ -22,15 +22,13 @@ services:
       - "8000:8000"
     volumes:
       - web-static:/var/www/workflow/static/
-      - ./src/reporting/docker-entrypoint.sh:/usr/bin/docker-entrypoint.sh
     env_file:
       - .env
-    command: /usr/bin/docker-entrypoint.sh
     depends_on:
       - db
 
-  dasmon: 
-    build: 
+  dasmon:
+    build:
       context: .
       dockerfile: Dockerfile.dasmon
     volumes:
@@ -40,7 +38,7 @@ services:
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
       - webmon
-  
+
   db:
     image: postgres:14
     environment:
