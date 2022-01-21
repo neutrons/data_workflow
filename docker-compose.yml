@@ -31,8 +31,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dasmon
-    volumes:
-      - ./src/dasmon_listener/docker-entrypoint.sh:/usr/bin/docker-entrypoint.sh
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh

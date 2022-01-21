@@ -11,3 +11,8 @@ COPY README.md .
 RUN echo 'brokers = [("activemq", 61613)]' > dasmon_listener/local_settings.py
 RUN echo 'queues=["/topic/SNS.COMMON.STATUS.WORKFLOW.0","/topic/SNS.COMMON.STATUS.AUTOREDUCE.0","/topic/SNS.*.APP.DASMON","/topic/SNS.*.STATUS.DASMON","/topic/SNS.*.SIGNAL.DASMON","/topic/SNS.*.APP.SMS","/topic/SNS.*.STATUS.SMS","/topic/SNS.*.STATUS.POSTPROCESS","/topic/SNS.COMMON.STATUS.ACK","/topic/SNS.*.STATUS.PVSD","/topic/HFIR.*.APP.DASMON","/topic/HFIR.*.STATUS.DASMON","/topic/HFIR.*.SIGNAL.DASMON","/topic/HFIR.*.APP.SMS","/topic/HFIR.*.STATUS.SMS","/topic/HFIR.*.STATUS.POSTPROCESS","/topic/HFIR.COMMON.STATUS.ACK","/topic/HFIR.*.STATUS.PVSD"]' >> dasmon_listener/local_settings.py
 RUN echo 'brokers = [("activemq", 61613)]' > workflow/database/local_settings.py
+
+# move the entry-point into the volume
+COPY ./src/dasmon_listener/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+RUN chmod +x /usr/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
