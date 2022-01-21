@@ -11,7 +11,7 @@ done
 # build things
 make check
 make clean
-make webapp  # depends on webapp/core which depends on workflow
+make webmon  # depends on webmon/core which depends on workflow
 
 # start up web-service
 cd ${SETTINGS_DIR}

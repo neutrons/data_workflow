@@ -28,24 +28,19 @@ clean:
 	rm -fR *.pyc
 	rm -fR build/
 
-install: check clean workflow webapp
-
 dasmonlistener: workflow
 	# Install DASMON listener
 	python3 setup_dasmon_listener.py clean
 	python3 setup_dasmon_listener.py install
 
-webapp/core: workflow
+webmon/core: workflow  # the dependency on workflow doesn't make sense
 	# Make sure the install directories exist
 	# this will create parent directories
 	mkdir -m 0755 -p $(prefix)/app
 	mkdir -m 0755 -p $(prefix)/static/web_monitor
 
-	# The following should be done with the proper apache user
-	#chgrp apache $(prefix)/static/web_monitor
-	#chown apache $(prefix)/static/web_monitor
-
-	# Install application code
+webmon: webmon/core
+	# Install application code from reporting
 	cp reporting/manage.py $(prefix)/app
 	cp -R reporting/report $(prefix)/app
 	cp -R reporting/dasmon $(prefix)/app
@@ -59,7 +54,6 @@ webapp/core: workflow
 	# Install apache config
 	cp -R reporting/apache $(prefix)
 
-webapp: webapp/core
 	# Collect the static files and install them
 	cd $(prefix)/app; python3 manage.py collectstatic --noinput
 
@@ -85,9 +79,8 @@ webapp: webapp/core
 	@echo "\n\nReady to go: run apachectl restart\n"
 
 .PHONY: check
-.PHONY: install
 .PHONY: workflow
-.PHONY: webapp
-.PHONY: webapp/core
+.PHONY: webmon
+.PHONY: webmon/core
 .PHONY: dasmonlistener
 .PHONY: test
