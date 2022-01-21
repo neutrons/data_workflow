@@ -4,6 +4,8 @@ COPY conda_environment.yml .
 RUN conda env update --name base --file conda_environment.yml
 
 WORKDIR /usr/src/data_workflow
+
+# the next line copies in all of the python source rather than just what is needed
 COPY ./src/. .
 COPY README.md .
 
