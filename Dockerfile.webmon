@@ -1,7 +1,8 @@
 FROM continuumio/miniconda3
 
 COPY conda_environment.yml .
-RUN conda env update --name base --file conda_environment.yml
+RUN conda install -c conda-forge mamba
+RUN mamba env update --name base --file conda_environment.yml
 
 WORKDIR /usr/src/webmon
 
