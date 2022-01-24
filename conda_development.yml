@@ -1,0 +1,10 @@
+channels:
+- conda-forge
+dependencies:
+- flake8
+- pytest
+- pytest-django
+- pytest-cov
+- pip
+- pip:
+  - pytest-pythonpath

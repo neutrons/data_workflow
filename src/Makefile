@@ -20,35 +20,28 @@ check:
 
 workflow: check
 	# Install the workflow manager, which defines the database schema
+	python3 setup.py clean
 	python3 setup.py install
 
 clean:
-	python3 setup.py clean
-	python3 setup_dasmon_listener.py clean
+	test -f setup.py && python3 setup.py clean
+	test -f setup_dasmon_listener.py && python3 setup_dasmon_listener.py clean
 	rm -fR *.pyc
 	rm -fR build/
 
-install: check clean workflow webapp
-
-dasmonlistener: webapp/core
+dasmonlistener: workflow
 	# Install DASMON listener
 	python3 setup_dasmon_listener.py clean
 	python3 setup_dasmon_listener.py install
 
-webapp/core: workflow
+webmon/core: workflow  # the dependency on workflow doesn't make sense
 	# Make sure the install directories exist
-	test -d $(prefix) || mkdir -m 0755 -p $(prefix)
-	test -d $(prefix)/app || mkdir -m 0755 $(prefix)/app
-	test -d $(prefix)/static || mkdir -m 0755 $(prefix)/static
-	test -d $(prefix)/static/web_monitor || mkdir -m 0755 $(prefix)/static/web_monitor
+	# this will create parent directories
+	mkdir -m 0755 -p $(prefix)/app
+	mkdir -m 0755 -p $(prefix)/static/web_monitor
 
-	# The following should be done with the proper apache user
-	#chgrp apache $(prefix)/static/web_monitor
-	#chown apache $(prefix)/static/web_monitor
-
-	# Install application code
+	# Install application code from reporting
 	cp reporting/manage.py $(prefix)/app
-	cp -R dasmon_listener $(prefix)/app
 	cp -R reporting/report $(prefix)/app
 	cp -R reporting/dasmon $(prefix)/app
 	cp -R reporting/reduction $(prefix)/app
@@ -58,10 +51,10 @@ webapp/core: workflow
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app
 
+webmon: webmon/core
 	# Install apache config
 	cp -R reporting/apache $(prefix)
 
-webapp: webapp/core
 	# Collect the static files and install them
 	cd $(prefix)/app; python3 manage.py collectstatic --noinput
 
@@ -74,22 +67,21 @@ webapp: webapp/core
 
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
 	cd $(prefix)/app; python3 manage.py createcachetable webcache
-	cd $(prefix)/app; echo "from django.contrib.auth.models import User; User.objects.create_superuser('${DATABASE_USER}', 'workflow@example.com', '${DATABASE_PASS}')" | python3 manage.py shell
+	cd $(prefix)/app; python3 manage.py ensure_adminuser --username=${DATABASE_USER} --email='workflow@example.com' --password=${DATABASE_PASS}
 
 	# Modify and copy the wsgi configuration
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
 
 	# pass the init sql script to dbshell
-	cd $(prefix)/app; python3 manage.py dbshell < report/sql/indices.sql 
+	cd $(prefix)/app; python3 manage.py dbshell < report/sql/indices.sql
 	cd $(prefix)/app; python3 manage.py dbshell < report/sql/statusqueue.sql
 	cd $(prefix)/app; python3 manage.py dbshell < report/sql/stored_procs.sql
 
 	@echo "\n\nReady to go: run apachectl restart\n"
 
 .PHONY: check
-.PHONY: install
 .PHONY: workflow
-.PHONY: webapp
-.PHONY: webapp/core
+.PHONY: webmon
+.PHONY: webmon/core
 .PHONY: dasmonlistener
 .PHONY: test

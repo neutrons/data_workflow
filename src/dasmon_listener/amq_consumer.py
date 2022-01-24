@@ -35,10 +35,7 @@ from django.utils import timezone  # noqa: E402
 
 from dasmon.models import StatusVariable, Parameter, StatusCache, Signal, UserNotification  # noqa: E402
 from pvmon.models import PV, PVCache, PVString, PVStringCache, MonitoredVariable  # noqa: E402
-try:
-    from report.models import Instrument
-except:
-    from workflow.database.report.models import Instrument
+from workflow.database.report.models import Instrument  # noqa: E402
 
 
 # ACK data
