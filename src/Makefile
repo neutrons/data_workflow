@@ -20,6 +20,7 @@ check:
 
 workflow: check
 	# Install the workflow manager, which defines the database schema
+	python3 setup.py clean
 	python3 setup.py install
 
 clean:
@@ -39,7 +40,6 @@ webmon/core: workflow  # the dependency on workflow doesn't make sense
 	mkdir -m 0755 -p $(prefix)/app
 	mkdir -m 0755 -p $(prefix)/static/web_monitor
 
-webmon: webmon/core
 	# Install application code from reporting
 	cp reporting/manage.py $(prefix)/app
 	cp -R reporting/report $(prefix)/app
@@ -51,6 +51,7 @@ webmon: webmon/core
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app
 
+webmon: webmon/core
 	# Install apache config
 	cp -R reporting/apache $(prefix)
 

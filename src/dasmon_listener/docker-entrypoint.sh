@@ -10,6 +10,7 @@ done
 
 # build things
 make clean
+make webmon/core  # to get the reports models
 make workflow dasmonlistener
 
 # start up things and echo the logs
