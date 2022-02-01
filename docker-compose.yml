@@ -66,6 +66,12 @@ services:
     volumes:
       - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
 
+  autoreducer:
+    build: https://github.com/neutrons/post_processing_agent.git#main
+    hostname: autoreducer
+    depends_on:
+      - activemq
+
 volumes:
   web-django:
   web-static:
