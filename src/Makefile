@@ -50,6 +50,7 @@ webmon/core: workflow  # the dependency on workflow doesn't make sense
 	cp -R reporting/users $(prefix)/app
 	cp -R reporting/templates $(prefix)/app
 	cp -R reporting/reporting_app $(prefix)/app
+	cp -R reporting/fixtures $(prefix)/app
 
 webmon: webmon/core
 	# Install apache config
@@ -60,7 +61,6 @@ webmon: webmon/core
 
 	# Create the database tables. The database itself must have been
 	# created on the server already
-
 	cd $(prefix)/app; python3 manage.py makemigrations --noinput
 	cd $(prefix)/app; python3 manage.py migrate --noinput
 	cd $(prefix)/app; python3 manage.py migrate --run-syncdb --noinput
@@ -73,9 +73,12 @@ webmon: webmon/core
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
 
 	# pass the init sql script to dbshell
-	cd $(prefix)/app; python3 manage.py dbshell < report/sql/indices.sql
-	cd $(prefix)/app; python3 manage.py dbshell < report/sql/statusqueue.sql
-	cd $(prefix)/app; python3 manage.py dbshell < report/sql/stored_procs.sql
+	# cd $(prefix)/app; python3 manage.py dbshell < pvmon/sql/stored_procs.sql
+	# cd $(prefix)/app; python3 manage.py dbshell < report/sql/stored_procs.sql
+	cd $(prefix)/app; python3 manage.py add_stored_procs
+
+	# use fixtures to load init data
+	cd $(prefix)/app; python3 manage.py loaddata fixtures/db_init.json
 
 	@echo "\n\nReady to go: run apachectl restart\n"
 
