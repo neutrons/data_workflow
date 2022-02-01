@@ -1,0 +1,393 @@
+[
+{
+    "model": "report.instrument",
+    "pk": 1,
+    "fields": {
+        "name": "common"
+    }
+},
+{
+    "model": "report.instrument",
+    "pk": 2,
+    "fields": {
+        "name": "hysa"
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 1,
+    "fields": {
+        "name": "POSTPROCESS.DATA_READY",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 2,
+    "fields": {
+        "name": "POSTPROCESS.INFO",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 3,
+    "fields": {
+        "name": "POSTPROCESS.ERROR",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 4,
+    "fields": {
+        "name": "CATALOG.DATA_READY",
+        "is_workflow_input": false
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 5,
+    "fields": {
+        "name": "CATALOG.STARTED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 6,
+    "fields": {
+        "name": "CATALOG.COMPLETE",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 7,
+    "fields": {
+        "name": "REDUCTION.DATA_READY",
+        "is_workflow_input": false
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 8,
+    "fields": {
+        "name": "REDUCTION.STARTED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 9,
+    "fields": {
+        "name": "REDUCTION.DISABLED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 10,
+    "fields": {
+        "name": "REDUCTION.NOT_NEEDED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 11,
+    "fields": {
+        "name": "REDUCTION.COMPLETE",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 12,
+    "fields": {
+        "name": "REDUCTION_CATALOG.DATA_READY",
+        "is_workflow_input": false
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 13,
+    "fields": {
+        "name": "REDUCTION_CATALOG.STARTED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 14,
+    "fields": {
+        "name": "REDUCTION_CATALOG.COMPLETE",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 15,
+    "fields": {
+        "name": "TRANSLATION.STARTED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 16,
+    "fields": {
+        "name": "TRANSLATION.COMPLETE",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 17,
+    "fields": {
+        "name": "POSTPROCESS.CHECK",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 18,
+    "fields": {
+        "name": "REDUCTION.ERROR",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 19,
+    "fields": {
+        "name": "CATALOG.ERROR",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 20,
+    "fields": {
+        "name": "REDUCTION_CATALOG.ERROR",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 21,
+    "fields": {
+        "name": "REDUCTION.REQUEST",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 22,
+    "fields": {
+        "name": "CATALOG.REQUEST",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 23,
+    "fields": {
+        "name": "FERMI_REDUCTION.DATA_READY",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.task",
+    "pk": 1,
+    "fields": {
+        "instrument_id": 2,
+        "input_queue_id": 17,
+        "task_class": "workflow_process.WorkflowProcess",
+        "task_queue_ids": [],
+        "success_queue_ids": []
+    }
+},
+{
+    "model": "report.task",
+    "pk": 2,
+    "fields": {
+        "instrument_id": 2,
+        "input_queue_id": 1,
+        "task_class": " ",
+        "task_queue_ids": [
+            4,
+            7
+        ],
+        "success_queue_ids": [
+            6,
+            11
+        ]
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 1,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.dashboard_simple",
+        "path": "/dasmon/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:16.323Z"
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 2,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.dashboard_simple",
+        "path": "/dasmon/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:18.472Z"
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 3,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.dashboard_simple",
+        "path": "/dasmon/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:19.960Z"
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 4,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.live_monitor",
+        "path": "/dasmon/hysa/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:22.044Z"
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 5,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.dashboard_simple",
+        "path": "/dasmon/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:24.441Z"
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 6,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.live_monitor",
+        "path": "/dasmon/common/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:25.503Z"
+    }
+},
+{
+    "model": "users.pageview",
+    "pk": 7,
+    "fields": {
+        "user": [
+            "postgres"
+        ],
+        "view": "dasmon.views.dashboard_simple",
+        "path": "/dasmon/",
+        "ip": "172.27.0.5",
+        "timestamp": "2022-02-01T16:47:28.384Z"
+    }
+},
+{
+    "model": "dasmon.parameter",
+    "pk": 1,
+    "fields": {
+        "name": "system_dasmon_listener_pid",
+        "monitored": true
+    }
+},
+{
+    "model": "dasmon.parameter",
+    "pk": 2,
+    "fields": {
+        "name": "system_workflowmgr",
+        "monitored": true
+    }
+},
+{
+    "model": "dasmon.parameter",
+    "pk": 3,
+    "fields": {
+        "name": "system_workflowmgr_pid",
+        "monitored": true
+    }
+},
+{
+    "model": "dasmon.statusvariable",
+    "pk": 1,
+    "fields": {
+        "instrument_id": 1,
+        "key_id": 1,
+        "value": "96",
+        "timestamp": "2022-02-01T16:47:18.597Z"
+    }
+},
+{
+    "model": "dasmon.statusvariable",
+    "pk": 2,
+    "fields": {
+        "instrument_id": 1,
+        "key_id": 1,
+        "value": "96",
+        "timestamp": "2022-02-01T16:49:18.566Z"
+    }
+},
+{
+    "model": "dasmon.statuscache",
+    "pk": 1,
+    "fields": {
+        "instrument_id": 1,
+        "key_id": 1,
+        "value": "96",
+        "timestamp": "2022-02-01T16:49:18.566Z"
+    }
+},
+{
+    "model": "dasmon.statuscache",
+    "pk": 2,
+    "fields": {
+        "instrument_id": 1,
+        "key_id": 2,
+        "value": "0",
+        "timestamp": "2022-02-01T16:45:59.521Z"
+    }
+},
+{
+    "model": "dasmon.statuscache",
+    "pk": 3,
+    "fields": {
+        "instrument_id": 1,
+        "key_id": 3,
+        "value": "100",
+        "timestamp": "2022-02-01T16:45:59.530Z"
+    }
+}
+]
