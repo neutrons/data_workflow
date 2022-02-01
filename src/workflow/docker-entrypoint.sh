@@ -9,12 +9,10 @@ done
 >&2 echo "Postgres is up - executing command"
 
 # build things
-make clean
-make webmon/core  # to get the reports models
-make workflow dasmonlistener
+make workflow
 
 # start up things and echo the logs
 cd /var/log
 sleep 20
-/opt/conda/bin/dasmon_listener start
-tail -F /var/log/dasmon_listener.log
+/opt/conda/bin/workflowmgr start
+tail -F /var/log/workflow.log

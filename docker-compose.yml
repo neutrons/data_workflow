@@ -37,6 +37,16 @@ services:
     depends_on:
       - webmon
 
+  workflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.workflow
+    env_file:
+      - .env
+    command: /usr/bin/docker-entrypoint.sh
+    depends_on:
+      - activemq
+
   db:
     image: postgres:14
     environment:
