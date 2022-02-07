@@ -7,8 +7,8 @@ dependencies:
 - django=3.2
 - stomp.py=7.0.0
 - setuptools
-- psycopg2-binary=2.8.6
-- postgresql
+- psycopg2-binary=2.9.3
+- postgresql=14
 - oauthlib
 - requests-oauthlib
 - gunicorn

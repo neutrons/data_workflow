@@ -63,7 +63,7 @@ OWNER TO postgres;
 
 # pv_update, pv_update2, are taken from pvmon/sql/stored_procs.sql
 pv_update_sql = """
-CREATE OR REPLACE FUNCTION "pvUpdate"(pv_name character varying, value double precision, status bigint, update_time bigint)
+CREATE OR REPLACE FUNCTION pvUpdate(pv_name character varying, value double precision, status bigint, update_time bigint)
 RETURNS void AS
 $BODY$DECLARE
 n_count numeric;
@@ -105,12 +105,12 @@ END IF;
 END;$BODY$
 LANGUAGE plpgsql VOLATILE
 COST 100;
-ALTER FUNCTION "pvUpdate"(character varying, double precision, bigint, bigint)
+ALTER FUNCTION pvUpdate(character varying, double precision, bigint, bigint)
 OWNER TO postgres;
 """
 
 pv_update2_sql = """
-CREATE OR REPLACE FUNCTION "pvUpdate"(instrument character varying, pv_name character varying, value double precision, status bigint, update_time bigint)
+CREATE OR REPLACE FUNCTION pvUpdate(instrument character varying, pv_name character varying, value double precision, status bigint, update_time bigint)
 RETURNS void AS
 $BODY$
 DECLARE
@@ -160,12 +160,12 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE
 COST 100;
-ALTER FUNCTION "pvUpdate"(character varying, character varying, double precision, bigint, bigint)
+ALTER FUNCTION pvUpdate(character varying, character varying, double precision, bigint, bigint)
 OWNER TO postgres;
 """
 
 pvstring_update_sql = """
-CREATE OR REPLACE FUNCTION "pvStringUpdate"(instrument character varying, pv_name character varying, value character varying, status bigint, update_time bigint)
+CREATE OR REPLACE FUNCTION pvStringUpdate(instrument character varying, pv_name character varying, value character varying, status bigint, update_time bigint)
   RETURNS void AS
 $BODY$
 DECLARE
@@ -215,7 +215,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint)
+ALTER FUNCTION pvStringUpdate(character varying, character varying, character varying, bigint, bigint)
   OWNER TO postgres;
 """
 
