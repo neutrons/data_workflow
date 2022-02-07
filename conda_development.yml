@@ -2,7 +2,7 @@ channels:
 - conda-forge
 dependencies:
 - flake8
-- pytest
+- pytest<7
 - pytest-django
 - pytest-cov
 - pip
