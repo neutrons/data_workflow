@@ -1,0 +1,27 @@
+name: Systemtests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        mamba-version: "*"
+        environment-file: conda_environment.yml
+    - name: Install testing requirements
+      run: mamba env update --file conda_development.yml
+    - name: Stand up docker containers
+      run: LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build -d
+    - name: Wait for everything to start up
+      run: sleep 20
+    - name: Test with pytest
+      run: python -m pytest test
+    - name: Stand down docker containers
+      run: docker-compose down
