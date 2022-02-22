@@ -5,15 +5,27 @@ def find_runs(instrument, ipts, run_min, run_max, legacy=False):
     base_path = "/SNS/%s/IPTS-%s/nexus/" % (instrument.upper(), ipts)
     for r in range(run_min, run_max):
         filepath = "%s/%s_%s.nxs.h5" % (base_path, instrument.upper(), r)
-        legacypath = "/SNS/%s/IPTS-%s/0/%s/NeXus/%s_%r_event.nxs" % (instrument.upper(), ipts, r, instrument.upper(), r)
+        legacypath = "/SNS/%s/IPTS-%s/0/%s/NeXus/%s_%r_event.nxs" % (
+            instrument.upper(),
+            ipts,
+            r,
+            instrument.upper(),
+            r,
+        )
         if not legacy:
-            os.system("python simple_producer.py -b %s -i %s -r %s -d %s --catalog" %
-                      (instrument.upper(), ipts, r, filepath))
-            os.system("python simple_producer.py -b %s -i %s -r %s -d %s --reduction_catalog" %
-                      (instrument.upper(), ipts, r, filepath))
+            os.system(
+                "python simple_producer.py -b %s -i %s -r %s -d %s --catalog"
+                % (instrument.upper(), ipts, r, filepath)
+            )
+            os.system(
+                "python simple_producer.py -b %s -i %s -r %s -d %s --reduction_catalog"
+                % (instrument.upper(), ipts, r, filepath)
+            )
         else:
-            os.system("python simple_producer.py -b %s -i %s -r %s -d %s --catalog" %
-                      (instrument.upper(), ipts, r, legacypath))
+            os.system(
+                "python simple_producer.py -b %s -i %s -r %s -d %s --catalog"
+                % (instrument.upper(), ipts, r, legacypath)
+            )
             # os.system
             # ("python simple_producer.py -b %s -i %s -r %s -d %s --reduction_catalog" % (instrument.upper(),
             #  ipts,
@@ -34,4 +46,4 @@ def find_runs(instrument, ipts, run_min, run_max, legacy=False):
 # find_runs('SNAP', 10254, 15229, 15234, legacy=True)
 # find_runs('TOPAZ', 9949, 9408, 9409, legacy=True)
 # find_runs('VIS', 11944, 3572, 3576)
-find_runs('VULCAN', 10076, 45783, 45784, legacy=True)
+find_runs("VULCAN", 10076, 45783, 45784, legacy=True)

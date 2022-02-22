@@ -12,11 +12,11 @@ from users.view_util import fill_template_values
 
 def perform_login(request):
     """
-        Perform user authentication
+    Perform user authentication
     """
     user = None
     login_failure = None
-    if request.method == 'POST':
+    if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
@@ -34,17 +34,18 @@ def perform_login(request):
         return redirect(reverse(settings.LANDING_VIEW))
     else:
         # Breadcrumbs
-        breadcrumbs = "<a href='%s'>home</a> &rsaquo; login" % reverse(settings.LANDING_VIEW)
+        breadcrumbs = "<a href='%s'>home</a> &rsaquo; login" % reverse(
+            settings.LANDING_VIEW
+        )
 
-        template_values = {'breadcrumbs': breadcrumbs,
-                           'login_failure': login_failure}
+        template_values = {"breadcrumbs": breadcrumbs, "login_failure": login_failure}
         template_values = fill_template_values(request, **template_values)
-        return render(request, 'users/authenticate.html', template_values)
+        return render(request, "users/authenticate.html", template_values)
 
 
 def perform_logout(request):
     """
-        Logout user
+    Logout user
     """
     logout(request)
     return redirect(reverse(settings.LANDING_VIEW))

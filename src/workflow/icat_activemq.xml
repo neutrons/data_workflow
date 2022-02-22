@@ -32,7 +32,7 @@
     <!--
         The <broker> element is used to configure the ActiveMQ broker.
     -->
-    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" persistent="true" 
+    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" persistent="true"
     dataDirectory="${activemq.data}" networkConnectorStartAsync="true">
 
         <!--
@@ -138,8 +138,8 @@
 					<authenticationUser username="worker" password="worker" groups="workers"/>
 					<authenticationUser username="wkflowmgr" password="wkflowmgr" groups="wkflow,users"/>
 				</users>
-			</simpleAuthenticationPlugin>	
-			
+			</simpleAuthenticationPlugin>
+
 		  <!--  lets configure a destination based authorization mechanism -->
 		  <authorizationPlugin>
 			<map>
@@ -153,7 +153,7 @@
 				  <authorizationEntry queue="WORKER.>"            read="workers"              write="wkflow,users,admins"         admin="admins" />
 				  <authorizationEntry topic=">" read="users,admins" write="users,admins" admin="users,admins" />
 				  <authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users" write="guests,users" admin="guests,users"/>
-				</authorizationEntries>              
+				</authorizationEntries>
 			  </authorizationMap>
 			</map>
 		  </authorizationPlugin>
@@ -168,4 +168,3 @@
     <import resource="jetty.xml"/>
 
 </beans>
-

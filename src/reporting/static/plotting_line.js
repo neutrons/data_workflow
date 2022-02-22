@@ -33,7 +33,7 @@ function plot_1d(raw_data, anchor, options) {
     for (var i=0; i<raw_data.length; i++){
         if (log_scale == false || raw_data[i][1]>0 ) data.push(raw_data[i]);
     }
-    
+
     var tid = $(".live_plots").parent().attr("id");
 
     w = options.psize.width;
@@ -43,10 +43,10 @@ function plot_1d(raw_data, anchor, options) {
     mod_psize = {height: h, width: w};
     x = d3.scale.linear().range([0, mod_psize.width]);
     y = log_scale ? d3.scale.log().range([mod_psize.height, 0]).nice() : d3.scale.linear().range([mod_psize.height, 0]);
-    
+
     y_min = d3.min(data, function(d) { return d[1]; }) // for a better display of a constant function
     y_max = d3.max(data, function(d) { return d[1]; })
-    
+
     x.domain(d3.extent(data, function(d) { return d[0]; }));
     if ( y_min === y_max ){
         y.domain([y_min-1, y_max+1]);
@@ -56,7 +56,7 @@ function plot_1d(raw_data, anchor, options) {
     }
     xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickFormat(d3.format("6d"));
     xAxisMinor = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(3,3).tickSubdivide(0).tickFormat('');
-    
+
     formatter = function(d) { if(d<1000000.0 && d>1e-3) {return d3.format("5.3g")(d);} else {return d3.format("5.1e")(d);}};
     if (log_scale == false) {
         yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).tickFormat(formatter);
@@ -65,7 +65,7 @@ function plot_1d(raw_data, anchor, options) {
     }
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
-    
+
     // Create svg element
     var svg = d3.select("#" + anchor).append("svg")
         .attr("class", "default_1d")
@@ -75,7 +75,7 @@ function plot_1d(raw_data, anchor, options) {
         .append("g")
         .attr("id", anchor + "_g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        
+
     svg.append("g").attr("class", "x axis")
                    .attr("transform", "translate(0," + mod_psize.height + ")")
                    .call(xAxis);
@@ -83,7 +83,7 @@ function plot_1d(raw_data, anchor, options) {
                    .attr("transform", "translate(0," + mod_psize.height + ")")
                    .call(xAxisMinor);
     svg.append("g").attr("class", "y axis").call(yAxis)
-    
+
     // Create X axis label
     svg.append("text")
        .attr("x", mod_psize.width)
@@ -193,7 +193,7 @@ function plot_1d(raw_data, anchor, options) {
        .on("mouseover", function(d){ mouseover(d); })
        .on("mousemove", function(d){ mousemove(d); })
        .on("mouseout", function(d){ mouseout(d); });
-    
+
     function mouseover(d){
         mouseY = 0;
         mouseX = 0;
@@ -224,7 +224,7 @@ function plot_1d(raw_data, anchor, options) {
         circle_ol.style("visibility", "hidden");
         return tooltip.style("visibility", "hidden");
     }
-    
+
     function getMousePos(e){
         if (!e) var e = window.event||window.Event;
 
@@ -237,5 +237,5 @@ function plot_1d(raw_data, anchor, options) {
             mouseY = e.clientY + document.body.scrollTop;
         }
     }
-    
+
 }

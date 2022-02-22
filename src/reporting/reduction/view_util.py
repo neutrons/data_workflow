@@ -18,23 +18,23 @@ import urllib.error
 
 def reduction_setup_url(instrument):
     """
-        Return a URL for the reduction setup if it's enabled
-        for the given instrument
-        @param instrument: instrument name
+    Return a URL for the reduction setup if it's enabled
+    for the given instrument
+    @param instrument: instrument name
     """
     if instrument.lower() in settings.INSTRUMENT_REDUCTION_SETUP:
-        return reverse('reduction:configuration', args=[instrument])
+        return reverse("reduction:configuration", args=[instrument])
     return None
 
 
 def store_property(instrument_id, key, value, user=None):
     """
-        Store a reduction property
+    Store a reduction property
 
-        @param instrument_id: Instrument object
-        @param key: name of the property
-        @param value: value of the property (string)
-        @param user: user that created the change
+    @param instrument_id: Instrument object
+    @param key: name of the property
+    @param value: value of the property (string)
+    @param user: user that created the change
     """
     props = ReductionProperty.objects.filter(instrument=instrument_id, key=key)
     changed_prop = None
@@ -46,21 +46,21 @@ def store_property(instrument_id, key, value, user=None):
     elif len(props) > 1:
         logging.error("store_property: more than one property named %s", key)
     else:
-        changed_prop = ReductionProperty(instrument=instrument_id, key=str(key), value=str(value))
+        changed_prop = ReductionProperty(
+            instrument=instrument_id, key=str(key), value=str(value)
+        )
         changed_prop.save()
     if user is not None and changed_prop is not None:
-        modif = PropertyModification(property=changed_prop,
-                                     value=value,
-                                     user=user)
+        modif = PropertyModification(property=changed_prop, value=value, user=user)
         modif.save()
 
 
 def reset_to_default(instrument_id):
     """
-        Reset reduction properties for a given instrument to their default value.
-        If no default has been set for a property, it will not be changed.
+    Reset reduction properties for a given instrument to their default value.
+    If no default has been set for a property, it will not be changed.
 
-        @param instrument_id: Instrument object
+    @param instrument_id: Instrument object
     """
     props_list = ReductionProperty.objects.filter(instrument=instrument_id)
     for item in props_list:
@@ -70,20 +70,20 @@ def reset_to_default(instrument_id):
             item.save()
 
 
-def send_template_request(instrument_id, template_dict, user='unknown'):
+def send_template_request(instrument_id, template_dict, user="unknown"):
     """
-        Send an ActiveMQ message to request a new script
+    Send an ActiveMQ message to request a new script
 
-        @param instrument_id: Instrument object
-        @param template_dict: dictionary of peroperties
-        @param user: user that created the change
+    @param instrument_id: Instrument object
+    @param template_dict: dictionary of peroperties
+    @param user: user that created the change
     """
     use_default = False
-    if 'use_default' in template_dict:
-        if type(template_dict['use_default']) == bool:
-            use_default = template_dict['use_default']
+    if "use_default" in template_dict:
+        if type(template_dict["use_default"]) == bool:
+            use_default = template_dict["use_default"]
         else:
-            use_default = template_dict['use_default'].lower() == 'true'
+            use_default = template_dict["use_default"].lower() == "true"
 
     encoded_dict = {}
     for key, value in template_dict.items():
@@ -93,14 +93,20 @@ def send_template_request(instrument_id, template_dict, user='unknown'):
             encoded_dict[key] = value
 
     # Send ActiveMQ request
-    dasmon.view_util.add_status_entry(instrument_id,
-                                      settings.SYSTEM_STATUS_PREFIX + 'postprocessing',
-                                      "Script requested by %s" % user)
+    dasmon.view_util.add_status_entry(
+        instrument_id,
+        settings.SYSTEM_STATUS_PREFIX + "postprocessing",
+        "Script requested by %s" % user,
+    )
 
-    data_dict = {"instrument": str(instrument_id).upper(),
-                 "use_default": use_default,
-                 "template_data": encoded_dict,
-                 "information": "Requested by %s" % user}
+    data_dict = {
+        "instrument": str(instrument_id).upper(),
+        "use_default": use_default,
+        "template_data": encoded_dict,
+        "information": "Requested by %s" % user,
+    }
     data = json.dumps(data_dict)
-    reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
+    reporting_app.view_util.send_activemq_message(
+        settings.REDUCTION_SCRIPT_CREATION_QUEUE, data
+    )
     logging.info("Reduction script requested: %s", str(data))

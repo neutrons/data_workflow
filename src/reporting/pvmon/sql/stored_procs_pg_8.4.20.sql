@@ -54,7 +54,7 @@ END;$BODY$
 ALTER FUNCTION "pvUpdate"(character varying, double precision, bigint, bigint)
   OWNER TO postgres;
 
-  
+
 -- Function: "pvUpdate"(character varying, character varying, double precision, bigint, bigint)
 
 DROP FUNCTION "pvUpdate"(character varying, character varying, double precision, bigint, bigint);
@@ -118,7 +118,7 @@ $BODY$
 ALTER FUNCTION "pvUpdate"(character varying, character varying, double precision, bigint, bigint)
   OWNER TO postgres;
 
-  
+
 -- Function: "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint)
 
 DROP FUNCTION "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint);

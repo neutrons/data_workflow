@@ -29,7 +29,7 @@
     function poll(){
         $.ajax({ url: "{{ update_url }}?since="+last_error_id, success: function(data) {
             if (data.refresh_needed.localeCompare('1')==0) {
-                for (var i=0;i<data.errors.length;i++) { 
+                for (var i=0;i<data.errors.length;i++) {
                     records.push({'experiment': "<a href='{{ base_ipts_url }}"+data.errors[i].ipts+"/'>"+data.errors[i].ipts+"</a>",
                         'run': "<a href='{{ base_run_url }}"+data.errors[i].run+"/'>"+data.errors[i].run+"</a>",
                         'info':data.errors[i].description,
@@ -41,18 +41,18 @@
             }
             dynatable.settings.dataset.originalRecords = records;
             dynatable.process();
-            
+
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
             $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
             $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
-            
+
             run_data = data.run_rate;
             error_data = data.error_rate;
             plot_combined_rates(run_data, error_data);
         }, dataType: "json", timeout: 30000, cache: true,
         statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
-    };    
-</script>   
+    };
+</script>
 {% endblock %}
 
 {% block banner %}{{ instrument }} Error Report {% endblock %}

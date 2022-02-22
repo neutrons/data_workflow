@@ -14,11 +14,14 @@ from settings import queues as amq_queues
 
 import logging
 import logging.handlers
+
 logging.getLogger().setLevel(logging.WARN)
 # Formatter
-ft = logging.Formatter('%(asctime)-15s %(message)s')
+ft = logging.Formatter("%(asctime)-15s %(message)s")
 # Create a log file handler
-fh = logging.handlers.TimedRotatingFileHandler('amq_looper.log', when='midnight', backupCount=15)
+fh = logging.handlers.TimedRotatingFileHandler(
+    "amq_looper.log", when="midnight", backupCount=15
+)
 fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
@@ -30,32 +33,33 @@ acks = {}
 
 class Listener(stomp.ConnectionListener):
     """
-        Base listener class for an ActiveMQ client
+    Base listener class for an ActiveMQ client
 
-        A fully implemented class should overload
-        the on_message() method to process incoming
-        messages.
+    A fully implemented class should overload
+    the on_message() method to process incoming
+    messages.
     """
+
     _connection = None
 
     def set_connection(self, connection):
         """
-            Set the AMQ connection
+        Set the AMQ connection
         """
         self._connection = connection
 
     def on_message(self, headers, message):
         """
-            Process a message.
-            @param headers: message headers
-            @param message: JSON-encoded message content
+        Process a message.
+        @param headers: message headers
+        @param message: JSON-encoded message content
         """
         destination = headers["destination"]
-        self._connection.ack(headers['message-id'], headers['subscription'])
+        self._connection.ack(headers["message-id"], headers["subscription"])
         # Load the JSON message into a dictionary
         try:
             data_dict = json.loads(message)
-        except:
+        except:  # noqa: E722
             logging.error("Could not decode message from %s", destination)
             logging.error(sys.exc_value)
             return
@@ -65,8 +69,8 @@ class Listener(stomp.ConnectionListener):
 
 def process_ack(data=None):
     """
-        Process a ping request ack
-        @param data: data that came in with the ack
+    Process a ping request ack
+    @param data: data that came in with the ack
     """
     try:
         if data is None:
@@ -74,33 +78,34 @@ def process_ack(data=None):
                 if acks[proc_name] is not None and time.time() - acks[proc_name] > 45:
                     logging.error("Client %s disappeared", proc_name)
                     acks[proc_name] = None
-        elif 'request_time' in data:
-            proc_name = data['src_name']
-            delta_time = time.time() - data['request_time']
+        elif "request_time" in data:
+            proc_name = data["src_name"]
+            delta_time = time.time() - data["request_time"]
             logging.warning("Delta time: %s", delta_time)
             if delta_time > 60:
                 logging.error("Client %s took more than 60 secs to answer", proc_name)
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared", proc_name)
             acks[proc_name] = time.time()
-    except:
+    except:  # noqa: E722
         logging.error("Error processing ack: %s", sys.exc_value)
 
 
 class Client(object):
     """
-        ActiveMQ client
-        Holds the connection to a broker
+    ActiveMQ client
+    Holds the connection to a broker
     """
 
-    def __init__(self, brokers, user, passcode,
-                 queues=None, consumer_name="amq_consumer"):
+    def __init__(
+        self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"
+    ):
         """
-            @param brokers: list of brokers we can connect to
-            @param user: activemq user
-            @param passcode: passcode for activemq user
-            @param queues: list of queues to listen to
-            @param consumer_name: name of the AMQ listener
+        @param brokers: list of brokers we can connect to
+        @param user: activemq user
+        @param passcode: passcode for activemq user
+        @param queues: list of queues to listen to
+        @param consumer_name: name of the AMQ listener
         """
         self._brokers = brokers
         self._user = user
@@ -112,9 +117,9 @@ class Client(object):
 
     def set_listener(self, listener):
         """
-            Set the listener object that will process each
-            incoming message.
-            @param listener: listener object
+        Set the listener object that will process each
+        incoming message.
+        @param listener: listener object
         """
         self._listener = listener
         self._connection = self.get_connection()
@@ -122,8 +127,8 @@ class Client(object):
 
     def get_connection(self):
         """
-            Establish and return a connection to ActiveMQ
-            @param listener: listener object
+        Establish and return a connection to ActiveMQ
+        @param listener: listener object
         """
         logging.info("[%s] Connecting to %s", self._consumer_name, str(self._brokers))
         conn = stomp.Connection(host_and_ports=self._brokers)
@@ -136,7 +141,7 @@ class Client(object):
 
     def connect(self):
         """
-            Connect to a broker
+        Connect to a broker
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
@@ -144,11 +149,11 @@ class Client(object):
 
         logging.info("[%s] Subscribing to %s", self._consumer_name, str(self._queues))
         for i, q in enumerate(self._queues):
-            self._connection.subscribe(destination=q, id=i, ack='client')
+            self._connection.subscribe(destination=q, id=i, ack="client")
 
     def _disconnect(self):
         """
-            Clean disconnect
+        Clean disconnect
         """
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
@@ -156,7 +161,7 @@ class Client(object):
 
     def stop(self):
         """
-            Disconnect and stop the client
+        Disconnect and stop the client
         """
         self._disconnect()
         if self._connection is not None:
@@ -165,13 +170,13 @@ class Client(object):
 
     def listen_and_wait(self):
         """
-            Listen for the next message from the brokers.
-            This method will simply return once the connection is
-            terminated.
+        Listen for the next message from the brokers.
+        This method will simply return once the connection is
+        terminated.
         """
         try:
             self.connect()
-        except:
+        except:  # noqa: E722
             logging.error("Problem starting AMQ client: %s", sys.exc_value)
 
         last_heartbeat = 0
@@ -185,24 +190,27 @@ class Client(object):
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
                             from settings import PING_TOPIC, ACK_TOPIC
-                            payload = {"reply_to": ACK_TOPIC,
-                                       "src_name": "looper",
-                                       "request_time": time.time()}
+
+                            payload = {
+                                "reply_to": ACK_TOPIC,
+                                "src_name": "looper",
+                                "request_time": time.time(),
+                            }
                             self.send(PING_TOPIC, json.dumps(payload))
                             process_ack()
                         else:
                             logging.error("settings.PING_TOPIC is not defined")
-                except:
+                except:  # noqa: E722
                     logging.error("Problem writing heartbeat %s", sys.exc_value)
-            except:
+            except:  # noqa: E722
                 logging.error("Problem connecting to AMQ broker %s", sys.exc_value)
                 time.sleep(5.0)
 
-    def send(self, destination, message, persistent='false'):
+    def send(self, destination, message, persistent="false"):
         """
-            Send a message to a queue
-            @param destination: name of the queue
-            @param message: message content
+        Send a message to a queue
+        @param destination: name of the queue
+        @param message: message content
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()

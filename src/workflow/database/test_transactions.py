@@ -4,25 +4,37 @@ import json
 from django.test import TestCase
 
 from workflow.database import transactions
-from workflow.database.report.models import DataRun, Instrument, IPTS, \
-    RunStatus, StatusQueue, Task, WorkflowSummary
+from workflow.database.report.models import (
+    DataRun,
+    Instrument,
+    IPTS,
+    RunStatus,
+    StatusQueue,
+    Task,
+    WorkflowSummary,
+)
 
 
 class TransactionsTest(TestCase):
 
-    data_dict = {"instrument": "HYSA",
-                 "facility": "SNS",
-                 "ipts": "IPTS-5678",
-                 "run_number": "1234",
-                 "data_file": "",
-                 "information": "test information msg",
-                 "error": "test error msg"}
+    data_dict = {
+        "instrument": "HYSA",
+        "facility": "SNS",
+        "ipts": "IPTS-5678",
+        "run_number": "1234",
+        "data_file": "",
+        "information": "test information msg",
+        "error": "test error msg",
+    }
 
-    headers = {'expires': '0', 'timestamp': '1344613053723',
-               'destination': '/queue/POSTPROCESS.DATA_READY',
-               'persistent': 'true',
-               'priority': '5',
-               'message-id': 'ID'}
+    headers = {
+        "expires": "0",
+        "timestamp": "1344613053723",
+        "destination": "/queue/POSTPROCESS.DATA_READY",
+        "persistent": "true",
+        "priority": "5",
+        "message-id": "ID",
+    }
 
     def test_add_status_entry(self):
         transactions.add_status_entry(self.headers, json.dumps(self.data_dict))
@@ -52,7 +64,9 @@ class TransactionsTest(TestCase):
         runstatus = RunStatus.objects.get_queryset()[0]
 
         self.assertIsNotNone(runstatus.last_info())
-        self.assertEqual(runstatus.last_info().description, self.data_dict["information"])
+        self.assertEqual(
+            runstatus.last_info().description, self.data_dict["information"]
+        )
 
         self.assertIsNotNone(runstatus.last_error())
         self.assertEqual(runstatus.last_error().description, self.data_dict["error"])
@@ -85,8 +99,7 @@ class TransactionsTest(TestCase):
         self.assertEqual(task["input_queue"], "POSTPROCESS.DATA_READY")
 
     def test_get_message_queues(self):
-        status_id = StatusQueue(name="POSTPROCESS.DATA_READY",
-                                is_workflow_input=True)
+        status_id = StatusQueue(name="POSTPROCESS.DATA_READY", is_workflow_input=True)
         status_id.save()
 
         header = dict(self.headers)

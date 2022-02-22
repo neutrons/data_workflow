@@ -26,15 +26,15 @@
       {% endif %}
       setInterval(poll, 10000);
   });
-  function remove_entry(id, bank_id, tube_id, pixel_id) { 
-      $(id).prop('checked', !$(id).prop('checked')); 
+  function remove_entry(id, bank_id, tube_id, pixel_id) {
+      $(id).prop('checked', !$(id).prop('checked'));
       $(bank_id).prop('disabled', $(id).prop('checked'));
       $(tube_id).prop('disabled', $(id).prop('checked'));
       $(pixel_id).prop('disabled', $(id).prop('checked'));
   }
 </script>
 {% endblock %}
-    
+
 {% block summary %}
 <div class='section_divider'>Configuring the automated reduction</div>
 <div class='narrow_section'>
@@ -53,9 +53,9 @@ Instrument team members can use this page to generate a new automated reduction 
     <tr><th>Raw vanadium</th> <td {% if options_form.raw_vanadium.errors %}class='highlight_row' title='{{ options_form.raw_vanadium.errors }}'{% endif %}>{{options_form.raw_vanadium }} </td></tr>
     <tr><th>Processed vanadium</th> <td {% if options_form.processed_vanadium.errors %}class='highlight_row' title='{{ options_form.processed_vanadium.errors }}'{% endif %}>{{options_form.processed_vanadium }} </td></tr>
     <tr><th>Grouping file</th> <td {% if options_form.grouping.errors %}class='highlight_row' title='{{ options_form.grouping.errors }}'{% endif %}>{{options_form.grouping }} </td></tr>
-    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td> 
-      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors }}'{% endif %}>E<sub>min</sub> {{options_form.e_min }} </span> 
-      E<sub>step</sub> {{options_form.e_step }} 
+    <tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]</span></th> <td>
+      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors }}'{% endif %}>E<sub>min</sub> {{options_form.e_min }} </span>
+      E<sub>step</sub> {{options_form.e_step }}
       E<sub>max</sub> {{options_form.e_max }} </td></tr>
   </table>
   <p>
@@ -94,10 +94,10 @@ Latest post-processing log entries for {{ instrument }}:<br><br>
 <br>
 
 <script>
-function compute_size(id) { 
+function compute_size(id) {
     if($(id).val().length > 30) {
         var len = ($(id).val().length-30)/15;
-        size = 11-Math.round(len); 
+        size = 11-Math.round(len);
         if(size >= 8) $(id).css("font-size",size + "px")
     } else $(id).css("font-size","11px");
 }

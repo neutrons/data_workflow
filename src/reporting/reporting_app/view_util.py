@@ -10,30 +10,32 @@ import logging
 
 def send_activemq_message(destination, data):
     """
-        Send an AMQ message to the workflow manager.
+    Send an AMQ message to the workflow manager.
 
-        @param destination: queue to send the request to
-        @param data: JSON data payload for the message
+    @param destination: queue to send the request to
+    @param data: JSON data payload for the message
     """
     from workflow.settings import brokers, icat_user, icat_passcode
     import stomp
+
     conn = stomp.Connection(host_and_ports=brokers)
     conn.connect(icat_user, icat_passcode, wait=True)
-    conn.send(destination, data, persistent='true')
+    conn.send(destination, data, persistent="true")
     conn.disconnect()
 
 
 def reduction_setup_url(instrument):
     """
-        Check whether the reduction app is installed, and if so
-        return a URL for the reduction setup if it's enabled
-        for the given instrument
-        @param instrument: instrument name
+    Check whether the reduction app is installed, and if so
+    return a URL for the reduction setup if it's enabled
+    for the given instrument
+    @param instrument: instrument name
     """
     try:
-        if 'reduction' in settings.INSTALLED_APPS:
+        if "reduction" in settings.INSTALLED_APPS:
             import reduction.view_util
+
             return reduction.view_util.reduction_setup_url(instrument)
-    except:
+    except:  # noqa: E722
         logging.error("Error getting reduction setup url: %s", sys.exc_info()[1])
     return None

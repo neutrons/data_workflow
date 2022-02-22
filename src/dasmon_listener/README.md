@@ -26,7 +26,7 @@ that contains the ActiveMQ credentials, the topics to listent to, and the instru
 
 		PURGE_TIMEOUT = 7
 
-	
+
 	The `PURGE_TIMEOUT` parameter is the number of days after which key-value pairs will be removed from the database.
 
 
@@ -35,10 +35,9 @@ executing `make install`.
 
 - The setup.py script will not only install the `dasmon_listener` module, but will
 also create a script named `dasmon_listener` at a location where it can be
-used by all users.  
+used by all users.
 In the event that the `dasmon_listener` script is not installed on the
-system path, you can use the `--install-scripts` option when running 
+system path, you can use the `--install-scripts` option when running
 the installation script:
- 
+
         python setup_dasmon_listener.py install --install-scripts /usr/local/bin
- 

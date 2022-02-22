@@ -3,7 +3,7 @@
     fill: none;
     stroke: #555;
     shape-rendering: crispEdges; }
-  
+
 .axis text,
 text,
 .tooltip {
@@ -42,12 +42,12 @@ text,
     padding: 0.5em;
 }
 #plot_anchor h3{
-    text-align: center; 
+    text-align: center;
     margin: 0;
 }
 
-.default_1d { 
-    margin: 5px 5px 5px 5px; 
+.default_1d {
+    margin: 5px 5px 5px 5px;
     padding-right: 5px;
     /* padding: 50px 50px 50px 50px; */
 }
@@ -75,17 +75,16 @@ text,
     font-size:1em;
 }
 
-.plot_refresh { 
+.plot_refresh {
     padding: 1px 0;
     position: absolute;
     right: 10px;
     bottom: 10px;
 }
 
-.upper_right_link { 
+.upper_right_link {
     padding: 1px 5px;
     position: absolute;
     right: 10px;
     top: 10px;
 }
-

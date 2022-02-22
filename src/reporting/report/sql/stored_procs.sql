@@ -11,7 +11,7 @@ BEGIN
   SELECT MAX(TIMESTAMP) AS TIME, COUNT(*)
   FROM report_error t
     INNER JOIN (
-      SELECT 
+      SELECT
         TRUNC(EXTRACT(EPOCH FROM report_runstatus.created_on-LOCALTIMESTAMP)/3600) AS TIMESTAMP, report_error.id
       FROM report_error
       INNER JOIN report_runstatus
@@ -19,7 +19,7 @@ BEGIN
       INNER JOIN report_datarun
       ON report_runstatus.run_id_id=report_datarun.id
       WHERE
-        (report_datarun.instrument_id_id = instrument_id AND 
+        (report_datarun.instrument_id_id = instrument_id AND
         report_runstatus.created_on >= LOCALTIMESTAMP-INTERVAL '1 DAY')
     ) m ON t.id = m.id
     GROUP BY timestamp;
@@ -45,10 +45,10 @@ BEGIN
   SELECT MAX(TIMESTAMP) AS TIME, COUNT(*)
   FROM report_datarun t
     INNER JOIN (
-      SELECT 
+      SELECT
         TRUNC(EXTRACT(EPOCH FROM report_datarun.created_on-LOCALTIMESTAMP)/3600) AS TIMESTAMP, report_datarun.id
-      FROM report_datarun 
-      WHERE 
+      FROM report_datarun
+      WHERE
         (report_datarun.instrument_id_id = instrument_id AND report_datarun.created_on >= LOCALTIMESTAMP-INTERVAL '1 DAY' )
     ) m ON t.id = m.id
     GROUP BY timestamp;
@@ -58,4 +58,3 @@ END;$BODY$
   COST 100;
 ALTER FUNCTION run_rate(bigint)
   OWNER TO postgres;
-

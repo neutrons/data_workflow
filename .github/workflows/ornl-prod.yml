@@ -1,5 +1,5 @@
 name: Trigger ORNL Production Pipeline
-on: 
+on:
   push:
     branches:
       - master

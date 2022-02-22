@@ -18,7 +18,7 @@
   function poll(){
       $.ajax({ url: "{% url 'reduction:configuration_update' instrument %}?since="+last_action, success: function(data) {
           if (data.refresh_needed.localeCompare('1')==0) {
-              for (var i=0;i<data.actions.length;i++) { 
+              for (var i=0;i<data.actions.length;i++) {
                   action_records.push({'info': data.actions[i].info, 'time': data.actions[i].time, 'timestamp': data.actions[i].timestamp});
               }
               last_action = data.last_action_time;
@@ -54,7 +54,7 @@
       setInterval(poll, 10000);
   });
   function update(data) {
-    for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++) { 
+    for (i = 0; i < dynatable.settings.dataset.originalRecords.length; i++) {
         if (dynatable.settings.dataset.originalRecords[i].key == data.key.value) {
             dynatable.settings.dataset.originalRecords[i].value = "<form action='javascript:void(0);' onsubmit='update(this);'><input type='hidden' name='key' value='"+data.key.value+"'><input type='text' name='value' value='"+data.value.value+"'></form>";
             dynatable.settings.dataset.originalRecords[i].raw_value = data.value.value;
@@ -67,7 +67,7 @@
   function check_new_script() { $("#params_table input").removeAttr("disabled"); default_requested = 0;}
 </script>
 {% endblock %}
-    
+
 {% block summary %}
 <div class='section_divider'>Configuring the automated reduction</div>
 <div class='narrow_section'>
@@ -77,7 +77,7 @@ Instrument team members can use this page to generate a new automated reduction 
 <li>A script template must be placed in <i>/SNS/{{ instrument }}/shared/autoreduce/reduce_{{ instrument }}.py.template</i></li>
 <li>Review the parameters below and modify as needed. Hit enter to apply your changes before clicking the submit button.</li>
 <li>The <i>reduce_{{ instrument }}.py</i> will automatically be overwritten once you click the submit button.</li>
-<li>Make sure <b>all</b> your template properties appear below: if not, contact 
+<li>Make sure <b>all</b> your template properties appear below: if not, contact
 <a href="mailto:{{ helpline }}" target="_top">{{ helpline }}</a>.</li>
 </ul>
 
