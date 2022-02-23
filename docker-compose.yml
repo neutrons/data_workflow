@@ -74,6 +74,14 @@ services:
     depends_on:
       - activemq
 
+  amq_test_gen:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.amq_test_gen
+    depends_on:
+      - activemq
+
 volumes:
   web-django:
   web-static:
