@@ -57,14 +57,10 @@ class Listener(stomp.ConnectionListener):
         # Execute the appropriate action
         try:
             connection = self._get_connection()
-            action = states.StateAction(
-                connection=connection, use_db_task=self._use_db_tasks
-            )
+            action = states.StateAction(connection=connection, use_db_task=self._use_db_tasks)
             action(headers, message)
         except:  # noqa: E722
-            logging.error(
-                "Listener failed to process message: %s", str(sys.exc_info()[1])
-            )
+            logging.error("Listener failed to process message: %s", str(sys.exc_info()[1]))
             logging.error("  Message: %s: %s", headers["destination"], str(message))
         if not self._auto_ack:
             connection.ack(headers["message-id"], headers["subscription"])
@@ -80,13 +76,8 @@ class Listener(stomp.ConnectionListener):
         Create a connection for sending messages, or return the existing
         one if we already created one
         """
-        if (
-            self._send_connection is None
-            or self._send_connection.is_connected() is False
-        ):
-            logging.info(
-                "[workflow_send_connection] Attempting to connect to ActiveMQ broker"
-            )
+        if self._send_connection is None or self._send_connection.is_connected() is False:
+            logging.info("[workflow_send_connection] Attempting to connect to ActiveMQ broker")
             conn = stomp.Connection(host_and_ports=self._brokers, keepalive=True)
             conn.connect(self._user, self._passcode, wait=True)
             self._send_connection = conn

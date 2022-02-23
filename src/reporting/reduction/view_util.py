@@ -46,9 +46,7 @@ def store_property(instrument_id, key, value, user=None):
     elif len(props) > 1:
         logging.error("store_property: more than one property named %s", key)
     else:
-        changed_prop = ReductionProperty(
-            instrument=instrument_id, key=str(key), value=str(value)
-        )
+        changed_prop = ReductionProperty(instrument=instrument_id, key=str(key), value=str(value))
         changed_prop.save()
     if user is not None and changed_prop is not None:
         modif = PropertyModification(property=changed_prop, value=value, user=user)
@@ -106,7 +104,5 @@ def send_template_request(instrument_id, template_dict, user="unknown"):
         "information": "Requested by %s" % user,
     }
     data = json.dumps(data_dict)
-    reporting_app.view_util.send_activemq_message(
-        settings.REDUCTION_SCRIPT_CREATION_QUEUE, data
-    )
+    reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
     logging.info("Reduction script requested: %s", str(data))

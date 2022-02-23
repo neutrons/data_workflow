@@ -79,14 +79,11 @@ class Client:
         startup_msg += "  DB task definition allowed? %s\n" % str(self._flexible_tasks)
         startup_msg += "  Workflow check enabled? %s\n" % str(self._workflow_check)
         if self._workflow_check:
-            startup_msg += "  Time between checks: %s seconds\n" % str(
-                self._workflow_check_delay
-            )
+            startup_msg += "  Time between checks: %s seconds\n" % str(self._workflow_check_delay)
             startup_msg += "  Recovery enabled?    %s\n" % str(self._workflow_recovery)
             if self._workflow_recovery:
-                startup_msg += (
-                    "  Delay since last activity before attempting recovery: %s seconds\n"
-                    % str(self._workflow_check_delay)
+                startup_msg += "  Delay since last activity before attempting recovery: %s seconds\n" % str(
+                    self._workflow_check_delay
                 )
         logging.info(startup_msg)
 
@@ -201,10 +198,7 @@ class Client:
                     logging.error("Problem sending heartbeat: %s", sys.exc_info()[1])
 
                 # Check for workflow completion
-                if (
-                    time.time() - self._workflow_check_start
-                    > self._workflow_check_delay
-                ):
+                if time.time() - self._workflow_check_start > self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
             except:  # noqa: E722

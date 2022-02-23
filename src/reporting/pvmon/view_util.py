@@ -62,9 +62,7 @@ def get_live_variables(request, instrument_id, key_id=None):
         key = str(key_id.name)
         try:
             data_list = []
-            values = PV.objects.filter(
-                instrument_id=instrument_id, name=key_id, update_time__gte=two_hours
-            )
+            values = PV.objects.filter(instrument_id=instrument_id, name=key_id, update_time__gte=two_hours)
             if len(values) > 0:
                 values = values.order_by("update_time").reverse()
             # If you don't have any values for the past 2 hours, just show
@@ -74,9 +72,7 @@ def get_live_variables(request, instrument_id, key_id=None):
                 if len(values) > 0:
                     values = values.order_by("update_time").reverse()
                 else:
-                    latest_entry = PVCache.objects.filter(
-                        instrument=instrument_id, name=key_id
-                    )
+                    latest_entry = PVCache.objects.filter(instrument=instrument_id, name=key_id)
                     if len(latest_entry) > 0:
                         latest_entry = latest_entry.latest("update_time")
                         delta_t = now - latest_entry.update_time
@@ -118,9 +114,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
         """
         for kvp in queryset:
             if kvp.name.monitored or monitored_only is False:
-                localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(
-                    tzinfo=timezone.utc
-                )
+                localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
                 df = dateformat.DateFormat(localtime)
                 if isinstance(kvp.value, (int, float)):
                     string_value = "%g" % kvp.value

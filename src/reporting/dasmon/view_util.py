@@ -51,9 +51,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
     @param instrument_id: Instrument object
     @param monitored_only: if True, only monitored parameters are returned
     """
-    parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by(
-        "key_id__name"
-    )
+    parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
     # Variables that are displayed on top
     top_variables = ["run_number", "proposal_id", "run_title"]
     key_value_pairs = []
@@ -118,14 +116,10 @@ def get_latest(instrument_id, key_id):
     """
     # First get it from the cache
     try:
-        last_value = StatusCache.objects.filter(
-            instrument_id=instrument_id, key_id=key_id
-        ).latest("timestamp")
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
     except:  # noqa: E722
         # If that didn't work, get it from the table of values
-        values = StatusVariable.objects.filter(
-            instrument_id=instrument_id, key_id=key_id
-        )
+        values = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id)
         # If we don't have any entry yet, just return Non
         if len(values) == 0:
             return None
@@ -153,9 +147,7 @@ def is_running(instrument_id):
         if not ActiveInstrument.objects.is_adara(instrument_id):
             return "-"
     except:  # noqa: E722
-        logging.error(
-            "Could not determine whether %s is running ADARA", str(instrument_id)
-        )
+        logging.error("Could not determine whether %s is running ADARA", str(instrument_id))
     try:
         is_recording = False
         key_id = Parameter.objects.get(name="recording")
@@ -183,9 +175,7 @@ def is_running(instrument_id):
         else:
             return "Stopped"
     except:  # noqa: E722
-        logging.error(
-            "Could not determine running condition: %s", str(sys.exc_info()[1])
-        )
+        logging.error("Could not determine running condition: %s", str(sys.exc_info()[1]))
     return "Unknown"
 
 
@@ -217,9 +207,7 @@ def fill_template_values(request, **template_args):
     instrument_id = get_object_or_404(Instrument, name=instr)
 
     # Check whether the user is part of the instrument team
-    template_args["is_instrument_staff"] = users.view_util.is_instrument_staff(
-        request, instrument_id
-    )
+    template_args["is_instrument_staff"] = users.view_util.is_instrument_staff(request, instrument_id)
 
     # Are we currently running ADARA on this instrument?
     is_adara = ActiveInstrument.objects.is_adara(instrument_id)
@@ -249,9 +237,7 @@ def fill_template_values(request, **template_args):
         template_args["run_number"] = _find_value(instrument_id, "run_number")
         template_args["count_rate"] = _find_value(instrument_id, "count_rate")
         template_args["proposal_id"] = _find_value(instrument_id, "proposal_id")
-        template_args["run_title"] = _find_value(
-            instrument_id, "run_title", "", prune=True
-        )
+        template_args["run_title"] = _find_value(instrument_id, "run_title", "", prune=True)
 
     return template_args
 
@@ -315,9 +301,7 @@ def get_live_variables(request, instrument_id):
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values) == 0:
-                values = StatusVariable.objects.filter(
-                    instrument_id=instrument_id, key_id=key_id
-                )
+                values = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id)
                 if len(values) > 0:
                     values = values.order_by(settings.DASMON_SQL_SORT).reverse()
                 else:
@@ -345,19 +329,13 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
     pvsd_status = -1
     pvstreamer_status = -1
     if ActiveInstrument.objects.has_pvsd(instrument_id):
-        pvsd_status = get_component_status(
-            instrument_id, red_timeout, yellow_timeout, process="pvsd"
-        )
+        pvsd_status = get_component_status(instrument_id, red_timeout, yellow_timeout, process="pvsd")
     if ActiveInstrument.objects.has_pvstreamer(instrument_id):
-        pvstreamer_status = get_component_status(
-            instrument_id, red_timeout, yellow_timeout, process="pvstreamer"
-        )
+        pvstreamer_status = get_component_status(instrument_id, red_timeout, yellow_timeout, process="pvstreamer")
     return max(pvstreamer_status, pvsd_status)
 
 
-def get_component_status(
-    instrument_id, red_timeout=1, yellow_timeout=None, process="dasmon"
-):
+def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, process="dasmon"):
     """
     Get the health status of an ADARA component
     @param red_timeout: number of hours before declaring a process dead
@@ -373,9 +351,7 @@ def get_component_status(
             return -1
 
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + process)
-        last_value = StatusCache.objects.filter(
-            instrument_id=instrument_id, key_id=key_id
-        ).latest("timestamp")
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
         # Check the status value
         #    STATUS_OK = 0
         #    STATUS_FAULT = 1
@@ -385,9 +361,7 @@ def get_component_status(
             logging.error("%s status = %s", process, last_value.value)
             return 2
     except:  # noqa: E722
-        logging.debug(
-            "No cached status for %s on instrument %s", process, instrument_id.name
-        )
+        logging.debug("No cached status for %s on instrument %s", process, instrument_id.name)
         return 2
 
     if timezone.now() - last_value.timestamp > delta_long:
@@ -412,12 +386,8 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
 
     try:
         common_services = Instrument.objects.get(name="common")
-        key_id = Parameter.objects.get(
-            name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr"
-        )
-        last_value = StatusCache.objects.filter(
-            instrument_id=common_services, key_id=key_id
-        ).latest("timestamp")
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr")
+        last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest("timestamp")
         if int(last_value.value) > 0:
             logging.error("WorkflowMgr status = %s", last_value.value)
             return 2
@@ -447,18 +417,12 @@ def workflow_diagnostics(timeout=None):
 
     # Recent reported status
     status_value = -1
-    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     common_services = None
     try:
         common_services = Instrument.objects.get(name="common")
-        key_id = Parameter.objects.get(
-            name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr"
-        )
-        last_value = StatusCache.objects.filter(
-            instrument_id=common_services, key_id=key_id
-        ).latest("timestamp")
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr")
+        last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest("timestamp")
         status_value = int(last_value.value)
         try:
             status_time = timezone.localtime(last_value.timestamp)
@@ -472,38 +436,30 @@ def workflow_diagnostics(timeout=None):
     # Determine the number of workflow manager processes running
     process_list = []
     try:
-        key_id = Parameter.objects.get(
-            name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr_pid"
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr_pid")
+        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by(
+            "-timestamp"
         )
-        last_values = StatusVariable.objects.filter(
-            instrument_id=common_services, key_id=key_id
-        ).order_by("-timestamp")
         pid_list = []
         for item in last_values:
             if item.value not in pid_list:
                 pid_list.append(item.value)
-                process_list.append(
-                    {"pid": item.value, "time": timezone.localtime(item.timestamp)}
-                )
+                process_list.append({"pid": item.value, "time": timezone.localtime(item.timestamp)})
     except:  # noqa: E722
         logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
 
     dasmon_listener_list = []
     try:
-        key_id = Parameter.objects.get(
-            name=settings.SYSTEM_STATUS_PREFIX + "dasmon_listener_pid"
+        key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "dasmon_listener_pid")
+        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by(
+            "-timestamp"
         )
-        last_values = StatusVariable.objects.filter(
-            instrument_id=common_services, key_id=key_id
-        ).order_by("-timestamp")
         pid_list = []
         for item in last_values:
             if item.value not in pid_list:
                 pid_list.append(item.value)
 
-                dasmon_listener_list.append(
-                    {"pid": item.value, "time": timezone.localtime(item.timestamp)}
-                )
+                dasmon_listener_list.append({"pid": item.value, "time": timezone.localtime(item.timestamp)})
     except:  # noqa: E722
         logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
 
@@ -523,24 +479,17 @@ def workflow_diagnostics(timeout=None):
             "No heartbeat since %s: %s"
             % (
                 df.format(settings.DATETIME_FORMAT),
-                _red_message(
-                    "contact the Neutron Data Sciences Group or Linux Support"
-                ),
+                _red_message("contact the Neutron Data Sciences Group or Linux Support"),
             )
         )
 
     # Status
     if status_value > 0:
         labels = ["OK", "Fault", "Unresponsive", "Inactive"]
-        wf_conditions.append(
-            "WorkflowMgr reports a status of %s [%s]"
-            % (status_value, labels[status_value])
-        )
+        wf_conditions.append("WorkflowMgr reports a status of %s [%s]" % (status_value, labels[status_value]))
 
     if status_value < 0:
-        wf_conditions.append(
-            "The web monitor has not heard from WorkflowMgr in a long time: no data available"
-        )
+        wf_conditions.append("The web monitor has not heard from WorkflowMgr in a long time: no data available")
 
     wf_diag["status"] = status_value
     wf_diag["status_time"] = status_time
@@ -572,20 +521,15 @@ def postprocessing_diagnostics(timeout=None):
                 if item.name.startswith(settings.SYSTEM_STATUS_PREFIX + node_prefix):
                     try:
                         if item.name.endswith("_pid"):
-                            last_value = StatusCache.objects.filter(
-                                instrument_id=common_services, key_id=item
-                            ).latest("timestamp")
+                            last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest(
+                                "timestamp"
+                            )
                             nodes.append(
                                 {
                                     "node": "%s PID %s"
                                     % (
                                         item.name[
-                                            len(
-                                                settings.SYSTEM_STATUS_PREFIX
-                                            ) : len(  # noqa E203
-                                                item.name
-                                            )
-                                            - 4
+                                            len(settings.SYSTEM_STATUS_PREFIX) : len(item.name) - 4  # noqa E203
                                         ],
                                         last_value.value,
                                     ),
@@ -593,25 +537,19 @@ def postprocessing_diagnostics(timeout=None):
                                 }
                             )
                         else:
-                            last_value = StatusCache.objects.filter(
-                                instrument_id=common_services, key_id=item
-                            ).latest("timestamp")
+                            last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest(
+                                "timestamp"
+                            )
                             nodes.append(
                                 {
-                                    "node": item.name[
-                                        len(
-                                            settings.SYSTEM_STATUS_PREFIX
-                                        ) :  # noqa E203
-                                    ],
+                                    "node": item.name[len(settings.SYSTEM_STATUS_PREFIX) :],  # noqa E203
                                     "time": timezone.localtime(last_value.timestamp),
                                 }
                             )
                     except:  # noqa: E722
                         nodes.append(
                             {
-                                "node": item.name[
-                                    len(settings.SYSTEM_STATUS_PREFIX) :  # noqa: E203
-                                ],  # noqa E203
+                                "node": item.name[len(settings.SYSTEM_STATUS_PREFIX) :],  # noqa: E203  # noqa E203
                                 "time": "No heartbeat - contact the Neutron Data Sciences Group",
                             }
                         )
@@ -622,20 +560,16 @@ def postprocessing_diagnostics(timeout=None):
 
     post_processing = report.view_util.get_post_processing_status()
     if post_processing["catalog"] == 1:
-        red_conditions.append(
-            "The cataloging was slow in responding to latest requests"
-        )
+        red_conditions.append("The cataloging was slow in responding to latest requests")
     elif post_processing["catalog"] > 1:
         red_conditions.append(
-            "The cataloging is not processing files: %s"
-            % _red_message("contact the Neutron Data Sciences Group")
+            "The cataloging is not processing files: %s" % _red_message("contact the Neutron Data Sciences Group")
         )
     if post_processing["reduction"] == 1:
         red_conditions.append("The reduction was slow in responding to latest requests")
     elif post_processing["reduction"] > 1:
         red_conditions.append(
-            "The reduction is not processing files: %s"
-            % _red_message("contact the Neutron Data Sciences Group")
+            "The reduction is not processing files: %s" % _red_message("contact the Neutron Data Sciences Group")
         )
 
     red_diag["catalog_status"] = post_processing["catalog"]
@@ -662,14 +596,10 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
 
     # Recent PVStreamer reported status
     status_value = -1
-    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + process)
-        last_value = StatusCache.objects.filter(
-            instrument_id=instrument_id, key_id=key_id
-        ).latest("timestamp")
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
         status_value = int(last_value.value)
         try:
             status_time = timezone.localtime(last_value.timestamp)
@@ -699,16 +629,10 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
     # Status
     if status_value > 0:
         labels = ["OK", "Fault", "Unresponsive", "Inactive"]
-        pv_conditions.append(
-            "%s reports a status of %s [%s]"
-            % (process, status_value, labels[status_value])
-        )
+        pv_conditions.append("%s reports a status of %s [%s]" % (process, status_value, labels[status_value]))
 
     if status_value < 0:
-        pv_conditions.append(
-            "The web monitor has not heard from %s in a long time: no data available"
-            % process
-        )
+        pv_conditions.append("The web monitor has not heard from %s in a long time: no data available" % process)
 
     pv_diag["status"] = status_value
     pv_diag["status_time"] = status_time
@@ -730,14 +654,10 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     dasmon_diag = {}
     # Recent reported status
     status_value = -1
-    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    status_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "dasmon")
-        last_value = StatusCache.objects.filter(
-            instrument_id=instrument_id, key_id=key_id
-        ).latest("timestamp")
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
         status_value = int(last_value.value)
         try:
             status_time = timezone.localtime(last_value.timestamp)
@@ -748,9 +668,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Recent PVs, which come from DASMON straight to the DB
-    last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     last_pv_timestamp = 0
     try:
         latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
@@ -763,13 +681,9 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
 
     # Recent AMQ messages
-    last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     try:
-        latest = StatusCache.objects.filter(instrument_id=instrument_id).latest(
-            "timestamp"
-        )
+        latest = StatusCache.objects.filter(instrument_id=instrument_id).latest("timestamp")
         try:
             last_amq_time = timezone.localtime(latest.timestamp)
         except:  # noqa: E722
@@ -789,10 +703,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     # Recent PVs
     if time.time() - last_pv_timestamp > timeout:
         slow_pvs = True
-        dasmon_conditions.append(
-            "No PV updates in the past %s seconds"
-            % str(time.time() - last_pv_timestamp)
-        )
+        dasmon_conditions.append("No PV updates in the past %s seconds" % str(time.time() - last_pv_timestamp))
 
     # Recent AMQ
     try:
@@ -802,10 +713,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     if dt > delay_time:
         slow_amq = True
         df = dateformat.DateFormat(last_amq_time)
-        dasmon_conditions.append(
-            "No ActiveMQ updates from DASMON since %s"
-            % df.format(settings.DATETIME_FORMAT)
-        )
+        dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % df.format(settings.DATETIME_FORMAT))
 
     # Heartbeat
     try:
@@ -826,19 +734,14 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     # Status
     if status_value > 0:
         labels = ["OK", "Fault", "Unresponsive", "Inactive"]
-        dasmon_conditions.append(
-            "DASMON reports a status of %s [%s]" % (status_value, labels[status_value])
-        )
+        dasmon_conditions.append("DASMON reports a status of %s [%s]" % (status_value, labels[status_value]))
 
     if status_value < 0:
-        dasmon_conditions.append(
-            "The web monitor has not heard from DASMON in a long time: no data available"
-        )
+        dasmon_conditions.append("The web monitor has not heard from DASMON in a long time: no data available")
 
     if slow_status and slow_pvs and slow_amq:
         dasmon_conditions.append(
-            "DASMON may be down:  %s"
-            % _red_message("ask Linux Support or DAS to restart DASMON")
+            "DASMON may be down:  %s" % _red_message("ask Linux Support or DAS to restart DASMON")
         )
 
     if slow_pvs and not slow_status and not slow_amq:
@@ -973,18 +876,12 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 )
             elif instrument_id is not None:
                 run_list = (
-                    DataRun.objects.filter(
-                        instrument_id=instrument_id, id__gte=complete_since
-                    )
+                    DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since)
                     .order_by("created_on")
                     .reverse()
                 )
             else:
-                run_list = (
-                    DataRun.objects.filter(id__gte=complete_since)
-                    .order_by("created_on")
-                    .reverse()
-                )
+                run_list = DataRun.objects.filter(id__gte=complete_since).order_by("created_on").reverse()
         except:  # noqa: E722
             # Invalid value for complete_since
             logging.error("get_live_runs_update: %s", str(sys.exc_info()[1]))
@@ -1017,13 +914,9 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                     "timestamp": df.format(settings.DATETIME_FORMAT),
                     "last_error": status,
                     "run_id": r.id,
-                    "reduce_url": (
-                        "<a id='reduce_%s' href='javascript:void(0);'" % r.run_number
-                    )
+                    "reduce_url": ("<a id='reduce_%s' href='javascript:void(0);'" % r.run_number)
                     + (' onClick=\'$.ajax({ url: "%s", cache: false });' % reduce_url)
-                    + (
-                        ' $("#reduce_%s").remove();\'>reduce</a>' % r.run_number
-                    ),  # noqa: E501
+                    + (' $("#reduce_%s").remove();\'>reduce</a>' % r.run_number),  # noqa: E501
                     "instrument_id": str(r.instrument_id),
                 }
                 update_list.append(expt_dict)
@@ -1051,18 +944,12 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
         oldest_time = timezone.now() - delta_time
         if instrument_id is not None:
             runs = (
-                DataRun.objects.filter(
-                    instrument_id=instrument_id, created_on__gte=oldest_time
-                )
+                DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=oldest_time)
                 .order_by("created_on")
                 .reverse()
             )
         else:
-            runs = (
-                DataRun.objects.filter(created_on__gte=oldest_time)
-                .order_by("created_on")
-                .reverse()
-            )
+            runs = DataRun.objects.filter(created_on__gte=oldest_time).order_by("created_on").reverse()
         if len(runs) == 0:
             if instrument_id is not None:
                 runs = (
@@ -1071,9 +958,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
                     .reverse()[:number_of_entries]
                 )
             else:
-                runs = DataRun.objects.order_by("created_on").reverse()[
-                    :number_of_entries
-                ]
+                runs = DataRun.objects.order_by("created_on").reverse()[:number_of_entries]
         if len(runs) > 0:
             first_run = runs[len(runs) - 1].id
             last_run = runs[0].id
@@ -1150,9 +1035,7 @@ def get_signals(instrument_id):
             ack_url=reverse("dasmon:acknowledge_signal", args=[instrument_id, sig.id]),
         )
         try:
-            monitored = MonitoredVariable.objects.filter(
-                instrument=instrument_id, rule_name=sig.name
-            )
+            monitored = MonitoredVariable.objects.filter(instrument=instrument_id, rule_name=sig.name)
             if len(monitored) > 0:
                 sig_entry.key = str(monitored[0].pv_name)
         except:  # noqa: E722
@@ -1166,32 +1049,22 @@ def get_signals(instrument_id):
         monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
         for item in monitored:
             try:
-                latests = PVCache.objects.filter(
-                    instrument=instrument_id, name=item.pv_name
-                )
+                latests = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
                 if len(latests) == 0:
-                    latests = PVStringCache.objects.filter(
-                        instrument=instrument_id, name=item.pv_name
-                    )
+                    latests = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
                 latest = latests.latest("update_time")
                 if type(latest.value) == float:
                     value = "%g" % latest.value
                 else:
                     value = "%s" % latest.value
-                localtime = datetime.datetime.fromtimestamp(latest.update_time).replace(
-                    tzinfo=timezone.utc
-                )
+                localtime = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.utc)
                 df = dateformat.DateFormat(localtime)
                 timestamp = df.format(settings.DATETIME_FORMAT)
             except:  # noqa: E722
                 value = "No data available"
                 timestamp = "-"
-            sig_entry = SignalEntry(
-                name=item.pv_name, status=value, key=item.pv_name, assert_time=timestamp
-            )
-            data = pvmon.view_util.get_live_variables(
-                request=None, instrument_id=instrument_id, key_id=item.pv_name
-            )
+            sig_entry = SignalEntry(name=item.pv_name, status=value, key=item.pv_name, assert_time=timestamp)
+            data = pvmon.view_util.get_live_variables(request=None, instrument_id=instrument_id, key_id=item.pv_name)
             data_list = []
             try:
                 for point in data[0][1]:
@@ -1279,17 +1152,13 @@ def add_status_entry(instrument_id, message_channel, value):
     # Find the parameter used to report updates
     try:
         key_id = Parameter.objects.get(name=message_channel)
-        update = StatusVariable(
-            instrument_id=instrument_id, key_id=key_id, value=str(value)
-        )
+        update = StatusVariable(instrument_id=instrument_id, key_id=key_id, value=str(value))
         update.save()
     except:  # noqa: E722
         logging.error("add_status_entry: could add parameter for %s", message_channel)
 
 
-def get_latest_updates(
-    instrument_id, message_channel, timeframe=2.0, number_of_entries=10, start_time=None
-):
+def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_entries=10, start_time=None):
     """
     Return a list of recent status messages received on a given channel.
 
@@ -1303,9 +1172,7 @@ def get_latest_updates(
     try:
         key_id = Parameter.objects.get(name=message_channel)
     except:  # noqa: E722
-        logging.error(
-            "get_latest_updates: could not find parameter for %s", message_channel
-        )
+        logging.error("get_latest_updates: could not find parameter for %s", message_channel)
         return []
 
     # Determine what's the oldest time stamp we'll report
@@ -1315,9 +1182,7 @@ def get_latest_updates(
         delta_time = datetime.timedelta(days=timeframe)
         oldest_time = timezone.now() - delta_time
 
-    update_list = StatusVariable.objects.filter(
-        instrument_id=instrument_id, key_id=key_id, timestamp__gt=oldest_time
-    )
+    update_list = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id, timestamp__gt=oldest_time)
 
     # If we don't have any entry in the desired time frame, return the last few
     if len(update_list) > 0:
@@ -1357,9 +1222,9 @@ def get_instruments_for_user(request):
     # Get the full list of instruments
     instrument_list = []
     for instrument_id in Instrument.objects.all().order_by("name"):
-        if not ActiveInstrument.objects.is_alive(
+        if not ActiveInstrument.objects.is_alive(instrument_id) or not ActiveInstrument.objects.is_adara(
             instrument_id
-        ) or not ActiveInstrument.objects.is_adara(instrument_id):
+        ):
             continue
         instrument_name = str(instrument_id).upper()
 
@@ -1379,10 +1244,7 @@ def get_instruments_for_user(request):
         try:
             if request.user is not None and hasattr(request.user, "ldap_user"):
                 groups = request.user.ldap_user.group_names
-                if (
-                    "sns_%s_team" % instrument_name.lower() in groups
-                    or "snsadmin" in groups
-                ):
+                if "sns_%s_team" % instrument_name.lower() in groups or "snsadmin" in groups:
                     instrument_list.append(instrument_name)
         except:  # noqa: E722
             # Couldn't find the user in the instrument LDAP group

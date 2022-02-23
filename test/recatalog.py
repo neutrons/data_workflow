@@ -14,8 +14,7 @@ def find_runs(instrument, ipts, run_min, run_max, legacy=False):
         )
         if not legacy:
             os.system(
-                "python simple_producer.py -b %s -i %s -r %s -d %s --catalog"
-                % (instrument.upper(), ipts, r, filepath)
+                "python simple_producer.py -b %s -i %s -r %s -d %s --catalog" % (instrument.upper(), ipts, r, filepath)
             )
             os.system(
                 "python simple_producer.py -b %s -i %s -r %s -d %s --reduction_catalog"

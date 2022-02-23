@@ -7,11 +7,7 @@ class InstrumentManager(models.Manager):
         """
         Get the object associated to an instrument name
         """
-        instrument_ids = (
-            super(InstrumentManager, self)
-            .get_queryset()
-            .filter(name=instrument.lower())
-        )
+        instrument_ids = super(InstrumentManager, self).get_queryset().filter(name=instrument.lower())
         if len(instrument_ids) > 0:
             return instrument_ids[0]
         return None
@@ -27,10 +23,7 @@ class InstrumentManager(models.Manager):
             sql += "VALUES (%d, " % item.id
             sql += "'%s');\n" % item.name
 
-        sql += (
-            "SELECT pg_catalog.setval('report_instrument_id_seq', %d, true);\n"
-            % max_instr_id
-        )
+        sql += "SELECT pg_catalog.setval('report_instrument_id_seq', %d, true);\n" % max_instr_id
 
         return sql
 
@@ -69,11 +62,7 @@ class IPTSManager(models.Manager):
         @param instrument_id: Instrument object
         """
         ipts_query = (
-            super(IPTSManager, self)
-            .get_queryset()
-            .filter(instruments=instrument_id)
-            .order_by("created_on")
-            .reverse()
+            super(IPTSManager, self).get_queryset().filter(instruments=instrument_id).order_by("created_on").reverse()
         )
         if len(ipts_query) > 0:
             return ipts_query[0]
@@ -105,11 +94,7 @@ class IPTS(models.Model):
         """
         if instrument_id is None:
             return DataRun.objects.filter(ipts_id=self).distinct().count()
-        return (
-            DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id)
-            .distinct()
-            .count()
-        )
+        return DataRun.objects.filter(ipts_id=self, instrument_id=instrument_id).distinct().count()
 
 
 class DataRunManager(models.Manager):
@@ -121,16 +106,10 @@ class DataRunManager(models.Manager):
         @param ipts_id: IPTS object
         """
         if ipts_id is None:
-            last_run_query = (
-                super(DataRunManager, self)
-                .get_queryset()
-                .filter(instrument_id=instrument_id)
-            )
+            last_run_query = super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id)
         else:
             last_run_query = (
-                super(DataRunManager, self)
-                .get_queryset()
-                .filter(instrument_id=instrument_id, ipts_id=ipts_id)
+                super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id, ipts_id=ipts_id)
             )
         if len(last_run_query) > 0:
             last_run_query = last_run_query.order_by("created_on").reverse()
@@ -151,9 +130,7 @@ class DataRunManager(models.Manager):
         except:  # noqa: E722
             last_run_id = DataRun.objects.get_last_run(instrument_id)
             if last_run_id is not None:
-                instrument = InstrumentStatus(
-                    instrument_id=instrument_id, last_run_id=last_run_id
-                )
+                instrument = InstrumentStatus(instrument_id=instrument_id, last_run_id=last_run_id)
                 instrument.save()
         return last_run_id
 
@@ -219,9 +196,7 @@ class DataRun(models.Model):
         """
         Return last error
         """
-        errors = Error.objects.filter(
-            run_status_id__run_id=self
-        )  # .order_by('-run_status_id__created_on')
+        errors = Error.objects.filter(run_status_id__run_id=self)  # .order_by('-run_status_id__created_on')
         if len(errors) > 0:
             return errors[len(errors) - 1].description
         return None
@@ -267,11 +242,7 @@ class RunStatusManager(models.Manager):
         status_ids = StatusQueue.objects.filter(name__startswith=status_description)
         if len(status_ids) > 0:
             status_id = status_ids[0]
-            return (
-                super(RunStatusManager, self)
-                .get_queryset()
-                .filter(run_id=run_id, queue_id=status_id)
-            )
+            return super(RunStatusManager, self).get_queryset().filter(run_id=run_id, queue_id=status_id)
         return []
 
     def last_timestamp(self, run_id):
@@ -279,23 +250,13 @@ class RunStatusManager(models.Manager):
         Returns the last timestamp for this run
         @param run_id: DataRun object
         """
-        timestamps = (
-            super(RunStatusManager, self)
-            .get_queryset()
-            .filter(run_id=run_id)
-            .order_by("-created_on")
-        )
+        timestamps = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by("-created_on")
         if len(timestamps) > 0:
             return timestamps[0].created_on
         return None
 
     def get_last_error(self, run_id):
-        errors = (
-            super(RunStatusManager, self)
-            .get_queryset()
-            .filter(run_id=run_id)
-            .order_by("-created_on")
-        )
+        errors = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by("-created_on")
         for item in errors:
             if item.has_errors():
                 return item.last_error()
@@ -362,9 +323,7 @@ class WorkflowSummaryManager(models.Manager):
         Get the run summary for a given DataRun object
         @param run_id: DataRun object
         """
-        run_list = (
-            super(WorkflowSummaryManager, self).get_queryset().filter(run_id=run_id)
-        )
+        run_list = super(WorkflowSummaryManager, self).get_queryset().filter(run_id=run_id)
         if len(run_list) > 0:
             return run_list[0]
         return None
@@ -437,9 +396,7 @@ class WorkflowSummary(models.Model):
 
         # Determine overall status
         if self.cataloged is True:
-            if self.reduction_needed is False or (
-                self.reduced is True and self.reduction_cataloged is True
-            ):
+            if self.reduction_needed is False or (self.reduced is True and self.reduction_cataloged is True):
                 self.complete = True
 
         self.save()
@@ -498,9 +455,7 @@ class TaskManager(models.Manager):
                 sql += "VALUES (%d, " % item.id
                 sql += "%d);\n" % q.id
 
-        sql += (
-            "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_task_id
-        )
+        sql += "SELECT pg_catalog.setval('report_task_id_seq', %d, true);\n" % max_task_id
 
         return sql
 
@@ -517,14 +472,10 @@ class Task(models.Model):
     # Python class to be instantiated and run
     task_class = models.CharField(max_length=50, null=True, blank=True)
     # Output messages to be sent
-    task_queue_ids = models.ManyToManyField(
-        StatusQueue, related_name="_task_task_queue_ids+", blank=True
-    )
+    task_queue_ids = models.ManyToManyField(StatusQueue, related_name="_task_task_queue_ids+", blank=True)
     # Expected success messages from tasks
     # Map one-to-one with task queue IDs
-    success_queue_ids = models.ManyToManyField(
-        StatusQueue, related_name="_task_success_queue_ids+", blank=True
-    )
+    success_queue_ids = models.ManyToManyField(StatusQueue, related_name="_task_success_queue_ids+", blank=True)
     objects = TaskManager()
 
     class Meta:

@@ -34,9 +34,7 @@ def perform_login(request):
         return redirect(reverse(settings.LANDING_VIEW))
     else:
         # Breadcrumbs
-        breadcrumbs = "<a href='%s'>home</a> &rsaquo; login" % reverse(
-            settings.LANDING_VIEW
-        )
+        breadcrumbs = "<a href='%s'>home</a> &rsaquo; login" % reverse(settings.LANDING_VIEW)
 
         template_values = {"breadcrumbs": breadcrumbs, "login_failure": login_failure}
         template_values = fill_template_values(request, **template_values)

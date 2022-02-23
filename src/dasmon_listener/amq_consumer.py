@@ -147,19 +147,13 @@ class Listener(stomp.ConnectionListener):
             # STS is the Streaming Translation Service, also referred to as STC.
             if "STS" in destination:
                 key_id = self.retrieve_parameter("system_sts")
-                store_and_cache(
-                    instrument, key_id, data_dict["status"], cache_only=True
-                )
+                store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
             elif "STC" in destination:
                 key_id = self.retrieve_parameter("system_stc")
-                store_and_cache(
-                    instrument, key_id, data_dict["status"], cache_only=True
-                )
+                store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
             elif "SMS" in destination:
                 key_id = self.retrieve_parameter("system_sms")
-                store_and_cache(
-                    instrument, key_id, data_dict["status"], cache_only=True
-                )
+                store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
             elif "status" in data_dict:
                 key = None
                 if "src_id" in data_dict:
@@ -172,14 +166,10 @@ class Listener(stomp.ConnectionListener):
                     if key.endswith("_0"):
                         key = key[: len(key) - 2]
                     key_id = self.retrieve_parameter(key)
-                    store_and_cache(
-                        instrument, key_id, data_dict["status"], cache_only=True
-                    )
+                    store_and_cache(instrument, key_id, data_dict["status"], cache_only=True)
                     if "pid" in data_dict:
                         key_id = self.retrieve_parameter("%s_pid" % key)
-                        store_and_cache(
-                            instrument, key_id, data_dict["pid"], cache_only=True
-                        )
+                        store_and_cache(instrument, key_id, data_dict["pid"], cache_only=True)
 
         # Process signals
         elif "SIGNAL" in destination:
@@ -205,9 +195,7 @@ class Listener(stomp.ConnectionListener):
                     for item in data_dict[key]:
                         # Protect against old API
                         if not type(data_dict[key][item]) == dict:
-                            key_id = self.retrieve_parameter(
-                                "monitor_count_%s" % str(item)
-                            )
+                            key_id = self.retrieve_parameter("monitor_count_%s" % str(item))
                             store_and_cache(
                                 instrument,
                                 key_id,
@@ -235,11 +223,7 @@ class Listener(stomp.ConnectionListener):
                 else:
                     # For this type of status updates, there's no need to deal with old
                     # messages. Just update the cache for messages older than 1 minute.
-                    timestamp_ = (
-                        float(data_dict["timestamp"])
-                        if "timestamp" in data_dict
-                        else time.time()
-                    )
+                    timestamp_ = float(data_dict["timestamp"]) if "timestamp" in data_dict else time.time()
                     delta_time = time.time() - timestamp_
                     cache_only = delta_time > 60
                     key_id = self.retrieve_parameter(key)
@@ -295,12 +279,7 @@ def process_SMS(instrument_id, headers, data):
     @param data: data dictionary
     """
     try:
-        if (
-            "run_number" in data
-            and "msg_type" in data
-            and "reason" in data
-            and "ipts" in data
-        ):
+        if "run_number" in data and "msg_type" in data and "reason" in data and "ipts" in data:
             from workflow.database.transactions import add_status_entry
 
             status_data = {
@@ -329,10 +308,7 @@ def process_ack(data=None, headers=None):
         if data is None:
             for proc_name in acks:
                 # Start complaining if we missed three heartbeats
-                if (
-                    acks[proc_name] is not None
-                    and time.time() - acks[proc_name] > 3.0 * HEARTBEAT_DELAY
-                ):
+                if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0 * HEARTBEAT_DELAY:
                     logging.error("Client %s disappeared", proc_name)
                     acks[proc_name] = None
                     send_message(
@@ -374,9 +350,7 @@ def process_ack(data=None, headers=None):
                 )
             acks[proc_name] = time.time()
             if EXTRA_LOGS:
-                logging.warning(
-                    "%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay
-                )
+                logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)
     except:  # noqa: E722
         logging.error("Error processing ack: %s", sys.exc_info()[1])
 
@@ -388,12 +362,8 @@ def notify_users(instrument_id, signal):
     @param signal: Signal object
     """
     try:
-        for item in UserNotification.objects.filter(
-            instruments__in=[instrument_id], registered=True
-        ):
-            message = (
-                "A new alert signal was set on %s\n\n" % str(instrument_id).upper()
-            )
+        for item in UserNotification.objects.filter(instruments__in=[instrument_id], registered=True):
+            message = "A new alert signal was set on %s\n\n" % str(instrument_id).upper()
             message += "    Name:    %s\n" % signal.name
             message += "    Source:  %s\n" % signal.source
             message += "    Message: %s\n" % signal.message
@@ -438,9 +408,7 @@ def process_signal(instrument_id, data):
     if "sig_name" in data:
         # Query the DB to see whether we have the signal asserted
         asserted_sig = (
-            Signal.objects.filter(instrument_id=instrument_id, name=data["sig_name"])
-            .order_by("timestamp")
-            .reverse()
+            Signal.objects.filter(instrument_id=instrument_id, name=data["sig_name"]).order_by("timestamp").reverse()
         )
         if "sig_level" in data:
             level = int(data["sig_level"]) if "sig_level" in data else 0
@@ -449,9 +417,7 @@ def process_signal(instrument_id, data):
             timestamp = float(data["timestamp"]) if "timestamp" in data else time.time()
             if time.time() - timestamp > 3600:
                 return
-            timestamp = datetime.datetime.fromtimestamp(timestamp).replace(
-                tzinfo=timezone.get_current_timezone()
-            )
+            timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
             if len(asserted_sig) == 0:
                 signal = Signal(
                     instrument_id=instrument_id,
@@ -488,13 +454,9 @@ def store_and_cache(instrument_id, key_id, value, timestamp=None, cache_only=Fal
     @param cache_only: only update cache
     """
     try:
-        store_and_cache_(
-            instrument_id, key_id, value, timestamp=timestamp, cache_only=cache_only
-        )
+        store_and_cache_(instrument_id, key_id, value, timestamp=timestamp, cache_only=cache_only)
     except:  # noqa: E722
-        logging.error(
-            "Could not store %s %s=%s", str(instrument_id), str(key_id), str(value)
-        )
+        logging.error("Could not store %s %s=%s", str(instrument_id), str(key_id), str(value))
 
 
 def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=False):
@@ -514,13 +476,9 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
     if len(value_string) > 128:
         value_string = value_string[:128]
 
-    datetime_timestamp = datetime.datetime.fromtimestamp(time.time()).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    datetime_timestamp = datetime.datetime.fromtimestamp(time.time()).replace(tzinfo=timezone.get_current_timezone())
     if cache_only is False:
-        status_entry = StatusVariable(
-            instrument_id=instrument_id, key_id=key_id, value=value_string
-        )
+        status_entry = StatusVariable(instrument_id=instrument_id, key_id=key_id, value=value_string)
         # Force the timestamp value as needed
         if timestamp is not None:
             try:
@@ -529,17 +487,13 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
                 )
                 status_entry.timestamp = datetime_timestamp
             except:  # noqa: E722
-                logging.error(
-                    "Could not process timestamp [%s]: %s", timestamp, sys.exc_info()[1]
-                )
+                logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_info()[1])
         status_entry.save()
         datetime_timestamp = status_entry.timestamp
 
     # Update the latest value
     try:
-        last_value = StatusCache.objects.filter(
-            instrument_id=instrument_id, key_id=key_id
-        ).latest("timestamp")
+        last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
         last_value.value = value_string
         last_value.timestamp = datetime_timestamp
         last_value.save()
@@ -559,9 +513,7 @@ class Client:
     Holds the connection to a broker
     """
 
-    def __init__(
-        self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"
-    ):
+    def __init__(self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"):
         """
         @param brokers: list of brokers we can connect to
         @param user: activemq user
@@ -662,10 +614,7 @@ class Client:
             try:
                 if self._connection is None or self._connection.is_connected() is False:
                     self.connect()
-                if (
-                    last_purge_time is None
-                    or time.time() - last_purge_time > PURGE_DELAY
-                ):
+                if last_purge_time is None or time.time() - last_purge_time > PURGE_DELAY:
                     last_purge_time = time.time()
                     # Remove old entries
                     delta_time = datetime.timedelta(days=PURGE_TIMEOUT)
@@ -674,38 +623,18 @@ class Client:
                     # StatusCache.objects.filter(timestamp__lte=cutoff).delete()
 
                     # Remove old PVMON entries: first, the float values
-                    PV.objects.filter(
-                        update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
-                    ).delete()
-                    old_entries = PVCache.objects.filter(
-                        update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
-                    )
+                    PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
+                    old_entries = PVCache.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
                     for item in old_entries:
-                        if (
-                            len(
-                                MonitoredVariable.objects.filter(
-                                    instrument=item.instrument, pv_name=item.name
-                                )
-                            )
-                            == 0
-                        ):
+                        if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old PVMON entries: second, the string values
-                    PVString.objects.filter(
-                        update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
-                    ).delete()
+                    PVString.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
                     old_entries = PVStringCache.objects.filter(
                         update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
                     )
                     for item in old_entries:
-                        if (
-                            len(
-                                MonitoredVariable.objects.filter(
-                                    instrument=item.instrument, pv_name=item.name
-                                )
-                            )
-                            == 0
-                        ):
+                        if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old images
                     delta_time = datetime.timedelta(days=IMAGE_PURGE_TIMEOUT)
@@ -714,9 +643,7 @@ class Client:
                 try:
                     if time.time() - last_heartbeat > HEARTBEAT_DELAY:
                         last_heartbeat = time.time()
-                        store_and_cache(
-                            self.common_instrument, pid_key_id, str(os.getpid())
-                        )
+                        store_and_cache(self.common_instrument, pid_key_id, str(os.getpid()))
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
                             from .settings import PING_TOPIC, ACK_TOPIC

@@ -20,9 +20,7 @@ class TestView(TestCase):
         grp_prop = ReductionProperty(instrument=instrument, key="grouping")
         grp_prop.save()
 
-        Choice(
-            instrument=instrument, property=grp_prop, value="grp1", description="group1"
-        ).save()
+        Choice(instrument=instrument, property=grp_prop, value="grp1", description="group1").save()
 
         instrument = Instrument(name="seq")
         instrument.save()
@@ -30,9 +28,7 @@ class TestView(TestCase):
         grp_prop = ReductionProperty(instrument=instrument, key="grouping")
         grp_prop.save()
 
-        Choice(
-            instrument=instrument, property=grp_prop, value="grp1", description="group1"
-        ).save()
+        Choice(instrument=instrument, property=grp_prop, value="grp1", description="group1").save()
 
         instrument = Instrument(name="arcs")
         instrument.save()
@@ -40,9 +36,7 @@ class TestView(TestCase):
         grp_prop = ReductionProperty(instrument=instrument, key="grouping")
         grp_prop.save()
 
-        Choice(
-            instrument=instrument, property=grp_prop, value="grp1", description="group1"
-        ).save()
+        Choice(instrument=instrument, property=grp_prop, value="grp1", description="group1").save()
 
     @classmethod
     def classTearDown(cls):
@@ -174,9 +168,7 @@ class TestView(TestCase):
 
     def test_configuration_change(self):
         # no data
-        response = self.client.post(
-            reverse("reduction:configuration_change", args=["inst"])
-        )
+        response = self.client.post(reverse("reduction:configuration_change", args=["inst"]))
 
         # should succeed with connection closed
         self.assertEqual(response.status_code, 200)
@@ -192,8 +184,6 @@ class TestView(TestCase):
         self.assertEqual(response.status_code, 500)
 
     def test_configuration_update(self):
-        response = self.client.post(
-            reverse("reduction:configuration_update", args=["inst"])
-        )
+        response = self.client.post(reverse("reduction:configuration_update", args=["inst"]))
         # should succeed with connection closed
         self.assertEqual(response.status_code, 200)

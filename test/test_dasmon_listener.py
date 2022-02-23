@@ -41,9 +41,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Dasmon Listener signal test")
     parser.add_argument("-n", metavar="name", help="Signal name", dest="name")
     parser.add_argument("-m", metavar="msg", help="message", dest="msg")
-    parser.add_argument(
-        "-b", metavar="instrument", help="instrument name", dest="instrument"
-    )
+    parser.add_argument("-b", metavar="instrument", help="instrument name", dest="instrument")
     subparsers = parser.add_subparsers(dest="command", help="available sub-commands")
     subparsers.add_parser("assert", help="Assert a signal")
     subparsers.add_parser("retract", help="Retract a signal")

@@ -58,13 +58,9 @@ class StateAction:
                 module = ".".join(toks[: len(toks) - 1])
                 cls = toks[len(toks) - 1]
                 exec("from %s import %s as action_cls" % (module, cls))
-                action_cls(connection=self._send_connection)(  # noqa: F821
-                    headers, message
-                )
+                action_cls(connection=self._send_connection)(headers, message)  # noqa: F821
             except:  # noqa: E722
-                logging.error(
-                    "Task [%s] failed: %s" % (headers["destination"], sys.exc_info()[1])
-                )
+                logging.error("Task [%s] failed: %s" % (headers["destination"], sys.exc_info()[1]))
         if "task_queues" in task_def:
             for item in task_def["task_queues"]:
                 destination = "/queue/%s" % item

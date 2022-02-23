@@ -64,9 +64,7 @@ class TransactionsTest(TestCase):
         runstatus = RunStatus.objects.get_queryset()[0]
 
         self.assertIsNotNone(runstatus.last_info())
-        self.assertEqual(
-            runstatus.last_info().description, self.data_dict["information"]
-        )
+        self.assertEqual(runstatus.last_info().description, self.data_dict["information"])
 
         self.assertIsNotNone(runstatus.last_error())
         self.assertEqual(runstatus.last_error().description, self.data_dict["error"])

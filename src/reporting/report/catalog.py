@@ -34,9 +34,7 @@ def decode_time(timestamp):
                 date_time_str = date_time_str[:sec_location]
             return datetime.datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%S")
     except:  # noqa: E722
-        logging.error(
-            "Could not parse timestamp '%s': %s", timestamp, sys.exc_info()[1]
-        )
+        logging.error("Could not parse timestamp '%s': %s", timestamp, sys.exc_info()[1])
         return None
 
 
@@ -106,25 +104,13 @@ def _get_run_info(instrument, ipts, run_number, facility="SNS"):
         for datafile in datafiles:
             run_info["data_files"].append(datafile.location)
             if datafile.location.endswith(".nxs.h5"):
-                run_info["title"] = datafile.metadata.get("entry", {}).get(
-                    "title", None
-                )
+                run_info["title"] = datafile.metadata.get("entry", {}).get("title", None)
                 run_info["proposal"] = datafile.experiment
-                run_info["duration"] = datafile.metadata.get("entry", {}).get(
-                    "duration", None
-                )
-                run_info["totalCounts"] = datafile.metadata.get("entry", {}).get(
-                    "total_counts", None
-                )
-                run_info["protonCharge"] = datafile.metadata.get("entry", {}).get(
-                    "proton_charge", None
-                )
-                run_info["startTime"] = decode_time(
-                    datafile.metadata.get("entry", {}).get("start_time", None)
-                )
-                run_info["endTime"] = decode_time(
-                    datafile.metadata.get("entry", {}).get("end_time", None)
-                )
+                run_info["duration"] = datafile.metadata.get("entry", {}).get("duration", None)
+                run_info["totalCounts"] = datafile.metadata.get("entry", {}).get("total_counts", None)
+                run_info["protonCharge"] = datafile.metadata.get("entry", {}).get("proton_charge", None)
+                run_info["startTime"] = decode_time(datafile.metadata.get("entry", {}).get("start_time", None))
+                run_info["endTime"] = decode_time(datafile.metadata.get("entry", {}).get("end_time", None))
     except:  # noqa: E722
         logging.error("Communication with ONCat server failed: %s", sys.exc_info()[1])
 

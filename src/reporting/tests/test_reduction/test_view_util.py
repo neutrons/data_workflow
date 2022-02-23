@@ -41,9 +41,7 @@ class TestViewUtil(TestCase):
         self.assertEqual(rp.value, "changed_value")
 
         # add new entry with same key, nothing should be changed
-        ReductionProperty.objects.create(
-            instrument=inst, key="new_key", value="new_value2"
-        )
+        ReductionProperty.objects.create(instrument=inst, key="new_key", value="new_value2")
         view_util.store_property(inst, "new_key", "new_value3", user)
 
         rp = ReductionProperty.objects.filter(instrument=inst, key="new_key")
@@ -67,9 +65,7 @@ class TestViewUtil(TestCase):
     def test_send_template_request(self, mock_activemq, mock_dasmon_entry):
         inst = Instrument.objects.get(name="inst")
 
-        view_util.send_template_request(
-            inst, {"input1": "value1", "input2": 2, "use_default": True}
-        )
+        view_util.send_template_request(inst, {"input1": "value1", "input2": 2, "use_default": True})
 
         mock_activemq.assert_called_with(
             "/queue/REDUCTION.CREATE_SCRIPT",
@@ -78,13 +74,9 @@ class TestViewUtil(TestCase):
             '"information": "Requested by unknown"}',
         )
 
-        mock_dasmon_entry.assert_called_with(
-            inst, "system_postprocessing", "Script requested by unknown"
-        )
+        mock_dasmon_entry.assert_called_with(inst, "system_postprocessing", "Script requested by unknown")
 
-        view_util.send_template_request(
-            inst, {"input1": "value1", "input2": 2, "use_default": "false"}
-        )
+        view_util.send_template_request(inst, {"input1": "value1", "input2": 2, "use_default": "false"})
 
         mock_activemq.assert_called_with(
             "/queue/REDUCTION.CREATE_SCRIPT",
@@ -93,6 +85,4 @@ class TestViewUtil(TestCase):
             '"information": "Requested by unknown"}',
         )
 
-        mock_dasmon_entry.assert_called_with(
-            inst, "system_postprocessing", "Script requested by unknown"
-        )
+        mock_dasmon_entry.assert_called_with(inst, "system_postprocessing", "Script requested by unknown")

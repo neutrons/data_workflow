@@ -10,9 +10,7 @@ app_name = "report"
 urlpatterns = [
     re_path(r"^$", views.summary, name="summary"),
     re_path(r"^processing$", views.processing_admin, name="processing_admin"),
-    re_path(
-        r"^(?P<instrument>[\w]+)/$", views.instrument_summary, name="instrument_summary"
-    ),
+    re_path(r"^(?P<instrument>[\w]+)/$", views.instrument_summary, name="instrument_summary"),
     re_path(
         r"^(?P<instrument>[\w]+)/update/$",
         views.get_instrument_update,

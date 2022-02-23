@@ -37,9 +37,7 @@ class PropertyDefault(models.Model):
     Table of default values
     """
 
-    property = models.ForeignKey(
-        ReductionProperty, unique=True, on_delete=models.CASCADE
-    )
+    property = models.ForeignKey(ReductionProperty, unique=True, on_delete=models.CASCADE)
     value = models.TextField(blank=True)
     timestamp = models.DateTimeField("timestamp", auto_now=True)
 

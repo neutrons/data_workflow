@@ -19,9 +19,7 @@ logging.getLogger().setLevel(logging.WARN)
 # Formatter
 ft = logging.Formatter("%(asctime)-15s %(message)s")
 # Create a log file handler
-fh = logging.handlers.TimedRotatingFileHandler(
-    "amq_looper.log", when="midnight", backupCount=15
-)
+fh = logging.handlers.TimedRotatingFileHandler("amq_looper.log", when="midnight", backupCount=15)
 fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
@@ -97,9 +95,7 @@ class Client(object):
     Holds the connection to a broker
     """
 
-    def __init__(
-        self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"
-    ):
+    def __init__(self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"):
         """
         @param brokers: list of brokers we can connect to
         @param user: activemq user

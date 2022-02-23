@@ -23,9 +23,7 @@ class TestViews(TestCase):
         self.assertEqual(template_args["login_url"], "/users/login?next=/path/")
         self.assertEqual(template_args["is_mobile"], False)
 
-        with self.settings(
-            GRAVATAR_URL="http://gravatar.url/", ALLOWED_DOMAIN=("a.com", "b.com")
-        ):
+        with self.settings(GRAVATAR_URL="http://gravatar.url/", ALLOWED_DOMAIN=("a.com", "b.com")):
             template_args = view_util.fill_template_values(request)
         self.assertEqual(template_args["user"].username, "user")
         self.assertEqual(

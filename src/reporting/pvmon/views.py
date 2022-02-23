@@ -64,12 +64,8 @@ def get_update(request, instrument):
     data_dict = report.view_util.get_current_status(instrument_id)
 
     # Update the last PV values
-    data_dict["variables"] = view_util.get_cached_variables(
-        instrument_id, monitored_only=True
-    )
-    data_dict["variables"].extend(
-        dasmon.view_util.get_cached_variables(instrument_id, monitored_only=False)
-    )
+    data_dict["variables"] = view_util.get_cached_variables(instrument_id, monitored_only=True)
+    data_dict["variables"].extend(dasmon.view_util.get_cached_variables(instrument_id, monitored_only=False))
 
     # Update the recording status
     localtime = timezone.now()

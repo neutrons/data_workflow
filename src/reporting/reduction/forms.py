@@ -24,9 +24,7 @@ def _get_choices(instrument):
     form_choices = []
     try:
         instrument_id = Instrument.objects.get(name=instrument.lower())
-        grp_property = ReductionProperty.objects.get(
-            key="grouping", instrument=instrument_id
-        )
+        grp_property = ReductionProperty.objects.get(key="grouping", instrument=instrument_id)
         choices = Choice.objects.filter(instrument=instrument_id, property=grp_property)
         for item in choices:
             form_choices.append((item.value, item.description))
@@ -53,9 +51,7 @@ def validate_integer_list(value):
                 try:
                     int(item.strip())
                 except:  # noqa: E722
-                    raise ValidationError(
-                        "Error parsing %s for a range of integers" % value
-                    )
+                    raise ValidationError("Error parsing %s for a range of integers" % value)
 
 
 def validate_float_list(value):
@@ -70,9 +66,7 @@ def validate_float_list(value):
                 try:
                     float(item.strip())
                 except:  # noqa: E722
-                    raise ValidationError(
-                        "Error parsing %s for a list of numbers" % value
-                    )
+                    raise ValidationError("Error parsing %s for a list of numbers" % value)
 
 
 class BaseReductionConfigurationForm(forms.Form):
@@ -101,10 +95,7 @@ class BaseReductionConfigurationForm(forms.Form):
             try:
                 if key in self.cleaned_data:
                     # Make sure we treat booleans properly
-                    if (
-                        isinstance(self.cleaned_data[key], bool)
-                        and self.cleaned_data[key] is False
-                    ):
+                    if isinstance(self.cleaned_data[key], bool) and self.cleaned_data[key] is False:
                         value = ""
                     else:
                         value = str(self.cleaned_data[key])
@@ -112,9 +103,7 @@ class BaseReductionConfigurationForm(forms.Form):
                     value = ""
                 reduction.view_util.store_property(instrument_id, key, value, user=user)
             except:  # noqa: E722
-                logging.error(
-                    "BaseReductionConfigurationForm.to_db: %s", sys.exc_info()[1]
-                )
+                logging.error("BaseReductionConfigurationForm.to_db: %s", sys.exc_info()[1])
 
     def to_template(self):
         """
@@ -157,12 +146,8 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     e_min = forms.FloatField(required=True, initial=-0.2)
     e_step = forms.FloatField(required=True, initial=0.015)
     e_max = forms.FloatField(required=True, initial=0.95)
-    tib_min = forms.CharField(
-        required=False, initial="", validators=[validate_float_list]
-    )
-    tib_max = forms.CharField(
-        required=False, initial="", validators=[validate_float_list]
-    )
+    tib_min = forms.CharField(required=False, initial="", validators=[validate_float_list])
+    tib_max = forms.CharField(required=False, initial="", validators=[validate_float_list])
     do_tib = forms.BooleanField(required=False)
     t0 = forms.CharField(required=False, initial="", validators=[validate_float_list])
     motor_names = forms.CharField(
@@ -181,12 +166,8 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     alpha = forms.FloatField(required=True, initial=90)
     beta = forms.FloatField(required=True, initial=90)
     gamma = forms.FloatField(required=True, initial=90)
-    u_vector = forms.CharField(
-        required=False, initial="1,0,0", validators=[validate_float_list]
-    )
-    v_vector = forms.CharField(
-        required=False, initial="0,0,1", validators=[validate_float_list]
-    )
+    u_vector = forms.CharField(required=False, initial="1,0,0", validators=[validate_float_list])
+    v_vector = forms.CharField(required=False, initial="0,0,1", validators=[validate_float_list])
     auto_tzero_flag = forms.BooleanField(required=False)
 
     # List of field that are used in the template
@@ -275,9 +256,7 @@ class ReductionConfigurationSEQForm(ReductionConfigurationDGSForm):
     """
 
     create_elastic_nxspe = forms.BooleanField(required=False)
-    _template_list = ReductionConfigurationDGSForm._template_list + [
-        "create_elastic_nxspe"
-    ]
+    _template_list = ReductionConfigurationDGSForm._template_list + ["create_elastic_nxspe"]
 
 
 class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
@@ -368,15 +347,9 @@ class MaskForm(forms.Form):
     A combination of banks, tubes, pixels can be specified.
     """
 
-    bank = forms.CharField(
-        required=False, initial="", validators=[validate_integer_list]
-    )
-    tube = forms.CharField(
-        required=False, initial="", validators=[validate_integer_list]
-    )
-    pixel = forms.CharField(
-        required=False, initial="", validators=[validate_integer_list]
-    )
+    bank = forms.CharField(required=False, initial="", validators=[validate_integer_list])
+    tube = forms.CharField(required=False, initial="", validators=[validate_integer_list])
+    pixel = forms.CharField(required=False, initial="", validators=[validate_integer_list])
     remove = forms.BooleanField(required=False, initial=False)
 
     @classmethod
@@ -398,9 +371,7 @@ class MaskForm(forms.Form):
                     for item in mask_strings:
                         mask_list.append(eval(item.lower()))
         except:  # noqa: E722
-            logging.error(
-                "MaskForm count not parse a command line: %s", sys.exc_info()[1]
-            )
+            logging.error("MaskForm count not parse a command line: %s", sys.exc_info()[1])
         return mask_list
 
     @classmethod
@@ -429,20 +400,11 @@ class MaskForm(forms.Form):
         mask_info = []
         for mask in mask_list:
             entry_dict = {}
-            if (
-                "bank" in mask.cleaned_data
-                and len(mask.cleaned_data["bank"].strip()) > 0
-            ):
+            if "bank" in mask.cleaned_data and len(mask.cleaned_data["bank"].strip()) > 0:
                 entry_dict["Bank"] = str(mask.cleaned_data["bank"])
-            if (
-                "tube" in mask.cleaned_data
-                and len(mask.cleaned_data["tube"].strip()) > 0
-            ):
+            if "tube" in mask.cleaned_data and len(mask.cleaned_data["tube"].strip()) > 0:
                 entry_dict["Tube"] = str(mask.cleaned_data["tube"])
-            if (
-                "pixel" in mask.cleaned_data
-                and len(mask.cleaned_data["pixel"].strip()) > 0
-            ):
+            if "pixel" in mask.cleaned_data and len(mask.cleaned_data["pixel"].strip()) > 0:
                 entry_dict["Pixel"] = str(mask.cleaned_data["pixel"])
             if len(entry_dict) > 0:
                 mask_info.append(entry_dict)

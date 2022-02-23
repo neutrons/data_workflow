@@ -33,9 +33,7 @@ logging.getLogger("stomp.py").setLevel(logging.WARNING)
 # Formatter
 ft = logging.Formatter("%(levelname)s:%(asctime)-15s %(message)s")
 # Create a log file handler
-fh = logging.handlers.TimedRotatingFileHandler(
-    "workflow.log", when="midnight", backupCount=15
-)
+fh = logging.handlers.TimedRotatingFileHandler("workflow.log", when="midnight", backupCount=15)
 fh.setLevel(LOGGING_LEVEL)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
@@ -169,17 +167,11 @@ def run():
     parser = argparse.ArgumentParser(description="SNS data workflow manager")
     subparsers = parser.add_subparsers(dest="command", help="available sub-commands")
 
-    subparsers.add_parser(
-        "start", help="Start daemon [-h for help]", parents=[start_parser]
-    )
-    subparsers.add_parser(
-        "restart", help="Restart daemon [-h for help]", parents=[start_parser]
-    )
+    subparsers.add_parser("start", help="Start daemon [-h for help]", parents=[start_parser])
+    subparsers.add_parser("restart", help="Restart daemon [-h for help]", parents=[start_parser])
     subparsers.add_parser("stop", help="Stop daemon")
     subparsers.add_parser("dump", help="Dump task SQL")
-    parser_task = subparsers.add_parser(
-        "add_task", help="Add task definition [-h for help]"
-    )
+    parser_task = subparsers.add_parser("add_task", help="Add task definition [-h for help]")
     parser_task.add_argument(
         "-i",
         metavar="instrument",

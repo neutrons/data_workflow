@@ -29,15 +29,11 @@ class TestViews(TestCase):
         self.assertTemplateUsed(response, "users/authenticate.html")
 
         # correct password
-        response = self.client.post(
-            reverse("users:perform_login"), data={"username": "user", "password": "pw"}
-        )
+        response = self.client.post(reverse("users:perform_login"), data={"username": "user", "password": "pw"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/dasmon/")
 
         # with next option
-        response = self.client.get(
-            reverse("users:perform_login"), data={"next": "dasmon:dashboard"}
-        )
+        response = self.client.get(reverse("users:perform_login"), data={"next": "dasmon:dashboard"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/dasmon/")

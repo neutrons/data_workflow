@@ -85,9 +85,7 @@ TEMPLATE_LOADERS = (
     "django.template.loaders.app_directories.Loader",
     #     'django.template.loaders.eggs.Loader',
 )
-TEMPLATE_DIRS = (
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates")),
-)
+TEMPLATE_DIRS = (os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates")),)
 # ------ End of template settings for Django 1.6 ------
 
 TEMPLATES = [

@@ -34,17 +34,11 @@ def processing_admin(request):
     """
     Form to let admins easily reprocess parts of the workflow
     """
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(
-        settings.LANDING_VIEW
-    )
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
     template_values = {"breadcrumbs": breadcrumbs, "notes": ""}
     template_values = users.view_util.fill_template_values(request, **template_values)
 
-    instruments = [
-        str(i)
-        for i in Instrument.objects.all().order_by("name")
-        if ActiveInstrument.objects.is_alive(i)
-    ]
+    instruments = [str(i) for i in Instrument.objects.all().order_by("name") if ActiveInstrument.objects.is_alive(i)]
     instrument = instruments[0]
 
     if request.method == "POST":
@@ -63,12 +57,7 @@ def processing_admin(request):
             template_values["notes"] = output["report"]
 
             # Submit task and append success outcome to notes.
-            if (
-                "runs" in output
-                and "instrument" in output
-                and "task" in output
-                and output["task"] is not None
-            ):
+            if "runs" in output and "instrument" in output and "task" in output and output["task"] is not None:
                 submission_errors = ""
                 for run_obj in output["runs"]:
                     try:
@@ -81,13 +70,10 @@ def processing_admin(request):
                             is_complete=is_complete,
                         )
                     except:  # noqa: E722
-                        submission_errors += (
-                            "%s run %s could not be submitted: %s<br>"
-                            % (
-                                str(run_obj.instrument_id),
-                                str(run_obj.run_number),
-                                sys.exc_info()[1],
-                            )
+                        submission_errors += "%s run %s could not be submitted: %s<br>" % (
+                            str(run_obj.instrument_id),
+                            str(run_obj.run_number),
+                            sys.exc_info()[1],
                         )
                         logging.error(sys.exc_info()[1])
                 template_values["notes"] += submission_errors
@@ -120,22 +106,12 @@ def summary(request):
     # Get base URL
     base_url = reverse("report:instrument_summary", args=["aaaa"])
     base_url = base_url.replace("/aaaa", "")
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse(
-        settings.LANDING_VIEW
-    )
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; summary" % reverse(settings.LANDING_VIEW)
 
     # Number of runs as a function of time
-    max_date = (
-        datetime.datetime.now()
-        .replace(day=1)
-        .replace(tzinfo=timezone.get_current_timezone())
-    )
-    epoch = datetime.datetime(1970, 1, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
-    adara_start = datetime.datetime(2012, 10, 1).replace(
-        tzinfo=timezone.get_current_timezone()
-    )
+    max_date = datetime.datetime.now().replace(day=1).replace(tzinfo=timezone.get_current_timezone())
+    epoch = datetime.datetime(1970, 1, 1).replace(tzinfo=timezone.get_current_timezone())
+    adara_start = datetime.datetime(2012, 10, 1).replace(tzinfo=timezone.get_current_timezone())
     today = datetime.datetime.today().replace(tzinfo=timezone.get_current_timezone())
     # Fill in the partial data for the current month
     runs = DataRun.objects.filter(created_on__gte=max_date)
@@ -161,9 +137,7 @@ def summary(request):
             min_date = max_date.replace(month=month)
 
         runs = DataRun.objects.filter(created_on__lt=max_date, created_on__gte=min_date)
-        run_summary.append(
-            {"min_date": min_date, "max_date": max_date, "number_of_runs": len(runs)}
-        )
+        run_summary.append({"min_date": min_date, "max_date": max_date, "number_of_runs": len(runs)})
         run_rate.append([1000 * int((max_date - epoch).total_seconds()), len(runs)])
 
         # Update end date
@@ -219,9 +193,7 @@ def detail(request, instrument, run_id):
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    run_object = get_object_or_404(
-        DataRun, instrument_id=instrument_id, run_number=run_id
-    )
+    run_object = get_object_or_404(DataRun, instrument_id=instrument_id, run_number=run_id)
 
     icat_info = get_run_info(instrument, str(run_object.ipts_id), run_id)
 
@@ -236,22 +208,15 @@ def detail(request, instrument, run_id):
         str(run_object.ipts_id).lower(),
     )
     breadcrumbs += " &rsaquo; run %s" % run_id
-    if (
-        users.view_util.is_experiment_member(request, instrument_id, run_object.ipts_id)
-        is False
-    ):
+    if users.view_util.is_experiment_member(request, instrument_id, run_object.ipts_id) is False:
         template_values = {
             "instrument": instrument.upper(),
             "run_object": run_object,
             "helpline": settings.HELPLINE_EMAIL,
             "breadcrumbs": breadcrumbs,
         }
-        template_values = users.view_util.fill_template_values(
-            request, **template_values
-        )
-        template_values = dasmon.view_util.fill_template_values(
-            request, **template_values
-        )
+        template_values = users.view_util.fill_template_values(request, **template_values)
+        template_values = dasmon.view_util.fill_template_values(request, **template_values)
         return render(request, "report/private_data.html", template_values)
 
     # Check whether we need a re-reduce link
@@ -260,14 +225,10 @@ def detail(request, instrument, run_id):
         reduce_url = "reduce"
 
     # Find status entries
-    status_objects = (
-        RunStatus.objects.filter(run_id=run_object).order_by("created_on").reverse()
-    )
+    status_objects = RunStatus.objects.filter(run_id=run_object).order_by("created_on").reverse()
 
     # Look for an image of the reduction
-    plot_template_dict = view_util.get_plot_template_dict(
-        run_object, instrument, run_id
-    )
+    plot_template_dict = view_util.get_plot_template_dict(run_object, instrument, run_id)
 
     # Check whether this is the last known run for this instrument
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
@@ -275,32 +236,21 @@ def detail(request, instrument, run_id):
         next_url = None
     else:
         try:
-            DataRun.objects.get(
-                instrument_id=instrument_id, run_number=run_object.run_number + 1
-            )
-            next_url = reverse(
-                "report:detail", args=[instrument, run_object.run_number + 1]
-            )
+            DataRun.objects.get(instrument_id=instrument_id, run_number=run_object.run_number + 1)
+            next_url = reverse("report:detail", args=[instrument, run_object.run_number + 1])
         except:  # noqa: E722
             next_url = None
 
     # Get previous run
     try:
-        DataRun.objects.get(
-            instrument_id=instrument_id, run_number=run_object.run_number - 1
-        )
-        prev_url = reverse(
-            "report:detail", args=[instrument, run_object.run_number - 1]
-        )
+        DataRun.objects.get(instrument_id=instrument_id, run_number=run_object.run_number - 1)
+        prev_url = reverse("report:detail", args=[instrument, run_object.run_number - 1])
     except:  # noqa: E722
         prev_url = None
 
     # Fitting URL
     fitting_url = None
-    if (
-        hasattr(settings, "FITTING_URLS")
-        and instrument.lower() in settings.FITTING_URLS
-    ):
+    if hasattr(settings, "FITTING_URLS") and instrument.lower() in settings.FITTING_URLS:
         url_template = string.Template(settings.FITTING_URLS[instrument.lower()])
         fitting_url = url_template.substitute(run_number=run_id)
 
@@ -318,31 +268,17 @@ def detail(request, instrument, run_id):
     }
     template_values.update(plot_template_dict)
     if icat_info == {}:
-        template_values["user_alert"] = [
-            "Could not communicate with the online catalog"
-        ]
+        template_values["user_alert"] = ["Could not communicate with the online catalog"]
     try:
-        if (
-            "data_files" not in icat_info
-            or icat_info["data_files"] is None
-            or len(icat_info["data_files"]) == 0
-        ):
+        if "data_files" not in icat_info or icat_info["data_files"] is None or len(icat_info["data_files"]) == 0:
             if view_util.is_acquisition_complete(run_object):
-                template_values[
-                    "no_icat_info"
-                ] = "There is no catalog information for this run yet."
+                template_values["no_icat_info"] = "There is no catalog information for this run yet."
             else:
-                template_values[
-                    "no_icat_info"
-                ] = "The final data file for this run is not yet available."
+                template_values["no_icat_info"] = "The final data file for this run is not yet available."
 
     except:  # noqa: E722
-        logging.error(
-            "Could not determine whether we have catalog info: %s", sys.exc_info()[1]
-        )
-        template_values[
-            "no_icat_info"
-        ] = "There is no catalog information for this run yet."
+        logging.error("Could not determine whether we have catalog info: %s", sys.exc_info()[1])
+        template_values["no_icat_info"] = "There is no catalog information for this run yet."
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = dasmon.view_util.fill_template_values(request, **template_values)
     return render(request, "report/detail.html", template_values)
@@ -355,9 +291,7 @@ def submit_for_reduction(request, instrument, run_id):
     @param instrument: instrument name
     @param run_id: run number
     """
-    return view_util.processing_request(
-        request, instrument, run_id, destination="/queue/REDUCTION.REQUEST"
-    )
+    return view_util.processing_request(request, instrument, run_id, destination="/queue/REDUCTION.REQUEST")
 
 
 @login_required
@@ -367,9 +301,7 @@ def submit_for_post_processing(request, instrument, run_id):
     @param instrument: instrument name
     @param run_id: run number
     """
-    return view_util.processing_request(
-        request, instrument, run_id, destination="/queue/POSTPROCESS.DATA_READY"
-    )
+    return view_util.processing_request(request, instrument, run_id, destination="/queue/POSTPROCESS.DATA_READY")
 
 
 @login_required
@@ -379,9 +311,7 @@ def submit_for_cataloging(request, instrument, run_id):
     @param instrument: instrument name
     @param run_id: run number
     """
-    return view_util.processing_request(
-        request, instrument, run_id, destination="/queue/CATALOG.REQUEST"
-    )
+    return view_util.processing_request(request, instrument, run_id, destination="/queue/CATALOG.REQUEST")
 
 
 @users.view_util.login_or_local_required
@@ -394,9 +324,7 @@ def instrument_summary(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
     # Get list of IPTS
-    ipts = (
-        IPTS.objects.filter(instruments=instrument_id).order_by("created_on").reverse()
-    )
+    ipts = IPTS.objects.filter(instruments=instrument_id).order_by("created_on").reverse()
     expt_list = []
     for expt in ipts:
         localtime = timezone.localtime(expt.created_on)
@@ -406,9 +334,7 @@ def instrument_summary(request, instrument):
                 "experiment": str(
                     "<a href='%s'>%s</a>"
                     % (
-                        reverse(
-                            "report:ipts_summary", args=[instrument, expt.expt_name]
-                        ),
+                        reverse("report:ipts_summary", args=[instrument, expt.expt_name]),
                         expt.expt_name,
                     )
                 ),
@@ -471,9 +397,7 @@ def ipts_summary(request, instrument, ipts):
     # whether the user should refresh the page
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
-    runs = DataRun.objects.filter(
-        instrument_id=instrument_id, ipts_id=ipts_id
-    ).order_by("created_on")
+    runs = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id).order_by("created_on")
     run_list = view_util.get_run_list_dict(runs)
 
     # Get the ID of the first displayed run so that we can update the
@@ -603,9 +527,7 @@ def get_experiment_update(request, instrument, ipts):
 
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
-    data_dict = dasmon.view_util.get_live_runs_update(
-        request, instrument_id, ipts_id, **data_dict
-    )
+    data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
 
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
@@ -632,9 +554,7 @@ def get_instrument_update(request, instrument):
 
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
-    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by(
-        "created_on"
-    )
+    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by("created_on")
 
     update_list = []
     if since_expt_id is not None and len(expt_list) > 0:

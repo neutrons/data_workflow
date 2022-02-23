@@ -33,15 +33,11 @@ def test_get_ops_status(mockHTTPSConnectionWithTimeout, mockGetLegacyUrl):
     mockHTTPSConnectionWithTimeout.return_value = mock.MagicMock()
     mockHTTPSConnectionWithTimeout.return_value.request = mock.MagicMock()
     mockHTTPSConnectionWithTimeout.return_value.getresponse = mock.MagicMock()
-    mockHTTPSConnectionWithTimeout.return_value.getresponse.return_value.read = (
-        mock.MagicMock()
-    )
+    mockHTTPSConnectionWithTimeout.return_value.getresponse.return_value.read = mock.MagicMock()
     fakeReturnDict = {
         "test1": {"test2": "test3"},
     }
-    mockHTTPSConnectionWithTimeout.return_value.getresponse.return_value.read.return_value = json.dumps(
-        fakeReturnDict
-    )
+    mockHTTPSConnectionWithTimeout.return_value.getresponse.return_value.read.return_value = json.dumps(fakeReturnDict)
     #
     mockGetLegacyUrl = mock.MagicMock()
     mockGetLegacyUrl.return_value = "/test.xyz"

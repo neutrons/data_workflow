@@ -18,9 +18,7 @@ class Daemon:
     Usage: subclass the Daemon class and override the run() method
     """
 
-    def __init__(
-        self, pidfile, stdin="/dev/null", stdout="/dev/null", stderr="/dev/null"
-    ):
+    def __init__(self, pidfile, stdin="/dev/null", stdout="/dev/null", stderr="/dev/null"):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
@@ -57,11 +55,7 @@ class Daemon:
             sys.exit(1)
 
         # redirect standard file descriptors
-        if (
-            self.stdin is not None
-            and self.stdout is not None
-            and self.stderr is not None
-        ):
+        if self.stdin is not None and self.stdout is not None and self.stderr is not None:
             sys.stdout.flush()
             sys.stderr.flush()
             si = open(self.stdin, "r")

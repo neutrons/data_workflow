@@ -204,22 +204,16 @@ class InstrumentSummaryViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("report:instrument_summary", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:instrument_summary", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("report:instrument_summary", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:instrument_summary", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "report/instrument.html")
 
     def test_response_content(self):
-        response = self.client.get(
-            reverse("report:instrument_summary", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:instrument_summary", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(b"test_instrument" in response.content)
         self.assertTrue("IPTS: TEST_IPTS", str(response.context))
@@ -278,9 +272,7 @@ class GetInstrumentUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("report:get_instrument_update", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:get_instrument_update", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -337,22 +329,16 @@ class DetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
+        response = self.client.get(reverse("report:detail", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
+        response = self.client.get(reverse("report:detail", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "report/detail.html")
 
     def test_response_content(self):
-        response = self.client.get(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
+        response = self.client.get(reverse("report:detail", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(b"test_instrument" in response.content)
 
@@ -412,26 +398,18 @@ class DownloadReducedDataViewTest(TestCase):
     @mock.patch("report.view_util.extract_ascii_from_div")
     def test_view_url_exists_at_desired_location_has_reduced_data(self, mockExtract):
         # Without patching, we will get a 404 by default
-        mockExtract.return_value = (
-            "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
-        )
+        mockExtract.return_value = "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
         response = self.client.get("/report/test_instrument/1/data/")
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name_no_reduced_data(self):
-        response = self.client.get(
-            reverse("report:download_reduced_data", args=["test_instrument", 1])
-        )
+        response = self.client.get(reverse("report:download_reduced_data", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 404)
 
     @mock.patch("report.view_util.extract_ascii_from_div")
     def test_view_url_accessible_by_name_has_reduced_data(self, mockExtract):
-        mockExtract.return_value = (
-            "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
-        )
-        response = self.client.get(
-            reverse("report:download_reduced_data", args=["test_instrument", 1])
-        )
+        mockExtract.return_value = "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
+        response = self.client.get(reverse("report:download_reduced_data", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -485,21 +463,15 @@ class SubmitForReductionViewTest(TestCase):
 
     @mock.patch("report.view_util.processing_request")
     def test_view_url_exists_at_desired_location(self, mockProcessingRequest):
-        mockProcessingRequest.return_value = redirect(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
+        mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get("/report/test_instrument/1/reduce/")
         # NOTE: this is either fail or redirect
         self.assertEqual(response.status_code, 302)
 
     @mock.patch("report.view_util.processing_request")
     def test_view_url_accessible_by_name(self, mockProcessingRequest):
-        mockProcessingRequest.return_value = redirect(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
-        response = self.client.get(
-            reverse("report:submit_for_reduction", args=["test_instrument", 1])
-        )
+        mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
+        response = self.client.get(reverse("report:submit_for_reduction", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 302)
 
 
@@ -553,21 +525,15 @@ class SubmitForCatalogViewTest(TestCase):
 
     @mock.patch("report.view_util.processing_request")
     def test_view_url_exists_at_desired_location(self, mockProcessingRequest):
-        mockProcessingRequest.return_value = redirect(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
+        mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get("/report/test_instrument/1/catalog/")
         # NOTE: this is either fail or redirect
         self.assertEqual(response.status_code, 302)
 
     @mock.patch("report.view_util.processing_request")
     def test_view_url_accessible_by_name(self, mockProcessingRequest):
-        mockProcessingRequest.return_value = redirect(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
-        response = self.client.get(
-            reverse("report:submit_for_cataloging", args=["test_instrument", 1])
-        )
+        mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
+        response = self.client.get(reverse("report:submit_for_cataloging", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 302)
 
 
@@ -621,21 +587,15 @@ class SubmitForPostProcessingViewTest(TestCase):
 
     @mock.patch("report.view_util.processing_request")
     def test_view_url_exists_at_desired_location(self, mockProcessingRequest):
-        mockProcessingRequest.return_value = redirect(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
+        mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get("/report/test_instrument/1/postprocess/")
         # NOTE: this is either fail or redirect
         self.assertEqual(response.status_code, 302)
 
     @mock.patch("report.view_util.processing_request")
     def test_view_url_accessible_by_name(self, mockProcessingRequest):
-        mockProcessingRequest.return_value = redirect(
-            reverse("report:detail", args=["test_instrument", 1])
-        )
-        response = self.client.get(
-            reverse("report:submit_for_post_processing", args=["test_instrument", 1])
-        )
+        mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
+        response = self.client.get(reverse("report:submit_for_post_processing", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 302)
 
 
@@ -688,17 +648,11 @@ class GetExperimentUpdateViewTest(TestCase):
         self.assertTrue(self.client.login(username="testuser", password="12345"))
 
     def test_view_url_exists_at_desired_location(self):
-        response = self.client.get(
-            "/report/test_instrument/experiment/TEST_IPTS/update/"
-        )
+        response = self.client.get("/report/test_instrument/experiment/TEST_IPTS/update/")
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse(
-                "report:get_experiment_update", args=["test_instrument", "TEST_IPTS"]
-            )
-        )
+        response = self.client.get(reverse("report:get_experiment_update", args=["test_instrument", "TEST_IPTS"]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -755,22 +709,16 @@ class IPTSSummaryViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("report:ipts_summary", args=["test_instrument", "TEST_IPTS"])
-        )
+        response = self.client.get(reverse("report:ipts_summary", args=["test_instrument", "TEST_IPTS"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("report:ipts_summary", args=["test_instrument", "TEST_IPTS"])
-        )
+        response = self.client.get(reverse("report:ipts_summary", args=["test_instrument", "TEST_IPTS"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "report/ipts_summary.html")
 
     def test_list_content(self):
-        response = self.client.get(
-            reverse("report:ipts_summary", args=["test_instrument", "TEST_IPTS"])
-        )
+        response = self.client.get(reverse("report:ipts_summary", args=["test_instrument", "TEST_IPTS"]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue("TEST_INSTRUMENT" in str(response.context))
         self.assertTrue("TEST_IPTS" in str(response.context))
@@ -829,22 +777,16 @@ class LiveErrorsViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("report:live_errors", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:live_errors", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("report:live_errors", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:live_errors", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "report/live_errors.html")
 
     def test_list_content(self):
-        response = self.client.get(
-            reverse("report:live_errors", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:live_errors", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue("TEST_INSTRUMENT" in str(response.context))
         self.assertTrue("TEST_IPTS" in str(response.context))
@@ -903,9 +845,7 @@ class GetErrorUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("report:get_error_update", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("report:get_error_update", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
 

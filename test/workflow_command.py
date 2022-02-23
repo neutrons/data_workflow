@@ -105,9 +105,7 @@ if __name__ == "__main__":
         action="store_true",
         dest="do_post_process",
     )
-    parser.add_argument(
-        "--catalog", help="Catalog the data", action="store_true", dest="do_catalog"
-    )
+    parser.add_argument("--catalog", help="Catalog the data", action="store_true", dest="do_catalog")
     parser.add_argument(
         "--reduction",
         help="Perform reduction",
@@ -130,10 +128,7 @@ if __name__ == "__main__":
         queue = "CATALOG.DATA_READY"
     if namespace.do_reduction is not None and namespace.do_reduction is True:
         queue = "REDUCTION.DATA_READY"
-    if (
-        namespace.do_reduction_catalog is not None
-        and namespace.do_reduction_catalog is True
-    ):
+    if namespace.do_reduction_catalog is not None and namespace.do_reduction_catalog is True:
         queue = "REDUCTION_CATALOG.DATA_READY"
 
     data_dict = fetch_data(namespace.instrument, namespace.runid)

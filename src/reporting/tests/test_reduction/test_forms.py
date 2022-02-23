@@ -114,21 +114,15 @@ class TestREFMForm(TestCase):
         form.to_db(instrument)
 
         # check some things get set
-        use_sangle = ReductionProperty.objects.filter(
-            instrument=instrument, key="use_sangle"
-        )
+        use_sangle = ReductionProperty.objects.filter(instrument=instrument, key="use_sangle")
         self.assertEqual(len(use_sangle), 1)
         self.assertEqual(use_sangle[0].value, "")
 
-        const_q_cutoff = ReductionProperty.objects.filter(
-            instrument=instrument, key="const_q_cutoff"
-        )
+        const_q_cutoff = ReductionProperty.objects.filter(instrument=instrument, key="const_q_cutoff")
         self.assertEqual(len(const_q_cutoff), 1)
         self.assertEqual(const_q_cutoff[0].value, "0.04")
 
-        bck_width = ReductionProperty.objects.filter(
-            instrument=instrument, key="bck_width"
-        )
+        bck_width = ReductionProperty.objects.filter(instrument=instrument, key="bck_width")
         self.assertEqual(len(bck_width), 1)
         self.assertEqual(bck_width[0].value, "11")
 
@@ -148,9 +142,7 @@ class TestCNCSForm(TestCase):
         grp_prop = ReductionProperty(instrument=instrument, key="grouping")
         grp_prop.save()
 
-        Choice(
-            instrument=instrument, property=grp_prop, value="grp1", description="group1"
-        ).save()
+        Choice(instrument=instrument, property=grp_prop, value="grp1", description="group1").save()
 
     @classmethod
     def testTearDown(cls):
@@ -232,9 +224,7 @@ class TestDGSForm(TestCase):
         grp_prop = ReductionProperty(instrument=instrument, key="grouping")
         grp_prop.save()
 
-        Choice(
-            instrument=instrument, property=grp_prop, value="grp1", description="group1"
-        ).save()
+        Choice(instrument=instrument, property=grp_prop, value="grp1", description="group1").save()
 
     @classmethod
     def testTearDown(cls):
@@ -274,9 +264,7 @@ class TestSEQForm(TestCase):
         grp_prop = ReductionProperty(instrument=instrument, key="grouping")
         grp_prop.save()
 
-        Choice(
-            instrument=instrument, property=grp_prop, value="grp1", description="group1"
-        ).save()
+        Choice(instrument=instrument, property=grp_prop, value="grp1", description="group1").save()
 
     @classmethod
     def testTearDown(cls):
@@ -391,12 +379,8 @@ MaskBTPParameters.append({'Bank': '3-5'})
 class TestPlottingForm(TestCase):
     def test_to_dict_list(self):
         plot_list = [
-            forms.PlottingForm(
-                {"maximum": 0.05, "minimum": -0.05, "perpendicular_to": "[0,K,0]"}
-            ),
-            forms.PlottingForm(
-                {"maximum": 1.05, "minimum": 0.95, "perpendicular_to": "[H,0,0]"}
-            ),
+            forms.PlottingForm({"maximum": 0.05, "minimum": -0.05, "perpendicular_to": "[0,K,0]"}),
+            forms.PlottingForm({"maximum": 1.05, "minimum": 0.95, "perpendicular_to": "[H,0,0]"}),
         ]
         for plot in plot_list:
             self.assertTrue(plot.is_valid())

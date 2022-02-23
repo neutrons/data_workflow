@@ -91,9 +91,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-q", metavar="queue", help="ActiveMQ queue name", dest="queue")
     parser.add_argument("-e", metavar="err", help="Error message", dest="err")
-    parser.add_argument(
-        "-d", metavar="file", help="data file path", dest="file", required=True
-    )
+    parser.add_argument("-d", metavar="file", help="data file path", dest="file", required=True)
     parser.add_argument(
         "-b",
         metavar="instrument",
@@ -101,9 +99,7 @@ if __name__ == "__main__":
         required=True,
         dest="instrument",
     )
-    parser.add_argument(
-        "--catalog", help="Catalog the data", action="store_true", dest="do_catalog"
-    )
+    parser.add_argument("--catalog", help="Catalog the data", action="store_true", dest="do_catalog")
     parser.add_argument(
         "--reduction",
         help="Perform reduction",
@@ -124,10 +120,7 @@ if __name__ == "__main__":
         default_queue = "CATALOG.DATA_READY"
     if namespace.do_reduction is not None and namespace.do_reduction is True:
         default_queue = "REDUCTION.DATA_READY"
-    if (
-        namespace.do_reduction_catalog is not None
-        and namespace.do_reduction_catalog is True
-    ):
+    if namespace.do_reduction_catalog is not None and namespace.do_reduction_catalog is True:
         default_queue = "REDUCTION_CATALOG.DATA_READY"
 
     queue = default_queue if namespace.queue is None else namespace.queue

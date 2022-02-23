@@ -161,9 +161,7 @@ class ProcessingFormTest(TestCase):
             is_adara=False,
         ).save()
         file_path = ProcessingForm._create_file_path(inst, ipts, run)
-        refval = (
-            "/SNS/TEST_INSTRUMENT_X/test_ipts/0/1/NeXus/TEST_INSTRUMENT_X_1_event.nxs"
-        )
+        refval = "/SNS/TEST_INSTRUMENT_X/test_ipts/0/1/NeXus/TEST_INSTRUMENT_X_1_event.nxs"
         self.assertEqual(file_path, refval)
 
     def test_recover_processed_run(self):

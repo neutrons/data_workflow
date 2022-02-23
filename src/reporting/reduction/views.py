@@ -118,9 +118,7 @@ def configuration_ref_m(request, instrument):
             options_form.to_db(instrument_id, request.user)
             # Send ActiveMQ request
             try:
-                view_util.send_template_request(
-                    instrument_id, options_form.to_template(), user=request.user
-                )
+                view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse("reduction:configuration", args=[instrument]))
             except:  # noqa: E722
                 logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
@@ -205,9 +203,7 @@ def configuration_cncs(request, instrument):
             options_form.to_db(instrument_id, request.user)
             # Send ActiveMQ request
             try:
-                view_util.send_template_request(
-                    instrument_id, options_form.to_template(), user=request.user
-                )
+                view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse("reduction:configuration", args=[instrument]))
             except:  # noqa: E722
                 logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
@@ -300,9 +296,7 @@ def configuration_dgs(request, instrument):
             options_form.to_db(instrument_id, request.user)
             # Send ActiveMQ request
             try:
-                view_util.send_template_request(
-                    instrument_id, options_form.to_template(), user=request.user
-                )
+                view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse("reduction:configuration", args=[instrument]))
             except:  # noqa: E722
                 logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
@@ -406,9 +400,7 @@ def configuration_corelli(request, instrument):
             options_form.to_db(instrument_id, request.user)
             # Send ActiveMQ request
             try:
-                view_util.send_template_request(
-                    instrument_id, options_form.to_template(), user=request.user
-                )
+                view_util.send_template_request(instrument_id, options_form.to_template(), user=request.user)
                 return redirect(reverse("reduction:configuration", args=[instrument]))
             except:  # noqa: E722
                 logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
@@ -427,18 +419,12 @@ def configuration_corelli(request, instrument):
             try:
                 mask_list = forms.MaskForm.from_dict_list(params_dict["mask"])
             except:  # noqa: E722
-                logging.error(
-                    "Error evaluating the mask information: %s", sys.exc_info()[1]
-                )
+                logging.error("Error evaluating the mask information: %s", sys.exc_info()[1])
         if "plot_requests" in params_dict:
             try:
-                plot_list = forms.PlottingForm.from_dict_list(
-                    params_dict["plot_requests"]
-                )
+                plot_list = forms.PlottingForm.from_dict_list(params_dict["plot_requests"])
             except:  # noqa: E722
-                logging.error(
-                    "Error evaluating the plotting information: %s", sys.exc_info()[1]
-                )
+                logging.error("Error evaluating the plotting information: %s", sys.exc_info()[1])
         mask_form = MaskFormSet(initial=mask_list)
         plot_form = PlotFormSet(initial=plot_list)
 
@@ -490,9 +476,7 @@ def configuration_change(request, instrument):
         for item in template_data:
             try:
                 template_dict[item["key"]] = item["value"]
-                view_util.store_property(
-                    instrument_id, item["key"], item["value"], user=request.user
-                )
+                view_util.store_property(instrument_id, item["key"], item["value"], user=request.user)
             except:  # noqa: E722
                 logging.error("config_change: %s", sys.exc_info()[1])
 
@@ -501,14 +485,10 @@ def configuration_change(request, instrument):
             try:
                 template_dict["use_default"] = int(request.POST["use_default"]) == 1
             except:  # noqa: E722
-                logging.error(
-                    "Error parsing use_default parameter: %s", sys.exc_info()[1]
-                )
+                logging.error("Error parsing use_default parameter: %s", sys.exc_info()[1])
         # Send ActiveMQ request
         try:
-            view_util.send_template_request(
-                instrument_id, template_dict, user=request.user
-            )
+            view_util.send_template_request(instrument_id, template_dict, user=request.user)
         except:  # noqa: E722
             logging.error("Error sending AMQ script request: %s", sys.exc_info()[1])
             return HttpResponse("Error processing request", status=500)

@@ -182,9 +182,7 @@ def legacy_monitor(request, instrument):
     }
     if len(kvp) == 0:
         inst_url = legacy_status.get_legacy_url(instrument_id)
-        template_values["user_alert"] = [
-            "Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)
-        ]
+        template_values["user_alert"] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
     for group in kvp:
         for item in group["data"]:
             if item["key"] in ["Proposal", "Detector_Rate", "Run", "Status"]:
@@ -195,9 +193,7 @@ def legacy_monitor(request, instrument):
 
     # Add most recent reduced data
     last_run = template_values["last_run"]
-    plot_dict = report.view_util.get_plot_template_dict(
-        last_run, instrument=instrument, run_id=last_run.run_number
-    )
+    plot_dict = report.view_util.get_plot_template_dict(last_run, instrument=instrument, run_id=last_run.run_number)
     template_values.update(plot_dict)
 
     return render(request, "dasmon/legacy_monitor.html", template_values)
@@ -239,17 +235,13 @@ def live_monitor(request, instrument):
         "breadcrumbs": breadcrumbs,
         "update_url": update_url,
         "pv_url": pv_url,
-        "key_value_pairs": view_util.get_cached_variables(
-            instrument_id, monitored_only=True
-        ),
+        "key_value_pairs": view_util.get_cached_variables(instrument_id, monitored_only=True),
     }
     template_values = report.view_util.fill_template_values(request, **template_values)
     template_values = users.view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
 
-    template_values["signals_url"] = reverse(
-        "dasmon:get_signal_table", args=[instrument]
-    )
+    template_values["signals_url"] = reverse("dasmon:get_signal_table", args=[instrument])
 
     return render(request, "dasmon/live_monitor.html", template_values)
 
@@ -365,19 +357,12 @@ def diagnostics(request, instrument):
         template_values["dasmon_diagnostics"] = dasmon_diag
         # PVStreamer
         if ActiveInstrument.objects.has_pvstreamer(instrument_id):
-            template_values["pv_diagnostics"] = view_util.pvstreamer_diagnostics(
-                instrument_id
-            )
+            template_values["pv_diagnostics"] = view_util.pvstreamer_diagnostics(instrument_id)
         # PVSD
         if ActiveInstrument.objects.has_pvsd(instrument_id):
-            template_values["pvsd_diagnostics"] = view_util.pvstreamer_diagnostics(
-                instrument_id, process="pvsd"
-            )
+            template_values["pvsd_diagnostics"] = view_util.pvstreamer_diagnostics(instrument_id, process="pvsd")
         # Actions messages
-        if (
-            dasmon_diag["dasmon_listener_warning"]
-            and wf_diag["dasmon_listener_warning"]  # noqa: W503
-        ):
+        if dasmon_diag["dasmon_listener_warning"] and wf_diag["dasmon_listener_warning"]:  # noqa: W503
             actions.append(
                 "Multiple heartbeat message failures: ask Linux Support to restart dasmon_listener before proceeding"
             )
@@ -408,9 +393,7 @@ def get_update(request, instrument):
 
     # Get last experiment and last run
     data_dict = report.view_util.get_current_status(instrument_id)
-    data_dict["variables"] = view_util.get_cached_variables(
-        instrument_id, monitored_only=False
-    )
+    data_dict["variables"] = view_util.get_cached_variables(instrument_id, monitored_only=False)
 
     localtime = timezone.now()
     df = dateformat.DateFormat(localtime)
@@ -427,9 +410,7 @@ def get_update(request, instrument):
     data_dict["live_plot_data"] = view_util.get_live_variables(request, instrument_id)
 
     # Recent run info
-    data_dict = view_util.get_live_runs_update(
-        request, instrument_id, None, **data_dict
-    )
+    data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
     response["Content-Length"] = len(response.content)
@@ -464,9 +445,7 @@ def get_signal_table(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template("dasmon/signal_table.html")
     template_values = {"signals": view_util.get_signals(instrument_id)}
-    template_values["is_instrument_staff"] = users.view_util.is_instrument_staff(
-        request, instrument_id
-    )
+    template_values["is_instrument_staff"] = users.view_util.is_instrument_staff(request, instrument_id)
     resp = t.render(template_values)
     response = HttpResponse(resp, content_type="text/html")
     response["Connection"] = "close"
@@ -525,9 +504,7 @@ def notifications(request):
             registered = options_form.cleaned_data["register"]
             instruments = options_form.cleaned_data["instruments"]
             try:
-                user_options_list = UserNotification.objects.filter(
-                    user_id=request.user.id
-                )
+                user_options_list = UserNotification.objects.filter(user_id=request.user.id)
                 if len(user_options_list) == 0:
                     user_options = UserNotification(
                         user_id=request.user.id,
@@ -548,20 +525,14 @@ def notifications(request):
                         user_options.save()
                     except:  # noqa: E722
                         alert_list.append("Could not find instrument %s" % item)
-                        logging.error(
-                            "Notification registration failed: %s", sys.exc_info()[1]
-                        )
+                        logging.error("Notification registration failed: %s", sys.exc_info()[1])
                 alert_list.append("Your changes have been saved.")
 
             except:  # noqa: E722
                 alert_list.append("There was a problem processing your request.")
-                logging.error(
-                    "Error processing notification settings: %s", sys.exc_info()[1]
-                )
+                logging.error("Error processing notification settings: %s", sys.exc_info()[1])
         else:
-            alert_list.append(
-                "Your form is invalid. Please modify your entries and re-submit."
-            )
+            alert_list.append("Your form is invalid. Please modify your entries and re-submit.")
             logging.error("Invalid form %s", options_form.errors)
     else:
         params_dict = {}

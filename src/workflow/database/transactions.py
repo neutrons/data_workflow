@@ -82,10 +82,7 @@ def add_status_entry(headers, data):
 
     # Add instrument to IPTS if not already in there
     try:
-        if (
-            IPTS.objects.filter(id=ipts_id.id, instruments__in=[instrument_id]).count()
-            == 0
-        ):
+        if IPTS.objects.filter(id=ipts_id.id, instruments__in=[instrument_id]).count() == 0:
             ipts_id.instruments.add(instrument_id)
             ipts_id.save()
     except:  # noqa: E722
@@ -118,9 +115,7 @@ def add_status_entry(headers, data):
         summary_id.save()
 
     # Create a run status object in the DB
-    run_status = RunStatus(
-        run_id=run_id, queue_id=status_id, message_id=headers["message-id"]
-    )
+    run_status = RunStatus(run_id=run_id, queue_id=status_id, message_id=headers["message-id"])
     run_status.save()
 
     # Create an information entry as necessary
@@ -177,9 +172,7 @@ def get_task(message_headers, message_data):
     try:
         data_dict = json.loads(message_data)
     except:  # noqa: E722
-        logging.error(
-            "transactions.get_task expects JSON-encoded message: %s", sys.exc_info()[1]
-        )
+        logging.error("transactions.get_task expects JSON-encoded message: %s", sys.exc_info()[1])
         return None
 
     # Look for instrument
@@ -194,9 +187,7 @@ def get_task(message_headers, message_data):
         logging.error("transactions.get_task could not find instrument information")
         return None
 
-    task_ids = Task.objects.filter(
-        instrument_id=instrument_id, input_queue_id=status_id
-    )
+    task_ids = Task.objects.filter(instrument_id=instrument_id, input_queue_id=status_id)
     if len(task_ids) == 1:
         return task_ids[0].json_encode()
     elif len(task_ids) > 1:
@@ -241,9 +232,7 @@ def _get_queue_ids(queue_list):
     return queue_ids
 
 
-def add_task(
-    instrument, input_queue, task_class="", task_queues=None, success_queues=None
-):
+def add_task(instrument, input_queue, task_class="", task_queues=None, success_queues=None):
     """
     Add a task entry
     """
@@ -279,9 +268,7 @@ def add_task(
 
     # Sanity check
     if len(task_queue_ids) != len(success_queue_ids):
-        logging.error(
-            "transactions.add_task expects the same number of tasks and success queues"
-        )
+        logging.error("transactions.add_task expects the same number of tasks and success queues")
         return
 
     # Find whether it already exists

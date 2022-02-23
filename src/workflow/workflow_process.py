@@ -53,10 +53,7 @@ class WorkflowProcess(StateAction):
             # Identify a problem only if the last message received is more
             # than a minimum amount of time
             now = datetime.datetime.utcnow().replace(tzinfo=utc)
-            if (
-                r.complete is False
-                and now - RunStatus.objects.last_timestamp(r.run_id) > self._allowed_lag
-            ):
+            if r.complete is False and now - RunStatus.objects.last_timestamp(r.run_id) > self._allowed_lag:
                 # The workflow for this run is still incomplete
                 # Generate a JSON description of the run, to be used
                 # when sending a message
@@ -92,14 +89,8 @@ class WorkflowProcess(StateAction):
                         )
 
                 # Reduced data hasn't been cataloged
-                if (
-                    r.reduction_needed is True
-                    and r.reduced is True
-                    and r.reduction_cataloged is False
-                ):
-                    data_dict[
-                        "information"
-                    ] = "Reduction cataloging incomplete for %s" % str(r)
+                if r.reduction_needed is True and r.reduced is True and r.reduction_cataloged is False:
+                    data_dict["information"] = "Reduction cataloging incomplete for %s" % str(r)
                     logging.warn(data_dict["information"])
                     message = json.dumps(data_dict)
                     # Log this information

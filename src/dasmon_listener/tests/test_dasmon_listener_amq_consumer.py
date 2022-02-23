@@ -9,19 +9,13 @@ values = {"test_key": "test_value"}
 
 class TestAMQConsumer(unittest.TestCase):
     def get_listener(self):
-        with mock.patch(
-            "report.models.Instrument.objects"
-        ) as instrumentMock:  # noqa: F841
-            with mock.patch(
-                "dasmon.models.Parameter.objects"
-            ) as parameterMock:  # noqa: F841
+        with mock.patch("report.models.Instrument.objects") as instrumentMock:  # noqa: F841
+            with mock.patch("dasmon.models.Parameter.objects") as parameterMock:  # noqa: F841
                 listener = Listener()
                 return listener
 
     def get_client(self):
-        with mock.patch(
-            "report.models.Instrument.objects"
-        ) as instrumentMock:  # noqa: F841
+        with mock.patch("report.models.Instrument.objects") as instrumentMock:  # noqa: F841
             client = Client(None, None, None)
             return client
 
@@ -151,9 +145,7 @@ class TestAMQConsumer(unittest.TestCase):
     @mock.patch("report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_signal")
     @mock.patch("json.loads")
-    def test_on_message_signal(
-        self, jsonLoadsMock, processSignal, instrumentSaveMock, parametereSaveMock
-    ):
+    def test_on_message_signal(self, jsonLoadsMock, processSignal, instrumentSaveMock, parametereSaveMock):
         listener = self.get_listener()
         frame = mock.Mock()
         # ending with .ACK returns premptively
@@ -168,9 +160,7 @@ class TestAMQConsumer(unittest.TestCase):
     @mock.patch("report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_SMS")
     @mock.patch("json.loads")
-    def test_on_message_app_sms(
-        self, jsonLoadsMock, processSMS, instrumentSaveMock, parametereSaveMock
-    ):
+    def test_on_message_app_sms(self, jsonLoadsMock, processSMS, instrumentSaveMock, parametereSaveMock):
         listener = self.get_listener()
         frame = mock.Mock()
         # ending with .ACK returns premptively
@@ -185,9 +175,7 @@ class TestAMQConsumer(unittest.TestCase):
     @mock.patch("report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("json.loads")
-    def test_on_message_status_else(
-        self, jsonLoadsMock, storeAncCacheMock, instrumentSaveMock, parametereSaveMock
-    ):
+    def test_on_message_status_else(self, jsonLoadsMock, storeAncCacheMock, instrumentSaveMock, parametereSaveMock):
         listener = self.get_listener()
         frame = mock.Mock()
         # ending with .ACK returns premptively

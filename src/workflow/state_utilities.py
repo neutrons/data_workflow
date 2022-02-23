@@ -19,9 +19,7 @@ def decode_message(message):
     """
     tokens = message.split("/")
     if len(tokens) < 6:
-        raise RuntimeError(
-            "Badly formed message from streaming translation\n  %s" % message
-        )
+        raise RuntimeError("Badly formed message from streaming translation\n  %s" % message)
 
     # Get the run number
     run_number = 0
@@ -59,10 +57,7 @@ def logged_action(action):
             message = json.dumps(data)
 
         destination = headers["destination"].replace("/queue/", "")
-        logging.info(
-            "%s r%s: %s: %s"
-            % (data["instrument"], data["run_number"], destination, str(data))
-        )
+        logging.info("%s r%s: %s: %s" % (data["instrument"], data["run_number"], destination, str(data)))
         transactions.add_status_entry(headers, message)
 
         # Clean up the extra information

@@ -124,9 +124,7 @@ def needs_reduction(request, run_id):
         return False
 
     # Check whether we have a task for this queue
-    tasks = Task.objects.filter(
-        instrument_id=run_id.instrument_id, input_queue_id=red_queue
-    )
+    tasks = Task.objects.filter(instrument_id=run_id.instrument_id, input_queue_id=red_queue)
     if (
         len(tasks) == 1
         and (tasks[0].task_class is None or len(tasks[0].task_class) == 0)
@@ -137,9 +135,7 @@ def needs_reduction(request, run_id):
     return True
 
 
-def send_processing_request(
-    instrument_id, run_id, user=None, destination=None, is_complete=False
-):
+def send_processing_request(instrument_id, run_id, user=None, destination=None, is_complete=False):
     """
     Send an AMQ message to the workflow manager to reprocess
     the run
@@ -207,13 +203,9 @@ def processing_request(request, instrument, run_id, destination):
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    run_object = get_object_or_404(
-        DataRun, instrument_id=instrument_id, run_number=run_id
-    )
+    run_object = get_object_or_404(DataRun, instrument_id=instrument_id, run_number=run_id)
     try:
-        send_processing_request(
-            instrument_id, run_object, request.user, destination=destination
-        )
+        send_processing_request(instrument_id, run_object, request.user, destination=destination)
     except:  # noqa: E722
         logging.error("Could not send post-processing request: %s", destination)
         logging.error(sys.exc_info()[1])
@@ -242,11 +234,7 @@ def retrieve_rates(instrument_id, last_run_id):
         @param id_name: 'run' or 'error'
         """
         rate = cache.get("%s_%s_rate" % (instrument_id.name, id_name))
-        if (
-            rate is not None
-            and last_cached_run is not None
-            and last_run == last_cached_run
-        ):
+        if rate is not None and last_cached_run is not None and last_run == last_cached_run:
             return cache.get("%s_%s_rate" % (instrument_id.name, id_name))
         return None
 
@@ -257,9 +245,7 @@ def retrieve_rates(instrument_id, last_run_id):
     if runs is None or errors is None:
         runs = run_rate(instrument_id)
         errors = error_rate(instrument_id)
-        cache.set(
-            "%s_run_rate" % instrument_id.name, runs, settings.RUN_RATE_CACHE_TIMEOUT
-        )
+        cache.set("%s_run_rate" % instrument_id.name, runs, settings.RUN_RATE_CACHE_TIMEOUT)
         cache.set(
             "%s_error_rate" % instrument_id.name,
             errors,
@@ -296,9 +282,7 @@ def run_rate(instrument_id, n_hours=24):
         running_sum = 0
         for i in range(n_hours):
             t_i = time - datetime.timedelta(hours=i + 1)
-            n = DataRun.objects.filter(
-                instrument_id=instrument_id, created_on__gte=t_i
-            ).count()
+            n = DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=t_i).count()
             n -= running_sum
             running_sum += n
             runs.append([-i, n])
@@ -380,9 +364,7 @@ def is_acquisition_complete(run_id):
     has started
     @param run_id: run object
     """
-    status_items = RunStatus.objects.filter(
-        run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY"
-    )
+    status_items = RunStatus.objects.filter(run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY")
     return len(status_items) > 0
 
 
@@ -440,19 +422,13 @@ def get_run_list_dict(run_list):
             localtime = timezone.localtime(r.created_on)
             df = dateformat.DateFormat(localtime)
 
-            run_url = reverse(
-                "report:detail", args=[str(r.instrument_id), r.run_number]
-            )
-            reduce_url = reverse(
-                "report:submit_for_reduction", args=[str(r.instrument_id), r.run_number]
-            )
+            run_url = reverse("report:detail", args=[str(r.instrument_id), r.run_number])
+            reduce_url = reverse("report:submit_for_reduction", args=[str(r.instrument_id), r.run_number])
             instr_url = reverse("dasmon:live_runs", args=[str(r.instrument_id)])
 
             run_dicts.append(
                 {
-                    "instrument_id": str(
-                        "<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))
-                    ),
+                    "instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
                     "run": str("<a href='%s'>%s</a>" % (run_url, r.run_number)),
                     "reduce_url": str(
                         "<a id='reduce_%s' href='javascript:void(0);' onClick='$.ajax({ url: \"%s\", cache: false }); $(\"#reduce_%s\").remove();'>reduce</a>"  # noqa: E501
@@ -534,13 +510,9 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     html_data = get_plot_data_from_server(instrument, run_id, "html")
     if html_data is not None:
         plot_dict["html_data"] = html_data
-        plot_dict["update_url"] = append_key(
-            "%s/html/" % live_data_url, instrument, run_id
-        )
+        plot_dict["update_url"] = append_key("%s/html/" % live_data_url, instrument, run_id)
         if extract_ascii_from_div(html_data) is not None:
-            plot_dict["data_url"] = reverse(
-                "report:download_reduced_data", args=[instrument, run_id]
-            )
+            plot_dict["data_url"] = reverse("report:download_reduced_data", args=[instrument, run_id])
         return plot_dict
 
     # Second, json data from the plot server
@@ -548,9 +520,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
 
     # Third, local json data for the d3 plots
     if json_data:
-        plot_dict["update_url"] = append_key(
-            "%s/json/" % live_data_url, instrument, run_id
-        )
+        plot_dict["update_url"] = append_key("%s/json/" % live_data_url, instrument, run_id)
 
     plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
     if plot_data is not None:
@@ -572,22 +542,16 @@ def get_plot_data_from_server(instrument, run_id, data_type="json"):
     json_data = None
     try:
         url_template = string.Template(settings.LIVE_DATA_SERVER)
-        live_data_url = url_template.substitute(
-            instrument=instrument, run_number=run_id
-        )
+        live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
         live_data_url += "/%s/" % data_type
         live_data_url = append_key(live_data_url, instrument, run_id)
-        conn = httplib2.HTTPSConnectionWithTimeout(
-            settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5
-        )
+        conn = httplib2.HTTPSConnectionWithTimeout(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
         conn.request("GET", live_data_url)
         data_request = conn.getresponse()
         if data_request.status == 200:
             json_data = data_request.read()
     except:  # noqa: E722
-        logging.error(
-            "Could not pull data from live data server:\n%s", sys.exc_info()[1]
-        )
+        logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
     return json_data
 
 
@@ -619,10 +583,7 @@ def extract_d3_data_from_json(json_data):
                     x_label = data_dict["main_output"]["x_label"]
                 if "y_label" in data_dict["main_output"]:
                     y_label = data_dict["main_output"]["y_label"]
-                plot_data = [
-                    [x_values[i], y_values[i], e_values[i]]
-                    for i in range(len(y_values))
-                ]
+                plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
             # New format from Mantid
             elif "data" in data_dict["main_output"]:
                 x_values = data_dict["main_output"]["data"]["1"][0]
@@ -635,15 +596,9 @@ def extract_d3_data_from_json(json_data):
                         y_label = data_dict["main_output"]["axes"]["ylabel"]
                 if len(data_dict["main_output"]["data"]["1"]) > 3:
                     dx = data_dict["main_output"]["data"]["1"][3]
-                    plot_data = [
-                        [x_values[i], y_values[i], e_values[i], dx[i]]
-                        for i in range(len(y_values))
-                    ]
+                    plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
                 else:
-                    plot_data = [
-                        [x_values[i], y_values[i], e_values[i]]
-                        for i in range(len(y_values))
-                    ]
+                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
     except:  # noqa: E722
         logging.error("Error finding reduced json data: %s", sys.exc_info()[1])
     return plot_data, x_label, y_label
@@ -663,9 +618,7 @@ def find_skipped_runs(instrument_id, start_run_number=0):
         if start_run_number == 0:
             start_run_number = max(0, last_run_number - 1000)
         for i in range(start_run_number, last_run_number):
-            query_set = DataRun.objects.filter(
-                instrument_id=instrument_id, run_number=i
-            )
+            query_set = DataRun.objects.filter(instrument_id=instrument_id, run_number=i)
             if len(query_set) == 0:
                 missing_runs.append(i)
     except:  # noqa: E722

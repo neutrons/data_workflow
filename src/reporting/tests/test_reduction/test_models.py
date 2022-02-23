@@ -18,9 +18,7 @@ class TestModels(TestCase):
 
         user = User.objects.create_user("user", "email@server.com", "password")
 
-        rp = ReductionProperty.objects.create(
-            instrument=instrument, key="key", value="value"
-        )
+        rp = ReductionProperty.objects.create(instrument=instrument, key="key", value="value")
 
         PropertyModification.objects.create(property=rp, value="modified", user=user)
 

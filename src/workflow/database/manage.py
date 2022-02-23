@@ -12,8 +12,6 @@ if __name__ == "__main__":
 
         execute_from_command_line(sys.argv)
     except Exception:
-        print(
-            "There was an error loading django modules. Do you have django installed?"
-        )
+        print("There was an error loading django modules. Do you have django installed?")
         traceback.print_exc()
         sys.exit()

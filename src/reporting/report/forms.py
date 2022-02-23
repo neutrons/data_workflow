@@ -30,23 +30,17 @@ def validate_integer_list(value):
                     value_list.extend(range(int(range_toks[0]), int(range_toks[1]) + 1))
                 except:  # noqa: E722
                     logging.error(sys.exc_info()[1])
-                    raise ValidationError(
-                        "Error parsing %s for a range of integers" % value
-                    )
+                    raise ValidationError("Error parsing %s for a range of integers" % value)
             else:
                 logging.error("Found more than two tokens around -")
-                raise ValidationError(
-                    "Error parsing %s for a range of integers" % value
-                )
+                raise ValidationError("Error parsing %s for a range of integers" % value)
 
         else:
             try:
                 value_list.append(int(item))
             except:  # noqa: E722
                 logging.error(sys.exc_info()[1])
-                raise ValidationError(
-                    "Error parsing %s for a range of integers" % value
-                )
+                raise ValidationError("Error parsing %s for a range of integers" % value)
 
     return value_list
 
@@ -58,9 +52,7 @@ class ProcessingForm(forms.Form):
 
     instrument = forms.ChoiceField(required=True, choices=[])
     experiment = forms.CharField(required=True, initial="")
-    run_list = forms.CharField(
-        required=True, initial="", validators=[validate_integer_list]
-    )
+    run_list = forms.CharField(required=True, initial="", validators=[validate_integer_list])
     create_as_needed = forms.BooleanField(required=False, initial=False)
     task = forms.ChoiceField(required=True, choices=[])
 
@@ -69,9 +61,7 @@ class ProcessingForm(forms.Form):
 
         # Get the list of available instruments
         instruments = [
-            (str(i), str(i))
-            for i in Instrument.objects.all().order_by("name")
-            if ActiveInstrument.objects.is_alive(i)
+            (str(i), str(i)) for i in Instrument.objects.all().order_by("name") if ActiveInstrument.objects.is_alive(i)
         ]
         self.fields["instrument"].choices = instruments
 
@@ -80,11 +70,7 @@ class ProcessingForm(forms.Form):
         tasks = [
             (str(q), str(q))
             for q in queue_ids
-            if (
-                str(q).endswith("REQUEST")
-                or str(q).endswith("DATA_READY")
-                or str(q).endswith("NOT_NEEDED")
-            )
+            if (str(q).endswith("REQUEST") or str(q).endswith("DATA_READY") or str(q).endswith("NOT_NEEDED"))
         ]
         self.fields["task"].choices = tasks
 
@@ -111,9 +97,7 @@ class ProcessingForm(forms.Form):
             self.initial["task"] = "POSTPROCESS.DATA_READY"
 
         if "create_as_needed" in initial:
-            self.initial["create_as_needed"] = self.fields[
-                "create_as_needed"
-            ].to_python(initial["create_as_needed"])
+            self.initial["create_as_needed"] = self.fields["create_as_needed"].to_python(initial["create_as_needed"])
 
     @classmethod
     def _create_file_path(cls, instrument, ipts, run):
@@ -154,17 +138,12 @@ class ProcessingForm(forms.Form):
             instrument = Instrument.objects.get(name=self.cleaned_data["instrument"])
             output_report += "Found instrument %s<br>" % str(instrument)
         except Instrument.DoesNotExist:
-            output_report += (
-                "Could not find instrument %s<br>" % self.cleaned_data["instrument"]
-            )
+            output_report += "Could not find instrument %s<br>" % self.cleaned_data["instrument"]
             output_report += "Fix your inputs and re-submit<br>"
             return {"report": output_report, "task": None}
 
         # Special recovery process
-        if (
-            self.cleaned_data["experiment"].upper() == "FIND"
-            and self.cleaned_data["create_as_needed"]
-        ):
+        if self.cleaned_data["experiment"].upper() == "FIND" and self.cleaned_data["create_as_needed"]:
             return self._recover_processed_run(instrument)
 
         # Verify that the experiment exists
@@ -175,9 +154,7 @@ class ProcessingForm(forms.Form):
             )
             output_report += "Found experiment %s<br>" % str(ipts)
         except IPTS.DoesNotExist:
-            output_report += (
-                "Could not find experiment %s<br>" % self.cleaned_data["experiment"]
-            )
+            output_report += "Could not find experiment %s<br>" % self.cleaned_data["experiment"]
             output_report += "Fix your inputs and re-submit<br>"
             return {"report": output_report, "task": None}
 
@@ -187,16 +164,12 @@ class ProcessingForm(forms.Form):
         valid_run_objects = []
         for run in run_list:
             try:
-                run_obj = DataRun.objects.get(
-                    instrument_id=instrument, ipts_id=ipts, run_number=run
-                )
+                run_obj = DataRun.objects.get(instrument_id=instrument, ipts_id=ipts, run_number=run)
                 # In some cases, when the DAS has started acquiring but the run is not
                 # completed, we can have an entry without a file path. When that's the
                 # case, create a standard path before submitting.
                 if len(run_obj.file) == 0:
-                    run_obj.file = ProcessingForm._create_file_path(
-                        instrument, ipts, run
-                    )
+                    run_obj.file = ProcessingForm._create_file_path(instrument, ipts, run)
                     run_obj.save()
                 valid_run_objects.append(run_obj)
             except DataRun.DoesNotExist:
@@ -221,9 +194,7 @@ class ProcessingForm(forms.Form):
             # First look for mismatch between run and ipts
             has_ipts_mismatch = False
             for run in invalid_runs:
-                run_list = DataRun.objects.filter(
-                    instrument_id=instrument, run_number=run
-                )
+                run_list = DataRun.objects.filter(instrument_id=instrument, run_number=run)
                 if len(run_list) > 0:
                     output_report += "Run %s was found in experiment %s<br>" % (
                         run,
@@ -236,13 +207,9 @@ class ProcessingForm(forms.Form):
                 return {"report": output_report, "task": None}
 
             if self.cleaned_data["create_as_needed"]:
-                output_report += "The following runs will be created: %s<br>" % str(
-                    invalid_runs
-                )
+                output_report += "The following runs will be created: %s<br>" % str(invalid_runs)
             else:
-                output_report += "The following were invalid runs: %s<br>" % str(
-                    invalid_runs
-                )
+                output_report += "The following were invalid runs: %s<br>" % str(invalid_runs)
                 output_report += "Fix your inputs and re-submit<br>"
                 return {"report": output_report, "task": None}
 
@@ -280,9 +247,7 @@ class ProcessingForm(forms.Form):
             )
             valid_run_objects.append(new_run)
 
-        output_report = (
-            "Your runs will be created if they exist in the online catalog<br>"
-        )
+        output_report = "Your runs will be created if they exist in the online catalog<br>"
 
         # Returns a report and task to be sent
         return {
