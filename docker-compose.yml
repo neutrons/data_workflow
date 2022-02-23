@@ -69,6 +69,8 @@ services:
   autoreducer:
     build: https://github.com/neutrons/post_processing_agent.git#main
     hostname: autoreducer
+    volumes:
+      - ./test/data:/SNS/
     depends_on:
       - activemq
 

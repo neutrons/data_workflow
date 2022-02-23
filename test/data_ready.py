@@ -27,3 +27,7 @@ def create_run(instrument,
 
 
 create_run('HYSA', 1234, 12345)
+
+create_run('ARCS', 27278, 214581)
+create_run('ARCS', 27800, 201562)
+create_run('ARCS', 27800, 214583)
