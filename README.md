@@ -84,3 +84,10 @@ Here are the recommended steps to setup your dev environment:
 - `conda activate webmon`
 - `conda env update --file conda_development.yml`
 - `python -m pytest src`
+
+## To contribute or report a problem
+
+- To report a problem, please create an issue using the "Issues" tab above.
+- If you would like to suggest changes, please either create an issue or a pull request.
+
+> Both actions above requires an active XCAMS account, which can be registered at https://xcams.ornl.gov/xcams/.
