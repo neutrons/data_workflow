@@ -65,7 +65,7 @@ STATIC_ROOT = "/var/www/workflow/static/"
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = "/static/"
 
-DJANGO_DIR = Path(django.__file__).resolve(strict=True)
+DJANGO_DIR = Path(django.__file__).resolve(strict=True).parent
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -271,3 +271,9 @@ LIVE_DATA_SERVER_PORT = "443"
 
 # Link out to fitting application
 FITTING_URLS = {}
+
+
+# remote worker options
+# setting these will force all execution to happen as a single user
+TEST_REMOTE_USER = ""
+TEST_REMOTE_PASSWD = ""
