@@ -3,6 +3,7 @@ from .database.settings import *  # noqa: F401, F403
 
 # Set logging level
 import logging
+
 LOGGING_LEVEL = logging.INFO
 
 # Default queue names

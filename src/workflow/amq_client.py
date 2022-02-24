@@ -14,37 +14,43 @@ import os
 
 from .database.transactions import get_message_queues
 from .workflow_process import WorkflowProcess
+
 try:
     from . import __version__ as version
-except:
-    version = 'development'
+except:  # noqa: E722
+    version = "development"
 
 
 class Client:
     """
-        ActiveMQ client
-        Holds the connection to a broker
+    ActiveMQ client
+    Holds the connection to a broker
     """
 
-    def __init__(self, brokers, user, passcode,
-                 queues=None,
-                 workflow_check=False,
-                 check_frequency=24,
-                 workflow_recovery=False,
-                 flexible_tasks=False,
-                 consumer_name="amq_consumer",
-                 auto_ack=True):
+    def __init__(
+        self,
+        brokers,
+        user,
+        passcode,
+        queues=None,
+        workflow_check=False,
+        check_frequency=24,
+        workflow_recovery=False,
+        flexible_tasks=False,
+        consumer_name="amq_consumer",
+        auto_ack=True,
+    ):
         """
-            @param brokers: list of brokers we can connect to
-            @param user: activemq user
-            @param passcode: passcode for activemq user
-            @param queues: list of queues to listen to
-            @param workflow_check: if True, the workflow will be checked at a given interval
-            @param check_frequency: number of hours between workflow checks
-            @param workflow_recovery: if True, the manager will try to recover from workflow problems
-            @param flexible_tasks: if True, the workflow tasks will be defined by the DB
-            @param consumer_name: name of the AMQ listener
-            @param auto_ack: if True, AMQ ack will be auotomatic
+        @param brokers: list of brokers we can connect to
+        @param user: activemq user
+        @param passcode: passcode for activemq user
+        @param queues: list of queues to listen to
+        @param workflow_check: if True, the workflow will be checked at a given interval
+        @param check_frequency: number of hours between workflow checks
+        @param workflow_recovery: if True, the manager will try to recover from workflow problems
+        @param flexible_tasks: if True, the workflow tasks will be defined by the DB
+        @param consumer_name: name of the AMQ listener
+        @param auto_ack: if True, AMQ ack will be auotomatic
         """
         # Connection parameters
         self._auto_ack = auto_ack
@@ -77,14 +83,15 @@ class Client:
             startup_msg += "  Recovery enabled?    %s\n" % str(self._workflow_recovery)
             if self._workflow_recovery:
                 startup_msg += "  Delay since last activity before attempting recovery: %s seconds\n" % str(
-                    self._workflow_check_delay)
+                    self._workflow_check_delay
+                )
         logging.info(startup_msg)
 
     def set_listener(self, listener):
         """
-            Set the listener object that will process each
-            incoming message.
-            @param listener: listener object
+        Set the listener object that will process each
+        incoming message.
+        @param listener: listener object
         """
         self._listener = listener
         self._connection = self.new_connection()
@@ -92,7 +99,7 @@ class Client:
 
     def get_connection(self, consumer_name=None):
         """
-            Get existing connection or create a new one.
+        Get existing connection or create a new one.
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
@@ -101,8 +108,8 @@ class Client:
 
     def new_connection(self, consumer_name=None):
         """
-            Establish and return a connection to ActiveMQ
-            @param consumer_name: name to give the new connection
+        Establish and return a connection to ActiveMQ
+        @param consumer_name: name to give the new connection
         """
         if consumer_name is None:
             consumer_name = self._consumer_name
@@ -116,7 +123,7 @@ class Client:
 
     def connect(self):
         """
-            Connect to a broker
+        Connect to a broker
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
@@ -125,13 +132,13 @@ class Client:
         logging.info("[%s] Subscribing to %s", self._consumer_name, str(self._queues))
         for i, q in enumerate(self._queues):
             if self._auto_ack:
-                self._connection.subscribe(destination=q, id=i, ack='auto')
+                self._connection.subscribe(destination=q, id=i, ack="auto")
             else:
-                self._connection.subscribe(destination=q, id=i, ack='client')
+                self._connection.subscribe(destination=q, id=i, ack="client")
 
     def _disconnect(self):
         """
-            Clean disconnect
+        Clean disconnect
         """
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
@@ -139,28 +146,30 @@ class Client:
 
     def verify_workflow(self):
         """
-            Verify that the workflow has completed for all the runs and
-            recover if it hasn't
+        Verify that the workflow has completed for all the runs and
+        recover if it hasn't
         """
         if self._workflow_check:
             try:
-                WorkflowProcess(connection=self._connection,
-                                recovery=self._workflow_recovery,
-                                allowed_lag=self._workflow_check_delay).verify_workflow()
-            except:
+                WorkflowProcess(
+                    connection=self._connection,
+                    recovery=self._workflow_recovery,
+                    allowed_lag=self._workflow_check_delay,
+                ).verify_workflow()
+            except:  # noqa: E722
                 logging.error("Workflow verification failed: %s", sys.exc_info()[1])
 
     def listen_and_wait(self, waiting_period=1.0):
         """
-            Listen for the next message from the brokers.
-            This method will simply return once the connection is
-            terminated.
-            @param waiting_period: sleep time between connection to a broker
+        Listen for the next message from the brokers.
+        This method will simply return once the connection is
+        terminated.
+        @param waiting_period: sleep time between connection to a broker
         """
         try:
             self.connect()
             self.verify_workflow()
-        except:
+        except:  # noqa: E722
             logging.error("Problem starting AMQ client: %s", sys.exc_info()[1])
 
         last_heartbeat = 0
@@ -174,19 +183,24 @@ class Client:
                 try:
                     if time.time() - last_heartbeat > 5:
                         last_heartbeat = time.time()
-                        data_dict = {"src_name": "workflowmgr",
-                                     "status": "0",
-                                     "pid": str(os.getpid())}
+                        data_dict = {
+                            "src_name": "workflowmgr",
+                            "status": "0",
+                            "pid": str(os.getpid()),
+                        }
                         message = json.dumps(data_dict)
-                        self._connection.send("/topic/SNS.COMMON.STATUS.WORKFLOW.0", message,
-                                              persistent='false')
-                except:
+                        self._connection.send(
+                            "/topic/SNS.COMMON.STATUS.WORKFLOW.0",
+                            message,
+                            persistent="false",
+                        )
+                except:  # noqa: E722
                     logging.error("Problem sending heartbeat: %s", sys.exc_info()[1])
 
                 # Check for workflow completion
                 if time.time() - self._workflow_check_start > self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
-            except:
+            except:  # noqa: E722
                 logging.error("Problem connecting to AMQ broker: %s", sys.exc_info()[1])
                 time.sleep(5.0)

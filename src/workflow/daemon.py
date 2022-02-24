@@ -18,7 +18,7 @@ class Daemon:
     Usage: subclass the Daemon class and override the run() method
     """
 
-    def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
+    def __init__(self, pidfile, stdin="/dev/null", stdout="/dev/null", stderr="/dev/null"):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
@@ -58,9 +58,9 @@ class Daemon:
         if self.stdin is not None and self.stdout is not None and self.stderr is not None:
             sys.stdout.flush()
             sys.stderr.flush()
-            si = open(self.stdin, 'r')
-            so = open(self.stdout, 'a+')
-            se = open(self.stderr, 'a+', 0)
+            si = open(self.stdin, "r")
+            so = open(self.stdout, "a+")
+            se = open(self.stderr, "a+", 0)
             os.dup2(si.fileno(), sys.stdin.fileno())
             os.dup2(so.fileno(), sys.stdout.fileno())
             os.dup2(se.fileno(), sys.stderr.fileno())
@@ -68,7 +68,7 @@ class Daemon:
         # write pidfile
         atexit.register(self.delpid)
         pid = str(os.getpid())
-        open(self.pidfile, 'w+').write("%s\n" % pid)
+        open(self.pidfile, "w+").write("%s\n" % pid)
         logging.info("Started daemon with PID %s" % str(pid))
 
     def delpid(self):
@@ -80,7 +80,7 @@ class Daemon:
         """
         # Check for a pidfile to see if the daemon already runs
         try:
-            pf = open(self.pidfile, 'r')
+            pf = open(self.pidfile, "r")
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -101,7 +101,7 @@ class Daemon:
         """
         # Get the pid from the pidfile
         try:
-            pf = open(self.pidfile, 'r')
+            pf = open(self.pidfile, "r")
             pid = int(pf.read().strip())
             pf.close()
         except IOError:

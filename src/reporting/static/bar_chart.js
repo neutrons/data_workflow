@@ -1,10 +1,10 @@
-// Bar graph 
+// Bar graph
 
 function BarGraph(run_data, error_data, anchor, type){
-    
+
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
-    
+
     var svg_w;
     var svg_h;
     var w;
@@ -33,7 +33,7 @@ function BarGraph(run_data, error_data, anchor, type){
 
     var formatted_runs_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
     var formatted_error_data = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);
-   
+
 
     // Format data
     function formatData(){
@@ -145,10 +145,10 @@ function BarGraph(run_data, error_data, anchor, type){
                           .attr("transform", "translate(" +
                                   trans.w + "," +
                                   trans.h + ")");
-            
+
     barsContainer = chartContainer.append("g")
                                   .attr("class", anchor + "_bar_group");
-            
+
 
     x = d3.scale.linear().range([w - barPadding, 0]);
     y = d3.scale.linear().range([h, 0]);
@@ -165,7 +165,7 @@ function BarGraph(run_data, error_data, anchor, type){
                             .tickFormat("")
                           )
 
-    // Create run bars 
+    // Create run bars
     var runs = barsContainer.append("g")
             .attr("class", anchor + "_run_bars")
             .selectAll(".bars")
@@ -278,15 +278,15 @@ function BarGraph(run_data, error_data, anchor, type){
 
     d3.selectAll("." + anchor + "_focus_rect")
         .on("mouseover", function(d, i){
-            mouseover(d, i, this); 
+            mouseover(d, i, this);
         })
         .on("mousemove", function(d, i){
-            mousemove(d, i, this); 
+            mousemove(d, i, this);
         })
         .on("mouseout", function(d, i){
-            mouseout(d, i, this); 
+            mouseout(d, i, this);
         });
-        
+
     function mouseover(d, i, t){
         ith_child = parseInt(i+1); // iterator to start at 1 for css-type selector
         d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("fill-opacity", "0.9");

@@ -288,9 +288,7 @@ class ViewUtilTest(TestCase):
         cmpt_status = get_component_status(inst_nonadara)
         assert cmpt_status == -1
         # -- adara inst nonresponsive, status: 2
-        inst_adara_nonresponsive = Instrument.objects.create(
-            name="testInst_adara_nonresponsive"
-        )
+        inst_adara_nonresponsive = Instrument.objects.create(name="testInst_adara_nonresponsive")
         inst_adara_nonresponsive.save()
         name_process = settings.SYSTEM_STATUS_PREFIX + "test"
         para_adara_nonresponsive = Parameter.objects.create(name=name_process)
@@ -344,13 +342,9 @@ class ViewUtilTest(TestCase):
         )
         cmpt_status = get_component_status(inst, red_timeout=0, process="ok")
         assert cmpt_status == 2
-        cmpt_status = get_component_status(
-            inst, red_timeout=65535, yellow_timeout=0, process="ok"
-        )
+        cmpt_status = get_component_status(inst, red_timeout=65535, yellow_timeout=0, process="ok")
         assert cmpt_status == 1
-        cmpt_status = get_component_status(
-            inst, red_timeout=65535, yellow_timeout=65535, process="ok"
-        )
+        cmpt_status = get_component_status(inst, red_timeout=65535, yellow_timeout=65535, process="ok")
         assert cmpt_status == 0
 
     @mock.patch(("dasmon.view_util.get_component_status"), return_value=0)
@@ -797,9 +791,7 @@ class ViewUtilTest(TestCase):
         )
         # test
         add_status_entry(inst, "testpara_addstatus", "updated")
-        sv = StatusVariable.objects.filter(instrument_id=inst, key_id=para).latest(
-            "timestamp"
-        )
+        sv = StatusVariable.objects.filter(instrument_id=inst, key_id=para).latest("timestamp")
         assert sv.value == "updated"
 
     def test_get_latest_updates(self):

@@ -1,10 +1,10 @@
-// Bar graph 
+// Bar graph
 
 function MonthlyGraph(run_data, anchor, type){
-    
+
     // Remove old plot
     d3.select("#" + anchor).select("svg").remove();
-    
+
     var svg_w;
     var svg_h;
     var w;
@@ -135,14 +135,14 @@ function MonthlyGraph(run_data, anchor, type){
                           .attr("transform", "translate(" +
                                   trans.w + "," +
                                   trans.h + ")");
-            
+
     barsContainer = chartContainer.append("g")
                                   .attr("class", anchor + "_bar_group");
-            
+
 
     x = d3.time.scale().range([w - barPadding, 0]);
     y = d3.scale.linear().range([h, 0]);
-    x.domain([d3.time.month.offset(formatted_runs_data[0][0], 1), 
+    x.domain([d3.time.month.offset(formatted_runs_data[0][0], 1),
               d3.time.month.offset(formatted_runs_data[formatted_runs_data.length-1][0], 0)]);
     y.domain([0, max_val]);
     xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(d3.time.months, 3).tickSize(xts,xts);
@@ -156,7 +156,7 @@ function MonthlyGraph(run_data, anchor, type){
                             .tickFormat("")
                           )
 
-    // Create run bars 
+    // Create run bars
     var runs = barsContainer.append("g")
             .attr("class", anchor + "_run_bars")
             .selectAll(".bars")
@@ -232,16 +232,16 @@ function MonthlyGraph(run_data, anchor, type){
 
     d3.selectAll("." + anchor + "_focus_rect")
         .on("mouseover", function(d, i){
-            mouseover(d, i, this); 
+            mouseover(d, i, this);
         })
         .on("mousemove", function(d, i){
-            mousemove(d, i, this); 
+            mousemove(d, i, this);
         })
         .on("mouseout", function(d, i){
-            mouseout(d, i, this); 
+            mouseout(d, i, this);
         });
-        
-    var tooltip_date_format = d3.time.format("%b %Y"); 
+
+    var tooltip_date_format = d3.time.format("%b %Y");
     function mouseover(d, i, t){
         ith_child = parseInt(i+1); // iterator to start at 1 for css-type selector
         d3.select("." + anchor + "_runs_rect:nth-child(" + ith_child + ")").attr("opacity", "0.95");
@@ -252,7 +252,7 @@ function MonthlyGraph(run_data, anchor, type){
             tooltip.style("visibility", "hidden");
         }
         else{
-            tooltip.html(tooltip_date_format(formatted_runs_data[i][0]) + 
+            tooltip.html(tooltip_date_format(formatted_runs_data[i][0]) +
 				"<br># of runs: " + formatted_runs_data[i][1]);
         }
         d3.event.stopPropagation();

@@ -26,15 +26,15 @@
       {% endif %}
       setInterval(poll, 10000);
   });
-  function remove_entry(id, bank_id, tube_id, pixel_id) { 
-      $(id).prop('checked', !$(id).prop('checked')); 
+  function remove_entry(id, bank_id, tube_id, pixel_id) {
+      $(id).prop('checked', !$(id).prop('checked'));
       $(bank_id).prop('disabled', $(id).prop('checked'));
       $(tube_id).prop('disabled', $(id).prop('checked'));
       $(pixel_id).prop('disabled', $(id).prop('checked'));
   }
 </script>
 {% endblock %}
-    
+
 {% block summary %}
 <div class='section_divider'>Configuring the automated reduction</div>
 <div class='narrow_section'>
@@ -63,32 +63,32 @@ Instrument team members can use this page to generate a new automated reduction 
     <tr><th>Create elastic nxspe</th> <td>{{options_form.create_elastic_nxspe }}</td></tr>
     <tr><th>Create MD nxs </th> <td>{{options_form.create_md_nxs }}</td></tr>
     <tr><th>Energy in meV</th> <td>{{options_form.e_pars_in_mev }}</td></tr>
-    <tr class='tiny_input'><th>Energy binning</th> <td> 
-      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors|first }}'{% endif %}><span class='short_label'>E<sub>min</sub></span> {{options_form.e_min }} </span> 
-      <span class='short_label'>E<sub>step</sub></span> {{options_form.e_step }} 
+    <tr class='tiny_input'><th>Energy binning</th> <td>
+      <span {% if options_form.e_min.errors %}class='highlight_row' title='{{ options_form.e_min.errors|first }}'{% endif %}><span class='short_label'>E<sub>min</sub></span> {{options_form.e_min }} </span>
+      <span class='short_label'>E<sub>step</sub></span> {{options_form.e_step }}
       <span class='short_label'>E<sub>max</sub></span> {{options_form.e_max }} </td></tr>
-    <tr class='tiny_input'><th>TOF offset</th><td> 
-      <span {% if options_form.t0.errors %}class='highlight_row' title='{{ options_form.t0.errors|first }}'{% endif %}><span class='short_label'>t<sub>0</sub></span> {{options_form.t0 }} </span> 
+    <tr class='tiny_input'><th>TOF offset</th><td>
+      <span {% if options_form.t0.errors %}class='highlight_row' title='{{ options_form.t0.errors|first }}'{% endif %}><span class='short_label'>t<sub>0</sub></span> {{options_form.t0 }} </span>
       &nbsp<span>Auto-fit t<sub>0</sub> to get E=0 at elastic peak</span> {{options_form.auto_tzero_flag}}
     </td></tr>
     <tr class='tiny_input'><th>Time independent bck</th><td>
-      <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.tib_min }} </span> 
-      <span {% if options_form.tib_max.errors %}class='highlight_row' title='{{ options_form.tib_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.tib_max }} </span> 
+      <span {% if options_form.tib_min.errors %}class='highlight_row' title='{{ options_form.tib_min.errors|first }}'{% endif %}><span class='short_label'>min</span> {{options_form.tib_min }} </span>
+      <span {% if options_form.tib_max.errors %}class='highlight_row' title='{{ options_form.tib_max.errors|first }}'{% endif %}><span class='short_label'>max</span> {{options_form.tib_max }} </span>
       &nbsp<span>Perform TIB</span> {{options_form.do_tib}}
       </td></tr>
-    <tr class='tiny_input'><th>UB matrix</th><td> 
-      <span {% if options_form.a.errors %}class='highlight_row' title='{{ options_form.a.errors|first }}'{% endif %}><span class='short_label'>a</span> {{options_form.a }} </span> 
-      <span {% if options_form.b.errors %}class='highlight_row' title='{{ options_form.b.errors|first }}'{% endif %}><span class='short_label'>b</span> {{options_form.b }} </span> 
-      <span {% if options_form.c.errors %}class='highlight_row' title='{{ options_form.c.errors|first }}'{% endif %}><span class='short_label'>c</span> {{options_form.c }} </span> 
+    <tr class='tiny_input'><th>UB matrix</th><td>
+      <span {% if options_form.a.errors %}class='highlight_row' title='{{ options_form.a.errors|first }}'{% endif %}><span class='short_label'>a</span> {{options_form.a }} </span>
+      <span {% if options_form.b.errors %}class='highlight_row' title='{{ options_form.b.errors|first }}'{% endif %}><span class='short_label'>b</span> {{options_form.b }} </span>
+      <span {% if options_form.c.errors %}class='highlight_row' title='{{ options_form.c.errors|first }}'{% endif %}><span class='short_label'>c</span> {{options_form.c }} </span>
       </td></tr>
-    <tr class='tiny_input'><th></th><td> 
-      <span {% if options_form.alpha.errors %}class='highlight_row' title='{{ options_form.alpha.errors|first }}'{% endif %}><span class='short_label'>alpha</span> {{options_form.alpha }} </span> 
+    <tr class='tiny_input'><th></th><td>
+      <span {% if options_form.alpha.errors %}class='highlight_row' title='{{ options_form.alpha.errors|first }}'{% endif %}><span class='short_label'>alpha</span> {{options_form.alpha }} </span>
       <span {% if options_form.beta.errors %}class='highlight_row' title='{{ options_form.beta.errors|first }}'{% endif %}><span class='short_label'>beta</span> {{options_form.beta }} </span>
       <span {% if options_form.gamma.errors %}class='highlight_row' title='{{ options_form.gamma.errors|first }}'{% endif %}><span class='short_label'>gamma</span> {{options_form.gamma }} </span>
       </td></tr>
-    <tr class='tiny_input'><th></th><td> 
-      <span {% if options_form.u_vector.errors %}class='highlight_row' title='{{ options_form.u_vector.errors|first }}'{% endif %}><span class='short_label'>u_vector</span> {{options_form.u_vector }} </span> 
-      <span {% if options_form.v_vector.errors %}class='highlight_row' title='{{ options_form.v_vector.errors|first }}'{% endif %}><span class='short_label'>v_vector</span> {{options_form.v_vector }} </span> 
+    <tr class='tiny_input'><th></th><td>
+      <span {% if options_form.u_vector.errors %}class='highlight_row' title='{{ options_form.u_vector.errors|first }}'{% endif %}><span class='short_label'>u_vector</span> {{options_form.u_vector }} </span>
+      <span {% if options_form.v_vector.errors %}class='highlight_row' title='{{ options_form.v_vector.errors|first }}'{% endif %}><span class='short_label'>v_vector</span> {{options_form.v_vector }} </span>
       </td></tr>
   </table>
   <p>
@@ -127,10 +127,10 @@ Latest post-processing log entries for {{ instrument }}:<br><br>
 <br>
 
 <script>
-function compute_size(id) { 
+function compute_size(id) {
     if($(id).val().length > 30) {
         var len = ($(id).val().length-30)/15;
-        size = 11-Math.round(len); 
+        size = 11-Math.round(len);
         if(size >= 8) $(id).css("font-size",size + "px")
     } else $(id).css("font-size","11px");
 }

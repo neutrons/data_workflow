@@ -10,7 +10,7 @@ When clicking on any instrument I can see the status of the instrument
 
 I can see a list of runs for that instrument, or a list of PVs
 
- 
+
 
 ![image](uploads/eba7ffdb74314441ba02326087946c3f/image.png)
 

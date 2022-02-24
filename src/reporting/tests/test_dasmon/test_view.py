@@ -122,25 +122,19 @@ class ExpertStatusViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:diagnostics", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:diagnostics", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     # NOTE: despite the explicit definition of the view shows the template used to render
     #       the page is 'dasmon/expert_status.html', the actual template django used
     #       is 'dasmon/diagnostics.html'
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("dasmon:diagnostics", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:diagnostics", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dasmon/diagnostics.html")
 
     def test_list_instrument(self):
-        response = self.client.get(
-            reverse("dasmon:diagnostics", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:diagnostics", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue("test_instrument" in str(response.context))
 
@@ -326,22 +320,16 @@ class LegacyMonitorViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:legacy_monitor", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:legacy_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("dasmon:legacy_monitor", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:legacy_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dasmon/legacy_monitor.html")
 
     def test_list_instrument(self):
-        response = self.client.get(
-            reverse("dasmon:legacy_monitor", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:legacy_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         assert "test_instrument" in str(response.context)
 
@@ -400,9 +388,7 @@ class LegacyMonitorUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:get_legacy_data", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:get_legacy_data", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -460,22 +446,16 @@ class LiveMonitorViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:live_monitor", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:live_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("dasmon:live_monitor", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:live_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dasmon/live_monitor.html")
 
     def test_list_instrument(self):
-        response = self.client.get(
-            reverse("dasmon:live_monitor", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:live_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         assert "test_instrument" in str(response.context)
 
@@ -534,22 +514,16 @@ class LiveRunsViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:live_runs", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:live_runs", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("dasmon:live_runs", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:live_runs", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dasmon/live_runs.html")
 
     def test_list_runs(self):
-        response = self.client.get(
-            reverse("dasmon:live_runs", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:live_runs", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         assert "test_instrument" in str(response.context)
         # NOTE:
@@ -659,22 +633,16 @@ class DiagnosticsViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:diagnostics", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:diagnostics", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(
-            reverse("dasmon:diagnostics", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:diagnostics", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dasmon/diagnostics.html")
 
     def test_list_instrument(self):
-        response = self.client.get(
-            reverse("dasmon:diagnostics", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:diagnostics", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         assert "test_instrument" in str(response.context)
         assert "TEST_INSTRUMENT" in str(response.context)
@@ -734,9 +702,7 @@ class GetUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:get_update", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:get_update", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
 
@@ -862,15 +828,11 @@ class GetSignalTableViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_url_accessible_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:get_signal_table", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:get_signal_table", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
 
     def test_list_signals(self):
-        response = self.client.get(
-            reverse("dasmon:get_signal_table", args=["test_instrument"])
-        )
+        response = self.client.get(reverse("dasmon:get_signal_table", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         for d in response.context:
             if "signals" in d:
@@ -941,9 +903,7 @@ class AcknowledgeSignalViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_exists_by_name(self):
-        response = self.client.get(
-            reverse("dasmon:acknowledge_signal", args=["test_instrument", 1])
-        )
+        response = self.client.get(reverse("dasmon:acknowledge_signal", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 200)
 
 

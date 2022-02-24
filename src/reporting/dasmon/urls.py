@@ -20,9 +20,7 @@ urlpatterns = [
     re_path(r"^(?P<instrument>[\w]+)/$", views.live_monitor, name="live_monitor"),
     re_path(r"^(?P<instrument>[\w]+)/runs/$", views.live_runs, name="live_runs"),
     re_path(r"^(?P<instrument>[\w]+)/update/$", views.get_update, name="get_update"),
-    re_path(
-        r"^(?P<instrument>[\w]+)/diagnostics/$", views.diagnostics, name="diagnostics"
-    ),
+    re_path(r"^(?P<instrument>[\w]+)/diagnostics/$", views.diagnostics, name="diagnostics"),
     re_path(
         r"^(?P<instrument>[\w]+)/signals/$",
         views.get_signal_table,
@@ -33,9 +31,7 @@ urlpatterns = [
         views.acknowledge_signal,
         name="acknowledge_signal",
     ),
-    re_path(
-        r"^(?P<instrument>[\w]+)/legacy/$", views.legacy_monitor, name="legacy_monitor"
-    ),
+    re_path(r"^(?P<instrument>[\w]+)/legacy/$", views.legacy_monitor, name="legacy_monitor"),
     re_path(
         r"^(?P<instrument>[\w]+)/legacy/update/$",
         views.get_legacy_data,

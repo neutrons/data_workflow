@@ -6,7 +6,7 @@ function global_system_status_update(data, i){
 
 function update_from_ajax_data(data){
     for (var i=0; i<data.variables.length; i++)
-    { 
+    {
         if (data.variables[i].key=='count_rate')
             $('#count_rate_top').replaceWith("<span id='count_rate_top'>"+data.variables[i].value+"</span>");
 
@@ -30,12 +30,12 @@ function ie_flag(){
 	}
 	var trident = ua.indexOf('Trident/');
 	if (trident > 0){
-		// IE 11 => 
+		// IE 11 =>
 		return true;
 	}
 	var edge = ua.indexOf('Edge/');
 	if (edge > 0){
-	   // IE 12 => 
+	   // IE 12 =>
 		return true;
 	}
 	// other browser
@@ -80,10 +80,10 @@ function new_monitor(element_id, option){
 // Desc: handles each plot on monitor page
 //
 // Variables: element_id, nid, clean_name, dialog_name
-//            dialog_win, plot_id, plot_content, submenu, 
-//            plot_options{}, 
+//            dialog_win, plot_id, plot_content, submenu,
+//            plot_options{},
 //
-// Methods: pop_monitor_plot, prepare_menu, local_options, 
+// Methods: pop_monitor_plot, prepare_menu, local_options,
 //          check_scale, close_l_opt
 //
 //************************************************************************80
@@ -107,7 +107,7 @@ function MonitorPlot(element_id, nid, option){
 	this.dialog_win;
 	this.plot_id = this.clean_name + "_plot";
 	this.plotted_data = [];
-	this.plot_content = 
+	this.plot_content =
 		"<div id='" + this.dialog_name + "' title='" + this.element_id + "' name='" + this.element_id + "'>" +
 		"    <div class='live_plots'>" +
 		"        <div class='options' style='float:left'>" +
@@ -211,8 +211,8 @@ function MonitorPlot(element_id, nid, option){
 				log_radio = "checked='checked'"; lin_radio = "";
 			}
 			html = "<div id='local_options_" + this.dialog_name + "' style='height:100px;border-top:1px solid lightgrey;padding:5px'>" +
-				   "<a class='flaticon_link' onclick='Plots[" + nid + "].close_l_opt(\"local_options_" + this.dialog_name + "\")'>" + close_icon + 
-				   "</a>" + 
+				   "<a class='flaticon_link' onclick='Plots[" + nid + "].close_l_opt(\"local_options_" + this.dialog_name + "\")'>" + close_icon +
+				   "</a>" +
 				   "<h3>Local Options</h3>" +
 				   "<form name='form_" + this.dialog_name + "'>" +
 				   "<div id='radio_" + this.dialog_name + "'>y scale: <input type='radio' class='check_scale' " +
@@ -269,8 +269,8 @@ function global_options(dialog_name){
 	}
 	if ($("#global_options").length === 0){
 		// If global options dialog box doesn't exist make one
-		var g_opt_win = "<div id='global_options' title='Global options'>" + 
-						"<h3>Global options</h3>" + 
+		var g_opt_win = "<div id='global_options' title='Global options'>" +
+						"<h3>Global options</h3>" +
 						"Global options settings</div>";
 		$("#dialog_placeholder").append(g_opt_win);
 		$("#global_options").dialog({

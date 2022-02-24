@@ -1,6 +1,6 @@
 # Instrument scientist view
 
-At the bottom of the process table, the instrument scientist can send the data back for catalogging, or reduction. 
+At the bottom of the process table, the instrument scientist can send the data back for catalogging, or reduction.
 
 ![image](uploads/dcd65a52ae1a0ef9559aa27ce3393b67/image.png)
 
@@ -16,7 +16,7 @@ is changed to
 
 `RawVanadium="/SNS/ARCS/IPTS-27800/nexus/ARCS_201562.nxs.h5"`
 
-A special case is for mask, where `${mask}` is changed to 
+A special case is for mask, where `${mask}` is changed to
 
 `    MaskBTPParameters.append({'Pixel': '1-7,122-128'})`
 

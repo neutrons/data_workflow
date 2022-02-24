@@ -11,10 +11,10 @@ import sys
 class NonDeveloperUsers(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options.
-    title = 'User type'
+    title = "User type"
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'user_type'
+    parameter_name = "user_type"
 
     def lookups(self, request, model_admin):
         """
@@ -24,9 +24,7 @@ class NonDeveloperUsers(admin.SimpleListFilter):
         human-readable name for the option that will appear
         in the right sidebar.
         """
-        return (
-            ('non_developers', 'Non-developers'),
-        )
+        return (("non_developers", "Non-developers"),)
 
     def queryset(self, request, queryset):
         """
@@ -34,53 +32,63 @@ class NonDeveloperUsers(admin.SimpleListFilter):
         provided in the query string and retrievable via
         `self.value()`.
         """
-        if self.value() == 'non_developers':
+        if self.value() == "non_developers":
             try:
-                nodes = DeveloperNode.objects.all().values_list('ip', flat=True)
+                nodes = DeveloperNode.objects.all().values_list("ip", flat=True)
                 return queryset.exclude(user__is_staff=True).exclude(ip__in=nodes)
-            except:
+            except:  # noqa: E722
                 logging.error(sys.exc_info()[1])
 
         return queryset
 
 
 class PageViewAdmin(admin.ModelAdmin):
-    list_filter = ('user', 'view', NonDeveloperUsers)
-    list_display = ('user', 'view', 'ip', 'get_host', 'path', 'timestamp')
+    list_filter = ("user", "view", NonDeveloperUsers)
+    list_display = ("user", "view", "ip", "get_host", "path", "timestamp")
 
     def get_host(self, view):
         try:
             return socket.gethostbyaddr(view.ip)[0]
-        except:
+        except:  # noqa: E722
             return "unknown"
+
     get_host.short_description = "Host"
 
 
 class DeveloperNodeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'ip', 'get_host')
+    list_display = ("id", "ip", "get_host")
 
     def get_host(self, view):
         try:
             return socket.gethostbyaddr(view.ip)[0]
-        except:
+        except:  # noqa: E722
             return "unknown"
+
     get_host.short_description = "Host"
 
 
 class SNSUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'get_groups', 'is_staff', 'is_superuser')
+    list_display = (
+        "username",
+        "first_name",
+        "last_name",
+        "get_groups",
+        "is_staff",
+        "is_superuser",
+    )
 
     def get_groups(self, user):
         groups = []
         for g in user.groups.all():
             groups.append(g.name)
-        return ', '.join(groups)
+        return ", ".join(groups)
+
     get_groups.short_description = "Groups"
 
 
 class SiteNotificationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'message', 'is_active')
-    list_editable = ('message', 'is_active')
+    list_display = ("id", "message", "is_active")
+    list_editable = ("message", "is_active")
 
 
 admin.site.unregister(User)

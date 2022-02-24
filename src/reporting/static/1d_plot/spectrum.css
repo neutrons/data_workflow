@@ -363,14 +363,14 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     *zoom: 1;
     *display: inline;
     border: solid 1px #d3d3d3;
-    background: #e6e6e6; /*{bgColorDefault}*/ 
+    background: #e6e6e6; /*{bgColorDefault}*/
     color: #333;
     vertical-align: middle;
 }
 .sp-replacer:hover, .sp-replacer.sp-active {
     border-color: #aaaaaa;
     color: #111;
-    background: #dadada; /*{bgColorHover}*/ 
+    background: #dadada; /*{bgColorHover}*/
 }
 .sp-replacer.sp-disabled {
     cursor:default;

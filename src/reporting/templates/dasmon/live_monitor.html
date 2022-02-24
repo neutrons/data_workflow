@@ -60,8 +60,8 @@
 
             }, dataType: "json", timeout: 2000, cache: true,
         statusCode: { 401: function(){
-                new_alert("Your session expired. Please log in again"); 
-                show_alert(); 
+                new_alert("Your session expired. Please log in again");
+                show_alert();
                 }
             }
         });
@@ -80,14 +80,14 @@
                 }
             }, dataType: "json", timeout: 2000, cache: true,
             statusCode: { 401: function() {
-                        new_alert("Your session expired. Please log in again"); 
-                        show_alert(); 
+                        new_alert("Your session expired. Please log in again");
+                        show_alert();
                     }
                 }
             });
         }
         get_alarms();
-        
+
     };
 
     $( document ).tooltip({
@@ -145,7 +145,7 @@
   <br>
 
   <div id="dialog_placeholder"></div>
- 
+
   <script id="source" language="javascript" type="text/javascript">
     plot_combined_rates(run_data, error_data);
   </script>

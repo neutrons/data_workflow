@@ -16,16 +16,16 @@ import time
 
 def get_live_variables(request, instrument_id, key_id=None):
     """
-        Create a data dictionary with requested live data
-        @param request: HTTP request object
-        @param instrument_id: Instrument object
-        @param key_id: key to return data for, if request is None
+    Create a data dictionary with requested live data
+    @param request: HTTP request object
+    @param instrument_id: Instrument object
+    @param key_id: key to return data for, if request is None
     """
     # Get variable update request
     if request is not None:
-        live_vars = request.GET.get('vars', '')
+        live_vars = request.GET.get("vars", "")
         if len(live_vars) > 0:
-            live_keys_str = live_vars.split(',')
+            live_keys_str = live_vars.split(",")
             live_keys = []
             for key in live_keys_str:
                 key = key.strip()
@@ -43,7 +43,7 @@ def get_live_variables(request, instrument_id, key_id=None):
                 live_keys.append(key_id)
         else:
             return []
-        plot_timeframe = request.GET.get('time', settings.PVMON_PLOT_TIME_RANGE)
+        plot_timeframe = request.GET.get("time", settings.PVMON_PLOT_TIME_RANGE)
     else:
         if key_id is None:
             return []
@@ -51,7 +51,7 @@ def get_live_variables(request, instrument_id, key_id=None):
         plot_timeframe = settings.DASMON_PLOT_TIME_RANGE
     try:
         plot_timeframe = int(plot_timeframe)
-    except:
+    except:  # noqa: E722
         logging.warning("Bad time period request: %s", str(plot_timeframe))
         plot_timeframe = settings.PVMON_PLOT_TIME_RANGE
 
@@ -62,35 +62,40 @@ def get_live_variables(request, instrument_id, key_id=None):
         key = str(key_id.name)
         try:
             data_list = []
-            values = PV.objects.filter(instrument_id=instrument_id,
-                                       name=key_id,
-                                       update_time__gte=two_hours)
+            values = PV.objects.filter(instrument_id=instrument_id, name=key_id, update_time__gte=two_hours)
             if len(values) > 0:
-                values = values.order_by('update_time').reverse()
+                values = values.order_by("update_time").reverse()
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values) < 2:
-                values = PV.objects.filter(instrument_id=instrument_id,
-                                           name=key_id)
+                values = PV.objects.filter(instrument_id=instrument_id, name=key_id)
                 if len(values) > 0:
-                    values = values.order_by('update_time').reverse()
+                    values = values.order_by("update_time").reverse()
                 else:
                     latest_entry = PVCache.objects.filter(instrument=instrument_id, name=key_id)
                     if len(latest_entry) > 0:
                         latest_entry = latest_entry.latest("update_time")
                         delta_t = now - latest_entry.update_time
-                        data_dict.append([key, [[-delta_t / 60.0, latest_entry.value], [0, latest_entry.value]]])
+                        data_dict.append(
+                            [
+                                key,
+                                [
+                                    [-delta_t / 60.0, latest_entry.value],
+                                    [0, latest_entry.value],
+                                ],
+                            ]
+                        )
                     else:
                         data_dict.append([key, []])
                     continue
                 if len(values) > settings.PVMON_NUMBER_OF_OLD_PTS:
-                    values = values[:settings.PVMON_NUMBER_OF_OLD_PTS]
+                    values = values[: settings.PVMON_NUMBER_OF_OLD_PTS]
 
             for v in values:
                 delta_t = now - v.update_time
                 data_list.append([-delta_t / 60.0, v.value])
             data_dict.append([key, data_list])
-        except:
+        except:  # noqa: E722
             # Could not find data for this key
             logging.warning("Could not process %s: %s", key, str(sys.exc_info()[1]))
     return data_dict
@@ -98,27 +103,29 @@ def get_live_variables(request, instrument_id, key_id=None):
 
 def get_cached_variables(instrument_id, monitored_only=False):
     """
-        Get cached PV values for a given instrument
-        @param instrument_id: Instrument object
-        @param monitored_only: if True, only monitored PVs are returned
+    Get cached PV values for a given instrument
+    @param instrument_id: Instrument object
+    @param monitored_only: if True, only monitored PVs are returned
     """
+
     def _process_pvs(queryset):
         """
-            Process PVs
+        Process PVs
         """
         for kvp in queryset:
             if kvp.name.monitored or monitored_only is False:
                 localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
                 df = dateformat.DateFormat(localtime)
                 if isinstance(kvp.value, (int, float)):
-                    string_value = '%g' % kvp.value
+                    string_value = "%g" % kvp.value
                 else:
-                    string_value = '%s' % kvp.value
+                    string_value = "%s" % kvp.value
 
-                item = {'key': str(kvp.name),
-                        'value': string_value,
-                        'timestamp': df.format(settings.DATETIME_FORMAT),
-                        }
+                item = {
+                    "key": str(kvp.name),
+                    "value": string_value,
+                    "timestamp": df.format(settings.DATETIME_FORMAT),
+                }
                 key_value_pairs.append(item)
 
     key_value_pairs = []

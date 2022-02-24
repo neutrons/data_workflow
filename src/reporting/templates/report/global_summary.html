@@ -35,7 +35,7 @@
     </tbody>
     </table>
     <br><br>
-    
+
     List of instruments:<br>
     <table class="message_table">
     <thead>
@@ -53,10 +53,10 @@
     {% endfor %}
     </tbody>
     </table>
-    
+
     <script id="source" language="javascript" type="text/javascript">
       var run_data = {{ run_rate|safe }};
       MonthlyGraph(run_data, "runs_per_month", "detailed");
-            
+
     </script>
 {% endblock %}
