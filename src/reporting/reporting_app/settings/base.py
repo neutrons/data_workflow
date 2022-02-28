@@ -90,13 +90,13 @@ TEMPLATE_LOADERS = (
     "django.template.loaders.app_directories.Loader",
     #     'django.template.loaders.eggs.Loader',
 )
-TEMPLATE_DIRS = (BASE_DIR / "reporting" / "templates",)
+TEMPLATE_DIRS = (BASE_DIR / "templates",)
 # ------ End of template settings for Django 1.6 ------
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "reporting" / "templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
