@@ -136,7 +136,7 @@ ROOT_URLCONF = "reporting_app.urls"
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = "reporting_app.wsgi.application"
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -152,7 +152,7 @@ INSTALLED_APPS = (
     "pvmon",
     "reduction",
     # 'debug_toolbar',
-)
+]
 
 AUTHENTICATION_BACKENDS = (
     "django_auth_ldap.backend.LDAPBackend",
