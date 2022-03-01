@@ -1,5 +1,6 @@
 # Django settings for reporting_app project.
 import ldap
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from os import environ
 from pathlib import Path
 import django
@@ -109,10 +110,17 @@ TEMPLATES = [
     },
 ]
 
-# configure ldap
+# configure
+LDAP_DOMAIN_COMPONENT = environ.get("LDAP_DOMAIN_COMPONENT", "")
 AUTH_LDAP_SERVER_URI = environ.get("LDAP_SERVER_URI", "")
-AUTH_LDAP_USER_DN_TEMPLATE = environ.get("LDAP_USER_DN_TEMPLATE", "")
+AUTH_LDAP_USER_DN_TEMPLATE = f"uid=%(user)s,ou=users,{LDAP_DOMAIN_COMPONENT}"
 AUTH_LDAP_START_TLS = True
+# LDAP group search
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    f"ou=groups,{LDAP_DOMAIN_COMPONENT}", ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)"
+)
+AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
+
 # manually specified cert file
 AUTH_LDAP_CERT_FILE = environ.get("LDAP_CERT_FILE", "")
 if AUTH_LDAP_CERT_FILE:
