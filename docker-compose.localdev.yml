@@ -1,0 +1,91 @@
+version: '3'
+services:
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - web-static:/var/www/workflow/static
+      - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
+    depends_on:
+      - webmon
+
+  webmon:
+    build:
+      context: .
+      dockerfile: Dockerfile.webmon
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - web-static:/var/www/workflow/static/
+    env_file:
+      - .env
+      - .env.ci
+
+    environment:
+      - LDAP_SERVER_URI=${LDAP_SERVER_URI}
+      - LDAP_USER_DN_TEMPLATE=${LDAP_USER_DN_TEMPLATE}
+
+    depends_on:
+      - db
+
+  dasmon:
+    build:
+      context: .
+      dockerfile: Dockerfile.dasmon
+    env_file:
+      - .env
+    command: /usr/bin/docker-entrypoint.sh
+    depends_on:
+      - webmon
+
+  workflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.workflow
+    env_file:
+      - .env
+    command: /usr/bin/docker-entrypoint.sh
+    depends_on:
+      - activemq
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    volumes:
+      - db-data:/var/lib/postgresql/data/
+
+  activemq:
+    ports:
+      - "61613:61613"
+      - "8161:8161"
+    image: rmohr/activemq
+    volumes:
+      - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
+
+  autoreducer:
+    image: rosswhitfield/postprocessing:latest
+    depends_on:
+      - activemq
+
+  amq_test_gen:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.amq_test_gen
+    depends_on:
+      - activemq
+
+volumes:
+  web-django:
+  web-static:
+  db-data:
