@@ -17,3 +17,5 @@ if (not TEST_REMOTE_USER) or (not TEST_REMOTE_PASSWD):
     msg += f"USER={TEST_REMOTE_USER} PASS={TEST_REMOTE_PASSWD}"
     raise ImproperlyConfigured(msg)
 JOB_HANDLING_HOST = "worker"
+
+validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405

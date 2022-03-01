@@ -1,12 +1,32 @@
 # Django settings for reporting_app project.
 import ldap
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
+from django.core.exceptions import ImproperlyConfigured
 from os import environ
 from pathlib import Path
 import django
 
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
+
+
+def validate_ldap_settings(server_uri, user_dn_template):
+    """Validate that ldap has information necessary to operate
+
+    Variable scoping requires that all parameters are passed in"""
+    issues = []
+    if not AUTH_LDAP_SERVER_URI:
+        issues.append("LDAP_SERVER_URI")
+    if not AUTH_LDAP_USER_DN_TEMPLATE:
+        issues.append("LDAP_USER_DN_TEMPLATE")
+    msg = ""
+    if len(issues) == 1:
+        msg = issues[0] + " is not set"
+    elif len(issues) == 2:
+        msg = " and ".join(issues) + " are not set"
+    if msg:
+        raise ImproperlyConfigured(msg)
+
 
 DATABASES["default"]["CONN_MAX_AGE"] = 5
 # DATABASES['default']['CONN_MAX_AGE']=None

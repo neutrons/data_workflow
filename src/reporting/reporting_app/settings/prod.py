@@ -9,3 +9,5 @@ if not SECRET_KEY or SECRET_KEY == "UNSET_SECRET":
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+
+validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405
