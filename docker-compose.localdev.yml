@@ -28,7 +28,7 @@ services:
 
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
-      - LDAP_USER_DN_TEMPLATE=${LDAP_USER_DN_TEMPLATE}
+      - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
 
     depends_on:
       - db
