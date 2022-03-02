@@ -15,8 +15,6 @@ DATABASES = {
 
 DEBUG = True
 
-TIME_ZONE = "America/New_York"
-
 CATALOG_URL = "catalog.test.xyz"
 CATALOG_ID = "test"
 CATALOG_SECRET = "test"
