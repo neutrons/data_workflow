@@ -27,5 +27,3 @@ del CACHES  # noqa: F821
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 if "django_auth_ldap" in INSTALLED_APPS:
     INSTALLED_APPS.remove("django_auth_ldap")
-
-validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405
