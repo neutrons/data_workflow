@@ -1,17 +1,43 @@
 # Django settings for reporting_app project.
-import os
+import ldap
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
+from django.core.exceptions import ImproperlyConfigured
+from os import environ
+from pathlib import Path
 import django
 
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
 
+
+def validate_ldap_settings(server_uri, user_dn_template):
+    """Validate that ldap has information necessary to operate
+
+    Variable scoping requires that all parameters are passed in"""
+    issues = []
+    if not AUTH_LDAP_SERVER_URI:
+        issues.append("LDAP_SERVER_URI")
+    # split out the domain component which is the configurable bit
+    domain_component = user_dn_template.split("users,")[-1]
+    if not domain_component:
+        issues.append("LDAP_DOMAIN_COMPONENT")
+    msg = ""
+    if len(issues) == 1:
+        msg = issues[0] + " is not set"
+    elif len(issues) == 2:
+        msg = " and ".join(issues) + " are not set"
+    if msg:
+        raise ImproperlyConfigured(msg)
+
+
 DATABASES["default"]["CONN_MAX_AGE"] = 5
 # DATABASES['default']['CONN_MAX_AGE']=None
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Build paths inside the project root path for all others to be relative to
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
-DEBUG = os.environ.get("DEBUG")
+
+DEBUG = environ.get("DEBUG", True)
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -24,7 +50,7 @@ MANAGERS = ADMINS
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = os.environ.get("TIME_ZONE")
+TIME_ZONE = environ.get("TIME_ZONE", "America/New_York")
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -62,10 +88,12 @@ STATIC_ROOT = "/var/www/workflow/static/"
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = "/static/"
 
+DJANGO_DIR = Path(django.__file__).resolve(strict=True).parent
+
 # Additional locations of static files
 STATICFILES_DIRS = (
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static")),
-    os.path.join(os.path.dirname(django.__file__), "contrib", "admin", "static"),
+    BASE_DIR / "static",
+    DJANGO_DIR / "contrib" / "admin" / "static",
 )
 
 # List of finder classes that know how to find static files in
@@ -85,13 +113,13 @@ TEMPLATE_LOADERS = (
     "django.template.loaders.app_directories.Loader",
     #     'django.template.loaders.eggs.Loader',
 )
-TEMPLATE_DIRS = (os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates")),)
+TEMPLATE_DIRS = (BASE_DIR / "templates",)
 # ------ End of template settings for Django 1.6 ------
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -103,6 +131,23 @@ TEMPLATES = [
         },
     },
 ]
+
+# configure
+LDAP_DOMAIN_COMPONENT = environ.get("LDAP_DOMAIN_COMPONENT", "")
+AUTH_LDAP_SERVER_URI = environ.get("LDAP_SERVER_URI", "")
+AUTH_LDAP_USER_DN_TEMPLATE = f"uid=%(user)s,ou=users,{LDAP_DOMAIN_COMPONENT}"
+AUTH_LDAP_START_TLS = True
+# LDAP group search
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    f"ou=groups,{LDAP_DOMAIN_COMPONENT}", ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)"
+)
+AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
+
+# manually specified cert file
+AUTH_LDAP_CERT_FILE = environ.get("LDAP_CERT_FILE", "")
+if AUTH_LDAP_CERT_FILE:
+    AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_CACERTFILE: Path(AUTH_LDAP_CERT_FILE)}
+
 
 MIDDLEWARE_CLASSES = (
     "django.middleware.common.CommonMiddleware",
@@ -121,7 +166,7 @@ ROOT_URLCONF = "reporting_app.urls"
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = "reporting_app.wsgi.application"
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -137,15 +182,13 @@ INSTALLED_APPS = (
     "pvmon",
     "reduction",
     # 'debug_toolbar',
-)
+]
 
 AUTHENTICATION_BACKENDS = (
     "django_auth_ldap.backend.LDAPBackend",
     "django.contrib.auth.backends.ModelBackend",
 )
 
-AUTH_LDAP_SERVER_URI = ""
-AUTH_LDAP_USER_DN_TEMPLATE = ""
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
@@ -257,10 +300,8 @@ LIVE_DATA_SERVER_PORT = "443"
 # Link out to fitting application
 FITTING_URLS = {}
 
-# Import local settings if available
-try:
-    from .local_settings import *  # noqa: F401, F403
 
-    LOCAL_SETTINGS = True
-except ImportError:
-    LOCAL_SETTINGS = False
+# remote worker options
+# setting these will force all execution to happen as a single user
+TEST_REMOTE_USER = ""
+TEST_REMOTE_PASSWD = ""

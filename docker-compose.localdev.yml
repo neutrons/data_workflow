@@ -24,6 +24,7 @@ services:
       - web-static:/var/www/workflow/static/
     env_file:
       - .env
+      - .env.ci
 
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}

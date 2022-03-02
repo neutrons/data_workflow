@@ -21,6 +21,12 @@ def perform_login(request):
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
         if user is not None and not user.is_anonymous:
+            # use common username in test mode
+            # this ignores the username/password in the webapp
+            if settings.TEST_REMOTE_USER and settings.TEST_REMOTE_PASSWD:
+                username = settings.TEST_REMOTE_USER
+                password = settings.TEST_REMOTE_PASSWD
+
             login(request, user)
         else:
             login_failure = "Invalid username or password"
