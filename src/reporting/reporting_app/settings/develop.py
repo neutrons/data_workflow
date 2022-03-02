@@ -1,8 +1,6 @@
 """This is the settings to be used for a local developer build inside of docker"""
 from .base import *  # noqa
-from django.core.exceptions import ImproperlyConfigured
 import ldap
-from os import environ
 
 
 # we don't care about ldap TLS
