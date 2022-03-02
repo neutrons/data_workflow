@@ -17,8 +17,10 @@ def validate_ldap_settings(server_uri, user_dn_template):
     issues = []
     if not AUTH_LDAP_SERVER_URI:
         issues.append("LDAP_SERVER_URI")
-    if not AUTH_LDAP_USER_DN_TEMPLATE:
-        issues.append("LDAP_USER_DN_TEMPLATE")
+    # split out the domain component which is the configurable bit
+    domain_component = user_dn_template.split('users,')[-1]
+    if not domain_component:
+        issues.append("LDAP_DOMAIN_COMPONENT")
     msg = ""
     if len(issues) == 1:
         msg = issues[0] + " is not set"
