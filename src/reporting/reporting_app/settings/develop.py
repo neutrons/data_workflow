@@ -8,14 +8,4 @@ from os import environ
 # we don't care about ldap TLS
 AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER}
 
-# set the remote worker to be a common account
-# setting these will force all execution to happen as a single user
-TEST_REMOTE_USER = environ.get("TEST_USER_NAME")
-TEST_REMOTE_PASSWD = environ.get("TEST_USER_PASSWD")
-if (not TEST_REMOTE_USER) or (not TEST_REMOTE_PASSWD):
-    msg = "Remote worker is improperly configured for deveop environment "
-    msg += f"USER={TEST_REMOTE_USER} PASS={TEST_REMOTE_PASSWD}"
-    raise ImproperlyConfigured(msg)
-JOB_HANDLING_HOST = "worker"
-
 validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405
