@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - "80:80"
+      - "81:80"
     volumes:
       - web-static:/var/www/workflow/static
       - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
@@ -86,6 +86,19 @@ services:
       dockerfile: Dockerfile.amq_test_gen
     depends_on:
       - activemq
+
+  catalog_process:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    environment:
+      ICAT_USER: "icat"
+      ICAT_PASSCODE: "icat"
+      ACTIVE_MQ_PORTS: 61613
+    depends_on:
+      - activemq
+    volumes:
+      - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
 
 volumes:
   web-django:

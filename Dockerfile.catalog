@@ -1,0 +1,9 @@
+FROM continuumio/miniconda3
+
+COPY conda_environment.yml .
+RUN conda env update --name base --file conda_environment.yml
+
+COPY src/catalog/catalog_process.py .
+
+ENTRYPOINT [ "python" ]
+CMD ["catalog_process.py"]
