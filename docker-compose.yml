@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - "81:80"
+      - "80:80"
     volumes:
       - web-static:/var/www/workflow/static
       - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
@@ -96,9 +96,7 @@ services:
       ICAT_PASSCODE: "icat"
       ACTIVE_MQ_PORTS: 61613
     depends_on:
-      - activemq
-    volumes:
-      - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
+      - nginx
 
 volumes:
   web-django:
