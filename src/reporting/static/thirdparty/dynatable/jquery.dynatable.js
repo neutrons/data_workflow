@@ -57,9 +57,7 @@
       columns: null,
       headRowSelector: 'thead tr', // or e.g. tr:first-child
       bodyRowSelector: 'tbody tr',
-      headRowClass: null,
-      copyHeaderAlignment: true,
-      copyHeaderClass: false
+      headRowClass: null
     },
     inputs: {
       queries: null,
@@ -82,18 +80,10 @@
       paginationGap: [1,2,2,1],
       searchTarget: null,
       searchPlacement: 'before',
-      searchText: 'Search: ',
       perPageTarget: null,
       perPagePlacement: 'before',
       perPageText: 'Show: ',
-      pageText: '',
-      recordCountPageBoundTemplate: '{pageLowerBound} to {pageUpperBound} of',
-      recordCountPageUnboundedTemplate: '{recordsShown} of',
-      recordCountTotalTemplate: '{recordsQueryCount} {collectionName}',
-      recordCountFilteredTemplate: ' (filtered from {recordsTotal} total records)',
-      recordCountText: 'Showing',
-      recordCountTextTemplate: '{text} {pageTemplate} {totalTemplate} {filteredTemplate}',
-      recordCountTemplate: '<span id="dynatable-record-count-{elementId}" class="dynatable-record-count">{textTemplate}</span>',
+      recordCountText: 'Showing ',
       processingText: 'Processing...'
     },
     dataset: {
@@ -110,7 +100,7 @@
       perPageDefault: 10,
       perPageOptions: [10,20,50,100],
       sorts: {},
-      sortsKeys: [],
+      sortsKeys: null,
       sortTypes: {},
       records: null
     },
@@ -200,7 +190,7 @@
 
     this.$element.trigger('dynatable:init', this);
 
-    if (!this.settings.dataset.ajax || (this.settings.dataset.ajax && this.settings.dataset.ajaxOnLoad) || this.settings.features.paginate || (this.settings.features.sort && !$.isEmptyObject(this.settings.dataset.sorts))) {
+    if (!this.settings.dataset.ajax || (this.settings.dataset.ajax && this.settings.dataset.ajaxOnLoad) || this.settings.features.paginate) {
       this.process();
     }
   };
@@ -233,7 +223,6 @@
         dataType: _this.settings.dataset.ajaxDataType,
         data: data,
         error: function(xhr, error) {
-          _this.$element.trigger('dynatable:ajax:error', {xhr: xhr, error : error});
         },
         success: function(response) {
           _this.$element.trigger('dynatable:ajax:success', response);
@@ -268,11 +257,7 @@
       this.records.resetOriginal();
       this.queries.run();
       if (this.settings.features.sort) {
-        try {
-          this.records.sort();
-        } catch(error) {
-          console.log('Error sorting: '+error.message);
-        }
+        this.records.sort();
       }
       if (this.settings.features.paginate) {
         this.records.paginate();
@@ -284,8 +269,6 @@
         this.state.push(data);
       }
     }
-
-    this.$element.addClass('dynatable-loaded');
     this.$element.trigger('dynatable:afterProcess', data);
   };
 
@@ -318,10 +301,6 @@
       }
 
       td += '"';
-    }
-
-    if (column.cssClass) {
-      td += ' class="' + column.cssClass + '"';
     }
 
     return td + '>' + html + '</td>';
@@ -453,16 +432,22 @@
           _this.add($(this), index, true);
         });
       } else {
-        return $.error("Couldn't find any columns headers in '" + settings.table.headRowSelector + " th,td'. If your header row is different, specify the selector in the table: headRowSelector option.");
+        return $.on(
+            'error',
+            'Couldn\'t find any columns headers in \'' +
+                settings.table.headRowSelector +
+                ' th,td\'. If your header row is different, specify the selector in the table: headRowSelector option.');
       }
     };
 
     this.add = function($column, position, skipAppend, skipUpdate) {
-      var columns = settings.table.columns,
-          label = $column.text(),
-          id = $column.data('dynatable-column') || utility.normalizeText(label, settings.table.defaultColumnIdStyle),
+      var columns = settings.table.columns, label = $column.text(),
+          id = $column.data('dynatable-column') ||
+          utility.normalizeText(label, settings.table.defaultColumnIdStyle),
           dataSorts = $column.data('dynatable-sorts'),
-          sorts = dataSorts ? $.map(dataSorts.split(','), function(text) { return $.trim(text); }) : [id];
+          sorts = dataSorts ? $.map(dataSorts.split(','), function(text) {
+            return text.trim();
+          }) : [id];
 
       // If the column id is blank, generate an id for it
       if ( !id ) {
@@ -478,8 +463,7 @@
         attributeReader: settings.readers[id] || settings.readers._attributeReader,
         sorts: sorts,
         hidden: $column.css('display') === 'none',
-        textAlign: settings.table.copyHeaderAlignment && $column.css('text-align'),
-        cssClass: settings.table.copyHeaderClass && $column.attr('class')
+        textAlign: $column.css('text-align')
       });
 
       // Modify header cell
@@ -696,7 +680,8 @@
             if (! record['dynatable-sortable-text']) {
               record['dynatable-sortable-text'] = {};
             }
-            record['dynatable-sortable-text'][attr] = $.trim($('<div></div>').html(value).text());
+            record['dynatable-sortable-text'][attr] =
+                $('<div></div>').html(value).text().trim();
           }
 
           record[attr] = value;
@@ -727,44 +712,28 @@
     };
 
     this.create = function() {
-      var pageTemplate = '',
-          filteredTemplate = '',
-          options = {
-            elementId: obj.element.id,
-            recordsShown: obj.records.count(),
-            recordsQueryCount: settings.dataset.queryRecordCount,
-            recordsTotal: settings.dataset.totalRecordCount,
-            collectionName: settings.params.records === "_root" ? "records" : settings.params.records,
-            text: settings.inputs.recordCountText
-          };
+      var recordsShown = obj.records.count(),
+          recordsQueryCount = settings.dataset.queryRecordCount,
+          recordsTotal = settings.dataset.totalRecordCount,
+          text = settings.inputs.recordCountText,
+          collection_name = settings.params.records;
 
-      if (settings.features.paginate) {
-
-        // If currently displayed records are a subset (page) of the entire collection
-        if (options.recordsShown < options.recordsQueryCount) {
-          var bounds = obj.records.pageBounds();
-          options.pageLowerBound = bounds[0] + 1;
-          options.pageUpperBound = bounds[1];
-          pageTemplate = settings.inputs.recordCountPageBoundTemplate;
-
-        // Else if currently displayed records are the entire collection
-        } else if (options.recordsShown === options.recordsQueryCount) {
-          pageTemplate = settings.inputs.recordCountPageUnboundedTemplate;
-        }
+      if (recordsShown < recordsQueryCount && settings.features.paginate) {
+        var bounds = obj.records.pageBounds();
+        text += "<span class='dynatable-record-bounds'>" + (bounds[0] + 1) + " to " + bounds[1] + "</span> of ";
+      } else if (recordsShown === recordsQueryCount && settings.features.paginate) {
+        text += recordsShown + " of ";
+      }
+      text += recordsQueryCount + " " + collection_name;
+      if (recordsQueryCount < recordsTotal) {
+        text += " (filtered from " + recordsTotal + " total records)";
       }
 
-      // If collection for table is queried subset of collection
-      if (options.recordsQueryCount < options.recordsTotal) {
-        filteredTemplate = settings.inputs.recordCountFilteredTemplate;
-      }
-
-      // Populate templates with options
-      options.pageTemplate = utility.template(pageTemplate, options);
-      options.filteredTemplate = utility.template(filteredTemplate, options);
-      options.totalTemplate = utility.template(settings.inputs.recordCountTotalTemplate, options);
-      options.textTemplate = utility.template(settings.inputs.recordCountTextTemplate, options);
-
-      return utility.template(settings.inputs.recordCountTemplate, options);
+      return $('<span></span>', {
+                id: 'dynatable-record-count-' + obj.element.id,
+                'class': 'dynatable-record-count',
+                html: text
+              });
     };
 
     this.attach = function() {
@@ -908,19 +877,14 @@
 
     this.init = function() {
       var sortsUrl = window.location.search.match(new RegExp(settings.params.sorts + '[^&=]*=[^&]*', 'g'));
-      if (sortsUrl) {
-        settings.dataset.sorts = utility.deserialize(sortsUrl)[settings.params.sorts];
-      }
-      if (!settings.dataset.sortsKeys.length) {
-        settings.dataset.sortsKeys = utility.keysFromObject(settings.dataset.sorts);
-      }
+      settings.dataset.sorts = sortsUrl ? utility.deserialize(sortsUrl)[settings.params.sorts] : {};
+      settings.dataset.sortsKeys = sortsUrl ? utility.keysFromObject(settings.dataset.sorts) : [];
     };
 
     this.add = function(attr, direction) {
       var sortsKeys = settings.dataset.sortsKeys,
           index = $.inArray(attr, sortsKeys);
       settings.dataset.sorts[attr] = direction;
-      obj.$element.trigger('dynatable:sorts:added', [attr, direction]);
       if (index === -1) { sortsKeys.push(attr); }
       return dt;
     };
@@ -929,7 +893,6 @@
       var sortsKeys = settings.dataset.sortsKeys,
           index = $.inArray(attr, sortsKeys);
       delete settings.dataset.sorts[attr];
-      obj.$element.trigger('dynatable:sorts:removed', attr);
       if (index !== -1) { sortsKeys.splice(index, 1); }
       return dt;
     };
@@ -937,7 +900,6 @@
     this.clear = function() {
       settings.dataset.sorts = {};
       settings.dataset.sortsKeys.length = 0;
-      obj.$element.trigger('dynatable:sorts:cleared');
     };
 
     // Try to intelligently guess which sort function to use
@@ -999,7 +961,7 @@
           id = $cell.data('dynatable-column'),
           column = utility.findObjectInArray(settings.table.columns, {id: id});
 
-      $link.bind('click', function(e) {
+      $link.on('click', function(e) {
         _this.toggleSort(e, $link, column);
         obj.process();
 
@@ -1132,13 +1094,11 @@
         settings.dataset.page = 1;
       }
       settings.dataset.queries[name] = value;
-      obj.$element.trigger('dynatable:queries:added', [name, value]);
       return dt;
     };
 
     this.remove = function(name) {
       delete settings.dataset.queries[name];
-      obj.$element.trigger('dynatable:queries:removed', name);
       return dt;
     };
 
@@ -1154,7 +1114,10 @@
                 return record[query] == queryValue;
               };
             } else {
-              $.error("Query named '" + query + "' called, but not defined in queries.functions");
+              $.on(
+                  'error',
+                  'Query named \'' + query +
+                      '\' called, but not defined in queries.functions');
               continue; // to skip to next query
             }
           }
@@ -1198,14 +1161,13 @@
               e.preventDefault();
             };
 
-        $this
-          .attr('data-dynatable-query', query)
-          .bind(event, queryFunction)
-          .bind('keypress', function(e) {
-            if (e.which == 13) {
-              queryFunction.call(this, e);
-            }
-          });
+        $this.attr('data-dynatable-query', query)
+            .on(event, queryFunction)
+            .on('keypress', function(e) {
+              if (e.which == 13) {
+                queryFunction.call(this, e);
+              }
+            });
 
         if (settings.dataset.queries[query]) { $this.val(decodeURIComponent(settings.dataset.queries[query])); }
       });
@@ -1256,19 +1218,20 @@
           $searchSpan = $('<span></span>', {
             id: 'dynatable-search-' + obj.element.id,
             'class': 'dynatable-search',
-            text: settings.inputs.searchText
+            text: 'Search: '
           }).append($search);
 
       $search
-        .bind(settings.inputs.queryEvent, function() {
-          obj.queries.runSearch($(this).val());
-        })
-        .bind('keypress', function(e) {
-          if (e.which == 13) {
-            obj.queries.runSearch($(this).val());
-            e.preventDefault();
-          }
-        });
+          .on(settings.inputs.queryEvent,
+              function() {
+                obj.queries.runSearch($(this).val());
+              })
+          .on('keypress', function(e) {
+            if (e.which == 13) {
+              obj.queries.runSearch($(this).val());
+              e.preventDefault();
+            }
+          });
       return $searchSpan;
     };
 
@@ -1297,9 +1260,7 @@
     };
 
     this.set = function(page) {
-      var newPage = parseInt(page, 10);
-      settings.dataset.page = newPage;
-      obj.$element.trigger('dynatable:page:set', newPage);
+      settings.dataset.page = parseInt(page, 10);
     }
   };
 
@@ -1341,7 +1302,7 @@
         $select.append('<option value="' + number + '" ' + selected + '>' + number + '</option>');
       }
 
-      $select.bind('change', function(e) {
+      $select.on('change', function(e) {
         _this.set($(this).val());
         obj.process();
       });
@@ -1357,10 +1318,8 @@
     };
 
     this.set = function(number, skipResetPage) {
-      var newPerPage = parseInt(number);
       if (!skipResetPage) { obj.paginationPage.set(1); }
-      settings.dataset.perPage = newPerPage;
-      obj.$element.trigger('dynatable:perPage:set', newPerPage);
+      settings.dataset.perPage = parseInt(number);
     };
   };
 
@@ -1390,7 +1349,7 @@
             (pages + 1) - settings.inputs.paginationGap[3]
           ];
 
-      pageLinks += '<li><span>' + settings.inputs.pageText + '</span></li>';
+      pageLinks += '<li><span>Pages: </span></li>';
 
       for (var i = 1; i <= pages; i++) {
         if ( (i > breaks[0] && i < breaks[1]) || (i > breaks[2] && i < breaks[3])) {
@@ -1431,8 +1390,8 @@
       // only bind page handler to non-active and non-disabled page links
       var selector = '#dynatable-pagination-links-' + obj.element.id + ' a.' + pageLinkClass + ':not(.' + activePageClass + ',.' + disabledPageClass + ')';
       // kill any existing delegated-bindings so they don't stack up
-      $(document).undelegate(selector, 'click.dynatable');
-      $(document).delegate(selector, 'click.dynatable', function(e) {
+      $(document).off('click.dynatable', selector);
+      $(document).on('click.dynatable', selector, function(e) {
         $this = $(this);
         $this.closest(settings.inputs.paginationClass).find('.' + activePageClass).removeClass(activePageClass);
         $this.addClass(activePageClass);
@@ -1600,7 +1559,7 @@
                 if (typeof urlOptions[label] === 'undefined') { urlOptions[label] = {}; }
                 urlOptions[label][attr] = data[label][attr];
               } else {
-                if (urlOptions && urlOptions[label] && urlOptions[label][attr]) { delete urlOptions[label][attr]; }
+                delete urlOptions[label][attr];
               }
             }
             continue;
@@ -1614,7 +1573,7 @@
           }
         }
       }
-      return $.param(urlOptions);
+      return decodeURI($.param(urlOptions));
     },
     // Get array of keys from object
     // see http://stackoverflow.com/questions/208016/how-to-list-the-properties-of-a-javascript-object/208020#208020
@@ -1643,8 +1602,7 @@
     // Return true if supplied test function passes for ALL items in an array
     allMatch: function(item, arrayOrObject, test) {
       // start off with true result by default
-      var match = true,
-          isArray = $.isArray(arrayOrObject);
+      var match = true, isArray = Array.isArray(arrayOrObject);
       // Loop through all items in array
       $.each(arrayOrObject, function(key, value) {
         var result = isArray ? test(item, value) : test(item, key, value);
@@ -1659,8 +1617,7 @@
     },
     // Return true if supplied test function passes for ANY items in an array
     anyMatch: function(item, arrayOrObject, test) {
-      var match = false,
-          isArray = $.isArray(arrayOrObject);
+      var match = false, isArray = Array.isArray(arrayOrObject);
 
       $.each(arrayOrObject, function(key, value) {
         var result = isArray ? test(item, value) : test(item, key, value);
@@ -1692,12 +1649,6 @@
     // Taken from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/105074#105074
     randomHash: function() {
       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-    },
-    // Adapted from http://stackoverflow.com/questions/377961/efficient-javascript-string-replacement/378001#378001
-    template: function(str, data) {
-      return str.replace(/{(\w*)}/g, function(match, key) {
-        return data.hasOwnProperty(key) ? data[key] : "";
-      });
     }
   };
 
