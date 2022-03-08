@@ -25,6 +25,7 @@ class PV(models.Model):
     Table holding values
     """
 
+    id = models.BigAutoField(primary_key=True)
     instrument = models.ForeignKey(Instrument, null=True, on_delete=models.CASCADE)
     name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.FloatField()
