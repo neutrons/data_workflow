@@ -1,0 +1,3 @@
+FROM continuumio/miniconda3
+RUN python -m pip install web-monitor-pv-generator==0.2.0 -i https://code.ornl.gov/api/v4/projects/10878/packages/pypi/simple
+CMD "webmonitor_pv_tester"

@@ -88,6 +88,16 @@ services:
     depends_on:
       - activemq
 
+  amq_pv_gen:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.pv_test_gen
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   catalog_process:
     build:
       context: .
