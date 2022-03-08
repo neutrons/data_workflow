@@ -67,11 +67,14 @@ Here are the recommended steps to setup your dev environment:
   - Use `docker volume prune` to prune all volumes
   - [Optional] Use `docker image prune` to remove all images
 - Move to the directory that contains `docker-compose.yml` (the root of repo)
+- Set the required environment variables for LDAP
+  - `export LDAP_SERVER_URI=.`
+  - `export LDAP_DOMAIN_COMPONENT=.`
 - Spin up the rest of the system with (`--build` may be unnecessary)
   > docker-compose up --build
   - Keep this running in your terminal so that you can see the real time log from all containers
   - `--build` will ensure any local changes will be updated in containers at the cost of increasing the startup time
-- Open a browser and go to `localhost:8000` to see the login page
+- Open a browser and go to http://localhost to see the login page
 - Log in with the newly added super user (defined through `DATABASE_USER` and `DATABASE_PASS` variables in `.env` file)
   - user name: `postgres`
   - password: `postgres`
