@@ -88,6 +88,17 @@ services:
     depends_on:
       - activemq
 
+  catalog_process:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    environment:
+      ICAT_USER: "icat"
+      ICAT_PASSCODE: "icat"
+      ACTIVE_MQ_PORTS: 61613
+    depends_on:
+      - nginx
+
 volumes:
   web-django:
   web-static:
