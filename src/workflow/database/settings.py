@@ -1,4 +1,5 @@
 import os
+import json
 
 DATABASES = {
     "default": {
@@ -36,8 +37,9 @@ worker_user = "worker"
 worker_passcode = "worker"
 
 # Import local settings if available
-try:
-    from .local_settings import *  # noqa: F401, F403
-except ImportError:
-    LOCAL_SETTINGS = False
-    pass
+# brokers
+env_amq_broker = os.environ.get("AMQ_BROKER", None)
+if env_amq_broker:
+    # needs a hashable type, so we have to map list to tuple since
+    # json does not return a hashable type
+    brokers = list(map(tuple,json.loads(env_amq_broker)))

@@ -1,6 +1,7 @@
 # Django settings for reporting_app project.
 import os  # noqa: F401
 import django  # noqa: F401
+import json
 
 # The DB settings are defined in the workflow manager
 from workflow.database.settings import DATABASES
@@ -45,9 +46,13 @@ IMAGE_PURGE_TIMEOUT = 360
 
 MIN_NOTIFICATION_LEVEL = 3
 
-# Import local settings if available
-try:
-    from .local_settings import *  # noqa: F401, F403
-except ImportError:
-    LOCAL_SETTINGS = False
-    pass
+# Try to import local settings from environment
+# brokers
+env_amq_broker = os.environ.get("AMQ_BROKER", None)
+if env_amq_broker:
+    brokers = list(map(tuple,json.loads(env_amq_broker)))
+
+# queues
+env_amq_queue = os.environ.get("AMQ_QUEUE", None)
+if env_amq_queue:
+    queues = json.loads(env_amq_queue)
