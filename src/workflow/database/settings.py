@@ -42,4 +42,4 @@ env_amq_broker = os.environ.get("AMQ_BROKER", None)
 if env_amq_broker:
     # needs a hashable type, so we have to map list to tuple since
     # json does not return a hashable type
-    brokers = list(map(tuple,json.loads(env_amq_broker)))
+    brokers = list(map(tuple, json.loads(env_amq_broker)))

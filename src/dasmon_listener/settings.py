@@ -50,7 +50,7 @@ MIN_NOTIFICATION_LEVEL = 3
 # brokers
 env_amq_broker = os.environ.get("AMQ_BROKER", None)
 if env_amq_broker:
-    brokers = list(map(tuple,json.loads(env_amq_broker)))
+    brokers = list(map(tuple, json.loads(env_amq_broker)))  # noqa: F811
 
 # queues
 env_amq_queue = os.environ.get("AMQ_QUEUE", None)
