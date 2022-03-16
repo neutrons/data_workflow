@@ -2,7 +2,7 @@
 
 -- Function: "pvUpdate"(character varying, double precision, bigint, bigint)
 
-DROP FUNCTION "pvUpdate"(character varying, double precision, bigint, bigint);
+-- DROP FUNCTION "pvUpdate"(character varying, double precision, bigint, bigint);
 
 CREATE OR REPLACE FUNCTION "pvUpdate"(pv_name character varying, value double precision, status bigint, update_time bigint)
   RETURNS void AS
@@ -57,7 +57,7 @@ ALTER FUNCTION "pvUpdate"(character varying, double precision, bigint, bigint)
 
 -- Function: "pvUpdate"(character varying, character varying, double precision, bigint, bigint)
 
-DROP FUNCTION "pvUpdate"(character varying, character varying, double precision, bigint, bigint);
+-- DROP FUNCTION "pvUpdate"(character varying, character varying, double precision, bigint, bigint);
 
 CREATE OR REPLACE FUNCTION "pvUpdate"(instrument character varying, pv_name character varying, value double precision, status bigint, update_time bigint)
   RETURNS void AS
@@ -121,7 +121,7 @@ ALTER FUNCTION "pvUpdate"(character varying, character varying, double precision
 
 -- Function: "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint)
 
-DROP FUNCTION "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint);
+-- DROP FUNCTION "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint);
 
 CREATE OR REPLACE FUNCTION "pvStringUpdate"(instrument character varying, pv_name character varying, value character varying, status bigint, update_time bigint)
   RETURNS void AS
