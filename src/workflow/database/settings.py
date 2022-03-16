@@ -1,4 +1,5 @@
 import os
+import json
 
 DATABASES = {
     "default": {
@@ -24,10 +25,6 @@ INSTALLED_APPS = ("workflow.database.report",)
 
 
 # ActiveMQ settings
-
-# List of brokers
-brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
-
 icat_user = "icat"
 icat_passcode = "icat"
 wkflow_user = "wkflowmgr"
@@ -36,8 +33,7 @@ worker_user = "worker"
 worker_passcode = "worker"
 
 # Import local settings if available
-try:
-    from .local_settings import *  # noqa: F401, F403
-except ImportError:
-    LOCAL_SETTINGS = False
-    pass
+# brokers
+default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
+env_amq_broker = os.environ.get("AMQ_BROKER", json.dumps(default_brokers))
+brokers = list(map(tuple, json.loads(env_amq_broker)))

@@ -9,9 +9,6 @@ WORKDIR /usr/src/webmon
 COPY ./src/. .
 COPY ./README.md .
 
-# Add in local activemq broker for testing
-RUN echo 'brokers = [("activemq", 61613)]' > workflow/database/local_settings.py
-
 # move the entry-point into the volume
 COPY ./src/reporting/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
