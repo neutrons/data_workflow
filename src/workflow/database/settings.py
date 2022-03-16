@@ -25,10 +25,6 @@ INSTALLED_APPS = ("workflow.database.report",)
 
 
 # ActiveMQ settings
-
-# List of brokers
-brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
-
 icat_user = "icat"
 icat_passcode = "icat"
 wkflow_user = "wkflowmgr"
@@ -38,8 +34,6 @@ worker_passcode = "worker"
 
 # Import local settings if available
 # brokers
-env_amq_broker = os.environ.get("AMQ_BROKER", None)
-if env_amq_broker:
-    # needs a hashable type, so we have to map list to tuple since
-    # json does not return a hashable type
-    brokers = list(map(tuple, json.loads(env_amq_broker)))
+default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
+env_amq_broker = os.environ.get("AMQ_BROKER", json.dumps(default_brokers))
+brokers = list(map(tuple, json.loads(env_amq_broker)))
