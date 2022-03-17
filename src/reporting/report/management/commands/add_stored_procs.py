@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from pathlib import Path
 
-# TODO
+
 def _parse_sql_file(filename):
     """Read in an sql file full of stored proceedures and return as a list"""
     if not filename.exists():
