@@ -1,13 +1,11 @@
 # Django settings for reporting_app project.
+import json
 import ldap
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from django.core.exceptions import ImproperlyConfigured
 from os import environ
 from pathlib import Path
 import django
-
-# The DB settings are defined in the workflow manager
-from workflow.database.settings import DATABASES
 
 
 def validate_ldap_settings(server_uri, user_dn_template):
@@ -29,9 +27,6 @@ def validate_ldap_settings(server_uri, user_dn_template):
     if msg:
         raise ImproperlyConfigured(msg)
 
-
-DATABASES["default"]["CONN_MAX_AGE"] = 5
-# DATABASES['default']['CONN_MAX_AGE']=None
 
 # Build paths inside the project root path for all others to be relative to
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -148,6 +143,22 @@ AUTH_LDAP_CERT_FILE = environ.get("LDAP_CERT_FILE", "")
 if AUTH_LDAP_CERT_FILE:
     AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_CACERTFILE: Path(AUTH_LDAP_CERT_FILE)}
 
+
+# The DB settings are defined the same as in the workflow manager
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",  # , 'mysql', 'sqlite3' or 'oracle'.
+        "NAME": environ.get("DATABASE_NAME"),  # Or path to database file if using sqlite3.
+        "USER": environ.get("DATABASE_USER"),  # Not used with sqlite3.
+        "PASSWORD": environ.get("DATABASE_PASS"),  # Not used with sqlite3.
+        # Set to empty string for localhost. Not used with sqlite3.
+        "HOST": environ.get("DATABASE_HOST"),
+        # Set to empty string for default. Not used with sqlite3.
+        "PORT": environ.get("DATABASE_PORT"),
+        # connection age in seconds - this is not in workflow manager
+        "CONN_MAX_AGE": 5,
+    }
+}
 
 MIDDLEWARE_CLASSES = (
     "django.middleware.common.CommonMiddleware",
@@ -288,6 +299,14 @@ POSTPROCESS_NODE_PREFIX = ["autoreducer", "fermi"]
 
 # ActiveMQ queue for generating a new reduction script
 REDUCTION_SCRIPT_CREATION_QUEUE = "/queue/REDUCTION.CREATE_SCRIPT"
+
+# activemq configuration
+default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
+env_amq_broker = environ.get("AMQ_BROKER", json.dumps(default_brokers))
+brokers = list(map(tuple, json.loads(env_amq_broker)))
+
+icat_user = environ.get("ICAT_USER")
+icat_passcode = environ.get("ICAT_PASS")
 
 HELPLINE_EMAIL = "adara_support@ornl.gov"
 

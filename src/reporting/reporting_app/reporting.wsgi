@@ -8,7 +8,7 @@ app_path = os.path.abspath(app_path)
 if app_path not in sys.path:
     sys.path.append(app_path)
 
-os.environ["DJANGO_SETTINGS_MODULE"] = "reporting_app.settings.develop"
+os.environ.setdefautl("DJANGO_SETTINGS_MODULE", "reporting_app.settings.develop")
 
 from django.core.wsgi import get_wsgi_application  # noqa: E402
 

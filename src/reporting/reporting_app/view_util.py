@@ -15,11 +15,10 @@ def send_activemq_message(destination, data):
     @param destination: queue to send the request to
     @param data: JSON data payload for the message
     """
-    from workflow.settings import brokers, icat_user, icat_passcode
     import stomp
 
-    conn = stomp.Connection(host_and_ports=brokers)
-    conn.connect(icat_user, icat_passcode, wait=True)
+    conn = stomp.Connection(host_and_ports=settings.brokers)
+    conn.connect(settings.icat_user, settings.icat_passcode, wait=True)
     conn.send(destination, data, persistent="true")
     conn.disconnect()
 

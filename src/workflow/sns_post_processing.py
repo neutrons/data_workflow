@@ -10,21 +10,10 @@ import logging
 from multiprocessing import Process
 from workflow.amq_client import Client
 from workflow.amq_listener import Listener
-from workflow.settings import brokers
 
-
-# Backward compatibility protection
-from . import settings
-
-if hasattr(settings, "wkflow_user") and hasattr(settings, "wkflow_passcode"):
-    from .settings import wkflow_user, wkflow_passcode
-else:
-    from .settings import icat_user as wkflow_user
-    from .settings import icat_passcode as wkflow_passcode
-
-from .settings import LOGGING_LEVEL  # noqa: F401
 from .daemon import Daemon  # noqa: F401
 from .database import transactions  # noqa: F401
+from .settings import LOGGING_LEVEL, brokers, wkflow_user, wkflow_passcode
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)
