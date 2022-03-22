@@ -18,6 +18,24 @@ check:
 	@python3 -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 	#@python3 -c "import pyoncat" || pip install https://oncat.ornl.gov/packages/PyONCat-1.0rc4-py2.py3-none-any.whl
 
+wheel/dasmon:
+	# make the wheel
+	cd dasmon_app && python -m build --no-isolation --wheel
+	# verify it is correct
+	check-wheel-contents dasmon_app/dist/django_nscd_dasmon-*.whl
+
+wheel/webmon:
+	# make the wheel
+	cd webmon_app && python -m build --no-isolation --wheel
+	# verify it is correct
+	check-wheel-contents webmon_app/dist/django_nscd_webmon-*.whl
+
+wheel/workflow:
+	# make the wheel
+	cd workflow_app && python -m build --no-isolation --wheel
+	# verify it is correct
+	check-wheel-contents workflow_app/dist/django_nscd_workflow-*.whl
+
 workflow: check
 	# Install the workflow manager, which defines the database schema
 	python3 setup.py clean
@@ -81,8 +99,8 @@ webmon: webmon/core
 	@echo "\n\nReady to go: run apachectl restart\n"
 
 .PHONY: check
+.PHONY: dasmonlistener
+.PHONY: test
 .PHONY: workflow
 .PHONY: webmon
 .PHONY: webmon/core
-.PHONY: dasmonlistener
-.PHONY: test
