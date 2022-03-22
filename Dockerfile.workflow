@@ -10,6 +10,6 @@ COPY ./src/. .
 COPY README.md .
 
 # move the entry-point into the volume
-COPY ./src/workflow/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+COPY ./src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
