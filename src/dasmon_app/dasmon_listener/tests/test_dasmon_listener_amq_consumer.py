@@ -1,13 +1,13 @@
 from dasmon_listener.amq_consumer import Listener, Client, store_and_cache_
 
 import unittest.mock as mock
-import unittest
+from django.test import TestCase
 import pytest
 
 values = {"test_key": "test_value"}
 
 
-class TestAMQConsumer(unittest.TestCase):
+class TestAMQConsumer(TestCase):
     def get_listener(self):
         with mock.patch("report.models.Instrument.objects") as instrumentMock:  # noqa: F841
             with mock.patch("dasmon.models.Parameter.objects") as parameterMock:  # noqa: F841

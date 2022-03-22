@@ -1,6 +1,6 @@
 import pytest
 from unittest import mock
-from unittest import TestCase
+from django.test import TestCase
 import stomp
 import workflow
 from workflow.amq_client import Client

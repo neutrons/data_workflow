@@ -1,5 +1,5 @@
 import pytest
-from unittest import TestCase
+from django.test import TestCase
 from unittest import mock
 import workflow
 

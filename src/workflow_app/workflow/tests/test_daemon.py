@@ -1,6 +1,6 @@
 import pytest
 from unittest import mock
-from unittest import TestCase
+from django.test import TestCase
 from workflow.daemon import Daemon
 import workflow
 import os
