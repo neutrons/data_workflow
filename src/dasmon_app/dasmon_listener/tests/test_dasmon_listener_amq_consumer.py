@@ -9,13 +9,13 @@ values = {"test_key": "test_value"}
 
 class TestAMQConsumer(TestCase):
     def get_listener(self):
-        with mock.patch("report.models.Instrument.objects") as instrumentMock:  # noqa: F841
+        with mock.patch("workflow.database.report.models.Instrument.objects") as instrumentMock:  # noqa: F841
             with mock.patch("dasmon.models.Parameter.objects") as parameterMock:  # noqa: F841
                 listener = Listener()
                 return listener
 
     def get_client(self):
-        with mock.patch("report.models.Instrument.objects") as instrumentMock:  # noqa: F841
+        with mock.patch("workflow.database.report.models.Instrument.objects") as instrumentMock:  # noqa: F841
             client = Client(None, None, None)
             return client
 
@@ -25,7 +25,7 @@ class TestAMQConsumer(TestCase):
         self.assertEqual(str(listener.retrieve_parameter("test_key")), "test_key")
         parametereSaveMock.assert_called()
 
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     def test_retrieve_instrument_no_exist(self, instrumentSaveMock):
         listener = self.get_listener()
         self.assertEqual(str(listener.retrieve_instrument("test_key")), "test_key")
@@ -33,7 +33,7 @@ class TestAMQConsumer(TestCase):
 
     # need to make variations on this test to go down all the branches of this function
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
     @mock.patch("json.loads")
@@ -56,7 +56,7 @@ class TestAMQConsumer(TestCase):
         storeAncCacheMock.assert_called()
 
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
     @mock.patch("json.loads")
@@ -92,7 +92,7 @@ class TestAMQConsumer(TestCase):
         processAckMock.assert_called()
 
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
     @mock.patch("json.loads")
@@ -115,7 +115,7 @@ class TestAMQConsumer(TestCase):
         storeAncCacheMock.assert_called()
 
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
     @mock.patch("json.loads")
@@ -142,7 +142,7 @@ class TestAMQConsumer(TestCase):
         storeAncCacheMock.assert_called()
 
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_signal")
     @mock.patch("json.loads")
     def test_on_message_signal(self, jsonLoadsMock, processSignal, instrumentSaveMock, parametereSaveMock):
@@ -157,7 +157,7 @@ class TestAMQConsumer(TestCase):
         processSignal.assert_called()
 
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_SMS")
     @mock.patch("json.loads")
     def test_on_message_app_sms(self, jsonLoadsMock, processSMS, instrumentSaveMock, parametereSaveMock):
@@ -172,7 +172,7 @@ class TestAMQConsumer(TestCase):
         processSMS.assert_called()
 
     @mock.patch("dasmon.models.Parameter.save")
-    @mock.patch("report.models.Instrument.save")
+    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("json.loads")
     def test_on_message_status_else(self, jsonLoadsMock, storeAncCacheMock, instrumentSaveMock, parametereSaveMock):
