@@ -9,7 +9,7 @@ from django.urls import reverse
 import logging
 import json
 from reduction.models import ReductionProperty, PropertyModification, PropertyDefault
-import reporting_app.view_util
+import reporting.reporting_app.view_util
 import dasmon.view_util
 import urllib.request
 import urllib.parse
@@ -104,5 +104,5 @@ def send_template_request(instrument_id, template_dict, user="unknown"):
         "information": "Requested by %s" % user,
     }
     data = json.dumps(data_dict)
-    reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
+    reporting.reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
     logging.info("Reduction script requested: %s", str(data))

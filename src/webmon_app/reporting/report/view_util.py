@@ -31,7 +31,7 @@ from django.db import connection, transaction
 from django.core.cache import cache
 
 import dasmon.view_util
-import reporting_app.view_util
+import reporting.reporting_app.view_util
 
 
 def generate_key(instrument: str, run_id: int):
@@ -190,7 +190,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
         data_dict["information"] = "Requested by %s" % user
 
     data = json.dumps(data_dict)
-    reporting_app.view_util.send_activemq_message(destination, data)
+    reporting.reporting_app.view_util.send_activemq_message(destination, data)
     logging.info("Reduction requested: %s", str(data))
 
 

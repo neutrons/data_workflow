@@ -15,7 +15,7 @@ import json
 import dasmon
 import httplib2
 import report
-import reporting_app
+from reporting import reporting_app
 
 _ = [dasmon, report, reporting_app, os, httplib2]
 
@@ -141,7 +141,7 @@ class ViewUtilTest(TestCase):
         rst = needs_reduction(request, run_id)
         self.assertFalse(rst)
 
-    @mock.patch("reporting_app.view_util.send_activemq_message")
+    @mock.patch("reporting.reporting_app.view_util.send_activemq_message")
     @mock.patch("report.catalog.get_run_info")
     def test_send_processing_request(self, mockGetRunInfo, mockMsgSender):
         from report.view_util import send_processing_request

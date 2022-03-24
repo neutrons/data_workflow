@@ -61,7 +61,7 @@ class TestViewUtil(TestCase):
         self.assertEqual(rp.value, "default")
 
     @mock.patch("dasmon.view_util.add_status_entry")
-    @mock.patch("reporting_app.view_util.send_activemq_message")
+    @mock.patch("reporting.reporting_app.view_util.send_activemq_message")
     def test_send_template_request(self, mock_activemq, mock_dasmon_entry):
         inst = Instrument.objects.get(name="inst")
 

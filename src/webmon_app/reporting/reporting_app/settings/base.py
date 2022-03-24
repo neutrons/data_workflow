@@ -172,10 +172,10 @@ MIDDLEWARE_CLASSES = (
 )
 MIDDLEWARE = MIDDLEWARE_CLASSES
 
-ROOT_URLCONF = "reporting_app.urls"
+ROOT_URLCONF = "reporting.reporting_app.urls"
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = "reporting_app.wsgi.application"
+WSGI_APPLICATION = "reporting.reporting_app.wsgi.application"
 
 INSTALLED_APPS = [
     "django.contrib.auth",
