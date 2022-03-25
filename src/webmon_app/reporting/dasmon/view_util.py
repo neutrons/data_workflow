@@ -5,15 +5,15 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 import sys
-from report.models import Instrument, DataRun, WorkflowSummary
-from dasmon.models import (
+from reporting.report.models import Instrument, DataRun, WorkflowSummary
+from reporting.dasmon.models import (
     Parameter,
     StatusVariable,
     StatusCache,
     ActiveInstrument,
     Signal,
 )
-from pvmon.models import PVCache, PVStringCache, MonitoredVariable
+from reporting.pvmon.models import PVCache, PVStringCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import dateformat, timezone
@@ -22,9 +22,9 @@ from django.conf import settings
 import datetime
 import logging
 import time
-import report.view_util
-import pvmon.view_util
-import users.view_util
+import reporting.report.view_util as report_view_util
+import reporting.pvmon.view_util as pvmon_view_util
+import reporting.users.view_util as users_view_util
 
 
 def get_monitor_breadcrumbs(instrument_id, current_view="monitor"):
@@ -187,7 +187,7 @@ def get_system_health(instrument_id=None):
     otherwise only common sub-systems are provided.
     @param instrument_id: Instrument object
     """
-    das_status = report.view_util.get_post_processing_status()
+    das_status = report_view_util.get_post_processing_status()
     das_status["workflow"] = get_workflow_status()
     if instrument_id is not None:
         das_status["dasmon"] = get_component_status(instrument_id, process="dasmon")
@@ -207,7 +207,7 @@ def fill_template_values(request, **template_args):
     instrument_id = get_object_or_404(Instrument, name=instr)
 
     # Check whether the user is part of the instrument team
-    template_args["is_instrument_staff"] = users.view_util.is_instrument_staff(request, instrument_id)
+    template_args["is_instrument_staff"] = users_view_util.is_instrument_staff(request, instrument_id)
 
     # Are we currently running ADARA on this instrument?
     is_adara = ActiveInstrument.objects.is_adara(instrument_id)
@@ -558,7 +558,7 @@ def postprocessing_diagnostics(timeout=None):
         # No data available
         pass
 
-    post_processing = report.view_util.get_post_processing_status()
+    post_processing = report_view_util.get_post_processing_status()
     if post_processing["catalog"] == 1:
         red_conditions.append("The cataloging was slow in responding to latest requests")
     elif post_processing["catalog"] > 1:
@@ -891,7 +891,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     if since_run_id is not None and len(run_list) > 0:
         data_dict["last_run_id"] = run_list[0].id
         for r in run_list:
-            status = report.view_util.get_run_status_text(r)
+            status = report_view_util.get_run_status_text(r)
 
             run_dict = {
                 "key": "run_id_%s" % str(r.id),
@@ -965,7 +965,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
 
         # Create dictionary for each run
         if as_html:
-            run_list = report.view_util.get_run_list_dict(runs)
+            run_list = report_view_util.get_run_list_dict(runs)
         else:
             run_list = get_run_list(runs)
     except:  # noqa: E722
@@ -1064,7 +1064,7 @@ def get_signals(instrument_id):
                 value = "No data available"
                 timestamp = "-"
             sig_entry = SignalEntry(name=item.pv_name, status=value, key=item.pv_name, assert_time=timestamp)
-            data = pvmon.view_util.get_live_variables(request=None, instrument_id=instrument_id, key_id=item.pv_name)
+            data = pvmon_view_util.get_live_variables(request=None, instrument_id=instrument_id, key_id=item.pv_name)
             data_list = []
             try:
                 for point in data[0][1]:
@@ -1136,7 +1136,7 @@ def get_dashboard_data():
         if not ActiveInstrument.objects.is_alive(i):
             continue
         last_run_id = DataRun.objects.get_last_cached_run(i)
-        r_rate, e_rate = report.view_util.retrieve_rates(i, last_run_id)
+        r_rate, e_rate = report_view_util.retrieve_rates(i, last_run_id)
         data_dict[i.name] = {"run_rate": r_rate, "error_rate": e_rate}
     return data_dict
 

@@ -8,9 +8,9 @@ from django.conf import settings
 from django.urls import reverse
 import logging
 import json
-from reduction.models import ReductionProperty, PropertyModification, PropertyDefault
-import reporting.reporting_app.view_util
-import dasmon.view_util
+from reporting.reduction.models import ReductionProperty, PropertyModification, PropertyDefault
+import reporting.reporting_app.view_util as reporting_view_util
+import reporting.dasmon.view_util as dasmon_view_util
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -91,7 +91,7 @@ def send_template_request(instrument_id, template_dict, user="unknown"):
             encoded_dict[key] = value
 
     # Send ActiveMQ request
-    dasmon.view_util.add_status_entry(
+    dasmon_view_util.add_status_entry(
         instrument_id,
         settings.SYSTEM_STATUS_PREFIX + "postprocessing",
         "Script requested by %s" % user,
@@ -104,5 +104,5 @@ def send_template_request(instrument_id, template_dict, user="unknown"):
         "information": "Requested by %s" % user,
     }
     data = json.dumps(data_dict)
-    reporting.reporting_app.view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
+    reporting_view_util.send_activemq_message(settings.REDUCTION_SCRIPT_CREATION_QUEUE, data)
     logging.info("Reduction script requested: %s", str(data))

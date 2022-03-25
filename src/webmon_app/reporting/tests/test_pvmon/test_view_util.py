@@ -3,12 +3,8 @@ from unittest import mock
 from django.test import TestCase
 import time
 
-from report.models import Instrument
-from pvmon.models import PVName
-from pvmon.models import PV
-from pvmon.models import PVCache
-from pvmon.models import PVString
-from pvmon.models import PVStringCache
+from reporting.report.models import Instrument
+from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache
 
 
 class ViewUtilTest(TestCase):
@@ -56,7 +52,7 @@ class ViewUtilTest(TestCase):
         PVName.objects.all().delete()
 
     def test_get_live_variables(self):
-        from pvmon.view_util import get_live_variables
+        from reporting.pvmon.view_util import get_live_variables
 
         # setup
         inst = Instrument.objects.get(name="testinst_pvmon")
@@ -79,7 +75,7 @@ class ViewUtilTest(TestCase):
         self.assertEqual(data_pv3[-1][1], 27)
 
     def test_get_cached_variables(self):
-        from pvmon.view_util import get_cached_variables
+        from reporting.pvmon.view_util import get_cached_variables
 
         # setup
         inst = Instrument.objects.get(name="testinst_pvmon")

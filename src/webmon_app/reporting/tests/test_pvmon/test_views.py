@@ -3,13 +3,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 import time
-from report.models import Instrument
-from pvmon.models import PVName
-from pvmon.models import PV
-from pvmon.models import PVCache
-from pvmon.models import PVString
-from pvmon.models import PVStringCache
-from pvmon.models import MonitoredVariable
+from reporting.report.models import Instrument
+from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable
 
 
 class PVMonitorViewTest(TestCase):

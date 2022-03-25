@@ -4,12 +4,8 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from dasmon.models import Instrument
-from dasmon.models import ActiveInstrument
-from dasmon.models import Signal
-from workflow.database.report.models import DataRun
-from workflow.database.report.models import IPTS
-from workflow.database.report.models import WorkflowSummary
+from reporting.dasmon.models import Instrument, ActiveInstrument, Signal
+from workflow.database.report.models import DataRun, IPTS, WorkflowSummary
 
 
 class DashboardViewTest(TestCase):

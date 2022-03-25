@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from report.models import Instrument
-from reduction.models import ReductionProperty, Choice
+from reporting.report.models import Instrument
+from reporting.reduction.models import ReductionProperty, Choice
 
 
 class TestView(TestCase):

@@ -19,14 +19,14 @@ from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
-from dasmon.models import ActiveInstrument
-from report.models import DataRun, IPTS, Instrument, Error, RunStatus
-from report.catalog import get_run_info
-from report.forms import ProcessingForm
+from reporting.dasmon.models import ActiveInstrument
+from reporting.report.models import DataRun, IPTS, Instrument, Error, RunStatus
+from reporting.report.catalog import get_run_info
+from reporting.report.forms import ProcessingForm
 from . import view_util
-import users.view_util
-import dasmon.view_util
-import reporting_app.view_util
+import reporting.users.view_util as users_view_util
+import reporting.dasmon.view_util as dasmon_view_util
+import reporting.reporting_app.view_util as reporting_view_util
 
 
 @login_required
@@ -36,7 +36,7 @@ def processing_admin(request):
     """
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; processing" % reverse(settings.LANDING_VIEW)
     template_values = {"breadcrumbs": breadcrumbs, "notes": ""}
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
 
     instruments = [str(i) for i in Instrument.objects.all().order_by("name") if ActiveInstrument.objects.is_alive(i)]
     instrument = instruments[0]
@@ -97,7 +97,7 @@ def processing_admin(request):
     return render(request, "report/processing_admin.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def summary(request):
     """
     List of available instruments
@@ -154,7 +154,7 @@ def summary(request):
         "breadcrumbs": breadcrumbs,
         "base_instrument_url": base_url,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "report/global_summary.html", template_values)
 
 
@@ -184,7 +184,7 @@ def download_reduced_data(request, instrument, run_id):
     return response
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def detail(request, instrument, run_id):
     """
     Run details
@@ -208,15 +208,15 @@ def detail(request, instrument, run_id):
         str(run_object.ipts_id).lower(),
     )
     breadcrumbs += " &rsaquo; run %s" % run_id
-    if users.view_util.is_experiment_member(request, instrument_id, run_object.ipts_id) is False:
+    if users_view_util.is_experiment_member(request, instrument_id, run_object.ipts_id) is False:
         template_values = {
             "instrument": instrument.upper(),
             "run_object": run_object,
             "helpline": settings.HELPLINE_EMAIL,
             "breadcrumbs": breadcrumbs,
         }
-        template_values = users.view_util.fill_template_values(request, **template_values)
-        template_values = dasmon.view_util.fill_template_values(request, **template_values)
+        template_values = users_view_util.fill_template_values(request, **template_values)
+        template_values = dasmon_view_util.fill_template_values(request, **template_values)
         return render(request, "report/private_data.html", template_values)
 
     # Check whether we need a re-reduce link
@@ -262,7 +262,7 @@ def detail(request, instrument, run_id):
         "icat_info": icat_info,
         "fitting_url": fitting_url,
         "reduce_url": reduce_url,
-        "reduction_setup_url": reporting_app.view_util.reduction_setup_url(instrument),
+        "reduction_setup_url": reporting_view_util.reduction_setup_url(instrument),
         "prev_url": prev_url,
         "next_url": next_url,
     }
@@ -279,8 +279,8 @@ def detail(request, instrument, run_id):
     except:  # noqa: E722
         logging.error("Could not determine whether we have catalog info: %s", sys.exc_info()[1])
         template_values["no_icat_info"] = "There is no catalog information for this run yet."
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = dasmon_view_util.fill_template_values(request, **template_values)
     return render(request, "report/detail.html", template_values)
 
 
@@ -314,7 +314,7 @@ def submit_for_cataloging(request, instrument, run_id):
     return view_util.processing_request(request, instrument, run_id, destination="/queue/CATALOG.REQUEST")
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def instrument_summary(request, instrument):
     """
     Instrument summary page
@@ -371,11 +371,11 @@ def instrument_summary(request, instrument):
         "last_expt_created": last_expt_created,
     }
     template_values = view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "report/instrument.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def ipts_summary(request, instrument, ipts):
     """
     Experiment summary giving the list of runs
@@ -424,11 +424,11 @@ def ipts_summary(request, instrument, ipts):
         "first_run_id": first_run_id,
     }
     template_values = view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "report/ipts_summary.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @vary_on_cookie
@@ -508,11 +508,11 @@ def live_errors(request, instrument):
         "time_period": time_period,
     }
     template_values = view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "report/live_errors.html", template_values)
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_experiment_update(request, instrument, ipts):
     """
@@ -527,14 +527,14 @@ def get_experiment_update(request, instrument, ipts):
 
     # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
-    data_dict = dasmon.view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
+    data_dict = dasmon_view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
 
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
     return response
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_instrument_update(request, instrument):
     """
@@ -579,7 +579,7 @@ def get_instrument_update(request, instrument):
     return response
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_error_update(request, instrument):
     """

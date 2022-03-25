@@ -2,20 +2,18 @@ import pytest
 from unittest import mock
 from django.test import TestCase
 
-from report.models import Instrument
-from report.models import DataRun
-from report.models import RunStatus
-from report.models import IPTS
-from report.models import StatusQueue
-from report.models import Task
-from report.models import WorkflowSummary
+from reporting.report.models import Instrument
+from reporting.report.models import DataRun
+from reporting.report.models import RunStatus
+from reporting.report.models import IPTS
+from reporting.report.models import StatusQueue
+from reporting.report.models import Task
+from reporting.report.models import WorkflowSummary
 
 import os
 import json
-import dasmon
+from reporting import dasmon, report, reporting_app
 import httplib2
-import report
-from reporting import reporting_app
 
 _ = [dasmon, report, reporting_app, os, httplib2]
 
@@ -67,7 +65,7 @@ class ViewUtilTest(TestCase):
         WorkflowSummary.objects.all().delete()
 
     def test_generate_key(self):
-        from report.view_util import generate_key
+        from reporting.report.view_util import generate_key
 
         # case: LIVE_PLOT_SECRET_KEY not in settings
         inst = "test_instrument"
@@ -85,7 +83,7 @@ class ViewUtilTest(TestCase):
             self.assertEqual(rst, refval)
 
     def test_append_key(self):
-        from report.view_util import append_key
+        from reporting.report.view_util import append_key
 
         # case: client_key is None
         input_url = "www.test.xyz"
@@ -99,9 +97,9 @@ class ViewUtilTest(TestCase):
             refval = f"{input_url}?key=d556af22f61bf04e6eb79d88f5c9031230b29b33"
             self.assertEqual(rst, refval)
 
-    @mock.patch(("dasmon.view_util.fill_template_values"), return_value="passed")
+    @mock.patch(("reporting.dasmon.view_util.fill_template_values"), return_value="passed")
     def test_fill_template_values(self, mockDasmonTemplateFiller):
-        from report.view_util import fill_template_values
+        from reporting.report.view_util import fill_template_values
 
         # - prep
         request = {"test_key": "test_val"}
@@ -120,7 +118,7 @@ class ViewUtilTest(TestCase):
         self.assertEqual(rst, "passed")
 
     def test_needs_reduction(self):
-        from report.view_util import needs_reduction
+        from reporting.report.view_util import needs_reduction
 
         inst = Instrument.objects.get(name="test_instrument")
         run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
@@ -142,9 +140,9 @@ class ViewUtilTest(TestCase):
         self.assertFalse(rst)
 
     @mock.patch("reporting.reporting_app.view_util.send_activemq_message")
-    @mock.patch("report.catalog.get_run_info")
+    @mock.patch("reporting.report.catalog.get_run_info")
     def test_send_processing_request(self, mockGetRunInfo, mockMsgSender):
-        from report.view_util import send_processing_request
+        from reporting.report.view_util import send_processing_request
 
         # - prep
         mockGetRunInfo = mock.MagicMock()
@@ -162,9 +160,9 @@ class ViewUtilTest(TestCase):
         #       is the test here.
         send_processing_request(inst, run_id)
 
-    @mock.patch("report.view_util.send_processing_request")
+    @mock.patch("reporting.report.view_util.send_processing_request")
     def test_processing_request(self, mockSendProcessRequest):
-        from report.view_util import processing_request
+        from reporting.report.view_util import processing_request
 
         #
         mockSendProcessRequest = mock.MagicMock()
@@ -183,7 +181,7 @@ class ViewUtilTest(TestCase):
         )
 
     def test_retrieve_rates(self):
-        from report.view_util import retrieve_rates
+        from reporting.report.view_util import retrieve_rates
 
         inst = Instrument.objects.get(name="test_instrument")
         run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
@@ -194,7 +192,7 @@ class ViewUtilTest(TestCase):
         self.assertGreater(len(errors), 1)
 
     def test_run_rate(self):
-        from report.view_util import run_rate
+        from reporting.report.view_util import run_rate
 
         inst = Instrument.objects.get(name="test_instrument")
         runs = run_rate(inst)
@@ -202,7 +200,7 @@ class ViewUtilTest(TestCase):
         self.assertGreater(len(runs), 1)
 
     def test_error_rate(self):
-        from report.view_util import error_rate
+        from reporting.report.view_util import error_rate
 
         inst = Instrument.objects.get(name="test_instrument")
         errors = error_rate(inst)
@@ -210,7 +208,7 @@ class ViewUtilTest(TestCase):
         self.assertGreater(len(errors), 1)
 
     def test_get_current_status(self):
-        from report.view_util import get_current_status
+        from reporting.report.view_util import get_current_status
 
         inst = Instrument.objects.get(name="test_instrument")
         rst = get_current_status(inst)
@@ -219,7 +217,7 @@ class ViewUtilTest(TestCase):
         self.assertEqual(rst["last_expt"], "TEST_EXP")
 
     def test_is_acquisition_complete(self):
-        from report.view_util import is_acquisition_complete
+        from reporting.report.view_util import is_acquisition_complete
 
         inst = Instrument.objects.get(name="test_instrument")
         run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
@@ -227,14 +225,14 @@ class ViewUtilTest(TestCase):
         self.assertFalse(rst)
 
     def test_get_post_processing_status(self):
-        from report.view_util import get_post_processing_status
+        from reporting.report.view_util import get_post_processing_status
 
         rst = get_post_processing_status()
         self.assertEqual(rst["catalog"], 0)
         self.assertEqual(rst["reduction"], 0)
 
     def test_get_run_status_text(self):
-        from report.view_util import get_run_status_text
+        from reporting.report.view_util import get_run_status_text
 
         inst = Instrument.objects.get(name="test_instrument")
         run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
@@ -261,7 +259,7 @@ class ViewUtilTest(TestCase):
         self.assertTrue("red" in rst)
 
     def test_get_run_list_dict(self):
-        from report.view_util import get_run_list_dict
+        from reporting.report.view_util import get_run_list_dict
 
         inst = Instrument.objects.get(name="test_instrument")
         runs = DataRun.objects.filter(instrument_id=inst)
@@ -270,7 +268,7 @@ class ViewUtilTest(TestCase):
         self.assertEqual(len(rst), 9)
 
     def test_extract_ascii_from_div(self):
-        from report.view_util import extract_ascii_from_div
+        from reporting.report.view_util import extract_ascii_from_div
 
         # case: null input
         html_data = "<div>test</div>"
@@ -293,9 +291,9 @@ class ViewUtilTest(TestCase):
         refval = "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
         self.assertEqual(rst, refval)
 
-    @mock.patch("report.view_util.get_plot_data_from_server")
+    @mock.patch("reporting.report.view_util.get_plot_data_from_server")
     def test_get_plot_template_dict(self, mockGetDataFromServer):
-        from report.view_util import get_plot_template_dict
+        from reporting.report.view_util import get_plot_template_dict
 
         inst = Instrument.objects.get(name="test_instrument")
         run_id = 1
@@ -308,7 +306,7 @@ class ViewUtilTest(TestCase):
 
     @mock.patch("httplib2.HTTPSConnectionWithTimeout")
     def test_get_plot_data_from_server(self, mockHTTPSCon):
-        from report.view_util import get_plot_data_from_server
+        from reporting.report.view_util import get_plot_data_from_server
 
         # mock external dependencies
         getresponse_return = mock.MagicMock()
@@ -324,7 +322,7 @@ class ViewUtilTest(TestCase):
         self.assertEqual(rst, "test")
 
     def test_extract_d3_data_from_json(self):
-        from report.view_util import extract_d3_data_from_json
+        from reporting.report.view_util import extract_d3_data_from_json
 
         # null case
         plot_data, x_label, y_label = extract_d3_data_from_json(None)
@@ -372,7 +370,7 @@ class ViewUtilTest(TestCase):
         self.assertEqual(y_label, "ylabel")
 
     def test_find_skipped_runs(self):
-        from report.view_util import find_skipped_runs
+        from reporting.report.view_util import find_skipped_runs
 
         inst = Instrument.objects.get(name="test_instrument")
         missing_runs = find_skipped_runs(inst)

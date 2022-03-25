@@ -1,4 +1,4 @@
-from users.models import PageView, DeveloperNode, SiteNotification
+from reporting.users.models import PageView, DeveloperNode, SiteNotification
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User

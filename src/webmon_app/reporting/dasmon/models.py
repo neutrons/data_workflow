@@ -4,7 +4,7 @@
     @copyright: 2015 Oak Ridge National Laboratory
 """
 from django.db import models
-from report.models import Instrument
+from reporting.report.models import Instrument
 
 
 class Parameter(models.Model):

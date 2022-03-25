@@ -1,4 +1,4 @@
-from reduction.models import (
+from reporting.reduction.models import (
     ReductionProperty,
     PropertyModification,
     Choice,

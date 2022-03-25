@@ -3,14 +3,16 @@ from django.test import TestCase
 from datetime import datetime
 from django.utils import timezone
 
-from report.models import Instrument
-from dasmon.models import Parameter
-from dasmon.models import StatusVariable
-from dasmon.models import StatusCache
-from dasmon.models import ActiveInstrument
-from dasmon.models import Signal
-from dasmon.models import LegacyURL
-from dasmon.models import UserNotification
+from reporting.report.models import Instrument
+from reporting.dasmon.models import (
+    Parameter,
+    StatusVariable,
+    StatusCache,
+    ActiveInstrument,
+    Signal,
+    LegacyURL,
+    UserNotification,
+)
 
 
 class ParameterTest(TestCase):

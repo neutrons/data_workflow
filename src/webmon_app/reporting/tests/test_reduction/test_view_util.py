@@ -1,9 +1,9 @@
 from unittest import mock
 from django.test import TestCase
 from django.contrib.auth.models import User
-from report.models import Instrument
-from reduction.models import ReductionProperty, PropertyDefault
-from reduction import view_util
+from reporting.report.models import Instrument
+from reporting.reduction.models import ReductionProperty, PropertyDefault
+from reporting.reduction import view_util
 
 
 class TestViewUtil(TestCase):
@@ -60,7 +60,7 @@ class TestViewUtil(TestCase):
         rp = ReductionProperty.objects.get(id=1)
         self.assertEqual(rp.value, "default")
 
-    @mock.patch("dasmon.view_util.add_status_entry")
+    @mock.patch("reporting.dasmon.view_util.add_status_entry")
     @mock.patch("reporting.reporting_app.view_util.send_activemq_message")
     def test_send_template_request(self, mock_activemq, mock_dasmon_entry):
         inst = Instrument.objects.get(name="inst")

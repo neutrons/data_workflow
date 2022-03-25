@@ -12,7 +12,7 @@ import string
 import httplib2
 import re
 import hashlib
-from report.models import (
+from reporting.report.models import (
     DataRun,
     RunStatus,
     IPTS,
@@ -30,8 +30,8 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.core.cache import cache
 
-import dasmon.view_util
-import reporting.reporting_app.view_util
+import reporting.dasmon.view_util as dasmon_view_util
+import reporting.reporting_app.view_util as reporting_view_util
 
 
 def generate_key(instrument: str, run_id: int):
@@ -104,7 +104,7 @@ def fill_template_values(request, **template_args):
     template_args["run_rate"] = str(r_rate)
     template_args["error_rate"] = str(e_rate)
 
-    template_args = dasmon.view_util.fill_template_values(request, **template_args)
+    template_args = dasmon_view_util.fill_template_values(request, **template_args)
 
     return template_args
 
@@ -190,7 +190,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
         data_dict["information"] = "Requested by %s" % user
 
     data = json.dumps(data_dict)
-    reporting.reporting_app.view_util.send_activemq_message(destination, data)
+    reporting_view_util.send_activemq_message(destination, data)
     logging.info("Reduction requested: %s", str(data))
 
 

@@ -16,17 +16,17 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.conf import settings
 from django.utils import dateparse, timezone
 from django.forms.formsets import formset_factory
-from report.models import Instrument
+from reporting.report.models import Instrument
 
-from reduction.models import ReductionProperty
+from reporting.reduction.models import ReductionProperty
 from . import forms
 from . import view_util
 
-import users.view_util
-import dasmon.view_util
+import reporting.users.view_util as users_view_util
+import reporting.dasmon.view_util as dasmon_view_util
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def configuration(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -62,7 +62,7 @@ def configuration(request, instrument):
         )  # noqa: E501
 
     last_action = datetime.datetime.now().isoformat()
-    action_list = dasmon.view_util.get_latest_updates(
+    action_list = dasmon_view_util.get_latest_updates(
         instrument_id, message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing"
     )
     if len(action_list) > 0:
@@ -84,12 +84,12 @@ def configuration(request, instrument):
         "last_action_time": last_action,
         "breadcrumbs": breadcrumbs,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = dasmon_view_util.fill_template_values(request, **template_values)
     return render(request, "reduction/configuration.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def configuration_ref_m(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -134,7 +134,7 @@ def configuration_ref_m(request, instrument):
         options_form.set_instrument(instrument.lower())
 
     last_action = datetime.datetime.now().isoformat()
-    action_list = dasmon.view_util.get_latest_updates(
+    action_list = dasmon_view_util.get_latest_updates(
         instrument_id, message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing"
     )
     if len(action_list) > 0:
@@ -158,12 +158,12 @@ def configuration_ref_m(request, instrument):
         "breadcrumbs": breadcrumbs,
         "user_alert": error_msg,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = dasmon_view_util.fill_template_values(request, **template_values)
     return render(request, "reduction/configuration_ref_m.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def configuration_cncs(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -223,7 +223,7 @@ def configuration_cncs(request, instrument):
         mask_form = MaskFormSet(initial=mask_list)
 
     last_action = datetime.datetime.now().isoformat()
-    action_list = dasmon.view_util.get_latest_updates(
+    action_list = dasmon_view_util.get_latest_updates(
         instrument_id, message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing"
     )
     if len(action_list) > 0:
@@ -248,12 +248,12 @@ def configuration_cncs(request, instrument):
         "breadcrumbs": breadcrumbs,
         "user_alert": error_msg,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = dasmon_view_util.fill_template_values(request, **template_values)
     return render(request, "reduction/configuration_cncs.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def configuration_dgs(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -319,7 +319,7 @@ def configuration_dgs(request, instrument):
         mask_form = MaskFormSet(initial=mask_list)
 
     last_action = datetime.datetime.now().isoformat()
-    action_list = dasmon.view_util.get_latest_updates(
+    action_list = dasmon_view_util.get_latest_updates(
         instrument_id, message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing"
     )
     if len(action_list) > 0:
@@ -344,8 +344,8 @@ def configuration_dgs(request, instrument):
         "breadcrumbs": breadcrumbs,
         "user_alert": error_msg,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = dasmon_view_util.fill_template_values(request, **template_values)
     if instrument.lower() == "seq":
         template_file = "reduction/configuration_seq.html"
     else:
@@ -353,7 +353,7 @@ def configuration_dgs(request, instrument):
     return render(request, template_file, template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 def configuration_corelli(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -429,7 +429,7 @@ def configuration_corelli(request, instrument):
         plot_form = PlotFormSet(initial=plot_list)
 
     last_action = datetime.datetime.now().isoformat()
-    action_list = dasmon.view_util.get_latest_updates(
+    action_list = dasmon_view_util.get_latest_updates(
         instrument_id, message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing"
     )
     if len(action_list) > 0:
@@ -455,13 +455,13 @@ def configuration_corelli(request, instrument):
         "breadcrumbs": breadcrumbs,
         "user_alert": error_msg,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
-    template_values = dasmon.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = dasmon_view_util.fill_template_values(request, **template_values)
     return render(request, "reduction/configuration_corelli.html", template_values)
 
 
 @csrf_exempt
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 def configuration_change(request, instrument):
     """
     AJAX call to update the reduction parameters for an instrument.
@@ -499,7 +499,7 @@ def configuration_change(request, instrument):
     return response
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 # @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def configuration_update(request, instrument):
     """
@@ -515,7 +515,7 @@ def configuration_update(request, instrument):
     if last_action != "0":
         start_time = dateparse.parse_datetime(last_action)
         start_time = timezone.make_aware(start_time, timezone.utc)
-        action_list = dasmon.view_util.get_latest_updates(
+        action_list = dasmon_view_util.get_latest_updates(
             instrument_id,
             message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing",
             start_time=start_time,

@@ -25,9 +25,9 @@ TIME_ZONE = "America/New_York"
 USE_TZ = True
 
 INSTALLED_APPS = (
-    "report",
-    "dasmon",
-    "pvmon",
+    "reporting.report",
+    "reporting.dasmon",
+    "reporting.pvmon",
 )
 
 

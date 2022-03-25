@@ -34,14 +34,14 @@ import django  # noqa: E402
 django.setup()
 from django.utils import timezone  # noqa: E402
 
-from dasmon.models import (  # noqa: E402
+from reporting.dasmon.models import (  # noqa: E402
     StatusVariable,
     Parameter,
     StatusCache,
     Signal,
     UserNotification,
 )  # noqa: E402
-from pvmon.models import (  # noqa: E402
+from reporting.pvmon.models import (  # noqa: E402
     PV,
     PVCache,
     PVString,

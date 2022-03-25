@@ -1,6 +1,6 @@
-from pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable
-from report.models import Instrument
-from dasmon.models import ActiveInstrument
+from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable
+from reporting.report.models import Instrument
+from reporting.dasmon.models import ActiveInstrument
 from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
 from django.shortcuts import get_object_or_404

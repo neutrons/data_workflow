@@ -8,7 +8,7 @@ import httplib2
 import json
 import logging
 import sys
-from dasmon.models import LegacyURL
+from reporting.dasmon.models import LegacyURL
 
 STATUS_HOST = "neutrons.ornl.gov"
 

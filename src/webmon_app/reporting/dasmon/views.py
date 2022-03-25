@@ -16,19 +16,19 @@ from django.template import loader
 from django.contrib.auth.decorators import login_required
 from django import forms
 
-from report.models import Instrument
-import report.view_util
-from users.models import SiteNotification
-import users.view_util
-from dasmon.models import ActiveInstrument, Signal, UserNotification
+from reporting.report.models import Instrument
+import reporting.report.view_util as report_view_util
+from reporting.users.models import SiteNotification
+import reporting.users.view_util as users_view_util
+from reporting.dasmon.models import ActiveInstrument, Signal, UserNotification
 from . import view_util
 from . import legacy_status
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def dashboard(request):
     """
@@ -44,14 +44,14 @@ def dashboard(request):
         "update_url": reverse("dasmon:dashboard_update") + "?plots",
         "central_services_url": reverse("dasmon:diagnostics", args=["common"]),
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "dasmon/dashboard.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def dashboard_simple(request):
     """
@@ -69,11 +69,11 @@ def dashboard_simple(request):
         "update_url": reverse("dasmon:dashboard_update"),
         "central_services_url": reverse("dasmon:diagnostics", args=["common"]),
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "dasmon/dashboard_simple.html", template_values)
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 def dashboard_update(request):
@@ -93,10 +93,10 @@ def dashboard_update(request):
     return response
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def expert_status(request):
     """
@@ -112,14 +112,14 @@ def expert_status(request):
         "update_url": reverse("dasmon:dashboard_update"),
         "central_services_url": reverse("dasmon:diagnostics", args=["common"]),
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "dasmon/expert_status.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def run_summary(request):
     """
@@ -140,11 +140,11 @@ def run_summary(request):
         "base_run_url": base_run_url,
         "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "dasmon/run_summary.html", template_values)
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 def run_summary_update(request):
     """
     Ajax call to get updates behind the scenes
@@ -158,10 +158,10 @@ def run_summary_update(request):
     return response
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def legacy_monitor(request, instrument):
     """
@@ -187,19 +187,19 @@ def legacy_monitor(request, instrument):
         for item in group["data"]:
             if item["key"] in ["Proposal", "Detector_Rate", "Run", "Status"]:
                 template_values[item["key"]] = item["value"]
-    template_values = report.view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = report_view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
 
     # Add most recent reduced data
     last_run = template_values["last_run"]
-    plot_dict = report.view_util.get_plot_template_dict(last_run, instrument=instrument, run_id=last_run.run_number)
+    plot_dict = report_view_util.get_plot_template_dict(last_run, instrument=instrument, run_id=last_run.run_number)
     template_values.update(plot_dict)
 
     return render(request, "dasmon/legacy_monitor.html", template_values)
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 def get_legacy_data(request, instrument):
@@ -213,10 +213,10 @@ def get_legacy_data(request, instrument):
     return response
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def live_monitor(request, instrument):
     """
@@ -237,8 +237,8 @@ def live_monitor(request, instrument):
         "pv_url": pv_url,
         "key_value_pairs": view_util.get_cached_variables(instrument_id, monitored_only=True),
     }
-    template_values = report.view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = report_view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
 
     template_values["signals_url"] = reverse("dasmon:get_signal_table", args=[instrument])
@@ -246,10 +246,10 @@ def live_monitor(request, instrument):
     return render(request, "dasmon/live_monitor.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def live_runs(request, instrument):
     """
@@ -293,15 +293,15 @@ def live_runs(request, instrument):
         "first_run_id": first_run,
         "last_run_id": last_run,
     }
-    template_values = report.view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = report_view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
 
     return render(request, "dasmon/live_runs.html", template_values)
 
 
-@users.view_util.login_or_local_required
-@users.view_util.monitor
+@users_view_util.login_or_local_required
+@users_view_util.monitor
 def user_help(request):
     """
     Help request
@@ -318,15 +318,15 @@ def user_help(request):
         "hysa_live_runs_url": hysa_live_runs_url,
         "breadcrumbs": breadcrumbs,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
 
     return render(request, "dasmon/help.html", template_values)
 
 
-@users.view_util.login_or_local_required
+@users_view_util.login_or_local_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
-@users.view_util.monitor
+@users_view_util.monitor
 @vary_on_cookie
 def diagnostics(request, instrument):
     """
@@ -346,8 +346,8 @@ def diagnostics(request, instrument):
         "instrument": instrument.upper(),
         "breadcrumbs": breadcrumbs,
     }
-    template_values = report.view_util.fill_template_values(request, **template_values)
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = report_view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
 
     actions = []
@@ -380,7 +380,7 @@ def diagnostics(request, instrument):
     return render(request, "dasmon/diagnostics.html", template_values)
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 def get_update(request, instrument):
@@ -392,7 +392,7 @@ def get_update(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
     # Get last experiment and last run
-    data_dict = report.view_util.get_current_status(instrument_id)
+    data_dict = report_view_util.get_current_status(instrument_id)
     data_dict["variables"] = view_util.get_cached_variables(instrument_id, monitored_only=False)
 
     localtime = timezone.now()
@@ -417,7 +417,7 @@ def get_update(request, instrument):
     return response
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 def summary_update(request):
     """
     Response to AJAX call to get updated health info for all instruments
@@ -433,7 +433,7 @@ def summary_update(request):
     return response
 
 
-@users.view_util.login_or_local_required_401
+@users_view_util.login_or_local_required_401
 def get_signal_table(request, instrument):
     """
     Ajax call to get the signal table
@@ -445,7 +445,7 @@ def get_signal_table(request, instrument):
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     t = loader.get_template("dasmon/signal_table.html")
     template_values = {"signals": view_util.get_signals(instrument_id)}
-    template_values["is_instrument_staff"] = users.view_util.is_instrument_staff(request, instrument_id)
+    template_values["is_instrument_staff"] = users_view_util.is_instrument_staff(request, instrument_id)
     resp = t.render(template_values)
     response = HttpResponse(resp, content_type="text/html")
     response["Connection"] = "close"
@@ -453,8 +453,8 @@ def get_signal_table(request, instrument):
     return response
 
 
-@users.view_util.login_or_local_required_401
-@users.view_util.monitor
+@users_view_util.login_or_local_required_401
+@users_view_util.monitor
 def acknowledge_signal(request, instrument, sig_id):
     """
     Acknowledge a signal and remove it from the DB
@@ -558,5 +558,5 @@ def notifications(request):
         "user_alert": alert_list,
         "breadcrumbs": breadcrumbs,
     }
-    template_values = users.view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
     return render(request, "dasmon/notifications.html", template_values)

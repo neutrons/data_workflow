@@ -14,7 +14,7 @@ import hashlib
 import socket
 import logging
 
-from users.models import PageView
+from reporting.users.models import PageView
 
 
 def fill_template_values(request, **template_args):

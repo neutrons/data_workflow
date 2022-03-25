@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from report.models import Instrument
+from reporting.report.models import Instrument
 
 
 class ReductionProperty(models.Model):

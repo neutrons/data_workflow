@@ -5,14 +5,14 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 
-from dasmon.models import ActiveInstrument
-from report.models import DataRun
-from report.models import IPTS
-from report.models import Instrument
-from report.models import RunStatus
+from reporting.dasmon.models import ActiveInstrument
+from reporting.report.models import DataRun
+from reporting.report.models import IPTS
+from reporting.report.models import Instrument
+from reporting.report.models import RunStatus
 from workflow.database.report.models import StatusQueue
 
-import report
+from reporting import report
 
 _ = [report]
 
@@ -395,7 +395,7 @@ class DownloadReducedDataViewTest(TestCase):
         response = self.client.get("/report/test_instrument/1/data/")
         self.assertEqual(response.status_code, 404)
 
-    @mock.patch("report.view_util.extract_ascii_from_div")
+    @mock.patch("reporting.report.view_util.extract_ascii_from_div")
     def test_view_url_exists_at_desired_location_has_reduced_data(self, mockExtract):
         # Without patching, we will get a 404 by default
         mockExtract.return_value = "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
@@ -406,7 +406,7 @@ class DownloadReducedDataViewTest(TestCase):
         response = self.client.get(reverse("report:download_reduced_data", args=["test_instrument", 1]))
         self.assertEqual(response.status_code, 404)
 
-    @mock.patch("report.view_util.extract_ascii_from_div")
+    @mock.patch("reporting.report.view_util.extract_ascii_from_div")
     def test_view_url_accessible_by_name_has_reduced_data(self, mockExtract):
         mockExtract.return_value = "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
         response = self.client.get(reverse("report:download_reduced_data", args=["test_instrument", 1]))
@@ -461,14 +461,14 @@ class SubmitForReductionViewTest(TestCase):
     def setUp(self):
         self.assertTrue(self.client.login(username="testuser", password="12345"))
 
-    @mock.patch("report.view_util.processing_request")
+    @mock.patch("reporting.report.view_util.processing_request")
     def test_view_url_exists_at_desired_location(self, mockProcessingRequest):
         mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get("/report/test_instrument/1/reduce/")
         # NOTE: this is either fail or redirect
         self.assertEqual(response.status_code, 302)
 
-    @mock.patch("report.view_util.processing_request")
+    @mock.patch("reporting.report.view_util.processing_request")
     def test_view_url_accessible_by_name(self, mockProcessingRequest):
         mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get(reverse("report:submit_for_reduction", args=["test_instrument", 1]))
@@ -523,14 +523,14 @@ class SubmitForCatalogViewTest(TestCase):
     def setUp(self):
         self.assertTrue(self.client.login(username="testuser", password="12345"))
 
-    @mock.patch("report.view_util.processing_request")
+    @mock.patch("reporting.report.view_util.processing_request")
     def test_view_url_exists_at_desired_location(self, mockProcessingRequest):
         mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get("/report/test_instrument/1/catalog/")
         # NOTE: this is either fail or redirect
         self.assertEqual(response.status_code, 302)
 
-    @mock.patch("report.view_util.processing_request")
+    @mock.patch("reporting.report.view_util.processing_request")
     def test_view_url_accessible_by_name(self, mockProcessingRequest):
         mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get(reverse("report:submit_for_cataloging", args=["test_instrument", 1]))
@@ -585,14 +585,14 @@ class SubmitForPostProcessingViewTest(TestCase):
     def setUp(self):
         self.assertTrue(self.client.login(username="testuser", password="12345"))
 
-    @mock.patch("report.view_util.processing_request")
+    @mock.patch("reporting.report.view_util.processing_request")
     def test_view_url_exists_at_desired_location(self, mockProcessingRequest):
         mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get("/report/test_instrument/1/postprocess/")
         # NOTE: this is either fail or redirect
         self.assertEqual(response.status_code, 302)
 
-    @mock.patch("report.view_util.processing_request")
+    @mock.patch("reporting.report.view_util.processing_request")
     def test_view_url_accessible_by_name(self, mockProcessingRequest):
         mockProcessingRequest.return_value = redirect(reverse("report:detail", args=["test_instrument", 1]))
         response = self.client.get(reverse("report:submit_for_post_processing", args=["test_instrument", 1]))

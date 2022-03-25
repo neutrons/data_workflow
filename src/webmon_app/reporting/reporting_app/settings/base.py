@@ -187,11 +187,11 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.admindocs",
     "django_auth_ldap",
-    "report",
-    "users",
-    "dasmon",
-    "pvmon",
-    "reduction",
+    "reporting.report",
+    "reporting.users",
+    "reporting.dasmon",
+    "reporting.pvmon",
+    "reporting.reduction",
     # 'debug_toolbar',
 ]
 

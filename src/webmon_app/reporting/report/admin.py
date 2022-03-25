@@ -1,4 +1,4 @@
-from report.models import (
+from reporting.report.models import (
     DataRun,
     StatusQueue,
     RunStatus,
@@ -7,7 +7,7 @@ from report.models import (
     Instrument,
     InstrumentStatus,
 )
-from report.models import Information, Error, Task
+from reporting.report.models import Information, Error, Task
 from django.contrib import admin
 from django.utils import dateformat, timezone
 from django.conf import settings

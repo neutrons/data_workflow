@@ -15,10 +15,10 @@ admin.site.login = login_required(admin.site.login)
 
 urlpatterns = [
     path("", RedirectView.as_view(url="/dasmon/")),
-    path("report/", include("report.urls", namespace="report")),
-    path("dasmon/", include("dasmon.urls", namespace="dasmon")),
-    path("reduction/", include("reduction.urls", namespace="reduction")),
-    path("pvmon/", include("pvmon.urls", namespace="pvmon")),
-    path("users/", include("users.urls", namespace="users")),
+    path("report/", include("reporting.report.urls", namespace="report")),
+    path("dasmon/", include("reporting.dasmon.urls", namespace="dasmon")),
+    path("reduction/", include("reporting.reduction.urls", namespace="reduction")),
+    path("pvmon/", include("reporting.pvmon.urls", namespace="pvmon")),
+    path("users/", include("reporting.users.urls", namespace="users")),
     path("database/", admin.site.urls),
 ]

@@ -1,4 +1,4 @@
-from dasmon.models import (
+from reporting.dasmon.models import (
     StatusVariable,
     Parameter,
     StatusCache,

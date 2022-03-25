@@ -11,9 +11,9 @@ import logging
 import functools
 from django import forms
 from django.core.exceptions import ValidationError
-from report.models import Instrument
-from reduction.models import ReductionProperty, Choice
-import reduction.view_util
+from reporting.report.models import Instrument
+from reporting.reduction.models import ReductionProperty, Choice
+import reporting.reduction.view_util
 
 
 def _get_choices(instrument):
@@ -101,7 +101,7 @@ class BaseReductionConfigurationForm(forms.Form):
                         value = str(self.cleaned_data[key])
                 else:
                     value = ""
-                reduction.view_util.store_property(instrument_id, key, value, user=user)
+                reporting.reduction.view_util.store_property(instrument_id, key, value, user=user)
             except:  # noqa: E722
                 logging.error("BaseReductionConfigurationForm.to_db: %s", sys.exc_info()[1])
 

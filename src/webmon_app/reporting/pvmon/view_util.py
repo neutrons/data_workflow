@@ -6,7 +6,7 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 import sys
-from pvmon.models import PVName, PV, PVCache, PVStringCache
+from reporting.pvmon.models import PVName, PV, PVCache, PVStringCache
 from django.utils import dateformat, timezone
 from django.conf import settings
 import datetime

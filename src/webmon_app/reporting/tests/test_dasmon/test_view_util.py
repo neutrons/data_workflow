@@ -3,19 +3,13 @@ from unittest import mock
 from django.test import TestCase
 
 import django
-import dasmon
-import report
-import users
+from reporting import dasmon, report, users
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils import timezone
 
-from report.models import Instrument
-from dasmon.models import ActiveInstrument
-from dasmon.models import Parameter
-from dasmon.models import StatusCache
-from dasmon.models import StatusVariable
-from dasmon.models import Signal
+from reporting.report.models import Instrument
+from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable, Signal
 from workflow.database.report.models import DataRun
 from workflow.database.report.models import IPTS
 from workflow.database.report.models import WorkflowSummary
@@ -90,7 +84,7 @@ class ViewUtilTest(TestCase):
         inst = Instrument.objects.get(name="testinst")
 
         # test the function
-        from dasmon.view_util import get_monitor_breadcrumbs
+        from reporting.dasmon.view_util import get_monitor_breadcrumbs
 
         breadcrumbs = get_monitor_breadcrumbs(inst, "TestView")
         assert breadcrumbs[-8:] == "TestView"
@@ -105,7 +99,7 @@ class ViewUtilTest(TestCase):
         }
 
         # test the function
-        from dasmon.view_util import get_cached_variables
+        from reporting.dasmon.view_util import get_cached_variables
 
         pairs = get_cached_variables(inst, monitored_only=False)
         pairs_monitoredOnly = get_cached_variables(inst, monitored_only=True)
@@ -121,7 +115,7 @@ class ViewUtilTest(TestCase):
         para = Parameter.objects.get(name="testParam")
 
         # test the function
-        from dasmon.view_util import get_latest
+        from reporting.dasmon.view_util import get_latest
 
         # -- record in StatusCache
         latest = get_latest(inst, para)
@@ -140,7 +134,7 @@ class ViewUtilTest(TestCase):
         assert latest2.value == "testValue2"
 
     def test_is_running(self):
-        from dasmon.view_util import is_running
+        from reporting.dasmon.view_util import is_running
 
         # -- Unknown
         # NOTE: the status of this instrument should be unknown as we never
@@ -241,16 +235,16 @@ class ViewUtilTest(TestCase):
         )
         assert is_running(inst_stopped) == "Stopped"
 
-    @mock.patch(("dasmon.view_util.get_pvstreamer_status"), return_value="test")
-    @mock.patch(("dasmon.view_util.get_component_status"), return_value="test")
-    @mock.patch(("dasmon.view_util.get_workflow_status"), return_value="test")
+    @mock.patch(("reporting.dasmon.view_util.get_pvstreamer_status"), return_value="test")
+    @mock.patch(("reporting.dasmon.view_util.get_component_status"), return_value="test")
+    @mock.patch(("reporting.dasmon.view_util.get_workflow_status"), return_value="test")
     def test_get_system_health(self, mock_workflow, mock_component, mock_pvstreamer):
         # make flake8 happy
         _ = [mock_pvstreamer, mock_component, mock_workflow]
         # NOTE:
         # the mocked functions have their own unit tests
         inst = Instrument.objects.get(name="testinst")
-        from dasmon.view_util import get_system_health
+        from reporting.dasmon.view_util import get_system_health
 
         health = get_system_health(inst)
         for k, v in health.items():
@@ -260,7 +254,7 @@ class ViewUtilTest(TestCase):
                 assert v == "test"
 
     def test_get_workflow_status(self):
-        from dasmon.view_util import get_workflow_status
+        from reporting.dasmon.view_util import get_workflow_status
 
         # -- trigger red
         status = get_workflow_status(red_timeout=0)
@@ -273,7 +267,7 @@ class ViewUtilTest(TestCase):
         assert status == 0
 
     def test_get_component_status(self):
-        from dasmon.view_util import get_component_status
+        from reporting.dasmon.view_util import get_component_status
 
         # -- non adara case
         inst_nonadara = Instrument.objects.create(name="testInst_nonadara")
@@ -347,9 +341,9 @@ class ViewUtilTest(TestCase):
         cmpt_status = get_component_status(inst, red_timeout=65535, yellow_timeout=65535, process="ok")
         assert cmpt_status == 0
 
-    @mock.patch(("dasmon.view_util.get_component_status"), return_value=0)
+    @mock.patch(("reporting.dasmon.view_util.get_component_status"), return_value=0)
     def test_get_pvstreamer_status(self, mock_get_component_status):
-        from dasmon.view_util import get_pvstreamer_status
+        from reporting.dasmon.view_util import get_pvstreamer_status
 
         # make flake8 happy
         _ = mock_get_component_status
@@ -378,10 +372,10 @@ class ViewUtilTest(TestCase):
         pvstreamer_status = get_pvstreamer_status(inst_pvsdstreamer)
         assert pvstreamer_status == 0
 
-    @mock.patch(("dasmon.view_util.is_running"), return_value=0)
-    @mock.patch(("dasmon.view_util.get_system_health"), return_value=0)
+    @mock.patch(("reporting.dasmon.view_util.is_running"), return_value=0)
+    @mock.patch(("reporting.dasmon.view_util.get_system_health"), return_value=0)
     @mock.patch(("django.urls.reverse"), return_value="test")
-    @mock.patch(("users.view_util.is_instrument_staff"), return_value=True)
+    @mock.patch(("reporting.users.view_util.is_instrument_staff"), return_value=True)
     def test_fill_template_values(
         self,
         mock_is_instrument_staff,
@@ -397,7 +391,7 @@ class ViewUtilTest(TestCase):
             mock_is_running,
         ]
         # test
-        from dasmon.view_util import fill_template_values
+        from reporting.dasmon.view_util import fill_template_values
 
         template = fill_template_values(1, instrument="testinst")
         # check
@@ -418,7 +412,7 @@ class ViewUtilTest(TestCase):
         assert template["run_title"] == "testRunTitle"
 
     def test_get_live_variables(self):
-        from dasmon.view_util import get_live_variables
+        from reporting.dasmon.view_util import get_live_variables
 
         # mock the HTTP request object
         request = mock.Mock()
@@ -434,7 +428,7 @@ class ViewUtilTest(TestCase):
         get_live_variables(request, inst)
 
     def test_workflow_diagnostics(self):
-        from dasmon.view_util import workflow_diagnostics
+        from reporting.dasmon.view_util import workflow_diagnostics
 
         wf_diag = workflow_diagnostics()
         # NOTE: since we are missing a lot of entries during testing, we can
@@ -450,7 +444,7 @@ class ViewUtilTest(TestCase):
         #  'dasmon_listener': []}
 
     def test_postprocessing_diagnostics(self):
-        from dasmon.view_util import postprocessing_diagnostics
+        from reporting.dasmon.view_util import postprocessing_diagnostics
 
         red_diag = postprocessing_diagnostics()
         # NOTE: we don't have any postprocessing data during testing, so only
@@ -461,7 +455,7 @@ class ViewUtilTest(TestCase):
         assert len(red_diag["conditions"]) == 0
 
     def test_pvstreamer_diagnostics(self):
-        from dasmon.view_util import pvstreamer_diagnostics
+        from reporting.dasmon.view_util import pvstreamer_diagnostics
 
         inst = Instrument.objects.create(name="testinst_pvstreamer")
         inst.save()
@@ -497,7 +491,7 @@ class ViewUtilTest(TestCase):
         assert pvstreamer_diag["dasmon_listener_warning"] is False
 
     def test_dasmon_diagnostics(self):
-        from dasmon.view_util import dasmon_diagnostics
+        from reporting.dasmon.view_util import dasmon_diagnostics
 
         # make test inst
         inst = Instrument.objects.create(name="testinst_dasmon")
@@ -537,7 +531,7 @@ class ViewUtilTest(TestCase):
         assert dasmon_diag["dasmon_listener_warning"] is False
 
     def test_get_completeness_status(self):
-        from dasmon.view_util import get_completeness_status
+        from reporting.dasmon.view_util import get_completeness_status
 
         # make records
         inst = Instrument.objects.create(name="testinst_completeness")
@@ -600,7 +594,7 @@ class ViewUtilTest(TestCase):
         #       in, which is something better to carry out in their unit test.
 
     def test_get_live_runs_update(self):
-        from dasmon.view_util import get_live_runs_update
+        from reporting.dasmon.view_util import get_live_runs_update
 
         # make records
         inst = Instrument.objects.create(name="testinst_liveruns")
@@ -637,9 +631,9 @@ class ViewUtilTest(TestCase):
         data_dict = get_live_runs_update(request, inst, ipts)
         assert data_dict["refresh_needed"] == "0"
 
-    @mock.patch("report.view_util.get_run_list_dict")
+    @mock.patch("reporting.report.view_util.get_run_list_dict")
     def test_get_live_runs(self, mock_getRunListDict):
-        from dasmon.view_util import get_live_runs
+        from reporting.dasmon.view_util import get_live_runs
 
         # mock
         report.view_util.get_run_list_dict = lambda x: x
@@ -672,7 +666,7 @@ class ViewUtilTest(TestCase):
         assert len(rst[0]) == 4
 
     def test_get_run_list(self):
-        from dasmon.view_util import get_run_list
+        from reporting.dasmon.view_util import get_run_list
 
         # make record
         inst = Instrument.objects.create(name="testinst_getliveruns")
@@ -708,7 +702,7 @@ class ViewUtilTest(TestCase):
             assert d["status"] == "complete"
 
     def test_get_signals(self):
-        from dasmon.view_util import get_signals
+        from reporting.dasmon.view_util import get_signals
 
         # make signals
         inst = Instrument.objects.create(name="testinst_getsignals")
@@ -730,7 +724,7 @@ class ViewUtilTest(TestCase):
             assert f"msg_{i}" in me.status
 
     def test_get_instrument_status_summary(self):
-        from dasmon.view_util import get_instrument_status_summary
+        from reporting.dasmon.view_util import get_instrument_status_summary
 
         # make instrument
         # NOTE: using the class level inst to make life easier
@@ -765,7 +759,7 @@ class ViewUtilTest(TestCase):
             assert me["completeness_msg"] == "Unknown"
 
     def test_get_dashboard_data(self):
-        from dasmon.view_util import get_dashboard_data
+        from reporting.dasmon.view_util import get_dashboard_data
 
         # make entries
         # NOTE: using the two inst defined for the class
@@ -777,7 +771,7 @@ class ViewUtilTest(TestCase):
         assert "testinst" in data_dict.keys()
 
     def test_add_status_entry(self):
-        from dasmon.view_util import add_status_entry
+        from reporting.dasmon.view_util import add_status_entry
 
         # setup
         inst = Instrument.objects.create(name="testinst_addstatus")
@@ -795,7 +789,7 @@ class ViewUtilTest(TestCase):
         assert sv.value == "updated"
 
     def test_get_latest_updates(self):
-        from dasmon.view_util import get_latest_updates
+        from reporting.dasmon.view_util import get_latest_updates
 
         # make entries
         inst = Instrument.objects.create(name="testinst_getlatestupdates")
@@ -815,7 +809,7 @@ class ViewUtilTest(TestCase):
             assert d["info"] == f"val_{i}"
 
     def test_get_instruments_for_user(self):
-        from dasmon.view_util import get_instruments_for_user
+        from reporting.dasmon.view_util import get_instruments_for_user
 
         # make entries
         gp_name = "TESTINST" + settings.INSTRUMENT_TEAM_SUFFIX

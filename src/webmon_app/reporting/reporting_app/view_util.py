@@ -31,10 +31,10 @@ def reduction_setup_url(instrument):
     @param instrument: instrument name
     """
     try:
-        if "reduction" in settings.INSTALLED_APPS:
-            import reduction.view_util
+        if "reporting.reduction" in settings.INSTALLED_APPS:
+            import reporting.reduction.view_util
 
-            return reduction.view_util.reduction_setup_url(instrument)
+            return reporting.reduction.view_util.reduction_setup_url(instrument)
     except:  # noqa: E722
         logging.error("Error getting reduction setup url: %s", sys.exc_info()[1])
     return None

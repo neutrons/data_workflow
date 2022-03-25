@@ -1,13 +1,13 @@
 import pytest
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from report.models import Instrument, IPTS, DataRun, StatusQueue
-from dasmon.models import ActiveInstrument
-from report.forms import ProcessingForm
+from reporting.report.models import Instrument, IPTS, DataRun, StatusQueue
+from reporting.dasmon.models import ActiveInstrument
+from reporting.report.forms import ProcessingForm
 
 
 def test_validate_integer_list():
-    from report.forms import validate_integer_list
+    from reporting.report.forms import validate_integer_list
 
     # case: "1,2,3"
     value_list = validate_integer_list("1,2,3")

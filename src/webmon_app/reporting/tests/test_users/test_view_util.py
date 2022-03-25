@@ -2,7 +2,7 @@ from unittest import mock
 from django.test import TestCase
 from django.contrib.auth.models import AnonymousUser, User, Group
 from reporting.users import view_util
-from users.models import PageView
+from reporting.users.models import PageView
 
 
 class TestViews(TestCase):

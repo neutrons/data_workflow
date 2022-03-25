@@ -1,7 +1,7 @@
 from django.test import TestCase
-from reduction import forms
-from report.models import Instrument
-from reduction.models import ReductionProperty, Choice
+from reporting.reduction import forms
+from reporting.report.models import Instrument
+from reporting.reduction.models import ReductionProperty, Choice
 
 
 class TestREFMForm(TestCase):

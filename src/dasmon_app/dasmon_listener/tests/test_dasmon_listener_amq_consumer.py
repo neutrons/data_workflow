@@ -10,7 +10,7 @@ values = {"test_key": "test_value"}
 class TestAMQConsumer(TestCase):
     def get_listener(self):
         with mock.patch("workflow.database.report.models.Instrument.objects") as instrumentMock:  # noqa: F841
-            with mock.patch("dasmon.models.Parameter.objects") as parameterMock:  # noqa: F841
+            with mock.patch("reporting.dasmon.models.Parameter.objects") as parameterMock:  # noqa: F841
                 listener = Listener()
                 return listener
 
@@ -19,7 +19,7 @@ class TestAMQConsumer(TestCase):
             client = Client(None, None, None)
             return client
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     def test_retrieve_parameter_no_exist(self, parametereSaveMock):
         listener = self.get_listener()
         self.assertEqual(str(listener.retrieve_parameter("test_key")), "test_key")
@@ -32,7 +32,7 @@ class TestAMQConsumer(TestCase):
         instrumentSaveMock.assert_called()
 
     # need to make variations on this test to go down all the branches of this function
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
@@ -55,7 +55,7 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         storeAncCacheMock.assert_called()
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
@@ -91,7 +91,7 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         processAckMock.assert_called()
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
@@ -114,7 +114,7 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         storeAncCacheMock.assert_called()
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("dasmon_listener.amq_consumer.process_ack")
@@ -141,7 +141,7 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         storeAncCacheMock.assert_called()
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_signal")
     @mock.patch("json.loads")
@@ -156,7 +156,7 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         processSignal.assert_called()
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_SMS")
     @mock.patch("json.loads")
@@ -171,7 +171,7 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         processSMS.assert_called()
 
-    @mock.patch("dasmon.models.Parameter.save")
+    @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.store_and_cache_")
     @mock.patch("json.loads")

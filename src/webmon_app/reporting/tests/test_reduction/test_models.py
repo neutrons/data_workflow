@@ -1,8 +1,8 @@
 import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
-from report.models import Instrument
-from reduction.models import (
+from reporting.report.models import Instrument
+from reporting.reduction.models import (
     ReductionProperty,
     PropertyModification,
     PropertyDefault,

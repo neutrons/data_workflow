@@ -7,7 +7,7 @@ from django.contrib.auth import login, logout, authenticate
 
 # Application-specific imports
 from django.conf import settings
-from users.view_util import fill_template_values
+from reporting.users.view_util import fill_template_values
 
 
 def perform_login(request):

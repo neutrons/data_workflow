@@ -5,7 +5,7 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 from django.db import models
-from report.models import Instrument
+from reporting.report.models import Instrument
 
 
 class PVName(models.Model):

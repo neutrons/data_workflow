@@ -7,7 +7,7 @@ _ = [pyoncat]
 
 
 def test_decode_time():
-    from report.catalog import decode_time
+    from reporting.report.catalog import decode_time
 
     # null case
     rst = decode_time("xxx")
@@ -20,7 +20,7 @@ def test_decode_time():
 
 @mock.patch("pyoncat.ONCat")
 def test_get_run_info(oncat):
-    from report.catalog import get_run_info
+    from reporting.report.catalog import get_run_info
 
     # make the data
     class dummyObject:
