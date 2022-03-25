@@ -1,3 +1,6 @@
 [build-system]
 requires = ["setuptools >= 40.6.0", "wheel", "toml"]
 build-backend = "setuptools.build_meta"
+
+[tool.check-wheel-contents]
+ignore = ["W002"]  # duplicate files
