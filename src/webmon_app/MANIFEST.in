@@ -1,0 +1,6 @@
+include reporting/dasmon/sql/*.sql
+include reporting/pvmon/sql/*.sql
+include reporting/report/sql/*.sql
+include reporting/fixtures/db_init.json
+recursive-include reporting/static *
+recursive-include reporting/templates *

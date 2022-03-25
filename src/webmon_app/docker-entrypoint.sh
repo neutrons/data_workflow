@@ -9,7 +9,7 @@ done
 >&2 echo "Postgres is up - executing command"
 
 # install things
-make webmon
+make webmon webmon/configure
 
 # start up web-service
 # entrypoint is python.package:function_name

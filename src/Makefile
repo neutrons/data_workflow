@@ -1,5 +1,11 @@
 prefix := /var/www/workflow
-DJANGO_COMPATIBLE:=$(shell python3 -c "import django;t=0 if django.VERSION[1]<6 else 1; print(t)")
+
+# these are defined here becuase I couldn't figure out how to evaluate the commands
+# during target execution rather then when make parses the file
+# this is found by `find /opt/conda/ -name manage.py | grep reporting`
+MANAGE_PY_WEBMON=/opt/conda/lib/python3.7/site-packages/reporting/manage.py
+# this is found by `find /opt/conda -name db_init.json`
+REPORT_DB_INIT=/opt/conda/lib/python3.7/site-packages/reporting/fixtures/db_init.json
 
 all:
 
@@ -13,94 +19,86 @@ check:
 	#                                                                      #
 	########################################################################
 	# Check dependencies
-	@python3 -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
-	@python3 -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
-	@python3 -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
-	#@python3 -c "import pyoncat" || pip install https://oncat.ornl.gov/packages/PyONCat-1.0rc4-py2.py3-none-any.whl
+	which python
+	echo CONDA_PREFIX=${CONDA_PREFIX}
+
+	@python -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
+	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
+	@python -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 
 wheel/dasmon:
 	# make the wheel
 	cd dasmon_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	check-wheel-contents dasmon_app/dist/django_nscd_dasmon-*.whl
+	cd dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
 
 wheel/webmon:
 	# make the wheel
 	cd webmon_app && python -m build --no-isolation --wheel
-	# verify it is correct
-	check-wheel-contents webmon_app/dist/django_nscd_webmon-*.whl
+	# verify it is correct - ignoring duplicate file check
+	cd webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
 
 wheel/workflow:
 	# make the wheel
 	cd workflow_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	check-wheel-contents workflow_app/dist/django_nscd_workflow-*.whl
+	cd workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
 workflow: check
 	# Install the workflow manager, which defines the database schema
-	python3 setup.py clean
-	python3 setup.py install
+	pip install django_nscd_workflow*.whl
+	# verify the install worked
+	python -c "import workflow;print('WORKFLOW VERSION', workflow.__version__)"
 
-clean:
-	test -f setup.py && python3 setup.py clean
-	test -f setup_dasmon_listener.py && python3 setup_dasmon_listener.py clean
-	rm -fR *.pyc
-	rm -fR build/
-
-dasmonlistener: workflow
+dasmonlistener: workflow webmon
 	# Install DASMON listener
-	python3 setup_dasmon_listener.py clean
-	python3 setup_dasmon_listener.py install
+	pip install django_nscd_dasmon*.whl
+	# verify the install worked
+	python -c "import dasmon_listener;print('DASMON VERSION', dasmon_listener.__version__)"
 
-webmon/core: workflow  # the dependency on workflow doesn't make sense
-	# Make sure the install directories exist
-	# this will create parent directories
-	mkdir -m 0755 -p $(prefix)/app
-	mkdir -m 0755 -p $(prefix)/static/web_monitor
+webmon: workflow
+	# Install the main web application
+	pip install django_nscd_webmon*.whl
+	# verify the install worked
+	python -c "import reporting;print('WEBMON VERSION', reporting.__version__)"
 
-	# Install application code from reporting
-	cp reporting/manage.py $(prefix)/app
-	cp -R reporting/report $(prefix)/app
-	cp -R reporting/dasmon $(prefix)/app
-	cp -R reporting/reduction $(prefix)/app
-	cp -R reporting/pvmon $(prefix)/app
-	cp -R reporting/static $(prefix)/app
-	cp -R reporting/users $(prefix)/app
-	cp -R reporting/templates $(prefix)/app
-	cp -R reporting/reporting_app $(prefix)/app
-	cp -R reporting/fixtures $(prefix)/app
-
-webmon: webmon/core
-	# Install apache config
-	cp -R reporting/apache $(prefix)
-
+webmon/configure: webmon
 	# Collect the static files and install them
-	cd $(prefix)/app; python3 manage.py collectstatic --noinput
+	python $(MANAGE_PY_WEBMON) collectstatic --noinput
 
 	# Create the database tables. The database itself must have been
 	# created on the server already
-	cd $(prefix)/app; python3 manage.py makemigrations --noinput
-	cd $(prefix)/app; python3 manage.py migrate --noinput
-	cd $(prefix)/app; python3 manage.py migrate --run-syncdb --noinput
+	python $(MANAGE_PY_WEBMON) makemigrations --noinput
+	python $(MANAGE_PY_WEBMON) migrate --noinput
+	python $(MANAGE_PY_WEBMON) migrate --run-syncdb --noinput
 
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
-	cd $(prefix)/app; python3 manage.py createcachetable webcache
-	cd $(prefix)/app; python3 manage.py ensure_adminuser --username=${DATABASE_USER} --email='workflow@example.com' --password=${DATABASE_PASS}
+	python $(MANAGE_PY_WEBMON) createcachetable webcache
+	python $(MANAGE_PY_WEBMON) ensure_adminuser --username=${DATABASE_USER} --email='workflow@example.com' --password=${DATABASE_PASS}
 
 	# Modify and copy the wsgi configuration
 	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
 
 	# add the stored sql proceedures
-	cd $(prefix)/app; python3 manage.py add_stored_procs
+	python $(MANAGE_PY_WEBMON) add_stored_procs
 
-	# use fixtures to load init data
-	cd $(prefix)/app; python3 manage.py loaddata fixtures/db_init.json
+	# use fixtures to load initial data
+	python $(MANAGE_PY_WEBMON) loaddata $(REPORT_DB_INIT)
 
-	@echo "\n\nReady to go: run apachectl restart\n"
+	@echo "\n\nReady to go\n"
 
+clean:
+	cd dasmon_app && rm -rf build/ dist/
+	cd webmon_app && rm -rf build/ dist/
+	cd workflow_app && rm -rf build/ dist/
+
+# targets that don't create actual files
 .PHONY: check
 .PHONY: dasmonlistener
 .PHONY: test
-.PHONY: workflow
 .PHONY: webmon
-.PHONY: webmon/core
+.PHONY: webmon/configure
+.PHONY: wheel/dasmon
+.PHONY: wheel/webmon
+.PHONY: wheel/workflow
+.PHONY: workflow
