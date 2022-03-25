@@ -2,12 +2,12 @@ channels:
 - conda-forge
 dependencies:
 - build
-- check-wheel-contents
 - flake8
 - pytest<7
 - pytest-django
 - pytest-cov
 - pip
 - pip:
-  - pytest-pythonpath
   - bump2version
+  - check-wheel-contents
+  - pytest-pythonpath
