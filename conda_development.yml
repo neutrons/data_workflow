@@ -10,3 +10,4 @@ dependencies:
 - pip
 - pip:
   - pytest-pythonpath
+  - bump2version
