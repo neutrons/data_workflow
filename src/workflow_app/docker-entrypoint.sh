@@ -8,7 +8,7 @@ until PGPASSWORD=${DATABASE_PASS} psql -h "${DATABASE_HOST}" -U "${DATABASE_USER
 done
 >&2 echo "Postgres is up - executing command"
 
-# build things
+# install things
 make workflow
 
 # start up things and echo the logs

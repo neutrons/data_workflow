@@ -8,10 +8,8 @@ until PGPASSWORD=${DATABASE_PASS} psql -h "${DATABASE_HOST}" -U "${DATABASE_USER
 done
 >&2 echo "Postgres is up - executing command"
 
-# build things
-make clean
-make webmon/core  # to get the reports models
-make workflow dasmonlistener
+# install things
+make dasmonlistener
 
 # start up things and echo the logs
 cd /var/log

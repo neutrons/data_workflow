@@ -8,11 +8,9 @@ until PGPASSWORD=${DATABASE_PASS} psql -h "${DATABASE_HOST}" -U "${DATABASE_USER
 done
 >&2 echo "Postgres is up - executing command"
 
-# build things
-make check
-make clean
-make webmon  # depends on webmon/core which depends on workflow
+# install things
+make webmon
 
 # start up web-service
-cd ${SETTINGS_DIR}
-gunicorn reporting_app.wsgi:application --preload --bind 0.0.0.0:8000
+# entrypoint is python.package:function_name
+gunicorn reporting.reporting_app.wsgi:application --preload --bind 0.0.0.0:8000
