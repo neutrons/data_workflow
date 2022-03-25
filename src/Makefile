@@ -44,25 +44,25 @@ wheel/workflow:
 	# verify it is correct
 	cd workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
-workflow: check
+install/workflow: check
 	# Install the workflow manager, which defines the database schema
 	pip install django_nscd_workflow*.whl
 	# verify the install worked
 	python -c "import workflow;print('WORKFLOW VERSION', workflow.__version__)"
 
-dasmonlistener: workflow webmon
+install/dasmonlistener: install/workflow install/webmon
 	# Install DASMON listener
 	pip install django_nscd_dasmon*.whl
 	# verify the install worked
 	python -c "import dasmon_listener;print('DASMON VERSION', dasmon_listener.__version__)"
 
-webmon: workflow
+install/webmon: install/workflow
 	# Install the main web application
 	pip install django_nscd_webmon*.whl
 	# verify the install worked
 	python -c "import reporting;print('WEBMON VERSION', reporting.__version__)"
 
-webmon/configure: webmon
+configure/webmon: install/webmon
 	# Collect the static files and install them
 	python $(MANAGE_PY_WEBMON) collectstatic --noinput
 
@@ -94,11 +94,10 @@ clean:
 
 # targets that don't create actual files
 .PHONY: check
-.PHONY: dasmonlistener
-.PHONY: test
-.PHONY: webmon
-.PHONY: webmon/configure
+.PHONY: configure/webmon
+.PHONY: install/dasmonlistener
+.PHONY: install/webmon
+.PHONY: install/workflow
 .PHONY: wheel/dasmon
 .PHONY: wheel/webmon
 .PHONY: wheel/workflow
-.PHONY: workflow

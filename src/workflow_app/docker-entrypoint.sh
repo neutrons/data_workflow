@@ -9,7 +9,7 @@ done
 >&2 echo "Postgres is up - executing command"
 
 # install things
-make workflow
+make install/workflow
 
 # start up things and echo the logs
 cd /var/log
