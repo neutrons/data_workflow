@@ -5,11 +5,11 @@ RUN conda env update --name base --file conda_environment.yml
 
 WORKDIR /usr/src/data_workflow
 
-# the next line copies in all of the python source rather than just what is needed
-COPY ./src/. .
-COPY README.md .
+# copy the necessary wheels and the Makefile which knows the dependency order
+COPY ./src/workflow_app/dist/django_nscd_workflow-*-none-any.whl .
+COPY ./src/Makefile .
 
 # move the entry-point into the volume
-COPY ./src/workflow/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+COPY ./src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]

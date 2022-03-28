@@ -24,11 +24,9 @@ services:
       - web-static:/var/www/workflow/static/
     env_file:
       - .env
-
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
-
     depends_on:
       - db
 
@@ -51,6 +49,7 @@ services:
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
       - activemq
+      - webmon
 
   db:
     image: postgres:14
@@ -69,7 +68,7 @@ services:
       - "8161:8161"
     image: rmohr/activemq
     volumes:
-      - ./src/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
+      - ./src/workflow_app/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
 
   autoreducer:
     build: https://github.com/neutrons/post_processing_agent.git#main
