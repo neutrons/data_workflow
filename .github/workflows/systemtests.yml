@@ -17,6 +17,8 @@ jobs:
         environment-file: conda_environment.yml
     - name: Install testing requirements
       run: mamba env update --file conda_development.yml
+    - name: Build wheels
+      run: cd src && make wheel/dasmon wheel/webmon wheel/workflow
     - name: Stand up docker containers
       run: LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build -d
     - name: Wait for everything to start up
