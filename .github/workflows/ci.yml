@@ -20,7 +20,7 @@ jobs:
         pip install pre-commit
         pre-commit install
     - name: Run Static Analysis
-      run: pre-commit run --all-files
+      run: SKIP=black pre-commit run --all-files
     - name: Install testing requirements
       run: mamba env update --file conda_development.yml
     - name: Test with pytest

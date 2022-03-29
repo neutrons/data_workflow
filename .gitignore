@@ -15,3 +15,8 @@ local_settings.py
 
 .project
 .pydevproject
+.vscode/settings.json
+
+# Sphinx Doc related
+_build/
+*.log
