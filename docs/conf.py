@@ -12,14 +12,17 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../src/catalog'))
+sys.path.insert(0, os.path.abspath('../src/dasmon_app/'))
+sys.path.insert(0, os.path.abspath('../src/webmon_app/'))
+sys.path.insert(0, os.path.abspath('../src/workflow_app/'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Web Monitor Documentation'
+project = 'Web Monitor'
 copyright = '2022, SCSE@ORNL'
 author = 'SCSE@ORNL'
 
@@ -109,7 +112,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'WebMonitorDocumentationdoc'
+htmlhelp_basename = 'WebMonitordoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -136,7 +139,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'WebMonitorDocumentation.tex', 'Web Monitor Documentation Documentation',
+    (master_doc, 'WebMonitor.tex', 'Web Monitor Documentation',
      'SCSE@ORNL', 'manual'),
 ]
 
@@ -146,7 +149,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'webmonitordocumentation', 'Web Monitor Documentation Documentation',
+    (master_doc, 'webmonitor', 'Web Monitor Documentation',
      [author], 1)
 ]
 
@@ -157,8 +160,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'WebMonitorDocumentation', 'Web Monitor Documentation Documentation',
-     author, 'WebMonitorDocumentation', 'One line description of project.',
+    (master_doc, 'WebMonitor', 'Web Monitor Documentation',
+     author, 'WebMonitor', 'One line description of project.',
      'Miscellaneous'),
 ]
 

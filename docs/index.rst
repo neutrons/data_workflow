@@ -6,10 +6,37 @@
 Welcome to Web Monitor Documentation's documentation!
 =====================================================
 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Guide:
 
+   users/release/index
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Guide:
+
+   developer/instruction/build
+   developer/instruction/test_fixture
+   developer/instruction/contribute
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Modules:
+
+   developer/catalog/modules
+   developer/dasmon/modules
+   developer/webmon/modules
+   developer/workflow/modules
+
+
+Use Cases
+=========
+
+.. mdinclude:: users/usecases/Instrument-scientist-view.md
 
 
 Indices and tables

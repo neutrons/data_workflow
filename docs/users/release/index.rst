@@ -9,4 +9,3 @@ Release Notes
    :hidden:
    :glob:
 
-   */index
