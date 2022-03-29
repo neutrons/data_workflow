@@ -28,9 +28,9 @@ copyright = "2022, SCSE@ORNL"
 author = "SCSE@ORNL"
 
 # The short X.Y version
-version = ""
+version = "2.6.0"
 # The full version, including alpha/beta/rc tags
-release = ""
+release = "2.6.0"
 
 
 # -- General configuration ---------------------------------------------------
