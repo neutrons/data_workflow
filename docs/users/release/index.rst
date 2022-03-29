@@ -8,4 +8,3 @@ Release Notes
    :maxdepth: 1
    :hidden:
    :glob:
-

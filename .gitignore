@@ -19,3 +19,4 @@ local_settings.py
 
 # Sphinx Doc related
 _build/
+*.log
