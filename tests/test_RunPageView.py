@@ -3,14 +3,14 @@ import requests
 
 class TestRunPageView:
     def test(self):
-        URL = 'http://localhost/users/login?next=/report/arcs/214581/'
-        UN = 'postgres'
-        PWD = 'postgres'
+        URL = "http://localhost/users/login?next=/report/arcs/214581/"
+        UN = "postgres"
+        PWD = "postgres"
         client = requests.session()
 
         # Retrieve the CSRF token first
         client.get(URL)  # sets the cookie
-        csrftoken = client.cookies['csrftoken']
+        csrftoken = client.cookies["csrftoken"]
 
         login_data = dict(username=UN, password=PWD, csrfmiddlewaretoken=csrftoken)
         r = client.post(URL, data=login_data)

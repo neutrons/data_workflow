@@ -24,6 +24,6 @@ jobs:
     - name: Wait for everything to start up
       run: sleep 20
     - name: Test with pytest
-      run: python -m pytest test
+      run: python -m pytest tests
     - name: Stand down docker containers
       run: docker-compose down
