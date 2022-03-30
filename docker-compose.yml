@@ -74,7 +74,7 @@ services:
     image: rosswhitfield/postprocessing:latest
     hostname: autoreducer
     volumes:
-      - ./test/data:/SNS/
+      - ./tests/data:/SNS/
     depends_on:
       - activemq
 
