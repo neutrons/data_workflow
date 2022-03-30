@@ -12,5 +12,13 @@ COPY ./src/Makefile .
 
 # move the entry-point into the volume
 COPY ./src/webmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+# RUN useradd -ms /bin/bash user
+# # allow in sudoers to install packages
+# RUN adduser user sudo
+# RUN echo "user:user" | chpasswd
+
+# USER user
+
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]

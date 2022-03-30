@@ -2,18 +2,19 @@ import requests
 
 
 class TestRunPageView:
-    def test(self):
-        URL = "http://localhost/users/login?next=/report/arcs/214581/"
-        UN = "postgres"
-        PWD = "postgres"
+    def login(self, next, username, password):
+        URL = "http://localhost/users/login?next="
         client = requests.session()
 
         # Retrieve the CSRF token first
         client.get(URL)  # sets the cookie
         csrftoken = client.cookies["csrftoken"]
 
-        login_data = dict(username=UN, password=PWD, csrfmiddlewaretoken=csrftoken)
-        r = client.post(URL, data=login_data)
+        login_data = dict(username=username, password=password, csrfmiddlewaretoken=csrftoken)
+        return client.post(URL + next, data=login_data, timeout=None)
+
+    def test(self):
+        r = self.login("/report/arcs/214581/", "postgres", "postgres")
 
         assert r.status_code == 200
         assert "<title>ARCS Run 214581</title>" in r.text
@@ -36,3 +37,7 @@ class TestRunPageView:
         assert "reduction.complete" in r.text
         assert "catalog.complete" in r.text
         assert "reduction_catalog.complete" in r.text
+
+        # 1 test to confirm catalog data is received ^
+        # 2 test to confirm plot data is received
+        # 3 test to confirm pv data is received
