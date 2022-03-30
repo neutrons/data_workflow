@@ -30,7 +30,7 @@ author = "SCSE@ORNL"
 # The short X.Y version
 version = "2.6.0"
 # The full version, including alpha/beta/rc tags
-release = '.'.join(version.split('.')[:-1])
+release = ".".join(version.split(".")[:-1])
 
 
 # -- General configuration ---------------------------------------------------
