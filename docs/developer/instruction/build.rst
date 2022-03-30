@@ -56,7 +56,7 @@ Running via Docker
 
 Move to the root of the cloned repository where the docker compose file, ``docker-compose.yml``, is located.
 Use the following command to spin up the web-monitor:
-   
+
    * ``docker-compose up -d``
 
 and visit ``localhost`` in your browser.
@@ -68,7 +68,7 @@ To stop the instance, use the following command to spin down the web-monitor:
 Both commands must be run at the root of the repository where the docker compose file is located.
 
 
-MISC
+Misc
 ------
 
 1. Several things to keep in mind while running Web monitor via docker:
