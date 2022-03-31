@@ -38,6 +38,7 @@ Welcome to Web Monitor's documentation!
    :caption: Use Cases:
 
    users/usecases/Instrument_scientist
+   users/usecases/Guest_user
 
 
 Indices and tables
