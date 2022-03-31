@@ -1,6 +1,9 @@
 Guest User View
 ===============
 
+.. toctree::
+   :maxdepth: 2
+
 As a guest user I can see a list of instruments
 
 .. image:: images/example_guest_user.png

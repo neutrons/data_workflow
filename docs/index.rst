@@ -38,6 +38,7 @@ Welcome to Web Monitor's documentation!
    :caption: Use Cases:
 
    users/usecases/Instrument_scientist
+   users/usecases/General_user
    users/usecases/Guest_user
 
 
