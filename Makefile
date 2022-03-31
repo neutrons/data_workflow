@@ -28,21 +28,21 @@ check:
 
 wheel/dasmon:
 	# make the wheel
-	cd dasmon_app && python -m build --no-isolation --wheel
+	cd src/dasmon_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	cd dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
+	cd src/dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
 
 wheel/webmon:
 	# make the wheel
-	cd webmon_app && python -m build --no-isolation --wheel
+	cd src/webmon_app && python -m build --no-isolation --wheel
 	# verify it is correct - ignoring duplicate file check
-	cd webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
+	cd src/webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
 
 wheel/workflow:
 	# make the wheel
-	cd workflow_app && python -m build --no-isolation --wheel
+	cd src/workflow_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	cd workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
+	cd src/workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
 install/workflow: check
 	# Install the workflow manager, which defines the database schema
@@ -88,9 +88,9 @@ configure/webmon: install/webmon
 	@echo "\n\nReady to go\n"
 
 clean:
-	cd dasmon_app && rm -rf build/ dist/
-	cd webmon_app && rm -rf build/ dist/
-	cd workflow_app && rm -rf build/ dist/
+	cd src/dasmon_app && rm -rf build/ dist/
+	cd src/webmon_app && rm -rf build/ dist/
+	cd src/workflow_app && rm -rf build/ dist/
 
 # targets that don't create actual files
 .PHONY: check
