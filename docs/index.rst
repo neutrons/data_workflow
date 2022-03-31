@@ -33,10 +33,11 @@ Welcome to Web Monitor's documentation!
    developer/workflow/modules
 
 
-Use Cases
-=========
+.. toctree::
+   :maxdepth: 2
+   :caption: Use Cases:
 
-.. mdinclude:: users/usecases/Instrument-scientist-view.md
+   users/usecases/Instrument_scientist
 
 
 Indices and tables
