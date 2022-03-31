@@ -40,6 +40,7 @@ Welcome to Web Monitor's documentation!
    users/usecases/Instrument_scientist
    users/usecases/General_user
    users/usecases/Guest_user
+   users/usecases/Database
 
 
 Indices and tables
