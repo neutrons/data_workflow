@@ -1,0 +1,31 @@
+FROM centos:7
+
+# install postprocessing
+RUN curl http://packages.sns.gov/distros/rhel/7/sns/sns.repo -o /etc/yum.repos.d/sns.repo
+RUN yum install -y epel-release
+RUN yum updateinfo
+RUN yum install -y curl postprocessing
+
+# install the fake test data
+ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
+COPY SNSdata.tar.gz ${DATA_TARBALL}
+RUN ls ${DATA_TARBALL}
+RUN mkdir /SNS
+RUN cd /SNS && tar xzf ${DATA_TARBALL}
+
+# put the developer configuration file in place
+RUN mkdir -p /etc/autoreduce/
+RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/main/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
+
+# This configuration allows it to run with docker-compose from https://github.com/neutrons/data_workflow
+RUN sed -i 's/localhost/activemq/' /etc/autoreduce/post_processing.conf
+
+# create startup script
+RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
+    echo "/opt/postprocessing/queueProcessor.py &" >> /usr/bin/run_postprocessing && \
+    echo "sleep 1" >> /usr/bin/run_postprocessing && \
+    echo "tail -F /opt/postprocessing/log/postprocessing.log" >> /usr/bin/run_postprocessing && \
+    chmod +x /usr/bin/run_postprocessing
+
+# start the service
+CMD run_postprocessing
