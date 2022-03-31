@@ -7,9 +7,7 @@ MANAGE_PY_WEBMON=/opt/conda/lib/python3.7/site-packages/reporting/manage.py
 # this is found by `find /opt/conda -name db_init.json`
 REPORT_DB_INIT=/opt/conda/lib/python3.7/site-packages/reporting/fixtures/db_init.json
 
-all:
-
-	@echo "Run make install to install the workflow manager and the web app"
+all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz
 
 check:
 	########################################################################
@@ -87,7 +85,13 @@ configure/webmon: install/webmon
 
 	@echo "\n\nReady to go\n"
 
+SNSdata.tar.gz:
+	# this doesn't have explicity dependencies on the data
+	# it needs to be removed when the directory changes
+	tar czf SNSdata.tar.gz -C tests/data/ .
+
 clean:
+	rm -f SNSdata.tar.gz
 	cd src/dasmon_app && rm -rf build/ dist/
 	cd src/webmon_app && rm -rf build/ dist/
 	cd src/workflow_app && rm -rf build/ dist/
