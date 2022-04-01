@@ -1,10 +1,11 @@
-FROM centos:7
+FROM continuumio/miniconda3
+
+# install dependencies
+COPY conda_environment.yml .
+RUN conda env update --name base --file conda_environment.yml
 
 # install postprocessing
-RUN curl http://packages.sns.gov/distros/rhel/7/sns/sns.repo -o /etc/yum.repos.d/sns.repo
-RUN yum install -y epel-release
-RUN yum updateinfo
-RUN yum install -y curl postprocessing
+RUN pip install https://github.com/neutrons/post_processing_agent/releases/download/v2.5/postprocessing-2.5-py3-none-any.whl
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
@@ -13,9 +14,9 @@ RUN ls ${DATA_TARBALL}
 RUN mkdir /SNS
 RUN cd /SNS && tar xzf ${DATA_TARBALL}
 
-# put the developer configuration file in place
+# pull down the developer configuration file
 RUN mkdir -p /etc/autoreduce/
-RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/main/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
+RUN python -c "import requests;result=requests.get('https://raw.githubusercontent.com/neutrons/post_processing_agent/main/configuration/post_process_consumer.conf.development');open('/etc/autoreduce/post_processing.conf', 'wb').write(result.content)"
 
 # This configuration allows it to run with docker-compose from https://github.com/neutrons/data_workflow
 RUN sed -i 's/localhost/activemq/' /etc/autoreduce/post_processing.conf
