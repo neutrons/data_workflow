@@ -73,6 +73,7 @@ services:
 
   autoreducer:
     build:
+      context: .
       dockerfile: Dockerfile.autoreducer
     hostname: autoreducer
     depends_on:
