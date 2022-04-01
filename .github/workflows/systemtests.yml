@@ -19,6 +19,8 @@ jobs:
       run: mamba env update --file conda_development.yml
     - name: Build wheels
       run: make wheel/dasmon wheel/webmon wheel/workflow
+    - name: Build test data for autoreducer
+      run: make SNSdata.tar.gz
     - name: Stand up docker containers
       run: LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build -d
     - name: Wait for everything to start up
