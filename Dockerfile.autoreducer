@@ -3,7 +3,7 @@ FROM centos:7
 # install various dependencies
 RUN yum install -y curl
 RUN curl http://packages.sns.gov/distros/rhel/7/sns/sns.repo -o /etc/yum.repos.d/sns.repo || echo "Cannot see packages.sns.gov"
-RUN yum install -y epel-release
+RUN yum install -y epel-release dnf-plugins-core yum-plugin-copr
 RUN yum updateinfo
 
 # rpm needs to special groups first
@@ -12,13 +12,17 @@ RUN useradd snsdata -G snswheel
 
 # put the developer configuration file in place
 RUN mkdir -p /etc/autoreduce/
+RUN mkdir -p /opt/postprocessing/log/
 RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/main/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
 
 # This configuration allows it to run with docker-compose from https://github.com/neutrons/data_workflow
 RUN sed -i 's/localhost/activemq/' /etc/autoreduce/post_processing.conf
 
 # install postprocessing
-RUN yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/postprocessing-2.5-1.x86_64.rpm
+# the missing packages are python-stompest and python2-stompest-async
+RUN yum copr -y enable mantid/mantid/
+RUN yum install -y python-stompest python2-stompest-async || yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/python-stompest-2.1.6-1.noarch.rpm https://github.com/neutrons/post_processing_agent/releases/download/v2.5/python2-stompest-async-2.1.6-1.el7.noarch.rpm
+RUN yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/postprocessing-2.5-1.x86_64.rpm --skip-broken
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
