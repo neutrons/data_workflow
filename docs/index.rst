@@ -6,6 +6,7 @@
 Welcome to Web Monitor's documentation!
 =====================================================
 
+.. include:: ../README.rst
 
 .. toctree::
    :maxdepth: 1
