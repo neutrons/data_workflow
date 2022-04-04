@@ -22,7 +22,7 @@ RUN sed -i 's/localhost/activemq/' /etc/autoreduce/post_processing.conf
 # the missing packages are python-stompest and python2-stompest-async
 RUN yum copr -y enable mantid/mantid/
 RUN yum install -y python-stompest python2-stompest-async || yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/python-stompest-2.1.6-1.noarch.rpm https://github.com/neutrons/post_processing_agent/releases/download/v2.5/python2-stompest-async-2.1.6-1.el7.noarch.rpm
-RUN yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/postprocessing-2.5-1.x86_64.rpm --skip-broken
+RUN yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/postprocessing-2.5-1.x86_64.rpm
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
