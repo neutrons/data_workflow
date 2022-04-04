@@ -1,10 +1,10 @@
 FROM centos:7
 
 # install various dependencies
-RUN curl http://packages.sns.gov/distros/rhel/7/sns/sns.repo -o /etc/yum.repos.d/sns.repo
+RUN yum install -y curl
+RUN curl http://packages.sns.gov/distros/rhel/7/sns/sns.repo -o /etc/yum.repos.d/sns.repo || echo "Cannot see packages.sns.gov"
 RUN yum install -y epel-release
 RUN yum updateinfo
-RUN yum install -y curl
 
 # rpm needs to special groups first
 RUN groupadd snswheel
