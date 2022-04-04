@@ -4,6 +4,9 @@ How to Build A Local Instance
 .. toctree::
    :maxdepth: 2
 
+.. note::
+   This document is updated, however, it may be good to read the `continuous integration <https://github.com/neutrons/data_workflow/tree/next/.github/workflows>`_ scripts as well.
+
 
 Local Development Environment Setup
 -----------------------------------
@@ -20,8 +23,18 @@ and a mocked catalog services.
 In order to run a local instance of the web-monitor, you need to have
 
     * access to `docker`_ engine (preferably with access to a latest version of `docker-compose`_).
+      This is for running ``docker compose``
     * access to a local instance of `Anaconda`_ for setting up a Python virtual environment.
+      This is used for running tests locally.
     * sufficient amount of disk space (~ 10GB) for storing various images.
+
+The settings are split into a couple of bundled options that can be selected by specifying ``DJANGO_SETTINGS_MODULE``
+
+    * ``reporting.reporting_app.settings.unittest`` for running outside of docker in the conda environment
+    * ``reporting.reporting_app.settings.develop`` for local docker containers. This can be connected to production ldap server in a read only mode and will ignore TLS errors
+    * ``reporting.reporting_app.settings.envtest`` for the remote testing environment
+    * ``reporting.reporting_app.settings.prod`` for production
+
 
 2. Install dependencies
 
@@ -33,7 +46,7 @@ Once all the third-party dependencies are in place, perform the following steps
     * [optional] purge the cached docker images with ``docker image prune``.
     * [optional] purge the cached containers with ``docker container prune``.
     * [optional] purge the cached volumes with ``docker volume prune``.
-    * move to the root of the clone repository to
+    * move to the root of the clone repository to (only needed to run unit :ref:`Running Tests` )
         * create a virtual environment with ``conda env create --file conda_environment.yml``.
         * activate the virtual environment with ``conda activate webmon``.
         * install the development dependencies with ``conda env update --file conda_development.yml``.
