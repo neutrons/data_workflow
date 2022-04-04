@@ -130,48 +130,8 @@ class TestRunPageView:
         assert (
             self.removeWhitespace(
                 """<tr>
-        <td>reduction_catalog.complete</td>
-        <td></td>"""
-            )
-            in html
-        )
-        assert (
-            self.removeWhitespace(
-                """<tr>
-        <td>reduction_catalog.started</td>
-        <td></td>"""
-            )
-            in html
-        )
-        assert (
-            self.removeWhitespace(
-                """<tr>
-        <td>reduction_catalog.data_ready</td>
-        <td></td>"""
-            )
-            in html
-        )
-        assert (
-            self.removeWhitespace(
-                """<tr>
-        <td>reduction.complete</td>
-        <td>autoreducer</td>"""
-            )
-            in html
-        )
-        assert (
-            self.removeWhitespace(
-                """<tr>
         <td>catalog.complete</td>
         <td></td>"""
-            )
-            in html
-        )
-        assert (
-            self.removeWhitespace(
-                """<tr>
-        <td>reduction.started</td>
-        <td>autoreducer</td>"""
             )
             in html
         )
@@ -213,6 +173,7 @@ class TestRunPageView:
         assert instrument_scientist.status_code == 200
         self.confirmPVDataExist(instrument_scientist)
 
+    @unittest.skip("General User needs a self generated dataset to be able to view")
     def testGeneralUserPVDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmPVDataExist(general_user)
@@ -229,37 +190,46 @@ class TestRunPageView:
         assert reduction_setup_page.status_code == 200
         r = reduction_setup_page
 
-        assert """Only instrument team members can use this form: contact adara_support@ornl.gov""" not in r.text
+        html = self.removeWhitespace(r.text)
+
         assert (
-            """<tr><th>Raw vanadium</th> <td ><input type="text" name="raw_vanadium" class="font_resize"'
-            ' id="id_raw_vanadium"> </td></tr>"""
-            in r.text
+            self.removeWhitespace("""Only instrument team members can use this form: contact adara_support@ornl.gov""")
+            not in html
         )
         assert (
-            """<tr><th>Processed vanadium</th> <td ><input type="text" name="processed_vanadium"'
-            ' class="font_resize" id="id_processed_vanadium"> </td></tr>"""
-            in r.text
-        )
-        assert """<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""" in r.text
-        assert (
-            """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E<sub>guess</sub>]<'
-            '</span></th> <td>"""
-            in r.text
+            self.removeWhitespace(
+                """<tr><th>Raw vanadium</th> <td ><input type="text" name="raw_vanadium" class="font_resize"
+             id="id_raw_vanadium"> </td></tr>"""
+            )
+            in html
         )
         assert (
-            """<span >E<sub>min</sub> <input type="number" name="e_min" value="-0.2" step="any"'
-            ' required id="id_e_min"> </span>"""
-            in r.text
+            self.removeWhitespace(
+                """<tr><th>Processed vanadium</th> <td ><input type="text" name="processed_vanadium"
+             class="font_resize" id="id_processed_vanadium"> </td></tr>"""
+            )
+            in html
         )
         assert (
-            """<sub>step</sub> <input type="number" name="e_step" value="0.015" step="any" required'
-            ' id="id_e_step">"""
-            in r.text
+            self.removeWhitespace("""<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""")
+            in html
         )
         assert (
-            """<sub>max</sub> <input type="number" name="e_max" value="0.95" step="any" required'
-            ' id="id_e_max"> </td></tr>"""
-            in r.text
+            self.removeWhitespace(
+                """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E"""
+            )
+            in html
+        )
+        assert (
+            self.removeWhitespace("""<span >E<sub>min</sub> <input type="number" name="e_min" value="-0.2" """) in html
+        )
+        assert (
+            self.removeWhitespace("""<sub>step</sub> <input type="number" name="e_step" value="0.015" step="any" """)
+            in html
+        )
+        assert (
+            self.removeWhitespace("""<sub>max</sub> <input type="number" name="e_max" value="0.95" step="any" """)
+            in html
         )
 
     def testGeneralUserReductionSetupDenied(self, reduction_setup_page_general_user):
@@ -276,29 +246,15 @@ class TestRunPageView:
         assert post_processing_page.status_code == 200
         r = post_processing_page
 
+        assert """<th><label for="id_experiment">Experiment:</label></th>""" in r.text
+        assert """<th><label for="id_run_list">Run list:</label></th>""" in r.text
+        assert """<th><label for="id_create_as_needed">Create as needed:</label></th>""" in r.text
+        assert """<th><label for="id_task">Task:</label></th>""" in r.text
+        assert """<th><label for="id_instrument">Instrument:</label></th>""" in r.text
         assert (
-            """<tr><th><label for="id_experiment">Experiment:</label></th><td><input type="text"'
-            ' name="experiment" required id="id_experiment"></td></tr>"""
-            in r.text
-        )
-        assert (
-            """<tr><th><label for="id_run_list">Run list:</label></th><td><input type="text"'
-            ' name="run_list" required id="id_run_list"></td></tr>"""
-            in r.text
-        )
-        assert (
-            """<tr><th><label for="id_create_as_needed">Create as needed:</label></th><td><input'
-            ' type="checkbox" name="create_as_needed" id="id_create_as_needed"></td></tr>"""
-            in r.text
-        )
-        assert """<tr><th><label for="id_task">Task:</label></th><td><select name="task" id="id_task">""" in r.text
-        assert (
-            """<tr><th><label for="id_instrument">Instrument:</label></th><td><select name="instrument"'
-            ' id="id_instrument">"""
-            in r.text
-        )
-        assert (
-            """<input id="submit_button" title="Click to submit tasks" type="submit" name="button_choice"'
-            ' value="submit"/>"""
-            in r.text
+            self.removeWhitespace(
+                """<input id="submit_button" title="Click to submit tasks" type="submit" name="button_choice"
+            value="submit"/>"""
+            )
+            in self.removeWhitespace(r.text)
         )
