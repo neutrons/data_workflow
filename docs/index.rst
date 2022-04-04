@@ -8,10 +8,10 @@ Welcome to Web Monitor's documentation!
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: User Guide:
 
-   users/release/index
+   users/index
 
 
 .. toctree::
