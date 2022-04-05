@@ -3,8 +3,8 @@ import requests
 from lxml import etree
 from io import StringIO
 
-class TestDASMONPageView:
 
+class TestDASMONPageView:
     def login(self, next, username, password):
         URL = "http://localhost/users/login?next="
         client = requests.session()
@@ -58,5 +58,6 @@ class TestDASMONPageView:
         assert len(autoreducer) > 0
         assert len(autoreducer_pid) > 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pytest.main()
