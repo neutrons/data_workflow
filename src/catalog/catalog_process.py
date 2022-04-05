@@ -5,7 +5,7 @@ import stomp
 
 
 class Listener(stomp.ConnectionListener):
-    def on_message(self, frame):
+    def on_message(self, frame) -> None:
         if frame.headers["destination"] == "/queue/CATALOG.DATA_READY":
             conn.send("/queue/CATALOG.STARTED", frame.body)
             time.sleep(0.1)
