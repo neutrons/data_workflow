@@ -22,9 +22,16 @@ class TestRunPageView:
     @pytest.fixture
     def extended_dashboard_instrument_scientist(self):
         r = self.login("/dasmon/dashboard/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
-        with open("instrument_scientist_extended_dashboard.html", "w") as f:
-            f.write(r.text)
+        yield r
 
+    @pytest.fixture
+    def latest_runs_instrument_scientist(self):
+        r = self.login("/dasmon/summary/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        yield r
+
+    @pytest.fixture
+    def latest_runs_general_user(self):
+        r = self.login("/dasmon/summary/", self.general_user_usern4me, self.general_user_p4ssword)
         yield r
 
     @pytest.fixture
@@ -291,3 +298,20 @@ class TestRunPageView:
             value="submit"/>""",
             self.removeWhitespace(r.text),
         )
+
+    def verifyLatestRun(self, r):
+        self.assertHtml("""<div class="summary">List of latest runs:<br><br>""", r.text)
+        self.assertHtml(
+            """<table class="message_table dynatable-loaded" id="run_table"><thead><tr>
+        <th data-dynatable-column="instrument_id" style="min-width: 50px;" class="dynatable-head">
+        <a class="dynatable-sort-header" href="#">Instr.<span class="dynatable-arrow"> ▲</span></a></th>
+        <th data-dynatable-column="run" data-dynatable-no-sort="true" style="min-width: 50px;" class=
+        "dynatable-head">Run</th>""",
+            r.text,
+        )
+
+    def testGeneralUserVerifyLatestRuns(self, latest_runs_general_user):
+        assert latest_runs_general_user.status_code == 200
+
+    def testInstrumentScientistVerifyLatestRuns(self, latest_runs_instrument_scientist):
+        assert latest_runs_instrument_scientist.status_code == 200
