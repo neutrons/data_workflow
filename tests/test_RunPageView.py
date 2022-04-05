@@ -108,11 +108,11 @@ class TestRunPageView:
             html,
         )
 
-    def testVerifyDashboardGeneralUser(self, dashboard_general_user):
+    def testGeneralUserVerifyDashboard(self, dashboard_general_user):
         assert dashboard_general_user.status_code == 200
         self.verifyDashboard(dashboard_general_user)
 
-    def testVerifyDashboardInstrumentScientist(self, dashboard_instrument_scientist):
+    def testInstrumentScientistVerifyDashboard(self, dashboard_instrument_scientist):
         assert dashboard_instrument_scientist.status_code == 200
         self.verifyDashboard(dashboard_instrument_scientist)
 
@@ -124,22 +124,22 @@ class TestRunPageView:
         self.assertHtml("""<div id="runs_per_hour_hysa" class="dashboard_plots"></div>""", html)
         self.assertHtml("""<div id="runs_per_hour_test" class="dashboard_plots"></div>""", html)
 
-    def testVerifyExtendedDashboardGeneralUser(self, extended_dashboard_general_user):
+    def testGeneralUserVerifyExtendedDashboard(self, extended_dashboard_general_user):
         assert extended_dashboard_general_user.status_code == 200
         self.verifyExtendedDashboard(extended_dashboard_general_user)
 
-    def testVerifyExtendedDashboardInstrumentScientist(self, extended_dashboard_instrument_scientist):
+    def testInstrumentScientistVerifyExtendedDashboard(self, extended_dashboard_instrument_scientist):
         assert extended_dashboard_instrument_scientist.status_code == 200
         self.verifyExtendedDashboard(extended_dashboard_instrument_scientist)
 
     # 1 test to confirm catalog data is received
     @unittest.skip("JavaScript not processed, this data will be missing")
-    def testCatalogDataExistInstrumentScientist(self, instrument_scientist):
+    def testInstrumentScientistCatalogDataExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         self.confirmCatalogDataExist(instrument_scientist)
 
     @unittest.skip("JavaScript not processed, this data will be missing")
-    def testCatalogDataExistGeneralUser(self, general_user):
+    def testGeneralUserCatalogDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmCatalogDataExist(general_user)
 
