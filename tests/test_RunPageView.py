@@ -202,33 +202,20 @@ class TestRunPageView:
         html = self.removeWhitespace(r.text)
 
         self.assertHtml(
-            """<tr>
-        <td>catalog.complete</td>
-        <td></td>""",
-            html,
-        )
-        self.assertHtml(
-            """<tr>
-        <td>catalog.started</td>
-        <td></td>""",
-            html,
-        )
-        self.assertHtml(
-            """<tr>
-        <td>reduction.data_ready</td>
-        <td></td>""",
-            html,
-        )
-        self.assertHtml(
-            """<tr>
-        <td>catalog.data_ready</td>
-        <td></td>""",
-            html,
-        )
-        self.assertHtml(
-            """<tr>
-        <td>postprocess.data_ready</td>
-        <td></td>""",
+            """<div class="box">
+
+  <table class="message_table fixed_table">
+    <thead>
+      <tr>
+        <th style="width: 170px;">Message</th>
+        <th>Information</th>
+        <th style="width: 90px;">Time</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td>""",
             html,
         )
 
