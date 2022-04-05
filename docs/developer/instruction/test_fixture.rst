@@ -5,6 +5,7 @@ Description of Test Fixtures
    :maxdepth: 2
 
 The docker files for each test fixture is in the root of the repository with the name ``Dockerfile.<fixturename>``.
+The overall design of the test fixture is captured `here <https://code.ornl.gov/sns-hfir-scse/infrastructure/web-monitor/-/tree/next/docs/Design/Design_TestEnv>`_ .
 
 ``activemq`` fixture is built from `rmohr/activemq <https://github.com/rmohr/docker-activemq>`_ with the configuration from ``src/workflow_app/workflow/icat_activemq.xml``.
 It is the activemq broker.
