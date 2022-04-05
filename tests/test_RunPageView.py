@@ -4,19 +4,24 @@ import requests
 
 
 class TestRunPageView:
+    instrument_scientist_usern4me = "InstrumentScientist"
+    instrument_scientist_p4ssword = "InstrumentScientist"
+    general_user_usern4me = "GeneralUser"
+    general_user_p4ssword = "GeneralUser"
+
     @pytest.fixture
     def instrument_scientist(self):
-        r = self.login("/report/arcs/214583/", "InstrumentScientist", "InstrumentScientist")
+        r = self.login("/report/arcs/214583/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     @pytest.fixture
     def dashboard_instrument_scientist(self):
-        r = self.login("/dasmon/", "InstrumentScientist", "InstrumentScientist")
+        r = self.login("/dasmon/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     @pytest.fixture
     def extended_dashboard_instrument_scientist(self):
-        r = self.login("/dasmon/dashboard/", "InstrumentScientist", "InstrumentScientist")
+        r = self.login("/dasmon/dashboard/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         with open("instrument_scientist_extended_dashboard.html", "w") as f:
             f.write(r.text)
 
@@ -24,32 +29,32 @@ class TestRunPageView:
 
     @pytest.fixture
     def general_user(self):
-        r = self.login("/report/arcs/214583/", "GeneralUser", "GeneralUser")
+        r = self.login("/report/arcs/214583/", self.general_user_usern4me, self.general_user_p4ssword)
         yield r
 
     @pytest.fixture
     def dashboard_general_user(self):
-        r = self.login("/dasmon/", "GeneralUser", "GeneralUser")
+        r = self.login("/dasmon/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     @pytest.fixture
     def extended_dashboard_general_user(self):
-        r = self.login("/dasmon/dashboard/", "GeneralUser", "GeneralUser")
+        r = self.login("/dasmon/dashboard/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     @pytest.fixture
     def reduction_setup_page(self):
-        r = self.login("/reduction/arcs/", "InstrumentScientist", "InstrumentScientist")
+        r = self.login("/reduction/arcs/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     @pytest.fixture
     def reduction_setup_page_general_user(self):
-        r = self.login("/reduction/arcs/", "GeneralUser", "GeneralUser")
+        r = self.login("/reduction/arcs/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     @pytest.fixture
     def post_processing_page(self):
-        r = self.login("/report/processing", "InstrumentScientist", "InstrumentScientist")
+        r = self.login("/report/processing", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
         yield r
 
     def removeWhitespace(self, text):
