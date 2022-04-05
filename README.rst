@@ -19,13 +19,15 @@ Dependencies:
  * `MySQLdb <https://sourceforge.net/projects/mysql-python/>`_ if using MySQL
  * `psycopg2 <http://initd.org/psycopg/>`_ if using PostgreSQL
 
-Workflow:
----------
+It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker-compose.
+
+Workflow Manager
+----------------
 
 Data workflow manager based on ActiveMQ
 
 The database abstraction is done through django.db and the
-communication layer is done using stomp.py
+communication layer is done using stomp
 
 The ``icat_activemq.xml`` file is the ActiveMQ configuration used to set up the
 cluster of brokers.
@@ -34,46 +36,24 @@ Use ``sns_post_processing.py`` to start the workflow manager.
 
 Use ``test/test_consumer.py`` to simulate the worker nodes.
 
-Web monitor
+Web Monitor
 -----------
 Reporting application for the workflow manager.
-The reporting app is built using django. It connects to the reporting
-database used by the workflow manager.
-
-Apache installation:
-
-* Make sure djando, stomp and psycopq2 (or MySQLdb if using MySQL) are properly installed
-* Make sure the DB information in ``/var/www/workflow/app/reporting_app/settings.py`` is correct
-* Run make install, which will install the app in ``/var/www/workflow``
-* If you don't have ``mod_wsgi`` on your system, get it here: http://code.google.com/p/modwsgi
-* Add the following lines to ``httpd.conf``
-
-
-.. code-block:: sh
-
-  LoadModule `wsgi_module libexec/apache2/mod_wsgi.so`
-  Include `/var/www/workflow/apache/apache_django_wsgi.conf`
-
-
-* ``apachectl restart``
-
-.. note::
-   if you get an error to the effect that _mysql.so is unable to find libmysqlclient.18.dylib,
-   make sure you have a `sym link in /usr/lib pointing to /usr/local/mysql/lib
-   <http://stackoverflow.com/questions/6383310/python-mysqldb-library-not-loaded-libmysqlclient-18-dylib>`_
+The reporting app is built using django.
+It connects to the reporting database used by the workflow manager.
+Look at the ``docker-compose.yml`` to see how to configure and run it.
 
 DASMON listener
 ---------------
 DB logging daemon.
 
 The DASMON listener watches for DASMON message sent to ActiveMQ and logs them.
-See the ``dasmon_listener/README.md`` file for more details.
+See the ``src/dasmon_app/dasmon_listener/README.md`` file for more details.
 
 **PostgreSQL optimization:**
 If using PostgreSQL, you can install the stored procedure in ``reporting/report/sql/stored_procs.sql``.
-Those will speed up the run rate and error rate queries. No change needs to be made
-to the settings when installing those stored procedures and the application will
-use them automatically.
+Those will speed up the run rate and error rate queries.
+No change needs to be made to the settings when installing those stored procedures and the application will use them automatically.
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10054.svg
    :alt: DOI Badge
