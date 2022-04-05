@@ -10,8 +10,31 @@ class TestRunPageView:
         yield r
 
     @pytest.fixture
+    def dashboard_instrument_scientist(self):
+        r = self.login("/dasmon/", "InstrumentScientist", "InstrumentScientist")
+        yield r
+
+    @pytest.fixture
+    def extended_dashboard_instrument_scientist(self):
+        r = self.login("/dasmon/dashboard/", "InstrumentScientist", "InstrumentScientist")
+        with open("instrument_scientist_extended_dashboard.html", "w") as f:
+            f.write(r.text)
+
+        yield r
+
+    @pytest.fixture
     def general_user(self):
         r = self.login("/report/arcs/214583/", "GeneralUser", "GeneralUser")
+        yield r
+
+    @pytest.fixture
+    def dashboard_general_user(self):
+        r = self.login("/dasmon/", "GeneralUser", "GeneralUser")
+        yield r
+
+    @pytest.fixture
+    def extended_dashboard_general_user(self):
+        r = self.login("/dasmon/dashboard/", "GeneralUser", "GeneralUser")
         yield r
 
     @pytest.fixture
@@ -65,6 +88,43 @@ class TestRunPageView:
         assert "reduction.complete" in r.text
         assert "catalog.complete" in r.text
         assert "reduction_catalog.complete" in r.text
+
+    def verifyDashboard(self, r):
+        html = self.removeWhitespace(r.text)
+
+        assert self.removeWhitespace("""<p>List of instruments:<br>""") in html
+        assert self.removeWhitespace("""<td><a href='/dasmon/arcs/'>ARCS</a></td>""") in html
+        assert (
+            self.removeWhitespace(
+                """<a href="/dasmon/dashboard/">extended dashboard</a> |
+         <a href="/dasmon/summary/">latest runs</a>"""
+            )
+            in html
+        )
+
+    def testVerifyDashboardGeneralUser(self, dashboard_general_user):
+        assert dashboard_general_user.status_code == 200
+        self.verifyDashboard(dashboard_general_user)
+
+    def testVerifyDashboardInstrumentScientist(self, dashboard_instrument_scientist):
+        assert dashboard_instrument_scientist.status_code == 200
+        self.verifyDashboard(dashboard_instrument_scientist)
+
+    def verifyExtendedDashboard(self, r):
+        html = self.removeWhitespace(r.text)
+
+        assert self.removeWhitespace("""<div id="runs_per_hour_arcs" class="dashboard_plots"></div>""") in html
+        assert self.removeWhitespace("""<div id="runs_per_hour_common" class="dashboard_plots"></div>""") in html
+        assert self.removeWhitespace("""<div id="runs_per_hour_hysa" class="dashboard_plots"></div>""") in html
+        assert self.removeWhitespace("""<div id="runs_per_hour_test" class="dashboard_plots"></div>""") in html
+
+    def testVerifyExtendedDashboardGeneralUser(self, extended_dashboard_general_user):
+        assert extended_dashboard_general_user.status_code == 200
+        self.verifyExtendedDashboard(extended_dashboard_general_user)
+
+    def testVerifyExtendedDashboardInstrumentScientist(self, extended_dashboard_instrument_scientist):
+        assert extended_dashboard_instrument_scientist.status_code == 200
+        self.verifyExtendedDashboard(extended_dashboard_instrument_scientist)
 
     # 1 test to confirm catalog data is received
     @unittest.skip("JavaScript not processed, this data will be missing")
@@ -122,6 +182,13 @@ class TestRunPageView:
     def testGeneralUserPlotDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmPlotDataExist(general_user)
+
+    def testGeneralUserAccessDenied(self, general_user):
+        assert general_user.status_code == 200
+        assert (
+            "You do not have access to data for this experiment. If you need access, please contact the"
+            in general_user.text
+        )
 
     def confirmPVDataExist(self, response):
         r = response
