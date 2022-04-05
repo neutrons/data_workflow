@@ -34,12 +34,12 @@ class TestRunPageView:
 
     @pytest.fixture
     def dashboard_general_user(self):
-        r = self.login("/dasmon/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login("/dasmon/", self.general_user_usern4me, self.general_user_p4ssword)
         yield r
 
     @pytest.fixture
     def extended_dashboard_general_user(self):
-        r = self.login("/dasmon/dashboard/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login("/dasmon/dashboard/", self.general_user_usern4me, self.general_user_p4ssword)
         yield r
 
     @pytest.fixture
@@ -49,7 +49,7 @@ class TestRunPageView:
 
     @pytest.fixture
     def reduction_setup_page_general_user(self):
-        r = self.login("/reduction/arcs/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login("/reduction/arcs/", self.general_user_usern4me, self.general_user_p4ssword)
         yield r
 
     @pytest.fixture
@@ -59,6 +59,9 @@ class TestRunPageView:
 
     def removeWhitespace(self, text):
         return "".join(text.split())
+
+    def assertHtml(self, expected, actual):
+        assert self.removeWhitespace(expected) in self.removeWhitespace(actual), actual
 
     def login(self, next, username, password):
         URL = "http://localhost/users/login?next="
@@ -73,38 +76,36 @@ class TestRunPageView:
 
     def confirmCatalogDataExist(self, response):
         r = response
-        assert "<title>ARCS Run 214581</title>" in r.text
+        self.assertHtml("<title>ARCS Run 214581</title>", r.text)
 
         # Check that OnCat could be reached
         assert "Could not communicate with the online catalog" not in r.text
         assert "There is no catalog information for this run yet" not in r.text
 
-        assert "<td>Run title</td><td><b>HfO2:12Y omega=90.5,Ei=60 Flux,T=300.944 K</b></td>" in r.text
-        assert "<td>Run start</td><td>Oct. 20, 2021, 6:50 a.m.</td>" in r.text
-        assert "<td>Run end</td><td>Oct. 20, 2021, 6:53 a.m.</td>" in r.text
-        assert "<td>Duration</td><td>179.45538330078125</td>" in r.text
-        assert "<td>Total counts</td><td>1158832</td>" in r.text
-        assert "<td>Proton charge</td><td>251337556440.0</td>" in r.text
+        self.assertHtml("<td>Run title</td><td><b>HfO2:12Y omega=90.5,Ei=60 Flux,T=300.944 K</b></td>", r.text)
+        self.assertHtml("<td>Run start</td><td>Oct. 20, 2021, 6:50 a.m.</td>", r.text)
+        self.assertHtml("<td>Run end</td><td>Oct. 20, 2021, 6:53 a.m.</td>", r.text)
+        self.assertHtml("<td>Duration</td><td>179.45538330078125</td>", r.text)
+        self.assertHtml("<td>Total counts</td><td>1158832</td>", r.text)
+        self.assertHtml("<td>Proton charge</td><td>251337556440.0</td>", r.text)
 
         # Check that live_data was retrived
-        assert "https://livedata.sns.gov:443/plots/arcs/214581/update/html/" in r.text
+        self.assertHtml("https://livedata.sns.gov:443/plots/arcs/214581/update/html/", r.text)
 
         # Check workflow has been completed
-        assert "reduction.complete" in r.text
-        assert "catalog.complete" in r.text
-        assert "reduction_catalog.complete" in r.text
+        self.assertHtml("reduction.complete", r.text)
+        self.assertHtml("catalog.complete", r.text)
+        self.assertHtml("reduction_catalog.complete", r.text)
 
     def verifyDashboard(self, r):
         html = self.removeWhitespace(r.text)
 
-        assert self.removeWhitespace("""<p>List of instruments:<br>""") in html
-        assert self.removeWhitespace("""<td><a href='/dasmon/arcs/'>ARCS</a></td>""") in html
-        assert (
-            self.removeWhitespace(
-                """<a href="/dasmon/dashboard/">extended dashboard</a> |
-         <a href="/dasmon/summary/">latest runs</a>"""
-            )
-            in html
+        self.assertHtml("""<p>List of instruments:<br>""", html)
+        self.assertHtml("""<td><a href='/dasmon/arcs/'>ARCS</a></td>""", html)
+        self.assertHtml(
+            """<a href="/dasmon/dashboard/">extended dashboard</a> |
+         <a href="/dasmon/summary/">latest runs</a>""",
+            html,
         )
 
     def testVerifyDashboardGeneralUser(self, dashboard_general_user):
@@ -118,10 +119,10 @@ class TestRunPageView:
     def verifyExtendedDashboard(self, r):
         html = self.removeWhitespace(r.text)
 
-        assert self.removeWhitespace("""<div id="runs_per_hour_arcs" class="dashboard_plots"></div>""") in html
-        assert self.removeWhitespace("""<div id="runs_per_hour_common" class="dashboard_plots"></div>""") in html
-        assert self.removeWhitespace("""<div id="runs_per_hour_hysa" class="dashboard_plots"></div>""") in html
-        assert self.removeWhitespace("""<div id="runs_per_hour_test" class="dashboard_plots"></div>""") in html
+        self.assertHtml("""<div id="runs_per_hour_arcs" class="dashboard_plots"></div>""", html)
+        self.assertHtml("""<div id="runs_per_hour_common" class="dashboard_plots"></div>""", html)
+        self.assertHtml("""<div id="runs_per_hour_hysa" class="dashboard_plots"></div>""", html)
+        self.assertHtml("""<div id="runs_per_hour_test" class="dashboard_plots"></div>""", html)
 
     def testVerifyExtendedDashboardGeneralUser(self, extended_dashboard_general_user):
         assert extended_dashboard_general_user.status_code == 200
@@ -145,36 +146,40 @@ class TestRunPageView:
     def confirmPlotDataExist(self, response):
         r = response
         # checks that the xaxis title of all the expected graphs
-        assert (
+        self.assertHtml(
             '<text class="xtitle" style="font-family: &quot;Open Sans&quot;'
             ", verdana, arial, sans-serif; font-size: 14px; fill: rgb(42, 63, 95);"
             ' opacity: 1; font-weight: normal; white-space: pre;" x="293.5" y="488.1995361328125"'
-            ' text-anchor="middle" data-unformatted="|Q| (1/A)" data-math="N">|Q| (1/A)</text>' in r.text
+            ' text-anchor="middle" data-unformatted="|Q| (1/A)" data-math="N">|Q| (1/A)</text>',
+            r.text,
         )
-        assert (
+        self.assertHtml(
             '<text class="xtitle" style="font-family: &quot;Open Sans&quot;,'
             " verdana, arial, sans-serif; font-size: 14px; fill: rgb(42, 63, 95);"
             ' opacity: 1; font-weight: normal; white-space: pre;" x="320" y="388.1995361328125"'
-            ' text-anchor="middle" data-unformatted="Energy transfer (meV)" data-math="N">Energy transfer (meV)</text>'
-            in r.text
+            ' text-anchor="middle" data-unformatted="Energy transfer (meV)" data-math="N">Energy transfer (meV)</text>',
+            r.text,
         )
-        assert (
+        self.assertHtml(
             '<text class="xtitle" style="font-family: &quot;Open Sans&quot;, verdana, arial, sans-serif;'
             ' font-size: 14px; fill: rgb(42, 63, 95); opacity: 1; font-weight: normal; white-space: pre;"'
             ' x="297" y="488.1995361328125" text-anchor="middle" data-unformatted="[0,0,L] (r.l.u.)" data'
-            '-math="N">[0,0,L] (r.l.u.)</text>' in r.text
+            '-math="N">[0,0,L] (r.l.u.)</text>',
+            r.text,
         )
-        assert (
+        self.assertHtml(
             '<text class="xtitle" style="font-family: &quot;Open Sans&quot;, verdana, arial, sans-serif;'
             ' font-size: 14px; fill: rgb(42, 63, 95); opacity: 1; font-weight: normal; white-space: pre;"'
             ' x="297" y="488.1995361328125" text-anchor="middle" data-unformatted="[0,0,L] (r.l.u.)" data-math="N">'
-            "[0,0,L] (r.l.u.)</text>" in r.text
+            "[0,0,L] (r.l.u.)</text>",
+            r.text,
         )
-        assert (
+        self.assertHtml(
             '<text class="xtitle" style="font-family: &quot;Open Sans&quot;, verdana, arial, sans-serif;'
             ' font-size: 14px; fill: rgb(42, 63, 95); opacity: 1; font-weight: normal; white-space: pre;"'
             ' x="293.5" y="488.1995361328125" text-anchor="middle" data-unformatted="[0,K,0] (r.l.u.)"'
-            ' data-math="N">[0,K,0] (r.l.u.)</text>' in r.text
+            ' data-math="N">[0,K,0] (r.l.u.)</text>',
+            r.text,
         )
 
     # 2 test to confirm plot data is received
@@ -190,54 +195,44 @@ class TestRunPageView:
 
     def testGeneralUserAccessDenied(self, general_user):
         assert general_user.status_code == 200
-        assert (
-            "You do not have access to data for this experiment. If you need access, please contact the"
-            in general_user.text
+        self.assertHtml(
+            "You do not have access to data for this experiment. If you need access, please contact the",
+            general_user.text,
         )
 
     def confirmPVDataExist(self, response):
         r = response
         html = self.removeWhitespace(r.text)
 
-        assert (
-            self.removeWhitespace(
-                """<tr>
+        self.assertHtml(
+            """<tr>
         <td>catalog.complete</td>
-        <td></td>"""
-            )
-            in html
+        <td></td>""",
+            html,
         )
-        assert (
-            self.removeWhitespace(
-                """<tr>
+        self.assertHtml(
+            """<tr>
         <td>catalog.started</td>
-        <td></td>"""
-            )
-            in html
+        <td></td>""",
+            html,
         )
-        assert (
-            self.removeWhitespace(
-                """<tr>
+        self.assertHtml(
+            """<tr>
         <td>reduction.data_ready</td>
-        <td></td>"""
-            )
-            in html
+        <td></td>""",
+            html,
         )
-        assert (
-            self.removeWhitespace(
-                """<tr>
+        self.assertHtml(
+            """<tr>
         <td>catalog.data_ready</td>
-        <td></td>"""
-            )
-            in html
+        <td></td>""",
+            html,
         )
-        assert (
-            self.removeWhitespace(
-                """<tr>
+        self.assertHtml(
+            """<tr>
         <td>postprocess.data_ready</td>
-        <td></td>"""
-            )
-            in html
+        <td></td>""",
+            html,
         )
 
     # 3 test to confirm pv data is received
@@ -253,10 +248,12 @@ class TestRunPageView:
     def testInstrumentScientistReductionButtonsExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         r = instrument_scientist
-        assert """<a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>""" in r.text
-        assert """<a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>""" in r.text
-        assert """<a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>""" in r.text
-        assert """<a href='/reduction/arcs/'>setup</a>""" in r.text
+        self.assertHtml("""<a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>""", r.text)
+        self.assertHtml("""<a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>""", r.text)
+        self.assertHtml(
+            """<a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>""", r.text
+        )
+        self.assertHtml("""<a href='/reduction/arcs/'>setup</a>""", r.text)
 
     def testInstrumentScientistReductionSetupExists(self, reduction_setup_page):
         assert reduction_setup_page.status_code == 200
@@ -268,48 +265,30 @@ class TestRunPageView:
             self.removeWhitespace("""Only instrument team members can use this form: contact adara_support@ornl.gov""")
             not in html
         )
-        assert (
-            self.removeWhitespace(
-                """<tr><th>Raw vanadium</th> <td ><input type="text" name="raw_vanadium" class="font_resize"
-             id="id_raw_vanadium"> </td></tr>"""
-            )
-            in html
+        self.assertHtml(
+            """<tr><th>Raw vanadium</th> <td ><input type="text" name="raw_vanadium" class="font_resize"
+             id="id_raw_vanadium"> </td></tr>""",
+            html,
         )
-        assert (
-            self.removeWhitespace(
-                """<tr><th>Processed vanadium</th> <td ><input type="text" name="processed_vanadium"
-             class="font_resize" id="id_processed_vanadium"> </td></tr>"""
-            )
-            in html
+        self.assertHtml(
+            """<tr><th>Processed vanadium</th> <td ><input type="text" name="processed_vanadium"
+             class="font_resize" id="id_processed_vanadium"> </td></tr>""",
+            html,
         )
-        assert (
-            self.removeWhitespace("""<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""")
-            in html
+        self.assertHtml("""<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""", html)
+        self.assertHtml(
+            """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E""", html
         )
-        assert (
-            self.removeWhitespace(
-                """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E"""
-            )
-            in html
-        )
-        assert (
-            self.removeWhitespace("""<span >E<sub>min</sub> <input type="number" name="e_min" value="-0.2" """) in html
-        )
-        assert (
-            self.removeWhitespace("""<sub>step</sub> <input type="number" name="e_step" value="0.015" step="any" """)
-            in html
-        )
-        assert (
-            self.removeWhitespace("""<sub>max</sub> <input type="number" name="e_max" value="0.95" step="any" """)
-            in html
-        )
+        self.assertHtml("""<span >E<sub>min</sub> <input type="number" name="e_min" value="-0.2" """, html)
+        self.assertHtml("""<sub>step</sub> <input type="number" name="e_step" value="0.015" step="any" """, html)
+        self.assertHtml("""<sub>max</sub> <input type="number" name="e_max" value="0.95" step="any" """, html)
 
     def testGeneralUserReductionSetupDenied(self, reduction_setup_page_general_user):
         assert reduction_setup_page_general_user.status_code == 200
 
-        assert (
-            """Only instrument team members can use this form: contact adara_support@ornl.gov"""
-            in reduction_setup_page_general_user.text
+        self.assertHtml(
+            """Only instrument team members can use this form: contact adara_support@ornl.gov""",
+            reduction_setup_page_general_user.text,
         )
 
     # NOTE: Nothing is currently stopping general users from going directly to this page,
@@ -318,15 +297,13 @@ class TestRunPageView:
         assert post_processing_page.status_code == 200
         r = post_processing_page
 
-        assert """<th><label for="id_experiment">Experiment:</label></th>""" in r.text
-        assert """<th><label for="id_run_list">Run list:</label></th>""" in r.text
-        assert """<th><label for="id_create_as_needed">Create as needed:</label></th>""" in r.text
-        assert """<th><label for="id_task">Task:</label></th>""" in r.text
-        assert """<th><label for="id_instrument">Instrument:</label></th>""" in r.text
-        assert (
-            self.removeWhitespace(
-                """<input id="submit_button" title="Click to submit tasks" type="submit" name="button_choice"
-            value="submit"/>"""
-            )
-            in self.removeWhitespace(r.text)
+        self.assertHtml("""<th><label for="id_experiment">Experiment:</label></th>""", r.text)
+        self.assertHtml("""<th><label for="id_run_list">Run list:</label></th>""", r.text)
+        self.assertHtml("""<th><label for="id_create_as_needed">Create as needed:</label></th>""", r.text)
+        self.assertHtml("""<th><label for="id_task">Task:</label></th>""", r.text)
+        self.assertHtml("""<th><label for="id_instrument">Instrument:</label></th>""", r.text)
+        self.assertHtml(
+            """<input id="submit_button" title="Click to submit tasks" type="submit" name="button_choice"
+            value="submit"/>""",
+            self.removeWhitespace(r.text),
         )
