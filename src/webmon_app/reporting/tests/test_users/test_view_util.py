@@ -50,7 +50,7 @@ class TestViews(TestCase):
         with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=[]):
             self.assertFalse(view_util._check_credentials(request))
 
-        request.META = {"REMOTE_ADDR": "1.2.3.4"}
+        request.META = {"HTTP_X_REAL_IP": "1.2.3.4"}
 
         mock_gethostbyaddr.return_value = ("hostname.gov", None, None)
 
@@ -186,7 +186,7 @@ class TestViews(TestCase):
         user = User.objects.create_user("user")
         request = mock.MagicMock()
         request.user = user
-        request.META = {"REMOTE_ADDR": "1.2.3.4"}
+        request.META = {"HTTP_X_REAL_IP": "1.2.3.4"}
         request.get_full_path.return_value = "/full/path"
 
         request_processor = view_util.monitor(lambda x: x)
