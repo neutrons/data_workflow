@@ -30,8 +30,9 @@ import reporting.users.view_util as users_view_util
 def get_monitor_breadcrumbs(instrument_id, current_view="monitor"):
     """
     Create breadcrumbs for a live monitoring view
-    @param instrument_id: Instrument object
-    @param current_view: name to give this view
+
+    :param instrument_id: Instrument object
+    :param current_view: name to give this view
     """
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
     if ActiveInstrument.objects.is_alive(instrument_id):
@@ -48,8 +49,9 @@ def get_monitor_breadcrumbs(instrument_id, current_view="monitor"):
 def get_cached_variables(instrument_id, monitored_only=False):
     """
     Get cached parameter values for a given instrument
-    @param instrument_id: Instrument object
-    @param monitored_only: if True, only monitored parameters are returned
+
+    :param instrument_id: Instrument object
+    :param monitored_only: if True, only monitored parameters are returned
     """
     parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
     # Variables that are displayed on top
@@ -90,9 +92,9 @@ def get_cached_variables(instrument_id, monitored_only=False):
 def _prune_title_string(value):
     """
     Replace unusual characters in a string.
-    This is mostly for run titles which come in
-    from the DAS with weird delimiters.
-    @param value: string
+    This is mostly for run titles which come in from the DAS with weird delimiters.
+
+    :param value: string
     """
     try:
         pruned = value
@@ -111,8 +113,9 @@ def _prune_title_string(value):
 def get_latest(instrument_id, key_id):
     """
     Returns the latest entry for a given key on a given instrument
-    @param instrument_id: Instrument object
-    @param key_id: Parameter object
+
+    :param instrument_id: Instrument object
+    :param key_id: Parameter object
     """
     # First get it from the cache
     try:
@@ -139,9 +142,9 @@ def get_latest(instrument_id, key_id):
 
 def is_running(instrument_id):
     """
-    Returns a string with the running status for a
-    given instrument
-    @param instrument_id: Instrument object
+    Returns a string with the running status for a given instrument
+
+    :param instrument_id: Instrument object
     """
     try:
         if not ActiveInstrument.objects.is_adara(instrument_id):
@@ -182,10 +185,10 @@ def is_running(instrument_id):
 def get_system_health(instrument_id=None):
     """
     Get system health status.
-    If an instrument_id is provided, the sub-systems relevant to that
-    instrument will also be provided,
-    otherwise only common sub-systems are provided.
-    @param instrument_id: Instrument object
+    If an instrument_id is provided, the sub-systems relevant to that instrument will
+    also be provided, otherwise only common sub-systems are provided.
+
+    :param instrument_id: Instrument object
     """
     das_status = report_view_util.get_post_processing_status()
     das_status["workflow"] = get_workflow_status()
@@ -245,10 +248,11 @@ def fill_template_values(request, **template_args):
 def _find_value(instrument_id, dasmon_name, default="-", prune=False):
     """
     Return the latest value for a given DASMON entry.
-    @param instrument_id: Instrument object
-    @param dasmon_name: name of the DASMON entry
-    @param default: value to return if no entry is found
-    @param prune: if True, title strings will be tidied up
+
+    :param instrument_id: Instrument object
+    :param dasmon_name: name of the DASMON entry
+    :param default: value to return if no entry is found
+    :param prune: if True, title strings will be tidied up
     """
     _value = default
     try:
@@ -267,8 +271,8 @@ def get_live_variables(request, instrument_id):
     """
     Create a data dictionary with requested live data
 
-    @param request: HttpRequest object
-    @param instrument_id: Instrument object
+    :param request: HttpRequest object
+    :param instrument_id: Instrument object
     """
     # Get variable update request
     live_vars = request.GET.get("vars", "")
@@ -323,8 +327,9 @@ def get_live_variables(request, instrument_id):
 def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
     """
     Get the health status of PVStreamer
-    @param red_timeout: number of hours before declaring a process dead
-    @param yellow_timeout: number of seconds before declaring a process slow
+
+    :param red_timeout: number of hours before declaring a process dead
+    :param yellow_timeout: number of seconds before declaring a process slow
     """
     pvsd_status = -1
     pvstreamer_status = -1
@@ -338,8 +343,9 @@ def get_pvstreamer_status(instrument_id, red_timeout=1, yellow_timeout=None):
 def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, process="dasmon"):
     """
     Get the health status of an ADARA component
-    @param red_timeout: number of hours before declaring a process dead
-    @param yellow_timeout: number of seconds before declaring a process slow
+
+    :param red_timeout: number of hours before declaring a process dead
+    :param yellow_timeout: number of seconds before declaring a process slow
     """
     if yellow_timeout is None:
         yellow_timeout = settings.HEARTBEAT_TIMEOUT
@@ -376,8 +382,9 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
 def get_workflow_status(red_timeout=1, yellow_timeout=None):
     """
     Get the health status of Workflow Manager
-    @param red_timeout: number of hours before declaring a process dead
-    @param yellow_timeout: number of seconds before declaring a process slow
+
+    :param red_timeout: number of hours before declaring a process dead
+    :param yellow_timeout: number of seconds before declaring a process slow
     """
     if yellow_timeout is None:
         yellow_timeout = settings.HEARTBEAT_TIMEOUT
@@ -405,7 +412,8 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
 def workflow_diagnostics(timeout=None):
     """
     Diagnostics for the workflow manager
-    @param timeout: number of seconds of silence before declaring a problem
+
+    :param timeout: number of seconds of silence before declaring a problem
     """
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
@@ -504,7 +512,8 @@ def workflow_diagnostics(timeout=None):
 def postprocessing_diagnostics(timeout=None):
     """
     Diagnostics for the auto-reduction and cataloging
-    @param timeout: number of seconds of silence before declaring a problem
+
+    :param timeout: number of seconds of silence before declaring a problem
     """
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
@@ -582,9 +591,10 @@ def postprocessing_diagnostics(timeout=None):
 def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
     """
     Diagnostics for PVStreamer
-    @param instrument_id: Instrument object
-    @param timeout: number of seconds of silence before declaring a problem
-    @param process: name of the process to diagnose (pvsd or pvstreamer)
+
+    :param instrument_id: Instrument object
+    :param timeout: number of seconds of silence before declaring a problem
+    :param process: name of the process to diagnose (pvsd or pvstreamer)
     """
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
@@ -645,8 +655,9 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
 def dasmon_diagnostics(instrument_id, timeout=None):
     """
     Diagnostics for DASMON
-    @param instrument_id: Instrument object
-    @param timeout: number of seconds of silence before declaring a problem
+
+    :param instrument_id: Instrument object
+    :param timeout: number of seconds of silence before declaring a problem
     """
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
@@ -773,7 +784,8 @@ def _red_message(msg):
 def get_completeness_status(instrument_id):
     """
     Check that the latest runs have successfully completed post-processing
-    @param instrument_id: Instrument object
+
+    :param instrument_id: Instrument object
     """
     STATUS_OK = (0, "OK")
     # Warning status still says OK but the background color is yellow
@@ -842,10 +854,11 @@ def get_completeness_status(instrument_id):
 def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     """
     Get updated information about the latest runs
-    @param request: HTTP request so we can get the 'since' parameter
-    @param instrument_id: Instrument model object
-    @param ipts_id: filter by experiment, if provided
-    @param data_dict: dictionary to populate
+
+    :param request: HTTP request so we can get the 'since' parameter
+    :param instrument_id: Instrument model object
+    :param ipts_id: filter by experiment, if provided
+    :param data_dict: dictionary to populate
     """
     # Get the last run ID that the client knows about
     since_run_id = None
@@ -932,9 +945,9 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
     If no run is found in the last few hours (defined by the timeframe parameter),
     we return the last few runs (defined by the number_of_entries parameter).
 
-    @param timeframe: number of hours going back from now, defining the period of time for the runs
-    @param number_of_entries: number of entries to return if we didn't find any run in the defined period
-    @param instrument_id: if provided, results will be limited to the given instrument
+    :param timeframe: number of hours going back from now, defining the period of time for the runs
+    :param number_of_entries: number of entries to return if we didn't find any run in the defined period
+    :param instrument_id: if provided, results will be limited to the given instrument
     """
     run_list = []
     first_run = 0
@@ -979,7 +992,7 @@ def get_run_list(run_list):
     dictionaries that can be used as a simple dictionary that
     can be shipped as json.
 
-    @param run_list: list of run object (usually a QuerySet)
+    :param run_list: list of run object (usually a QuerySet)
     """
     run_dicts = []
     try:
@@ -1018,7 +1031,8 @@ class SignalEntry:
 def get_signals(instrument_id):
     """
     Get the current list of signals/alarms for a given instrument
-    @param instrument_id: Instrument object
+
+    :param instrument_id: Instrument object
     """
     try:
         signals = Signal.objects.filter(instrument_id=instrument_id)
@@ -1145,9 +1159,9 @@ def add_status_entry(instrument_id, message_channel, value):
     """
     Add a status message for a given instrument.
 
-    @param instrument_id: Instrument object
-    @param message_channel: name of the AMQ channel used to report updates
-    @param value: value for the entry (string)
+    :param instrument_id: Instrument object
+    :param message_channel: name of the AMQ channel used to report updates
+    :param value: value for the entry (string)
     """
     # Find the parameter used to report updates
     try:
@@ -1162,11 +1176,11 @@ def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_
     """
     Return a list of recent status messages received on a given channel.
 
-    @param instrument_id: Instrument object
-    @param message_channel: name of the AMQ channel used to report updates
-    @param timeframe: number of days to report on
-    @param number_of_entries: number of recent entries to return if nothing was found in the desired time frame
-    @param start_time: earliest time of returned entries. Takes precedence over timeframe and number.
+    :param instrument_id: Instrument object
+    :param message_channel: name of the AMQ channel used to report updates
+    :param timeframe: number of days to report on
+    :param number_of_entries: number of recent entries to return if nothing was found in the desired time frame
+    :param start_time: earliest time of returned entries. Takes precedence over timeframe and number.
     """
     # Find the parameter used to report updates
     try:

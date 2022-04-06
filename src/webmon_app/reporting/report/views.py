@@ -162,9 +162,10 @@ def summary(request):
 def download_reduced_data(request, instrument, run_id):
     """
     Download reduced data from live data server
-    @param request: http request object
-    @param instrument: instrument name
-    @param run_id: run number
+
+    :param request: http request object
+    :param instrument: instrument name
+    :param run_id: run number
     """
     html_data = view_util.get_plot_data_from_server(instrument, run_id, "html")
     ascii_data = view_util.extract_ascii_from_div(html_data)
@@ -188,8 +189,9 @@ def download_reduced_data(request, instrument, run_id):
 def detail(request, instrument, run_id):
     """
     Run details
-    @param instrument: instrument name
-    @param run_id: run number, as string
+
+    :param instrument: instrument name
+    :param run_id: run number, as string
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -288,8 +290,9 @@ def detail(request, instrument, run_id):
 def submit_for_reduction(request, instrument, run_id):
     """
     Send a run for automated reduction
-    @param instrument: instrument name
-    @param run_id: run number
+
+    :param instrument: instrument name
+    :param run_id: run number
     """
     return view_util.processing_request(request, instrument, run_id, destination="/queue/REDUCTION.REQUEST")
 
@@ -298,8 +301,9 @@ def submit_for_reduction(request, instrument, run_id):
 def submit_for_post_processing(request, instrument, run_id):
     """
     Send a run for complete post-processing
-    @param instrument: instrument name
-    @param run_id: run number
+
+    :param instrument: instrument name
+    :param run_id: run number
     """
     return view_util.processing_request(request, instrument, run_id, destination="/queue/POSTPROCESS.DATA_READY")
 
@@ -308,8 +312,9 @@ def submit_for_post_processing(request, instrument, run_id):
 def submit_for_cataloging(request, instrument, run_id):
     """
     Send a run for cataloging
-    @param instrument: instrument name
-    @param run_id: run number
+
+    :param instrument: instrument name
+    :param run_id: run number
     """
     return view_util.processing_request(request, instrument, run_id, destination="/queue/CATALOG.REQUEST")
 
@@ -318,7 +323,8 @@ def submit_for_cataloging(request, instrument, run_id):
 def instrument_summary(request, instrument):
     """
     Instrument summary page
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -379,8 +385,9 @@ def instrument_summary(request, instrument):
 def ipts_summary(request, instrument, ipts):
     """
     Experiment summary giving the list of runs
-    @param instrument: instrument name
-    @param ipts: experiment name
+
+    :param instrument: instrument name
+    :param ipts: experiment name
     """
     # Protect against lower-case requests
     ipts = ipts.upper()
@@ -517,8 +524,9 @@ def live_errors(request, instrument):
 def get_experiment_update(request, instrument, ipts):
     """
     Ajax call to get updates behind the scenes
-    @param instrument: instrument name
-    @param ipts: experiment name
+
+    :param instrument: instrument name
+    :param ipts: experiment name
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -539,7 +547,8 @@ def get_experiment_update(request, instrument, ipts):
 def get_instrument_update(request, instrument):
     """
     Ajax call to get updates behind the scenes
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     since = request.GET.get("since", "0")
     try:
@@ -584,8 +593,9 @@ def get_instrument_update(request, instrument):
 def get_error_update(request, instrument):
     """
     Ajax call to get updates behind the scenes
-    @param instrument: instrument name
-    @param ipts: experiment name
+
+    :param instrument: instrument name
+    :param ipts: experiment name
     """
     since = request.GET.get("since", "0")
     try:

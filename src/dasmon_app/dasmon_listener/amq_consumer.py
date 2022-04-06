@@ -113,7 +113,8 @@ class Listener(stomp.ConnectionListener):
     def on_message(self, frame):
         """
         Process a message.
-        @param frame: stomp.utils.Frame
+
+        :param frame: stomp.utils.Frame
         """
         headers = frame.headers
         message = frame.body
@@ -239,10 +240,11 @@ class Listener(stomp.ConnectionListener):
 def send_message(sender, recipients, subject, message):
     """
     Send an email message
-    @param sender: email of the sender
-    @param recipients: list of recipient emails
-    @param subject: subject of the message
-    @param message: content of the message
+
+    :param sender: email of the sender
+    :param recipients: list of recipient emails
+    :param subject: subject of the message
+    :param message: content of the message
     """
     # If no sender or recipients are defined, do nothing
     if len(sender) == 0 or len(recipients) == 0:
@@ -275,8 +277,8 @@ def process_SMS(instrument_id, headers, data):
         u'reason': u'SMS run stopped',
         u'run_number': u'3014'}
 
-    @param instrument_id: Instrument object
-    @param data: data dictionary
+    :param instrument_id: Instrument object
+    :param data: data dictionary
     """
     try:
         if "run_number" in data and "msg_type" in data and "reason" in data and "ipts" in data:
@@ -300,7 +302,8 @@ def process_SMS(instrument_id, headers, data):
 def process_ack(data=None, headers=None):
     """
     Process a ping request ack
-    @param data: data that came in with the ack
+
+    :param data: data that came in with the ack
     """
     try:
         from .settings import ALERT_EMAIL, FROM_EMAIL
@@ -358,8 +361,9 @@ def process_ack(data=None, headers=None):
 def notify_users(instrument_id, signal):
     """
     Find users who need to be notified and send them a message
-    @param instrument_id: Instrument object
-    @param signal: Signal object
+
+    :param instrument_id: Instrument object
+    :param signal: Signal object
     """
     try:
         for item in UserNotification.objects.filter(instruments__in=[instrument_id], registered=True):
@@ -382,8 +386,6 @@ def notify_users(instrument_id, signal):
 def process_signal(instrument_id, data):
     """
     Process and store signal messages.
-    @param instrument_id: Instrument object
-    @param data: data dictionary
 
     Asserted signals look like this:
     {
@@ -403,6 +405,9 @@ def process_signal(instrument_id, data):
         "timestamp": "1375464079",
         "sig_name": "SID_SVP_HIGH"
     }
+
+    :param instrument_id: Instrument object
+    :param data: data dictionary
     """
     # Assert a signal
     if "sig_name" in data:
@@ -448,10 +453,11 @@ def store_and_cache(instrument_id, key_id, value, timestamp=None, cache_only=Fal
     """
     Protected store and cache process.
     Store and cache a DASMON parameter
-    @param instrument_id: Instrument object
-    @param key_id: key Parameter object
-    @param value: value for the given key
-    @param cache_only: only update cache
+
+    :param instrument_id: Instrument object
+    :param key_id: key Parameter object
+    :param value: value for the given key
+    :param cache_only: only update cache
     """
     try:
         store_and_cache_(instrument_id, key_id, value, timestamp=timestamp, cache_only=cache_only)
@@ -462,10 +468,11 @@ def store_and_cache(instrument_id, key_id, value, timestamp=None, cache_only=Fal
 def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=False):
     """
     Store and cache a DASMON parameter
-    @param instrument_id: Instrument object
-    @param key_id: key Parameter object
-    @param value: value for the given key
-    @param cache_only: only update cache
+
+    :param instrument_id: Instrument object
+    :param key_id: key Parameter object
+    :param value: value for the given key
+    :param cache_only: only update cache
     """
     # Do bother with parameter that are not monitored
     if key_id.monitored is False:
@@ -515,11 +522,11 @@ class Client:
 
     def __init__(self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"):
         """
-        @param brokers: list of brokers we can connect to
-        @param user: activemq user
-        @param passcode: passcode for activemq user
-        @param queues: list of queues to listen to
-        @param consumer_name: name of the AMQ listener
+        :param brokers: list of brokers we can connect to
+        :param user: activemq user
+        :param passcode: passcode for activemq user
+        :param queues: list of queues to listen to
+        :param consumer_name: name of the AMQ listener
         """
         self._brokers = brokers
         self._user = user
@@ -539,16 +546,17 @@ class Client:
 
     def set_listener(self, listener):
         """
-        Set the listener object that will process each
-        incoming message.
-        @param listener: listener object
+        Set the listener object that will process each incoming message.
+
+        :param listener: listener object
         """
         self._listener = listener
 
     def get_connection(self, listener=None):
         """
         Establish and return a connection to ActiveMQ
-        @param listener: listener object
+
+        :param listener: listener object
         """
         if listener is None:
             if self._listener is None:
@@ -598,7 +606,8 @@ class Client:
         Listen for the next message from the brokers.
         This method will simply return once the connection is
         terminated.
-        @param waiting_period: sleep time between connection to a broker
+
+        :param waiting_period: sleep time between connection to a broker
         """
 
         # Retrieve the Parameter object for our own heartbeat
@@ -669,9 +678,10 @@ class Client:
         """
         Send a message to a queue.
         This send method is used for heartbeats and doesn't need AMQ persistent messages.
-        @param destination: name of the queue
-        @param message: message content
-        @param persistent: true, to set persistent header
+
+        :param destination: name of the queue
+        :param message: message content
+        :param persistent: true, to set persistent header
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()

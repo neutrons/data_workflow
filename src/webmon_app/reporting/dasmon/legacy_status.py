@@ -16,7 +16,8 @@ STATUS_HOST = "neutrons.ornl.gov"
 def get_ops_status(instrument_id):
     """
     Pull the legacy status information
-    @param instrument_id: Instrument object
+
+    :param instrument_id: Instrument object
     """
     try:
         url = get_legacy_url(instrument_id, False)
@@ -55,8 +56,9 @@ def get_ops_status(instrument_id):
 def get_legacy_url(instrument_id, include_domain=True):
     """
     Generate URL for legacy instrument status data
-    @param instrument_id: Instrument object
-    @param include_domain: True if we need to return a complete URL
+
+    :param instrument_id: Instrument object
+    :param include_domain: True if we need to return a complete URL
     """
     try:
         url_obj = LegacyURL.objects.get(instrument_id=instrument_id)

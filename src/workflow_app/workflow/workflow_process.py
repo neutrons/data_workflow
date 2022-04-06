@@ -17,9 +17,9 @@ from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY  # noqa
 class WorkflowProcess(StateAction):
     def __init__(self, connection=None, recovery=True, allowed_lag=3600):
         """
-        @param connection: AMQ connection
-        @param recovery: if True, the system will try to recover from workflow problems
-        @param allowed_lag: minimum number of seconds since last activity needed before identifying a problem
+        :param connection: AMQ connection
+        :param recovery: if True, the system will try to recover from workflow problems
+        :param allowed_lag: minimum number of seconds since last activity needed before identifying a problem
         """
         super().__init__(connection=connection)
         self._recovery = recovery

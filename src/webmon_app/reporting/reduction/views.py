@@ -34,8 +34,8 @@ def configuration(request, instrument):
 
     #TODO: redirect to another page if you are not part of the instrument team
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     if instrument.lower() in ["seq", "arcs"]:
         return configuration_dgs(request, instrument)
@@ -97,8 +97,8 @@ def configuration_ref_m(request, instrument):
 
     #TODO: redirect to another page if you are not part of the instrument team
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -171,8 +171,8 @@ def configuration_cncs(request, instrument):
 
     #TODO: redirect to another page if you are not part of the instrument team
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -261,8 +261,8 @@ def configuration_dgs(request, instrument):
 
     #TODO: redirect to another page if you are not part of the instrument team
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -361,8 +361,8 @@ def configuration_corelli(request, instrument):
 
     #TODO: redirect to another page if you are not part of the instrument team
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -466,8 +466,8 @@ def configuration_change(request, instrument):
     """
     AJAX call to update the reduction parameters for an instrument.
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     if "data" in request.POST:
@@ -506,8 +506,8 @@ def configuration_update(request, instrument):
     AJAX call that returns an updated list of recent actions taken
     on the reduction script for the specified instrument.
 
-    @param request: request object
-    @param instrument: instrument name
+    :param request: request object
+    :param instrument: instrument name
     """
     last_action = request.GET.get("since", "0")
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())

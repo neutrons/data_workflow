@@ -37,8 +37,9 @@ import reporting.reporting_app.view_util as reporting_view_util
 def generate_key(instrument: str, run_id: int):
     """
     Generate a secret key for a run on a given instrument
-    @param instrument: instrument name
-    @param run_id: run number
+
+    :param instrument: instrument name
+    :param run_id: run number
     """
     if not hasattr(settings, "LIVE_PLOT_SECRET_KEY"):
         return None
@@ -54,9 +55,10 @@ def generate_key(instrument: str, run_id: int):
 def append_key(input_url, instrument, run_id):
     """
     Append a live data secret key to a url
-    @param input_url: url to modify
-    @param instrument: instrument name
-    @param run_id: run number
+
+    :param input_url: url to modify
+    :param instrument: instrument name
+    :param run_id: run number
     """
     client_key = generate_key(instrument, run_id)
     if client_key is None:
@@ -113,8 +115,9 @@ def needs_reduction(request, run_id):
     """
     Determine whether we need a reduction link to
     submit a run for automated reduction
-    @param request: HTTP request object
-    @param run_id: DataRun object
+
+    :param request: HTTP request object
+    :param run_id: DataRun object
     """
     # Get REDUCTION.DATA_READY queue
     try:
@@ -139,8 +142,9 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
     """
     Send an AMQ message to the workflow manager to reprocess
     the run
-    @param instrument_id: Instrument object
-    @param run_id: DataRun object
+
+    :param instrument_id: Instrument object
+    :param run_id: DataRun object
     """
     if destination is None:
         destination = "/queue/POSTPROCESS.DATA_READY"
@@ -197,9 +201,10 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
 def processing_request(request, instrument, run_id, destination):
     """
     Process a request for post-processing
-    @param instrument: instrument name
-    @param run_id: run number [string]
-    @param destination: outgoing AMQ queue
+
+    :param instrument: instrument name
+    :param run_id: run number [string]
+    :param destination: outgoing AMQ queue
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -218,8 +223,9 @@ def retrieve_rates(instrument_id, last_run_id):
     """
     Retrieve the run rate and error rate for an instrument.
     Try to get it from the cache if possible.
-    @param instrument_id: Instrument object
-    @param last_run_id: DataRun object
+
+    :param instrument_id: Instrument object
+    :param last_run_id: DataRun object
     """
     last_run = None
     if last_run_id is not None:
@@ -231,7 +237,7 @@ def retrieve_rates(instrument_id, last_run_id):
     def _get_rate(id_name):
         """
         Returns rate for runs or errors
-        @param id_name: 'run' or 'error'
+        :param id_name: 'run' or 'error'
         """
         rate = cache.get("%s_%s_rate" % (instrument_id.name, id_name))
         if rate is not None and last_cached_run is not None and last_run == last_cached_run:
@@ -260,8 +266,9 @@ def retrieve_rates(instrument_id, last_run_id):
 def run_rate(instrument_id, n_hours=24):
     """
     Returns the rate of new runs for the last n_hours hours.
-    @param instrument_id: Instrument model object
-    @param n_hours: number of hours to track
+
+    :param instrument_id: Instrument model object
+    :param n_hours: number of hours to track
     """
     # Try calling the stored procedure (faster)
     try:
@@ -293,8 +300,9 @@ def run_rate(instrument_id, n_hours=24):
 def error_rate(instrument_id, n_hours=24):
     """
     Returns the rate of errors for the last n_hours hours.
-    @param instrument_id: Instrument model object
-    @param n_hours: number of hours to track
+
+    :param instrument_id: Instrument model object
+    :param n_hours: number of hours to track
     """
     # Try calling the stored procedure (faster)
     try:
@@ -332,7 +340,7 @@ def get_current_status(instrument_id):
 
     Used to populate AJAX response, so must not contain Model objects
 
-    @param instrument_id: Instrument model object
+    :param instrument_id: Instrument model object
     """
     # Get last experiment and last run
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
@@ -362,7 +370,8 @@ def is_acquisition_complete(run_id):
     """
     Determine whether the acquisition is complete and post-processing
     has started
-    @param run_id: run object
+
+    :param run_id: run object
     """
     status_items = RunStatus.objects.filter(run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY")
     return len(status_items) > 0
@@ -371,8 +380,8 @@ def is_acquisition_complete(run_id):
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
     """
     Get the health status of post-processing services
-    @param red_timeout: number of hours before declaring a process dead
-    @param yellow_timeout: number of seconds before declaring a process slow
+    :param red_timeout: number of hours before declaring a process dead
+    :param yellow_timeout: number of seconds before declaring a process slow
     """
     # The cataloging and reduction status is more confusing than anything,
     # so we are phasing it out.
@@ -383,8 +392,9 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
     """
     Get a textual description of the current status
     for a given run
-    @param run_id: run object
-    @param show_error: if true, the last error will be whow, otherwise "error"
+
+    :param run_id: run object
+    :param show_error: if true, the last error will be whow, otherwise "error"
     """
     status = "unknown"
     try:
@@ -414,7 +424,7 @@ def get_run_list_dict(run_list):
     Get a list of run object and transform it into a list of
     dictionaries that can be used to fill a table.
 
-    @param run_list: list of run object (usually a QuerySet)
+    :param run_list: list of run object (usually a QuerySet)
     """
     run_dicts = []
     try:
@@ -448,7 +458,8 @@ def extract_ascii_from_div(html_data, trace_id=None):
     """
     Extract data from an plot <div>.
     Only returns the first one it finds.
-    @param html_data: <div> string
+
+    :param html_data: <div> string
 
     #TODO: allow to specify which trace to return in cases where we have multiple curves
     """
@@ -486,9 +497,10 @@ def extract_ascii_from_div(html_data, trace_id=None):
 def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     """
     Get template dictionary for plots
-    @param run_object: DataRun object
-    @param instrument: instrument name
-    @param run_id: run_number
+
+    :param run_object: DataRun object
+    :param instrument: instrument name
+    :param run_id: run_number
     """
     plot_dict = {
         "plot_data": None,
@@ -535,9 +547,10 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
 def get_plot_data_from_server(instrument, run_id, data_type="json"):
     """
     Get json data from the live data server
-    @param instrument: instrument name
-    @param run_id: run number
-    @param data_type: data type, either 'json' or 'html'
+
+    :param instrument: instrument name
+    :param run_id: run number
+    :param data_type: data type, either 'json' or 'html'
     """
     json_data = None
     try:
@@ -561,7 +574,8 @@ def extract_d3_data_from_json(json_data):
 
     For backward compatibility, extract D3 data from json data for
     the old-style interactive plots.
-    @param json_data: json data block
+
+    :param json_data: json data block
     """
     plot_data = None
     x_label = "Q [1/\u00C5]"
@@ -607,8 +621,9 @@ def extract_d3_data_from_json(json_data):
 def find_skipped_runs(instrument_id, start_run_number=0):
     """
     Find run numbers that were skipped for a given instrument
-    @param instrument_id: Instrument object
-    @param start_run_number: run number to start from
+
+    :param instrument_id: Instrument object
+    :param start_run_number: run number to start from
     """
     missing_runs = []
     try:

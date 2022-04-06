@@ -17,9 +17,10 @@ import time
 def get_live_variables(request, instrument_id, key_id=None):
     """
     Create a data dictionary with requested live data
-    @param request: HTTP request object
-    @param instrument_id: Instrument object
-    @param key_id: key to return data for, if request is None
+
+    :param request: HTTP request object
+    :param instrument_id: Instrument object
+    :param key_id: key to return data for, if request is None
     """
     # Get variable update request
     if request is not None:
@@ -104,8 +105,9 @@ def get_live_variables(request, instrument_id, key_id=None):
 def get_cached_variables(instrument_id, monitored_only=False):
     """
     Get cached PV values for a given instrument
-    @param instrument_id: Instrument object
-    @param monitored_only: if True, only monitored PVs are returned
+
+    :param instrument_id: Instrument object
+    :param monitored_only: if True, only monitored PVs are returned
     """
 
     def _process_pvs(queryset):

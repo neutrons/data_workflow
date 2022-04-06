@@ -59,7 +59,8 @@ class IPTSManager(models.Manager):
         """
         Get the last experiment object for a given instrument.
         Returns None if nothing was found.
-        @param instrument_id: Instrument object
+
+        :param instrument_id: Instrument object
         """
         ipts_query = (
             super(IPTSManager, self).get_queryset().filter(instruments=instrument_id).order_by("created_on").reverse()
@@ -90,7 +91,8 @@ class IPTS(models.Model):
         """
         Returns the total number of runs for this IPTS
         on the given instrument.
-        @param instrument_id: Instrument object
+
+        :param instrument_id: Instrument object
         """
         if instrument_id is None:
             return DataRun.objects.filter(ipts_id=self).distinct().count()
@@ -102,8 +104,9 @@ class DataRunManager(models.Manager):
         """
         Get the last run for a given instrument and experiment.
         Returns None if nothing was found.
-        @param instrument_id: Instrument object
-        @param ipts_id: IPTS object
+
+        :param instrument_id: Instrument object
+        :param ipts_id: IPTS object
         """
         if ipts_id is None:
             last_run_query = super(DataRunManager, self).get_queryset().filter(instrument_id=instrument_id)
@@ -121,8 +124,9 @@ class DataRunManager(models.Manager):
         Try to get the last run from the InstrumentStatus table.
         If we can't find it, find it the long way and add the result
         to the cache.
-        @param instrument_id: Instrument object
-        @param ipts_id: IPTS object
+
+        :param instrument_id: Instrument object
+        :param ipts_id: IPTS object
         """
         try:
             status = InstrumentStatus.objects.get(instrument_id=instrument_id)
@@ -236,8 +240,9 @@ class RunStatusManager(models.Manager):
         """
         Returns all database entries for a given run and a given
         status message.
-        @param run_id: DataRun object
-        @param status_description: status message, as a string
+
+        :param run_id: DataRun object
+        :param status_description: status message, as a string
         """
         status_ids = StatusQueue.objects.filter(name__startswith=status_description)
         if len(status_ids) > 0:
@@ -248,7 +253,8 @@ class RunStatusManager(models.Manager):
     def last_timestamp(self, run_id):
         """
         Returns the last timestamp for this run
-        @param run_id: DataRun object
+
+        :param run_id: DataRun object
         """
         timestamps = super(RunStatusManager, self).get_queryset().filter(run_id=run_id).order_by("-created_on")
         if len(timestamps) > 0:
@@ -321,7 +327,8 @@ class WorkflowSummaryManager(models.Manager):
     def get_summary(self, run_id):
         """
         Get the run summary for a given DataRun object
-        @param run_id: DataRun object
+
+        :param run_id: DataRun object
         """
         run_list = super(WorkflowSummaryManager, self).get_queryset().filter(run_id=run_id)
         if len(run_list) > 0:

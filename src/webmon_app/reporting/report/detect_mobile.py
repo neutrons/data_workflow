@@ -18,7 +18,7 @@ def is_mobile(request):
     a mobile device.
     The request.mobile data member is also filled in.
 
-    @param request: django request object
+    :param request: django request object
     """
     request.mobile = False
     if "HTTP_USER_AGENT" in request.META:

@@ -49,8 +49,9 @@ class Listener(stomp.ConnectionListener):
     def on_message(self, headers, message):
         """
         Process a message.
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         destination = headers["destination"]
         self._connection.ack(headers["message-id"], headers["subscription"])
@@ -68,7 +69,8 @@ class Listener(stomp.ConnectionListener):
 def process_ack(data=None):
     """
     Process a ping request ack
-    @param data: data that came in with the ack
+
+    :param data: data that came in with the ack
     """
     try:
         if data is None:
@@ -97,11 +99,11 @@ class Client(object):
 
     def __init__(self, brokers, user, passcode, queues=None, consumer_name="amq_consumer"):
         """
-        @param brokers: list of brokers we can connect to
-        @param user: activemq user
-        @param passcode: passcode for activemq user
-        @param queues: list of queues to listen to
-        @param consumer_name: name of the AMQ listener
+        :param brokers: list of brokers we can connect to
+        :param user: activemq user
+        :param passcode: passcode for activemq user
+        :param queues: list of queues to listen to
+        :param consumer_name: name of the AMQ listener
         """
         self._brokers = brokers
         self._user = user
@@ -115,7 +117,8 @@ class Client(object):
         """
         Set the listener object that will process each
         incoming message.
-        @param listener: listener object
+
+        :param listener: listener object
         """
         self._listener = listener
         self._connection = self.get_connection()
@@ -124,7 +127,8 @@ class Client(object):
     def get_connection(self):
         """
         Establish and return a connection to ActiveMQ
-        @param listener: listener object
+
+        :param listener: listener object
         """
         logging.info("[%s] Connecting to %s", self._consumer_name, str(self._brokers))
         conn = stomp.Connection(host_and_ports=self._brokers)
@@ -205,8 +209,9 @@ class Client(object):
     def send(self, destination, message, persistent="false"):
         """
         Send a message to a queue
-        @param destination: name of the queue
-        @param message: message content
+
+        :param destination: name of the queue
+        :param message: message content
         """
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
