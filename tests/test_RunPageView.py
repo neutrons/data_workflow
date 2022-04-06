@@ -1,13 +1,14 @@
 import pytest
 import unittest
 import requests
+from django.conf import settings
 
 
 class TestRunPageView:
     instrument_scientist_usern4me = "InstrumentScientist"
     instrument_scientist_p4ssword = "InstrumentScientist"
-    general_user_usern4me = "GeneralUser"
-    general_user_p4ssword = "GeneralUser"
+    general_user_usern4me = settings.GENERAL_USER_USERNAME
+    general_user_p4ssword = settings.GENERAL_USER_PASSWORD
 
     @pytest.fixture
     def instrument_scientist(self):
@@ -137,12 +138,12 @@ class TestRunPageView:
         self.verifyExtendedDashboard(extended_dashboard_instrument_scientist)
 
     # 1 test to confirm catalog data is received
-    @unittest.skip("JavaScript not processed, this data will be missing")
+    @unittest.skip("Missing Catalog Creds")
     def testInstrumentScientistCatalogDataExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         self.confirmCatalogDataExist(instrument_scientist)
 
-    @unittest.skip("JavaScript not processed, this data will be missing")
+    @unittest.skip("Missing Catalog Creds")
     def testGeneralUserCatalogDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmCatalogDataExist(general_user)
@@ -283,7 +284,7 @@ class TestRunPageView:
         )
 
     # NOTE: Nothing is currently stopping general users from going directly to this page,
-    # there is no messages saying they cant uses this like there is on the reduction setup page
+    # there are no messages saying they cant uses this like there is on the reduction setup page
     def testInstrumentScientistPostProcessingExists(self, post_processing_page):
         assert post_processing_page.status_code == 200
         r = post_processing_page
@@ -302,16 +303,17 @@ class TestRunPageView:
     def verifyLatestRun(self, r):
         self.assertHtml("""<div class="summary">List of latest runs:<br><br>""", r.text)
         self.assertHtml(
-            """<table class="message_table dynatable-loaded" id="run_table"><thead><tr>
-        <th data-dynatable-column="instrument_id" style="min-width: 50px;" class="dynatable-head">
-        <a class="dynatable-sort-header" href="#">Instr.<span class="dynatable-arrow"> ▲</span></a></th>
-        <th data-dynatable-column="run" data-dynatable-no-sort="true" style="min-width: 50px;" class=
-        "dynatable-head">Run</th>""",
+            """<th data-dynatable-column="instrument_id" style="min-width: 50px;">Instr.</th>
+            <th data-dynatable-column="run" data-dynatable-no-sort="true" style="min-width: 50px;">Run</th>
+            <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
+            <th data-dynatable-column="status">Status</th>""",
             r.text,
         )
 
     def testGeneralUserVerifyLatestRuns(self, latest_runs_general_user):
         assert latest_runs_general_user.status_code == 200
+        self.verifyLatestRun(latest_runs_general_user)
 
     def testInstrumentScientistVerifyLatestRuns(self, latest_runs_instrument_scientist):
         assert latest_runs_instrument_scientist.status_code == 200
+        self.verifyLatestRun(latest_runs_instrument_scientist)
