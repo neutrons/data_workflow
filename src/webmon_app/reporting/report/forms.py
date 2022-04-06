@@ -18,7 +18,7 @@ def validate_integer_list(value):
     """
     Allow for "1,2,3" and "1-3"
 
-    @param value: string value to parse
+    :param value: string value to parse
     """
     value_list = []
     # Look for a list of ranges
@@ -77,7 +77,8 @@ class ProcessingForm(forms.Form):
     def set_initial(self, initial):
         """
         Set the initial values after cleaning them up
-        @param initial: initial dictionary
+
+        :param initial: initial dictionary
         """
         self.initial = {}
         if "instrument" in initial:
@@ -103,9 +104,10 @@ class ProcessingForm(forms.Form):
     def _create_file_path(cls, instrument, ipts, run):
         """
         Return a standard file path for a given run
-        @param instrument: instrument model object or string
-        @param ipts: experiment model object or string
-        @param run: run model object or string
+
+        :param instrument: instrument model object or string
+        :param ipts: experiment model object or string
+        :param run: run model object or string
         """
         facility_name = "SNS"
         if hasattr(settings, "FACILITY_INFO"):

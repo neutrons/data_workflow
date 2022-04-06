@@ -23,8 +23,9 @@ class StateAction:
     def __init__(self, connection=None, use_db_task=False):
         """
         Initialization
-        @param connection: AMQ connection to use to send messages
-        @param use_db_task: if True, a task definition will be looked for in the DB when executing the action
+
+        :param connection: AMQ connection to use to send messages
+        :param use_db_task: if True, a task definition will be looked for in the DB when executing the action
         """
         self._user_db_task = use_db_task
         self._send_connection = connection
@@ -32,8 +33,9 @@ class StateAction:
     def _call_default_task(self, headers, message):
         """
         Find a default task for the given message header
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         # Convert the message queue name into a class name
         destination = headers["destination"].replace("/queue/", "")
@@ -47,9 +49,9 @@ class StateAction:
 
     def _call_db_task(self, task_data, headers, message):
         """
-        @param task_data: JSON-encoded task definition
-        @param headers: message headers
-        @param message: JSON-encoded message content
+        :param task_data: JSON-encoded task definition
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         task_def = json.loads(task_data)
         if "task_class" in task_def and len(task_def["task_class"].strip()) > 0:
@@ -72,8 +74,9 @@ class StateAction:
     def __call__(self, headers, message):
         """
         Called to process a message
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         # Find task definition in DB if available
         if self._user_db_task:
@@ -88,8 +91,9 @@ class StateAction:
     def send(self, destination, message, persistent="true"):
         """
         Send a message to a queue
-        @param destination: name of the queue
-        @param message: message content
+
+        :param destination: name of the queue
+        :param message: message content
         """
         logging.debug("Send: %s" % destination)
         if self._send_connection is not None:
@@ -113,8 +117,9 @@ class Postprocess_data_ready(StateAction):
     def __call__(self, headers, message):
         """
         Called to process a message
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         # Tell workers for start processing
         self.send(
@@ -137,8 +142,9 @@ class Reduction_request(StateAction):
     def __call__(self, headers, message):
         """
         Called to process a message
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         # Tell workers for start reduction
         self.send(
@@ -156,8 +162,9 @@ class Catalog_request(StateAction):
     def __call__(self, headers, message):
         """
         Called to process a message
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         # Tell workers for start cataloging
         self.send(
@@ -175,8 +182,9 @@ class Reduction_complete(StateAction):
     def __call__(self, headers, message):
         """
         Called to process a message
-        @param headers: message headers
-        @param message: JSON-encoded message content
+
+        :param headers: message headers
+        :param message: JSON-encoded message content
         """
         # Tell workers to catalog the output
         self.send(

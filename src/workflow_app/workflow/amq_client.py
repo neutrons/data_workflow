@@ -41,16 +41,16 @@ class Client:
         auto_ack=True,
     ):
         """
-        @param brokers: list of brokers we can connect to
-        @param user: activemq user
-        @param passcode: passcode for activemq user
-        @param queues: list of queues to listen to
-        @param workflow_check: if True, the workflow will be checked at a given interval
-        @param check_frequency: number of hours between workflow checks
-        @param workflow_recovery: if True, the manager will try to recover from workflow problems
-        @param flexible_tasks: if True, the workflow tasks will be defined by the DB
-        @param consumer_name: name of the AMQ listener
-        @param auto_ack: if True, AMQ ack will be auotomatic
+        :param brokers: list of brokers we can connect to
+        :param user: activemq user
+        :param passcode: passcode for activemq user
+        :param queues: list of queues to listen to
+        :param workflow_check: if True, the workflow will be checked at a given interval
+        :param check_frequency: number of hours between workflow checks
+        :param workflow_recovery: if True, the manager will try to recover from workflow problems
+        :param flexible_tasks: if True, the workflow tasks will be defined by the DB
+        :param consumer_name: name of the AMQ listener
+        :param auto_ack: if True, AMQ ack will be automatic
         """
         # Connection parameters
         self._auto_ack = auto_ack
@@ -91,7 +91,8 @@ class Client:
         """
         Set the listener object that will process each
         incoming message.
-        @param listener: listener object
+
+        :param listener: listener object
         """
         self._listener = listener
         self._connection = self.new_connection()
@@ -109,7 +110,8 @@ class Client:
     def new_connection(self, consumer_name=None):
         """
         Establish and return a connection to ActiveMQ
-        @param consumer_name: name to give the new connection
+
+        :param consumer_name: name to give the new connection
         """
         if consumer_name is None:
             consumer_name = self._consumer_name
@@ -164,7 +166,8 @@ class Client:
         Listen for the next message from the brokers.
         This method will simply return once the connection is
         terminated.
-        @param waiting_period: sleep time between connection to a broker
+
+        :param waiting_period: sleep time between connection to a broker
         """
         try:
             self.connect()

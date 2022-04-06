@@ -11,8 +11,9 @@ from workflow.settings import brokers, icat_user, icat_passcode
 def send(destination, message, persistent="true"):
     """
     Send a message to a queue
-    @param destination: name of the queue
-    @param message: message content
+
+    :param destination: name of the queue
+    :param message: message content
     """
     if stomp.__version__[0] < 4:
         conn = stomp.Connection(
@@ -43,13 +44,14 @@ def send_msg(
 ):
     """
     Send simple ActiveMQ message
-    @param runid: run number (int)
-    @param ipts: IPTS number (int)
-    @param queue: ActiveMQ queue to send message to
-    @param info: optional information message
-    @param error: optional error message
-    @param data_file: data file path to be sent in message
-    @param instrument: instrument name
+
+    :param runid: run number (int)
+    :param ipts: IPTS number (int)
+    :param queue: ActiveMQ queue to send message to
+    :param info: optional information message
+    :param error: optional error message
+    :param data_file: data file path to be sent in message
+    :param instrument: instrument name
     """
     data_dict = {
         "instrument": instrument,

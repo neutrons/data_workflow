@@ -12,8 +12,8 @@ def send_activemq_message(destination, data):
     """
     Send an AMQ message to the workflow manager.
 
-    @param destination: queue to send the request to
-    @param data: JSON data payload for the message
+    :param destination: queue to send the request to
+    :param data: JSON data payload for the message
     """
     import stomp
 
@@ -28,7 +28,8 @@ def reduction_setup_url(instrument):
     Check whether the reduction app is installed, and if so
     return a URL for the reduction setup if it's enabled
     for the given instrument
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     try:
         if "reporting.reduction" in settings.INSTALLED_APPS:

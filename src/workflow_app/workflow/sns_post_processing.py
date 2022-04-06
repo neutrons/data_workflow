@@ -45,13 +45,14 @@ class WorkflowDaemon(Daemon):
     ):
         """
         Initialize the daemon's options
-        @param pidfile: path to the PID file
-        @param stdin: path to use to redirect stdin
-        @param stdout: path to use to redirect stdout
-        @param stderr: path to use to redirect stderr
-        @param check_frequency: number of hours between workflow checks
-        @param workflow_recovery: if True, the manager will try to recover from failures
-        @param flexible_tasks: if True, the DB will define tasks as oppose to using hard-coded tasks
+
+        :param pidfile: path to the PID file
+        :param stdin: path to use to redirect stdin
+        :param stdout: path to use to redirect stdout
+        :param stderr: path to use to redirect stderr
+        :param check_frequency: number of hours between workflow checks
+        :param workflow_recovery: if True, the manager will try to recover from failures
+        :param flexible_tasks: if True, the DB will define tasks as oppose to using hard-coded tasks
         """
         super().__init__(pidfile, stdin, stdout, stderr)
         self._check_frequency = check_frequency

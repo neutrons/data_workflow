@@ -19,7 +19,8 @@ import reporting.reduction.view_util
 def _get_choices(instrument):
     """
     Pull the grouping choices from the database
-    @param instrument: short name of the instrument
+
+    :param instrument: short name of the instrument
     """
     form_choices = []
     try:
@@ -41,7 +42,7 @@ def validate_integer_list(value):
     """
     Allow for "1,2,3" and "1-3"
 
-    @param value: string value to parse
+    :param value: string value to parse
     """
     # Look for a list of ranges
     range_list = value.split(",")
@@ -56,7 +57,7 @@ def validate_integer_list(value):
 
 def validate_float_list(value):
     """
-    @param value: string value to parse
+    :param value: string value to parse
     """
     # Look for a list of ranges
     range_list = value.split(",")
@@ -80,7 +81,8 @@ class BaseReductionConfigurationForm(forms.Form):
     def set_instrument(self, instrument):
         """
         Populate instrument-specific options.
-        @param instrument: instrument short name
+
+        :param instrument: instrument short name
         """
         pass
 
@@ -88,8 +90,8 @@ class BaseReductionConfigurationForm(forms.Form):
         """
         Store the form data
 
-        @param instrument_id: Instrument object
-        @param user: user that made the change
+        :param instrument_id: Instrument object
+        :param user: user that made the change
         """
         for key in self._template_list:
             try:
@@ -205,7 +207,8 @@ class ReductionConfigurationCNCSForm(BaseReductionConfigurationForm):
     def set_instrument(self, instrument):
         """
         Populate instrument-specific options.
-        @param instrument: instrument short name
+
+        :param instrument: instrument short name
         """
         self.fields["grouping"].choices = _get_choices(instrument)
 
@@ -245,7 +248,8 @@ class ReductionConfigurationDGSForm(BaseReductionConfigurationForm):
     def set_instrument(self, instrument):
         """
         Populate instrument-specific options.
-        @param instrument: instrument short name
+
+        :param instrument: instrument short name
         """
         self.fields["grouping"].choices = _get_choices(instrument)
 
@@ -360,7 +364,7 @@ class MaskForm(forms.Form):
 
         MaskBTPParameters({'Bank':'', 'Tube':'', 'Pixel':''})
 
-        @param value: string value for the code snippet
+        :param value: string value for the code snippet
         """
         mask_list = []
         try:
@@ -379,8 +383,8 @@ class MaskForm(forms.Form):
         """
         Take a block of Mantid script from a list of mask forms
 
-        @param mask_list: list of MaskForm objects
-        @param indent: string indentation to add to each line
+        :param mask_list: list of MaskForm objects
+        :param indent: string indentation to add to each line
         """
         command_list = ""
         for mask in mask_list:
@@ -395,7 +399,8 @@ class MaskForm(forms.Form):
     def to_dict_list(cls, mask_list):
         """
         Create a list of mask dictionary from a set of mask forms
-        @param mask_list: list of MaskForm objects
+
+        :param mask_list: list of MaskForm objects
         """
         mask_info = []
         for mask in mask_list:
@@ -414,7 +419,8 @@ class MaskForm(forms.Form):
     def from_dict_list(cls, param_value):
         """
         Return a list of dictionaries that is compatible with our form
-        @param param_value: string representation of the dictionary
+
+        :param param_value: string representation of the dictionary
         """
         dict_list = eval(param_value)
         mask_info = []
@@ -467,7 +473,8 @@ class PlottingForm(forms.Form):
     def to_dict_list(cls, opt_list):
         """
         Create a list of option dictionary from a set of plotting forms
-        @param optlist: list of PlottingForm objects
+
+        :param optlist: list of PlottingForm objects
         """
         plot_info = []
         for item in opt_list:
@@ -490,7 +497,8 @@ class PlottingForm(forms.Form):
     def from_dict_list(cls, param_value):
         """
         Return a list of dictionaries that is compatible with our form
-        @param param_value: string representation of the dictionary
+
+        :param param_value: string representation of the dictionary
         """
         dict_list = eval(param_value)
         # Protect against bad DB entry

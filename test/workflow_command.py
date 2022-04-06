@@ -27,8 +27,9 @@ sys.path.append(INSTALLATION_DIR)
 def send(destination, message, persistent="true"):
     """
     Send a message to a queue
-    @param destination: name of the queue
-    @param message: message content
+
+    :param destination: name of the queue
+    :param message: message content
     """
     if stomp.__version__[0] < 4:
         conn = stomp.Connection(
@@ -52,8 +53,9 @@ def fetch_data(instrument, run):
     """
     Put together a dictionary that the post-processing will
     be able to process.
-    @param instrument: instrument short name
-    @param run: run number
+
+    :param instrument: instrument short name
+    :param run: run number
     """
     # Find the instrument
     try:

@@ -25,8 +25,9 @@ import reporting.dasmon.view_util as dasmon_view_util
 def pv_monitor(request, instrument):
     """
     Display the list of latest PV values
-    @param request: HTTP request object
-    @param instrument: instrument name
+
+    :param request: HTTP request object
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -55,7 +56,8 @@ def pv_monitor(request, instrument):
 def get_update(request, instrument):
     """
     Ajax call to get updates behind the scenes
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())

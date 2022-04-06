@@ -25,7 +25,8 @@ class Listener(stomp.ConnectionListener):
     def __init__(self, use_db_tasks=False, auto_ack=True):
         """
         Initialization
-        @param use_db_task: if True, a task definition will be looked for in the DB when executing the action
+
+        :param use_db_task: if True, a task definition will be looked for in the DB when executing the action
         """
         # If True, the DB will be queried for task definition
         self._use_db_tasks = use_db_tasks
@@ -48,7 +49,7 @@ class Listener(stomp.ConnectionListener):
                   'persistent': 'true', 'priority': '5',
                   'message-id': 'ID:mac83086.ornl.gov-59780-1344536680877-8:2:1:1:1'}
 
-        @param frame: stomp.utils.Frame
+        :param frame: stomp.utils.Frame
         """
         headers = frame.headers
         message = frame.body

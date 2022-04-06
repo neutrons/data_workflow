@@ -166,7 +166,8 @@ def run_summary_update(request):
 def legacy_monitor(request, instrument):
     """
     For legacy instruments, show contents of old status page
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     update_url = reverse("dasmon:get_update", args=[instrument])
@@ -221,7 +222,8 @@ def get_legacy_data(request, instrument):
 def live_monitor(request, instrument):
     """
     Display the list of current DASMON status
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -254,7 +256,8 @@ def live_monitor(request, instrument):
 def live_runs(request, instrument):
     """
     Display the list of latest runs
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -331,7 +334,8 @@ def user_help(request):
 def diagnostics(request, instrument):
     """
     Diagnose the health of an instrument
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -386,7 +390,8 @@ def diagnostics(request, instrument):
 def get_update(request, instrument):
     """
     Ajax call to get updates behind the scenes
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -458,9 +463,10 @@ def get_signal_table(request, instrument):
 def acknowledge_signal(request, instrument, sig_id):
     """
     Acknowledge a signal and remove it from the DB
-    @param request: request obect
-    @param instrument: instrument name
-    @param sig_id: signal ID
+
+    :param request: request obect
+    :param instrument: instrument name
+    :param sig_id: signal ID
     """
     try:
         sig_object = get_object_or_404(Signal, id=sig_id)

@@ -20,7 +20,8 @@ def reduction_setup_url(instrument):
     """
     Return a URL for the reduction setup if it's enabled
     for the given instrument
-    @param instrument: instrument name
+
+    :param instrument: instrument name
     """
     if instrument.lower() in settings.INSTRUMENT_REDUCTION_SETUP:
         return reverse("reduction:configuration", args=[instrument])
@@ -31,10 +32,10 @@ def store_property(instrument_id, key, value, user=None):
     """
     Store a reduction property
 
-    @param instrument_id: Instrument object
-    @param key: name of the property
-    @param value: value of the property (string)
-    @param user: user that created the change
+    :param instrument_id: Instrument object
+    :param key: name of the property
+    :param value: value of the property (string)
+    :param user: user that created the change
     """
     props = ReductionProperty.objects.filter(instrument=instrument_id, key=key)
     changed_prop = None
@@ -58,7 +59,7 @@ def reset_to_default(instrument_id):
     Reset reduction properties for a given instrument to their default value.
     If no default has been set for a property, it will not be changed.
 
-    @param instrument_id: Instrument object
+    :param instrument_id: Instrument object
     """
     props_list = ReductionProperty.objects.filter(instrument=instrument_id)
     for item in props_list:
@@ -72,9 +73,9 @@ def send_template_request(instrument_id, template_dict, user="unknown"):
     """
     Send an ActiveMQ message to request a new script
 
-    @param instrument_id: Instrument object
-    @param template_dict: dictionary of peroperties
-    @param user: user that created the change
+    :param instrument_id: Instrument object
+    :param template_dict: dictionary of peroperties
+    :param user: user that created the change
     """
     use_default = False
     if "use_default" in template_dict:

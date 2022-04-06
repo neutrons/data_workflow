@@ -122,8 +122,9 @@ def is_instrument_staff(request, instrument_id):
     """
     Determine whether a user is part of an
     instrument team
-    @param request: HTTP request object
-    @param instrument_id: Instrument object
+
+    :param request: HTTP request object
+    :param instrument_id: Instrument object
     """
     # Look for Django group
     try:
@@ -154,9 +155,9 @@ def is_experiment_member(request, instrument_id, experiment_id):
     """
     Determine whether a user is part of the given experiment.
 
-    @param request: request object
-    @param instrument_id: Instrument object
-    @param experiment_id: IPTS object
+    :param request: request object
+    :param instrument_id: Instrument object
+    :param experiment_id: IPTS object
     """
     if hasattr(settings, "HIDE_RUN_DETAILS") and settings.HIDE_RUN_DETAILS is False:
         return True
