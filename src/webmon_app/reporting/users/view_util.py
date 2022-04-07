@@ -57,12 +57,11 @@ def _check_credentials(request):
         return True
 
     # If we allow users on a domain, check the user's IP
-    elif len(settings.ALLOWED_DOMAIN) > 0:
+    if len(settings.ALLOWED_DOMAIN) > 0:
         # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-        if "HTTP_X_REAL_IP" in request.META:
-            ip_addr = request.META["HTTP_X_REAL_IP"]
-        else:
-            ip_addr = request.META["REMOTE_ADDR"]
+        ip_addr = (request.META["HTTP_X_REAL_IP"]
+                   if "HTTP_X_REAL_IP" in request.META else
+                   request.META["REMOTE_ADDR"])
 
         try:
             # If the user is on the allowed domain, return the function
@@ -73,12 +72,13 @@ def _check_credentials(request):
                 return True
         except:  # noqa: E722
             logging.error("Error processing IP address: %s", str(ip_addr))
-    elif len(settings.ALLOWED_HOSTS) > 0:
+
+    if len(settings.ALLOWED_HOSTS) > 0:
         # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-        if "HTTP_X_REAL_IP" in request.META:
-            ip_addr = request.META["HTTP_X_REAL_IP"]
-        else:
-            ip_addr = request.META["REMOTE_ADDR"]
+        ip_addr = (request.META["HTTP_X_REAL_IP"]
+                   if "HTTP_X_REAL_IP" in request.META else
+                   request.META["REMOTE_ADDR"])
+
         try:
             host_name = socket.gethostbyaddr(ip_addr)[0]
             for item in settings.ALLOWED_HOSTS:
@@ -86,6 +86,7 @@ def _check_credentials(request):
                     return True
         except:  # noqa: E722
             logging.error("Error processing IP address: %s", str(ip_addr))
+
     return False
 
 
@@ -201,10 +202,9 @@ def monitor(fn):
                 user = request.user
 
             # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-            if "HTTP_X_REAL_IP" in request.META:
-                ip_addr = request.META["HTTP_X_REAL_IP"]
-            else:
-                ip_addr = request.META["REMOTE_ADDR"]
+            ip_addr = (request.META["HTTP_X_REAL_IP"]
+                       if "HTTP_X_REAL_IP" in request.META else
+                       request.META["REMOTE_ADDR"])
 
             visit = PageView(
                 user=user,
