@@ -57,8 +57,12 @@ def _check_credentials(request):
         return True
 
     # If we allow users on a domain, check the user's IP
-    elif len(settings.ALLOWED_DOMAIN) > 0:
-        ip_addr = request.META["REMOTE_ADDR"]
+    if len(settings.ALLOWED_DOMAIN) > 0:
+        # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
+        ip_addr = (request.META["HTTP_X_REAL_IP"]
+                   if "HTTP_X_REAL_IP" in request.META else
+                   request.META["REMOTE_ADDR"])
+
         try:
             # If the user is on the allowed domain, return the function
             if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
@@ -68,15 +72,21 @@ def _check_credentials(request):
                 return True
         except:  # noqa: E722
             logging.error("Error processing IP address: %s", str(ip_addr))
-    elif len(settings.ALLOWED_HOSTS) > 0:
+
+    if len(settings.ALLOWED_HOSTS) > 0:
+        # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
+        ip_addr = (request.META["HTTP_X_REAL_IP"]
+                   if "HTTP_X_REAL_IP" in request.META else
+                   request.META["REMOTE_ADDR"])
+
         try:
-            ip_addr = request.META["REMOTE_ADDR"]
             host_name = socket.gethostbyaddr(ip_addr)[0]
             for item in settings.ALLOWED_HOSTS:
                 if host_name.endswith(item):
                     return True
         except:  # noqa: E722
             logging.error("Error processing IP address: %s", str(ip_addr))
+
     return False
 
 
@@ -192,10 +202,15 @@ def monitor(fn):
             if request.user.is_authenticated:
                 user = request.user
 
+            # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
+            ip_addr = (request.META["HTTP_X_REAL_IP"]
+                       if "HTTP_X_REAL_IP" in request.META else
+                       request.META["REMOTE_ADDR"])
+
             visit = PageView(
                 user=user,
                 view="%s.%s" % (fn.__module__, fn.__name__),
-                ip=request.META["REMOTE_ADDR"],
+                ip=ip_addr,
                 path=request.get_full_path(),
             )
             visit.save()

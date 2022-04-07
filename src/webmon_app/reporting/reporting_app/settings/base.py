@@ -206,7 +206,7 @@ AUTHENTICATION_BACKENDS = (
 ALLOWED_HOSTS = ["*"]
 
 # Set the following to the local domain name
-ALLOWED_DOMAIN = ""
+ALLOWED_DOMAIN = ("ornl.gov", "sns.gov")
 LOGIN_URL = "/workflow/users/login"
 LANDING_VIEW = "dasmon:dashboard"
 
