@@ -10,7 +10,7 @@ User Documentation
    release/index
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Use Cases:
 
    usecases/Instrument_scientist
