@@ -3,8 +3,21 @@ import requests
 
 
 class TestPostProcessingWorkflow:
-    user = "postgres"
-    pwd = "postgres"
+    user = "InstrumentScientist"
+    pwd = "InstrumentScientist"
+    conn = None
+
+    def setup_class(cls):
+        cls.conn = psycopg2.connect(
+            database="workflow",
+            user="postgres",
+            password="postgres",
+            port="5432",
+            host="localhost",
+        )
+
+    def teardown_class(cls):
+        cls.conn.close()
 
     def login(self, next, username, password):
         # taken from test_RunPageView.py - consolidate as helper somewhere?
@@ -43,15 +56,7 @@ class TestPostProcessingWorkflow:
         return counts
 
     def test_catalog(self):
-        conn = psycopg2.connect(
-            database="workflow",
-            user="postgres",
-            password="postgres",
-            port="5432",
-            host="localhost",
-        )
-
-        cursor = conn.cursor()
+        cursor = self.__class__.conn.cursor()
 
         datarun_id = self.get_datarun_id(cursor, "arcs", "IPTS-27800", "214583")
 
@@ -67,24 +72,15 @@ class TestPostProcessingWorkflow:
         # login and send catalog request
         response = self.login("/report/arcs/214583/catalog/", self.user, self.pwd)
         assert response.status_code == 200
+        assert response.url.endswith("/report/arcs/214583/")
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         for queue in queues:
             assert counts_after[queue] - counts_before[queue] == 1
 
-        conn.close()
-
     def test_reduction(self):
-        conn = psycopg2.connect(
-            database="workflow",
-            user="postgres",
-            password="postgres",
-            port="5432",
-            host="localhost",
-        )
-
-        cursor = conn.cursor()
+        cursor = self.__class__.conn.cursor()
 
         datarun_id = self.get_datarun_id(cursor, "arcs", "IPTS-27800", "214583")
 
@@ -98,24 +94,15 @@ class TestPostProcessingWorkflow:
         # login and send reduction request
         response = self.login("/report/arcs/214583/reduce/", self.user, self.pwd)
         assert response.status_code == 200
+        assert response.url.endswith("/report/arcs/214583/")
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         for queue in queues:
             assert counts_after[queue] - counts_before[queue] == 1
 
-        conn.close()
-
     def test_postprocess(self):
-        conn = psycopg2.connect(
-            database="workflow",
-            user="postgres",
-            password="postgres",
-            port="5432",
-            host="localhost",
-        )
-
-        cursor = conn.cursor()
+        cursor = self.__class__.conn.cursor()
 
         datarun_id = self.get_datarun_id(cursor, "arcs", "IPTS-27800", "214583")
 
@@ -128,10 +115,23 @@ class TestPostProcessingWorkflow:
         # login and send all-post process request
         response = self.login("/report/arcs/214583/postprocess/", self.user, self.pwd)
         assert response.status_code == 200
+        assert response.url.endswith("/report/arcs/214583/")
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         for queue in queues:
             assert counts_after[queue] - counts_before[queue] == 1
 
-        conn.close()
+    def test_guest_access(self):
+        # sending a catalog request as a guest user should be denied
+        cursor = self.__class__.conn.cursor()
+
+        datarun_id = self.get_datarun_id(cursor, "arcs", "IPTS-27800", "214583")
+        queues = [self.get_queue_id(cursor, "CATALOG.REQUEST")]
+        counts_before = self.get_message_counts(cursor, datarun_id, queues)
+
+        response = self.login("/report/arcs/214583/postprocess/", "GuestUser", "GuestUser")
+        assert response.status_code == 200
+
+        counts_after = self.get_message_counts(cursor, datarun_id, queues)
+        assert counts_before == counts_after
