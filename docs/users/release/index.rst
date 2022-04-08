@@ -4,7 +4,4 @@
 Release Notes
 =============
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :glob:
+Full `release notes are on github <https://github.com/neutrons/data_workflow/releases>`_

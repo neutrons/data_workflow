@@ -6,42 +6,14 @@
 Welcome to Web Monitor's documentation!
 =====================================================
 
+.. include:: ../README.rst
 
 .. toctree::
-   :maxdepth: 2
-   :caption: User Guide:
+   :maxdepth: 1
 
-   users/release/index
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Developer Guide:
-
-   developer/instruction/build
-   developer/instruction/test_fixture
-   developer/instruction/contribute
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Modules:
-
-   developer/catalog/modules
-   developer/dasmon/modules
-   developer/webmon/modules
-   developer/workflow/modules
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Use Cases:
-
-   users/usecases/Instrument_scientist
-   users/usecases/General_user
-   users/usecases/Guest_user
-   users/usecases/Database
-
+   users/index
+   developer/index
+   users/usecases/index
 
 Indices and tables
 ==================
