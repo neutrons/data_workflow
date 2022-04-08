@@ -21,6 +21,7 @@ Welcome to Web Monitor's documentation!
 
    developer/instruction/build
    developer/instruction/test_fixture
+   developer/instruction/docker
    developer/instruction/contribute
 
 

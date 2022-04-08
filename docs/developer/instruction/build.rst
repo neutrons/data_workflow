@@ -7,27 +7,61 @@ How to Build A Local Instance
 .. note::
    This document is updated, however, it may be good to read the `continuous integration <https://github.com/neutrons/data_workflow/tree/next/.github/workflows>`_ scripts as well.
 
+Running static analysis
+-----------------------
 
-Local Development Environment Setup
------------------------------------
+This repository uses `pre-commit framework <https://pre-commit.com/>`_ to run the static analysis checks.
+After installing pre-commit the checks can be run using
 
-1. Pre-requisites
+.. code-block:: shell
 
-The web-monitor contains three independent Django applications
+   pre-commit run --all-files
 
-    * dasmon: to interface with the data acquisition system (DAS).
-    * webmon: user facing web interface, visit the production version at `monitor.sns.gov`_.
-    * workflow: backend manager.
+Running unit tests
+------------------
 
-and a mocked catalog services.
-In order to run a local instance of the web-monitor, you need to have
+The unit tests exist next to the code it is testing.
+They are run inside a conda enviroment and pointing at the correct directory with the configuration inside the root-level ``setup.cfg``.
+Replace ``conda`` with ``mamba`` for the faster dependency resolver.
+This is based on what is run in `.github/workflow/ci.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/ci.yml>`_
 
-    * access to `docker`_ engine (preferably with access to a latest version of `docker-compose`_).
-      This is for running ``docker compose``
-    * access to a local instance of `Anaconda`_ for setting up a Python virtual environment.
-      This is used for running tests locally.
-    * sufficient amount of disk space (~ 10GB) for storing various images.
+.. code-block:: shell
 
+   conda env create --file conda_environment.yml
+   conda activate webmon
+   conda env update --file conda_development.yml
+   DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
+      python -m pytest src
+
+If the environment already exists ``conda_enviroment.yml`` can be used to update it as well.
+
+Running system test
+-------------------
+
+The system test are run via `.github/workflow/system.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/system.yml>`_ .
+
+.. code-block:: shell
+
+   make all # wheels and test data
+   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build
+
+Wait for a time for everyting to get up and running.
+This is normally noted by seeing a collection of worker threads starting.
+One started thests can be run via
+
+.. code-block:: shell
+
+   DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
+      python -m pytest tests
+
+Developer setup
+---------------
+This can be done the same as running the system tests as far as creating artifacts and starting docker-compose, but does not require running pytest.
+The site is served at http://localhost by default.
+More information on docker in this project is :doc:`here <docker>`.
+
+Description of settings
+-----------------------
 The settings are split into a couple of bundled options that can be selected by specifying ``DJANGO_SETTINGS_MODULE``
 
     * ``reporting.reporting_app.settings.unittest`` for running outside of docker in the conda environment
@@ -35,72 +69,18 @@ The settings are split into a couple of bundled options that can be selected by 
     * ``reporting.reporting_app.settings.envtest`` for the remote testing environment
     * ``reporting.reporting_app.settings.prod`` for production
 
+The environment variables ``LDAP_SERVER_URI`` and ``LDAP_DOMAIN_COMPONENT`` are shown above with no-op values.
+Senior developers can provide the values to use, then the developer setup can work with NSD's LDAP instance.
 
-2. Install dependencies
+Special users
+-------------
 
-Install both docker desktop and anaconda following the instructions on the official website.
-If possible, install the latest version of docker-compose.
-Once all the third-party dependencies are in place, perform the following steps
+While one can connect to the production LDAP, in a developer environment there are listed below as username:password
 
-    * clone the repository, `data_workflow`_ on Github.
-    * [optional] purge the cached docker images with ``docker image prune``.
-    * [optional] purge the cached containers with ``docker container prune``.
-    * [optional] purge the cached volumes with ``docker volume prune``.
-    * move to the root of the clone repository to (only needed to run unit :ref:`Running Tests` )
-        * create a virtual environment with ``conda env create --file conda_environment.yml``.
-        * activate the virtual environment with ``conda activate webmon``.
-        * install the development dependencies with ``conda env update --file conda_development.yml``.
-
-3. Set up environment variables
-
-The website is configured to use the following environment variables to setup authentication services:
-
-    * ``LDAP_SERVER_URI``
-    * ``LDAP_DOMAIN_COMPONENT``
-
-Please reach out to the senior developers of `SCSE@ORNL`_ for help with setting up these variables.
-Alternatively, the authentication service can be bypassed by setting the following environment variables, which will default the authentication to local Django database only:
-
-    * ``DJANGO_SETTINGS_MODULE='reporting.reporting_app.settings.unittest'``
-
-
-Running via Docker
-------------------
-
-Move to the root of the cloned repository where the docker compose file, ``docker-compose.yml``, is located.
-Use the following command to spin up the web-monitor:
-
-   * ``docker-compose up -d``
-
-and visit ``localhost`` in your browser.
-
-To stop the instance, use the following command to spin down the web-monitor:
-
-   * ``docker-compose down``
-
-Both commands must be run at the root of the repository where the docker compose file is located.
-
-
-Misc
-------
-
-1. Several things to keep in mind while running Web monitor via docker:
-
-   * The option ``-d`` will start the web-monitor in the background. Remove it if you want to run the web-monitor in the foreground.
-   * The command ``docker container logs CONTAINER_NAME`` will provide the runtime log for given container, where ``CONTAINER_NAME`` can be found via ``docker ps``.
-   * Add option ``--build`` to force rebuild the container if the local changes are not reflected in the container.
-   * Add option ``--force-recreate`` to recreate all images if ``--build`` does not work.
-   * If all fails (e.g. the local changes are not showing up in the runtime instances):
-       * stop the instance with ``docker-compose down``.
-       * prune caches of images, container and volumes.
-           * if explicit pruning does not work, use ``docker system prune -a -f`` to purge all.
-       * restart the instance with ``docker-compose up -d --build --force-recreate``.
-
-2. If you cannot find web-monitor at ``localhost``, it is possible that the standard http port 80 is used by another application.  Here are two possible solutions:
-
-   * Stop the service running at port 80 and restart the instance.
-   * Modify `the port of nginx`_ in the docker compose file to use a different port (e.g. change to ``81:80``).
-
+* ``GeneralUser`` : ``GeneralUser`` has permissions to pages similar to a general beamline users.
+  The username and password can be set using the ``GENERAL_USER_USERNAME`` and ``GENERAL_USER_PASSWORD`` environment variables.
+  The credentials are stored in ``unittest.py`` settings file
+* ``InstrumentScientist`` : ``InstrumentScientist`` has permissions similar to an instrument scientist
 
 .. _Anaconda: https://www.anaconda.com/products/distribution
 .. _SCSE@ORNL: petersonpf@ornl.gov
