@@ -56,10 +56,6 @@ Misc
    * Stop the service running at port 80 and restart the instance.
    * Modify `the port of nginx`_ in the docker compose file to use a different port (e.g. change to ``81:80``).
 
-.. _Anaconda: https://www.anaconda.com/products/distribution
-.. _SCSE@ORNL: petersonpf@ornl.gov
-.. _data_workflow: https://github.com/neutrons/data_workflow
 .. _docker: https://www.docker.com/
 .. _docker-compose: https://docs.docker.com/compose/
-.. _monitor.sns.gov: https://monitor.sns.gov/
 .. _the port of nginx: https://github.com/neutrons/data_workflow/blob/028e4b73d9c7bd85f6d47a452ea641dd2b8d312f/docker-compose.yml#L7

@@ -47,7 +47,7 @@ The system test are run via `.github/workflow/system.yml <https://github.com/neu
 
 Wait for a time for everyting to get up and running.
 This is normally noted by seeing a collection of worker threads starting.
-One started thests can be run via
+Once started thests can be run via
 
 .. code-block:: shell
 
@@ -70,7 +70,7 @@ The settings are split into a couple of bundled options that can be selected by 
     * ``reporting.reporting_app.settings.prod`` for production
 
 The environment variables ``LDAP_SERVER_URI`` and ``LDAP_DOMAIN_COMPONENT`` are shown above with no-op values.
-Senior developers can provide the values to use, then the developer setup can work with NSD's LDAP instance.
+Senior developers can provide the values to use, then the developer setup can work with Neutron Scattering Division's (NSD) LDAP instance.
 
 Special users
 -------------
@@ -81,11 +81,3 @@ While one can connect to the production LDAP, in a developer environment there a
   The username and password can be set using the ``GENERAL_USER_USERNAME`` and ``GENERAL_USER_PASSWORD`` environment variables.
   The credentials are stored in ``unittest.py`` settings file
 * ``InstrumentScientist`` : ``InstrumentScientist`` has permissions similar to an instrument scientist
-
-.. _Anaconda: https://www.anaconda.com/products/distribution
-.. _SCSE@ORNL: petersonpf@ornl.gov
-.. _data_workflow: https://github.com/neutrons/data_workflow
-.. _docker: https://www.docker.com/
-.. _docker-compose: https://docs.docker.com/compose/
-.. _monitor.sns.gov: https://monitor.sns.gov/
-.. _the port of nginx: https://github.com/neutrons/data_workflow/blob/028e4b73d9c7bd85f6d47a452ea641dd2b8d312f/docker-compose.yml#L7
