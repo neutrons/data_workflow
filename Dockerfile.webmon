@@ -8,9 +8,11 @@ WORKDIR /usr/src/webmon
 # copy the necessary wheels and the Makefile which knows the dependency order
 COPY ./src/webmon_app/dist/django_nscd_webmon-*-none-any.whl .
 COPY ./src/workflow_app/dist/django_nscd_workflow-*-none-any.whl .
-COPY ./src/Makefile .
+COPY ./Makefile .
 
 # move the entry-point into the volume
 COPY ./src/webmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]

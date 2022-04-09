@@ -7,9 +7,7 @@ MANAGE_PY_WEBMON=/opt/conda/lib/python3.7/site-packages/reporting/manage.py
 # this is found by `find /opt/conda -name db_init.json`
 REPORT_DB_INIT=/opt/conda/lib/python3.7/site-packages/reporting/fixtures/db_init.json
 
-all:
-
-	@echo "Run make install to install the workflow manager and the web app"
+all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz
 
 check:
 	########################################################################
@@ -28,21 +26,21 @@ check:
 
 wheel/dasmon:
 	# make the wheel
-	cd dasmon_app && python -m build --no-isolation --wheel
+	cd src/dasmon_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	cd dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
+	cd src/dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
 
 wheel/webmon:
 	# make the wheel
-	cd webmon_app && python -m build --no-isolation --wheel
+	cd src/webmon_app && python -m build --no-isolation --wheel
 	# verify it is correct - ignoring duplicate file check
-	cd webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
+	cd src/webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
 
 wheel/workflow:
 	# make the wheel
-	cd workflow_app && python -m build --no-isolation --wheel
+	cd src/workflow_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	cd workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
+	cd src/workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
 install/workflow: check
 	# Install the workflow manager, which defines the database schema
@@ -87,10 +85,16 @@ configure/webmon: install/webmon
 
 	@echo "\n\nReady to go\n"
 
+SNSdata.tar.gz:
+	# this doesn't have explicity dependencies on the data
+	# it needs to be removed when the directory changes
+	tar czf SNSdata.tar.gz -C tests/data/ .
+
 clean:
-	cd dasmon_app && rm -rf build/ dist/
-	cd webmon_app && rm -rf build/ dist/
-	cd workflow_app && rm -rf build/ dist/
+	rm -f SNSdata.tar.gz
+	cd src/dasmon_app && rm -rf build/ dist/
+	cd src/webmon_app && rm -rf build/ dist/
+	cd src/workflow_app && rm -rf build/ dist/
 
 # targets that don't create actual files
 .PHONY: check

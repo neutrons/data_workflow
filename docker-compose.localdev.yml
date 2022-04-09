@@ -72,10 +72,10 @@ services:
       - ./src/workflow_app/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
 
   autoreducer:
-    build: https://github.com/neutrons/post_processing_agent.git#main
+    build:
+      context: .
+      dockerfile: Dockerfile.autoreducer
     hostname: autoreducer
-    volumes:
-      - ./test/data:/SNS/
     depends_on:
       - activemq
 

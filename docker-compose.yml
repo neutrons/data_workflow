@@ -27,6 +27,8 @@ services:
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
+      - GENERAL_USER_USERNAME=${GENERAL_USER_USERNAME}
+      - GENERAL_USER_PASSWORD=${GENERAL_USER_PASSWORD}
     depends_on:
       - db
 
@@ -71,10 +73,10 @@ services:
       - ./src/workflow_app/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
 
   autoreducer:
-    build: https://github.com/neutrons/post_processing_agent.git#main
+    build:
+      context: .
+      dockerfile: Dockerfile.autoreducer
     hostname: autoreducer
-    volumes:
-      - ./test/data:/SNS/
     depends_on:
       - activemq
 
@@ -108,6 +110,5 @@ services:
       - nginx
 
 volumes:
-  web-django:
   web-static:
   db-data:

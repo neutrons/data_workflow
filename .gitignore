@@ -1,10 +1,12 @@
-dasmon_listener.egg-info/
-workflow.egg-info/
 dist/
 build/
 check_diff.py
 workflow/git_version.py
 local_settings.py
+SNSdata.tar.gz
+src/dasmon_app/django_nscd_dasmon.egg-info/
+src/webmon_app/django_nscd_webmon.egg-info/
+src/workflow_app/django_nscd_workflow.egg-info/
 
 *.o
 *.obj

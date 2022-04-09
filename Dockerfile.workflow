@@ -7,7 +7,7 @@ WORKDIR /usr/src/data_workflow
 
 # copy the necessary wheels and the Makefile which knows the dependency order
 COPY ./src/workflow_app/dist/django_nscd_workflow-*-none-any.whl .
-COPY ./src/Makefile .
+COPY ./Makefile .
 
 # move the entry-point into the volume
 COPY ./src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
