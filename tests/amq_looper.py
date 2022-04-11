@@ -7,10 +7,10 @@ import time
 import stomp
 import json
 import settings
-from settings import brokers as amq_brokers
-from settings import amq_user
-from settings import amq_pwd
-from settings import queues as amq_queues
+from settings import BROKERS as amq_brokers
+from settings import AMQ_USER
+from settings import AMQ_PWD
+from settings import QUEUES as amq_queues
 
 import logging
 import logging.handlers
@@ -221,7 +221,7 @@ class Client(object):
 
 if __name__ == "__main__":
     logging.warning("Starting")
-    client = Client(amq_brokers, amq_user, amq_pwd, amq_queues, "amq_looper")
+    client = Client(amq_brokers, AMQ_USER, AMQ_PWD, amq_queues, "amq_looper")
     listener = Listener()
     client.set_listener(listener)
     client.listen_and_wait()

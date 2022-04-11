@@ -3,7 +3,7 @@
     NOTE: Only works for runs that are already in the DB
 """
 from report.models import Instrument, DataRun
-from workflow.settings import brokers, icat_user, icat_passcode
+from workflow.settings import BROKERS, ICAT_USER, ICAT_PASSCODE
 import argparse
 import sys
 import os
@@ -33,18 +33,18 @@ def send(destination, message, persistent="true"):
     """
     if stomp.__version__[0] < 4:
         conn = stomp.Connection(
-            host_and_ports=brokers,
-            user=icat_user,
-            passcode=icat_passcode,
+            host_and_ports=BROKERS,
+            user=ICAT_USER,
+            passcode=ICAT_PASSCODE,
             wait_on_receipt=True,
         )
         conn.start()
         conn.connect()
         conn.send(destination=destination, message=message, persistent=persistent)
     else:
-        conn = stomp.Connection(host_and_ports=brokers)
+        conn = stomp.Connection(host_and_ports=BROKERS)
         conn.start()
-        conn.connect(icat_user, icat_passcode, wait=True)
+        conn.connect(ICAT_USER, ICAT_PASSCODE, wait=True)
         conn.send(destination, message)
     conn.disconnect()
 

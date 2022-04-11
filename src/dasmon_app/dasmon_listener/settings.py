@@ -33,13 +33,13 @@ INSTALLED_APPS = (
 
 # ActiveMQ settings
 
-amq_user = os.environ.get("ICAT_USER")
-amq_pwd = os.environ.get("ICAT_PASS")
+AMQ_USER = os.environ.get("ICAT_USER")
+AMQ_PWD = os.environ.get("ICAT_PASS")
 
 # List of brokers
 default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
 env_amq_broker = os.environ.get("AMQ_BROKER", json.dumps(default_brokers))
-brokers = list(map(tuple, json.loads(env_amq_broker)))  # noqa: F811
+BROKERS = list(map(tuple, json.loads(env_amq_broker)))  # noqa: F811
 
 PING_TOPIC = "/topic/SNS.COMMON.STATUS.PING"
 ACK_TOPIC = "/topic/SNS.COMMON.STATUS.ACK"
@@ -60,4 +60,4 @@ default_queues = [
     "/topic/ADARA.SIGNAL.DASMON.0",
 ]
 env_amq_queue = os.environ.get("AMQ_QUEUE", json.dumps(default_queues))
-queues = json.loads(env_amq_queue)
+QUEUES = json.loads(env_amq_queue)

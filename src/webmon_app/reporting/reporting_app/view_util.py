@@ -17,8 +17,8 @@ def send_activemq_message(destination, data):
     """
     import stomp
 
-    conn = stomp.Connection(host_and_ports=settings.brokers)
-    conn.connect(settings.icat_user, settings.icat_passcode, wait=True)
+    conn = stomp.Connection(host_and_ports=settings.BROKERS)
+    conn.connect(settings.ICAT_USER, settings.ICAT_PASSCODE, wait=True)
     conn.send(destination, data, persistent="true")
     conn.disconnect()
 

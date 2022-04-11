@@ -25,15 +25,15 @@ INSTALLED_APPS = ("workflow.database.report",)
 
 
 # ActiveMQ settings
-icat_user = os.environ.get("ICAT_USER")
-icat_passcode = os.environ.get("ICAT_PASS")
-wkflow_user = os.environ.get("WORKFLOW_USER")
-wkflow_passcode = os.environ.get("WORKFLOW_PASS")
-worker_user = os.environ.get("WORKER_USER")
-worker_passcode = os.environ.get("WORKER_PASS")
+ICAT_USER = os.environ.get("ICAT_USER")
+ICAT_PASSCODE = os.environ.get("ICAT_PASS")
+WKFLOW_USER = os.environ.get("WORKFLOW_USER")
+WKFLOW_PASSCODE = os.environ.get("WORKFLOW_PASS")
+WORKER_USER = os.environ.get("WORKER_USER")
+WORKER_PASSCODE = os.environ.get("WORKER_PASS")
 
 
 # Configure activemq brokers
 default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
 env_amq_broker = os.environ.get("AMQ_BROKER", json.dumps(default_brokers))
-brokers = list(map(tuple, json.loads(env_amq_broker)))
+BROKERS = list(map(tuple, json.loads(env_amq_broker)))
