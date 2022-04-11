@@ -26,7 +26,7 @@ jobs:
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.unittest
     - name: Wait for everything to start up
-      run: sleep 20
+      run: sleep 66
     - name: Test with pytest
       run: python -m pytest tests
       env:
