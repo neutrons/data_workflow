@@ -13,7 +13,7 @@ from workflow.amq_listener import Listener
 
 from .daemon import Daemon  # noqa: F401
 from .database import transactions  # noqa: F401
-from .settings import LOGGING_LEVEL, brokers, wkflow_user, wkflow_passcode
+from .settings import LOGGING_LEVEL, BROKERS, WKFLOW_USER, WKFLOW_PASSCODE
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)
@@ -71,9 +71,9 @@ class WorkflowDaemon(Daemon):
             workflow_check = True
 
         c = Client(
-            brokers,
-            wkflow_user,
-            wkflow_passcode,
+            BROKERS,
+            WKFLOW_USER,
+            WKFLOW_PASSCODE,
             workflow_check=workflow_check,
             check_frequency=check_frequency,
             workflow_recovery=self._workflow_recovery,
@@ -83,7 +83,7 @@ class WorkflowDaemon(Daemon):
         )
 
         listener = Listener(use_db_tasks=self._flexible_tasks, auto_ack=auto_ack)
-        listener.set_amq_user(brokers, wkflow_user, wkflow_passcode)
+        listener.set_amq_user(BROKERS, WKFLOW_USER, WKFLOW_PASSCODE)
         c.set_listener(listener)
         c.listen_and_wait(0.1)
 

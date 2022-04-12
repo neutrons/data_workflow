@@ -303,10 +303,10 @@ REDUCTION_SCRIPT_CREATION_QUEUE = "/queue/REDUCTION.CREATE_SCRIPT"
 # activemq configuration
 default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
 env_amq_broker = environ.get("AMQ_BROKER", json.dumps(default_brokers))
-brokers = list(map(tuple, json.loads(env_amq_broker)))
+BROKERS = list(map(tuple, json.loads(env_amq_broker)))
 
-icat_user = environ.get("ICAT_USER")
-icat_passcode = environ.get("ICAT_PASS")
+ICAT_USER = environ.get("ICAT_USER")
+ICAT_PASSCODE = environ.get("ICAT_PASS")
 
 HELPLINE_EMAIL = "adara_support@ornl.gov"
 

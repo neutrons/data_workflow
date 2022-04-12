@@ -24,10 +24,10 @@ from .amq_consumer import Client, Listener  # noqa: E402
 
 # Daemon imports
 from workflow.daemon import Daemon  # noqa: E402
-from .settings import brokers  # noqa: E402
-from .settings import amq_user  # noqa: E402
-from .settings import amq_pwd  # noqa: E402
-from .settings import queues  # noqa: E402
+from .settings import BROKERS  # noqa: E402
+from .settings import AMQ_USER  # noqa: E402
+from .settings import AMQ_PWD  # noqa: E402
+from .settings import QUEUES  # noqa: E402
 
 
 class DasMonListenerDaemon(Daemon):
@@ -39,7 +39,7 @@ class DasMonListenerDaemon(Daemon):
         """
         Run the dasmon listener daemon
         """
-        c = Client(brokers, amq_user, amq_pwd, queues, "dasmon_listener")
+        c = Client(BROKERS, AMQ_USER, AMQ_PWD, QUEUES, "dasmon_listener")
         c.set_listener(Listener())
         c.listen_and_wait(0.01)
 
