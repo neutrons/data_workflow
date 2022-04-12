@@ -11,6 +11,7 @@ Developer Guide
    instruction/test_fixture
    instruction/docker
    instruction/contribute
+   instruction/manual_testing
 
 Modules
 -------
