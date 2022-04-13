@@ -1,5 +1,6 @@
 import psycopg2
 import requests
+from django.conf import settings
 
 
 class TestPostProcessingWorkflow:
@@ -8,12 +9,13 @@ class TestPostProcessingWorkflow:
     conn = None
 
     def setup_class(cls):
+        assert settings.configured
         cls.conn = psycopg2.connect(
-            database="workflow",
-            user="postgres",
-            password="postgres",
-            port="5432",
-            host="localhost",
+            database=settings.DATABASES["default"]["NAME"],
+            user=settings.DATABASES["default"]["USER"],
+            password=settings.DATABASES["default"]["PASSWORD"],
+            port=settings.DATABASES["default"]["PORT"],
+            host=settings.DATABASES["default"]["HOST"],
         )
 
     def teardown_class(cls):
@@ -130,7 +132,9 @@ class TestPostProcessingWorkflow:
         queues = [self.get_queue_id(cursor, "CATALOG.REQUEST")]
         counts_before = self.get_message_counts(cursor, datarun_id, queues)
 
-        response = self.login("/report/arcs/214583/postprocess/", "GuestUser", "GuestUser")
+        response = self.login(
+            "/report/arcs/214583/postprocess/", settings.GENERAL_USER_USERNAME, settings.GENERAL_USER_PASSWORD
+        )
         assert response.status_code == 200
 
         counts_after = self.get_message_counts(cursor, datarun_id, queues)

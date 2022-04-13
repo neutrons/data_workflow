@@ -24,12 +24,19 @@ jobs:
     - name: Stand up docker containers
       run: LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build -d
       env:
-          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.unittest
+          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
     - name: Wait for everything to start up
       run: sleep 66
     - name: Test with pytest
       run: python -m pytest tests
       env:
-          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.unittest
+          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
+          LDAP_SERVER_URI: .
+          LDAP_DOMAIN_COMPONENT: .
+          DATABASE_NAME: workflow
+          DATABASE_USER: postgres
+          DATABASE_PASS: postgres
+          DATABASE_PORT: 5432
+          DATABASE_HOST: localhost
     - name: Stand down docker containers
       run: docker-compose down
