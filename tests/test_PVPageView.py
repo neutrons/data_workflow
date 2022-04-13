@@ -17,24 +17,25 @@ def check_PV(text, PV):
 
     value = re.findall(f'<td><span id="{PV}">.*</span></td>', text)
     assert len(value) == 1
-    value = re.findall(r'\d+\.\d+', value[0])[0]
+    value = re.findall(r"\d+\.\d+", value[0])[0]
     assert is_float(value)
 
     # just check that a new PV arrived in the last two minutes
     time = re.findall(f'<td><span id="{PV}_timestamp">.*</span></td>', text)
     assert len(time) == 1
-    time = datetime.strptime(time[0]
-                             .replace(f'<td><span id="{PV}_timestamp">', "")
-                             .replace('</span></td>', '')
-                             .replace('a.m.', "AM")
-                             .replace('p.m.', "PM"),
-                             "%B %d, %Y, %I:%M %p")
+    time = datetime.strptime(
+        time[0]
+        .replace(f'<td><span id="{PV}_timestamp">', "")
+        .replace("</span></td>", "")
+        .replace("a.m.", "AM")
+        .replace("p.m.", "PM"),
+        "%B %d, %Y, %I:%M %p",
+    )
     time_delta = datetime.now() - time
     assert time_delta.total_seconds() < 120
 
 
 class TestPVPageView:
-
     def login(self, next, username, password):
         URL = "http://localhost/users/login?next="
         client = requests.session()

@@ -34,7 +34,7 @@ def test_get_run_info(oncat):
             "entry": {
                 "title": f"test_{i}",
                 "duration": i,
-                "total_counts": i ** 2,
+                "total_counts": i**2,
                 "proton_charge": i,
                 "start_time": "2022-01-11T18:10:40.206309+00:00",
                 "end_time": "2022-01-12T18:10:40.206309+00:00",

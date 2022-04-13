@@ -59,9 +59,7 @@ def _check_credentials(request):
     # If we allow users on a domain, check the user's IP
     if len(settings.ALLOWED_DOMAIN) > 0:
         # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-        ip_addr = (request.META["HTTP_X_REAL_IP"]
-                   if "HTTP_X_REAL_IP" in request.META else
-                   request.META["REMOTE_ADDR"])
+        ip_addr = request.META["HTTP_X_REAL_IP"] if "HTTP_X_REAL_IP" in request.META else request.META["REMOTE_ADDR"]
 
         try:
             # If the user is on the allowed domain, return the function
@@ -75,9 +73,7 @@ def _check_credentials(request):
 
     if len(settings.ALLOWED_HOSTS) > 0:
         # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-        ip_addr = (request.META["HTTP_X_REAL_IP"]
-                   if "HTTP_X_REAL_IP" in request.META else
-                   request.META["REMOTE_ADDR"])
+        ip_addr = request.META["HTTP_X_REAL_IP"] if "HTTP_X_REAL_IP" in request.META else request.META["REMOTE_ADDR"]
 
         try:
             host_name = socket.gethostbyaddr(ip_addr)[0]
@@ -203,9 +199,9 @@ def monitor(fn):
                 user = request.user
 
             # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-            ip_addr = (request.META["HTTP_X_REAL_IP"]
-                       if "HTTP_X_REAL_IP" in request.META else
-                       request.META["REMOTE_ADDR"])
+            ip_addr = (
+                request.META["HTTP_X_REAL_IP"] if "HTTP_X_REAL_IP" in request.META else request.META["REMOTE_ADDR"]
+            )
 
             visit = PageView(
                 user=user,
