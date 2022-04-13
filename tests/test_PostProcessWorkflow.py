@@ -76,6 +76,9 @@ class TestPostProcessingWorkflow:
         assert response.status_code == 200
         assert response.url.endswith("/report/arcs/214583/")
 
+        # wait for database to get updated
+        time.sleep(0.5)
+
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         for queue in queues:
@@ -98,6 +101,9 @@ class TestPostProcessingWorkflow:
         assert response.status_code == 200
         assert response.url.endswith("/report/arcs/214583/")
 
+        # wait for database to get updated
+        time.sleep(0.5)
+
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         for queue in queues:
@@ -119,6 +125,9 @@ class TestPostProcessingWorkflow:
         assert response.status_code == 200
         assert response.url.endswith("/report/arcs/214583/")
 
+        # wait for database to get updated
+        time.sleep(0.5)
+
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         for queue in queues:
@@ -133,9 +142,15 @@ class TestPostProcessingWorkflow:
         counts_before = self.get_message_counts(cursor, datarun_id, queues)
 
         response = self.login(
-            "/report/arcs/214583/postprocess/", settings.GENERAL_USER_USERNAME, settings.GENERAL_USER_PASSWORD
+            "/report/arcs/214583/catalog/", settings.GENERAL_USER_USERNAME, settings.GENERAL_USER_PASSWORD
         )
         assert response.status_code == 200
+        assert response.url.endswith("/report/arcs/214583/")
+        assert "You do not have access" in response.text
 
+        # wait for database to get updated
+        time.sleep(0.5)
+
+        # no new database entry should appear since request was denied
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
         assert counts_before == counts_after
