@@ -3,6 +3,7 @@ import time
 import psycopg2
 import pytest
 import requests
+import subprocess
 import datetime
 import unittest
 from data_ready import create_run
@@ -29,7 +30,7 @@ class TestWorkflow:
         client.post(URL + next, data=login_data, timeout=None)
         return client
 
-    def testReduction(self, instrument_scientist_client):
+    def prepareEnvironmentForReductionScriptGeneration(self):
         os.system(
             """
         docker exec data_workflow_autoreducer_1 mkdir -p /SNS/ARCS/IPTS-123/nexus
@@ -43,16 +44,13 @@ class TestWorkflow:
         docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/shared/autoreduce/vanadium_files/test_van201562.nxs
         """  # noqa: E501
         )
-        conn = psycopg2.connect(
-            database="workflow",
-            user="postgres",
-            password="postgres",
-            port="5432",
-            host="localhost",
-        )
-        cursor = conn.cursor()
-        cursor.execute("DELETE from report_instrument WHERE name = 'test';")
 
+    def getReductionScriptContents(self):
+        return subprocess.check_output(
+            "docker exec data_workflow_autoreducer_1 cat /SNS/ARCS/shared/autoreduce/reduce_ARCS.py", shell=True
+        )
+
+    def initReductionGroup(self, conn, cursor):
         cursor.execute("SELECT * from reduction_reductionproperty WHERE instrument_id = 3;")
         if cursor.fetchone() is None:
             timestamp = datetime.datetime.now()
@@ -61,8 +59,8 @@ class TestWorkflow:
                 (3, "grouping", "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml", timestamp),
             )
             conn.commit()
-        cursor.execute("SELECT * from reduction_choice WHERE instrument_id = 3;")
 
+        cursor.execute("SELECT * from reduction_choice WHERE instrument_id = 3;")
         if cursor.fetchone() is None:
             cursor.execute("SELECT * FROM reduction_reductionproperty WHERE key = 'grouping';")
             props = cursor.fetchone()
@@ -71,8 +69,8 @@ class TestWorkflow:
                 (props[1], props[0], "2X1", "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml"),
             )
             conn.commit()
-        # need to clean after test?
 
+    def getReductionData(self, instrument_scientist_client):
         csrftoken = instrument_scientist_client.cookies["csrftoken"]
         reduction_data = dict(
             csrfmiddlewaretoken=csrftoken,
@@ -100,9 +98,34 @@ class TestWorkflow:
         reduction_data["form-2-bank"] = "71"
         reduction_data["form-2-tube"] = ""
         reduction_data["form-2-pixel"] = "1-14,115-128"
+        return reduction_data
+
+    def testReduction(self, instrument_scientist_client):
+
+        self.prepareEnvironmentForReductionScriptGeneration()
+
+        assert not self.getReductionScriptContents()
+
+        conn = psycopg2.connect(
+            database="workflow",
+            user="postgres",
+            password="postgres",
+            port="5432",
+            host="localhost",
+        )
+        cursor = conn.cursor()
+
+        self.initReductionGroup(conn, cursor)
+
+        reduction_data = self.getReductionData(instrument_scientist_client)
 
         instrument_scientist_client.post(self.URL_base + self.reduction_path, data=reduction_data, timeout=None)
-        # import pdb; pdb.set_trace()
+        time.sleep(1)
+        assert self.getReductionScriptContents()
+        os.system(
+            """docker exec -i data_workflow_autoreducer_1 bash -c '> /SNS/ARCS/shared/autoreduce/reduce_ARCS.py'"""
+        )
+        assert not self.getReductionScriptContents()
 
     def setup_class(cls):
         # make sure datafiles and reduction script are in place
