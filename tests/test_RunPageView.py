@@ -258,8 +258,7 @@ class TestRunPageView:
             not in html
         )
         self.assertHtml(
-            """<tr><th>Raw vanadium</th> <td ><input type="text" name="raw_vanadium" class="font_resize"
-             id="id_raw_vanadium"> </td></tr>""",
+            """<tr><th>Raw vanadium</th> <td ><input type="text" name="raw_vanadium" """,
             html,
         )
         self.assertHtml(
