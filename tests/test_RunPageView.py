@@ -264,16 +264,16 @@ class TestRunPageView:
         )
         self.assertHtml(
             """<tr><th>Processed vanadium</th> <td ><input type="text" name="processed_vanadium"
-             class="font_resize" id="id_processed_vanadium"> </td></tr>""",
+            """,
             html,
         )
         self.assertHtml("""<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""", html)
         self.assertHtml(
             """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E""", html
         )
-        self.assertHtml("""<span >E<sub>min</sub> <input type="number" name="e_min" value="-0.2" """, html)
-        self.assertHtml("""<sub>step</sub> <input type="number" name="e_step" value="0.015" step="any" """, html)
-        self.assertHtml("""<sub>max</sub> <input type="number" name="e_max" value="0.95" step="any" """, html)
+        self.assertHtml("""<span >E<sub>min</sub> <input type="number" name="e_min" value=""", html)
+        self.assertHtml("""<sub>step</sub> <input type="number" name="e_step" value=""", html)
+        self.assertHtml("""<sub>max</sub> <input type="number" name="e_max" value=""", html)
 
     def testGeneralUserReductionSetupDenied(self, reduction_setup_page_general_user):
         assert reduction_setup_page_general_user.status_code == 200
