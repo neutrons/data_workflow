@@ -14,6 +14,10 @@ RUN useradd snsdata -G snswheel
 RUN mkdir -p /etc/autoreduce/
 RUN mkdir -p /opt/postprocessing/log/
 RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/main/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
+RUN yum install -y jq
+
+RUN contents="$(jq '.amq_queues[.amq_queues| length] |= . + "/queue/REDUCTION.CREATE_SCRIPT"' /etc/autoreduce/post_processing.conf)" && \
+echo -E "${contents}" > /etc/autoreduce/post_processing.conf
 
 # This configuration allows it to run with docker-compose from https://github.com/neutrons/data_workflow
 RUN sed -i 's/localhost/activemq/' /etc/autoreduce/post_processing.conf
