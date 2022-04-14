@@ -1,6 +1,7 @@
 import psycopg2
 import requests
 from django.conf import settings
+from dotenv import dotenv_values
 
 
 class TestPostProcessingWorkflow:
@@ -9,13 +10,14 @@ class TestPostProcessingWorkflow:
     conn = None
 
     def setup_class(cls):
-        assert settings.configured
+        config = {**dotenv_values(".env"), **dotenv_values(".env.ci")}
+        assert config
         cls.conn = psycopg2.connect(
-            database=settings.DATABASES["default"]["NAME"],
-            user=settings.DATABASES["default"]["USER"],
-            password=settings.DATABASES["default"]["PASSWORD"],
-            port=settings.DATABASES["default"]["PORT"],
-            host=settings.DATABASES["default"]["HOST"],
+            database=config["DATABASE_NAME"],
+            user=config["DATABASE_USER"],
+            password=config["DATABASE_PASS"],
+            port=config["DATABASE_PORT"],
+            host=config["DATABASE_HOST"],
         )
 
     def teardown_class(cls):
@@ -77,7 +79,7 @@ class TestPostProcessingWorkflow:
         assert response.url.endswith("/report/arcs/214583/")
 
         # wait for database to get updated
-        time.sleep(3.0)
+        time.sleep(5.0)
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)

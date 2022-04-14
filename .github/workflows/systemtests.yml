@@ -33,10 +33,5 @@ jobs:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
           LDAP_DOMAIN_COMPONENT: .
-          DATABASE_NAME: workflow
-          DATABASE_USER: postgres
-          DATABASE_PASS: postgres
-          DATABASE_PORT: 5432
-          DATABASE_HOST: localhost
     - name: Stand down docker containers
       run: docker-compose down

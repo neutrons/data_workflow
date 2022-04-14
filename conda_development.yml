@@ -6,6 +6,7 @@ dependencies:
 - pytest<7
 - pytest-django
 - pytest-cov
+- python-dotenv
 - sphinx
 - lxml
 - pip
