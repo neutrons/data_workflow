@@ -77,7 +77,7 @@ class TestPostProcessingWorkflow:
         assert response.url.endswith("/report/arcs/214583/")
 
         # wait for database to get updated
-        time.sleep(0.5)
+        time.sleep(3.0)
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
@@ -102,7 +102,7 @@ class TestPostProcessingWorkflow:
         assert response.url.endswith("/report/arcs/214583/")
 
         # wait for database to get updated
-        time.sleep(0.5)
+        time.sleep(1.0)
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
@@ -126,7 +126,7 @@ class TestPostProcessingWorkflow:
         assert response.url.endswith("/report/arcs/214583/")
 
         # wait for database to get updated
-        time.sleep(0.5)
+        time.sleep(1.0)
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
