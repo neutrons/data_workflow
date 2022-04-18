@@ -56,3 +56,12 @@ No change needs to be made to the settings when installing those stored procedur
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.10054.svg
    :alt: DOI Badge
    :target: https://doi.org/10.5281/zenodo.10054
+
+Developer's Entry Point
+-----------------------
+Start at the Developer's documentation. This requires building the docs:
+
+```bash
+make create/conda
+make docs
+```
