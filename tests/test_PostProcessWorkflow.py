@@ -19,7 +19,7 @@ class TestPostProcessingWorkflow:
             port=config["DATABASE_PORT"],
             host=config["DATABASE_HOST"],
         )
-        time.sleep(5)
+        time.sleep(10)
 
     def teardown_class(cls):
         cls.conn.close()
@@ -69,6 +69,7 @@ class TestPostProcessingWorkflow:
         started_id = self.get_queue_id(cursor, "CATALOG.STARTED")
         ready_id = self.get_queue_id(cursor, "CATALOG.DATA_READY")
         complete_id = self.get_queue_id(cursor, "CATALOG.COMPLETE")
+        error_id = self.get_queue_id(cursor, "CATALOG.ERROR")
 
         # get current catalog status counts
         queues = [queue_id, started_id, ready_id, complete_id]
@@ -80,12 +81,17 @@ class TestPostProcessingWorkflow:
         assert response.url.endswith("/report/arcs/214583/")
 
         # wait for database to get updated
-        time.sleep(1.0)
+        time.sleep(5.0)
+
+        # make sure no catalog error appeared
+        assert self.get_message_counts(cursor, datarun_id, [error_id])[error_id] == 0
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
-        for queue in queues:
-            assert counts_after[queue] - counts_before[queue] == 1
+        assert counts_after[queue_id] - counts_before[queue_id] == 1
+        assert counts_after[started_id] - counts_before[started_id] == 1
+        assert counts_after[ready_id] - counts_before[ready_id] == 1
+        assert counts_after[complete_id] - counts_before[complete_id] == 1
 
     def test_reduction(self):
         cursor = self.__class__.conn.cursor()
