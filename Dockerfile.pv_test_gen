@@ -1,3 +1,14 @@
-FROM continuumio/miniconda3
+FROM code.ornl.gov:4567/rse/images/miniconda3:4.10.3p1
+
+# install psql executable, later invoked in the docker-entrypoint.sh
+RUN conda install postgresql=14 -c conda-forge
+
 RUN python -m pip install web-monitor-pv-generator==0.2.0 -i https://code.ornl.gov/api/v4/projects/10878/packages/pypi/simple
-CMD "webmonitor_pv_tester"
+
+#CMD "webmonitor_pv_tester"
+
+COPY ./config/amq_pv_gen/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
