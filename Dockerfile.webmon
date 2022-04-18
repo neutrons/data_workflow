@@ -1,9 +1,9 @@
-FROM continuumio/miniconda3
+FROM code.ornl.gov:4567/rse/images/miniconda3:4.10.3p1
+
+WORKDIR /usr/src/webmon
 
 COPY conda_environment.yml .
 RUN conda env update --name base --file conda_environment.yml
-
-WORKDIR /usr/src/webmon
 
 # copy the necessary wheels and the Makefile which knows the dependency order
 COPY ./src/webmon_app/dist/django_nscd_webmon-*-none-any.whl .
@@ -12,7 +12,6 @@ COPY ./Makefile .
 
 # move the entry-point into the volume
 COPY ./src/webmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
-
 
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
