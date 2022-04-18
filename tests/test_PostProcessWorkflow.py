@@ -19,6 +19,7 @@ class TestPostProcessingWorkflow:
             port=config["DATABASE_PORT"],
             host=config["DATABASE_HOST"],
         )
+        time.sleep(5)
 
     def teardown_class(cls):
         cls.conn.close()
@@ -79,7 +80,7 @@ class TestPostProcessingWorkflow:
         assert response.url.endswith("/report/arcs/214583/")
 
         # wait for database to get updated
-        time.sleep(5.0)
+        time.sleep(1.0)
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
