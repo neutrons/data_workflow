@@ -35,7 +35,7 @@ The following commands can be used (in this order) to further clean out docker a
 * [Optional] Use ``docker image prune`` to remove all unused images
 * Use ``docker volume prune`` to prune all unused volumes
 
-if explicit pruning does not work, use ``docker system prune -a -f`` to purge all.
+if explicit pruning does not work, use ``docker system prune -f -a --volumes`` to purge all.
 
 Misc
 ----
