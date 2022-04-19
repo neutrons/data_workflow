@@ -1,4 +1,4 @@
-FROM code.ornl.gov:4567/rse/images/miniconda3:4.10.3p1
+FROM continuumio/miniconda3:4.10.3p1
 
 # install psql executable, later invoked in the docker-entrypoint.sh
 RUN conda install postgresql=14 -c conda-forge
