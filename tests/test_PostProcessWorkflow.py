@@ -60,6 +60,18 @@ class TestPostProcessingWorkflow:
             counts[queue] = cursor.fetchone()[0]
         return counts
 
+    def get_status_errors(self, cursor, datarun_id):
+        cursor.execute(f"SELECT * FROM report_runstatus WHERE run_id_id = {datarun_id};")
+        errors = []
+        status_messages = cursor.fetchall()
+        for message in status_messages:
+            # check if this message appears in the error table
+            cursor.execute(f"SELECT * FROM report_error WHERE run_status_id_id = {message[0]};")
+            result = cursor.fetchall()
+            if len(result) > 0:
+                errors.append(result)
+        return errors
+
     def test_catalog(self):
         cursor = self.__class__.conn.cursor()
 
@@ -85,6 +97,7 @@ class TestPostProcessingWorkflow:
 
         # make sure no catalog error appeared
         assert self.get_message_counts(cursor, datarun_id, [error_id])[error_id] == 0
+        assert len(self.get_status_errors(cursor, datarun_id)) == 0
 
         # A status entry should appear for each kind of queue
         counts_after = self.get_message_counts(cursor, datarun_id, queues)
