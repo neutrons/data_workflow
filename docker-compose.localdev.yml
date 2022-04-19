@@ -125,6 +125,7 @@ services:
       ACTIVE_MQ_PORTS: 61613
     depends_on:
       - nginx
+      - activemq
 
 volumes:
   web-django:
