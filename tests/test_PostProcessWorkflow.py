@@ -17,7 +17,7 @@ class TestPostProcessingWorkflow:
             user=config["DATABASE_USER"],
             password=config["DATABASE_PASS"],
             port=config["DATABASE_PORT"],
-            host=config["DATABASE_HOST"],
+            host="localhost",
         )
         time.sleep(10)
 
