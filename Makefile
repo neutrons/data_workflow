@@ -20,7 +20,7 @@ create/conda:  ## create conda environment "webmon" with file conda_environment.
 
 create/mamba:  ## create conda environment "webmon" with file conda_environment.yml using mamba
 	conda env create --name webmon python=$(PYTHON_VERSION)
-	conda install --name webmon -c conda-forge mamba
+	conda install --name base -c conda-forge mamba
 	mamba env update --name webmon --file conda_environment.yml
 
 docker/pruneall: ## stop and force remove all containers, images and volumes
