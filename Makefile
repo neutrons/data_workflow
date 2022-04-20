@@ -1,13 +1,13 @@
 prefix := /var/www/workflow
+PYTHON_VERSION:=3.7
 
 # these are defined here because I couldn't figure out how to evaluate the commands
 # during target execution rather then when make parses the file
 # this is found by `find /opt/conda/ -name manage.py | grep reporting`
-MANAGE_PY_WEBMON=/opt/conda/lib/python3.7/site-packages/reporting/manage.py
+MANAGE_PY_WEBMON=/opt/conda/lib/python$(PYTHON_VERSION)/site-packages/reporting/manage.py
 # this is found by `find /opt/conda -name db_init.json`
-REPORT_DB_INIT=/opt/conda/lib/python3.7/site-packages/reporting/fixtures/db_init.json
-#
-PYTHON_VERSION=3.7
+REPORT_DB_INIT=/opt/conda/lib/python$(PYTHON_VERSION)/site-packages/reporting/fixtures/db_init.json
+
 
 help:
     # this nifty perl one-liner collects all comments headed by the double "#" symbols next to each target and recycles them as comments
@@ -15,10 +15,10 @@ help:
 
 all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz
 
-conda/create:  ## create conda environment "webmon" with file conda_environment.yml
+create/conda:  ## create conda environment "webmon" with file conda_environment.yml
 	conda env create --name webmon --file conda_environment.yml
 
-mamba/create:  ## create conda environment "webmon" with file conda_environment.yml using mamba
+create/mamba:  ## create conda environment "webmon" with file conda_environment.yml using mamba
 	conda env create --name webmon python=$(PYTHON_VERSION)
 	conda install --name webmon -c conda-forge mamba
 	mamba env update --name webmon --file conda_environment.yml
@@ -124,8 +124,8 @@ clean:
 
 # targets that don't create actual files
 .PHONY: check
-.PHONY: conda/create
-.PHONY: mamba/create
+.PHONY: create/conda
+.PHONY: create/mamba
 .PHONY: configure/webmon
 .PHONY: docker/pruneall
 .PHONY: docs

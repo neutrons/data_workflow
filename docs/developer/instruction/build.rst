@@ -27,7 +27,7 @@ This is based on what is run in `.github/workflow/ci.yml <https://github.com/neu
 
 .. code-block:: shell
 
-   make conda/create  # substitute with "mamba/create" when using mamba
+   make create/create  # substitute with "create/mamba" when using mamba
    conda activate webmon
    DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
       python -m pytest src
