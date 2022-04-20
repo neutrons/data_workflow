@@ -138,5 +138,3 @@ clean:
 .PHONY: wheel/webmon
 .PHONY: wheel/workflow
 .PHONY: wheel/all
-# DEBUG: remove this
-.PHONY: localdev/junk
