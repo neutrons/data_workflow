@@ -27,13 +27,17 @@ This is based on what is run in `.github/workflow/ci.yml <https://github.com/neu
 
 .. code-block:: shell
 
-   conda env create --file conda_environment.yml
+   make create/create  # substitute with "create/mamba" when using mamba
    conda activate webmon
-   conda env update --file conda_development.yml
    DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
       python -m pytest src
 
-If the environment already exists ``conda_enviroment.yml`` can be used to update it as well.
+If the environment already exists, ``conda_enviroment.yml`` can be used to update it as well.
+
+.. code-block:: shell
+
+   conda activate webmon
+   conda env update --file conda_development.yml
 
 Running system test
 -------------------
@@ -45,7 +49,7 @@ The system test are run via `.github/workflow/system.yml <https://github.com/neu
    make all # wheels and test data
    LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build
 
-Wait for a time for everyting to get up and running.
+Wait for a time for everything to get up and running.
 This is normally noted by seeing a collection of worker threads starting.
 Once started thests can be run via
 

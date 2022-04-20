@@ -33,3 +33,15 @@ and a mocked catalog services.
    catalog/modules
 
 .. _monitor.sns.gov: https://monitor.sns.gov/
+
+Services
+--------
+
+The components making up the infrastructure of Web Monitor have dependencies.
+In the diagram below `service1` --> `service2` is to be read as `service1` depends on `service2`.
+For instance, `amq_pv_gen` depends on `db`.
+
+.. image:: images/services_dependence_graph.png
+    :width: 600px
+    :align: center
+    :alt: services dependence graph

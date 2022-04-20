@@ -1,0 +1,30 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+database db
+queue activemq
+cloud webmon
+component dasmon
+component workflow
+agent catalog_process
+hexagon nginx
+agent autoreducer
+usecase amq_test_gen
+usecase amq_pv_gen
+
+nginx <- catalog_process
+
+db <- webmon
+db <- amq_pv_gen
+
+webmon <- dasmon
+webmon <- nginx
+webmon <- workflow
+
+activemq <- workflow
+activemq <- dasmon
+activemq <- autoreducer
+activemq <- amq_test_gen
+activemq <- catalog_process
+
+@enduml

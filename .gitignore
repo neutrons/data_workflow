@@ -22,3 +22,6 @@ src/workflow_app/django_nscd_workflow.egg-info/
 # Sphinx Doc related
 _build/
 *.log
+
+# Environment related
+.envrc

@@ -1,21 +1,26 @@
-version: '3'
+version: '3.4'
+
 services:
 
   nginx:
-    image: nginx
+    image: nginx:1.21.1
     ports:
       - "80:80"
     volumes:
       - web-static:/var/www/workflow/static
       - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
       - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
+      - ./nginx/wait-for-it.sh:/usr/bin/wait-for-it.sh
     depends_on:
       - webmon
 
   webmon:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile.webmon
+      # build using the host's network, required in certain environments when accessing the debian repositories
+      network: host
     expose:
       - "8000"
     ports:
@@ -24,11 +29,10 @@ services:
       - web-static:/var/www/workflow/static/
     env_file:
       - .env
+      - .env.ci
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
-      - GENERAL_USER_USERNAME=${GENERAL_USER_USERNAME}
-      - GENERAL_USER_PASSWORD=${GENERAL_USER_PASSWORD}
     depends_on:
       - db
 
@@ -36,16 +40,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dasmon
+      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
+      - activemq
       - webmon
 
   workflow:
     build:
       context: .
       dockerfile: Dockerfile.workflow
+      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
@@ -54,21 +61,27 @@ services:
       - webmon
 
   db:
+    restart: always
     image: postgres:14
+    env_file:
+      - .env
     environment:
+      # variables DATABASE_* should be initialized in .env file
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASS}
     ports:
+      # DATABASE_PORT should be initialized in .env file
       - "${DATABASE_PORT}:${DATABASE_PORT}"
     volumes:
-      - db-data:/var/lib/postgresql/data/
+      - pgdata:/var/lib/postgresql/data/
 
   activemq:
+    image: rmohr/activemq
+    hostname: activemq
     ports:
       - "61613:61613"
       - "8161:8161"
-    image: rmohr/activemq
     volumes:
       - ./src/workflow_app/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
 
@@ -76,6 +89,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer
+      network: host
     hostname: autoreducer
     depends_on:
       - activemq
@@ -85,6 +99,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.amq_test_gen
+      network: host
     depends_on:
       - activemq
 
@@ -93,22 +108,26 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.pv_test_gen
-    depends_on:
-      - db
+      network: host
     env_file:
       - .env
+    depends_on:
+      - db
 
   catalog_process:
     build:
       context: .
       dockerfile: Dockerfile.catalog
+      network: host
     environment:
       ICAT_USER: "icat"
       ICAT_PASSCODE: "icat"
       ACTIVE_MQ_PORTS: 61613
     depends_on:
       - nginx
+      - activemq
 
 volumes:
+  web-django:
   web-static:
-  db-data:
+  pgdata:

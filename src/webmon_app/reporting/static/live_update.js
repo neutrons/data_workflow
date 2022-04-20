@@ -215,11 +215,12 @@ function MonitorPlot(element_id, nid, option){
 				   "</a>" +
 				   "<h3>Local Options</h3>" +
 				   "<form name='form_" + this.dialog_name + "'>" +
-				   "<div id='radio_" + this.dialog_name + "'>y scale: <input type='radio' class='check_scale' " +
-				   "id='scale_log_" + this.dialog_name + "' name='radio' " + log_radio + "onclick='Plots[" + nid + "].check_scale()'>" +
+				   "<b>Y-scale: </b>" +
+				   "<div id='radio_" + this.dialog_name + "'> <input type='radio' class='set_log_scale' " +
+				   "id='scale_log_" + this.dialog_name + "' name='radio' " + log_radio + "onclick='Plots[" + nid + "].set_log_scale()'>" +
 				   "<label for='scale_log_" + this.dialog_name + "' id='scale_log_label_" + this.clean_name + "'>log</label>" +
-				   "<input type='radio' class='check_scale' id='scale_lin_" + this.dialog_name + "' name='radio' " + lin_radio +
-				   "onclick='Plots[" + nid + "].check_scale()'>" +
+				   "<input type='radio' class='set_linear_scale' id='scale_lin_" + this.dialog_name + "' name='radio' " + lin_radio +
+				   "onclick='Plots[" + nid + "].set_linear_scale()'>" +
 				   "<label for='scale_lin_" + this.dialog_name + "' id='scale_lin_label_" + this.clean_name + "'>linear</label></div></form></div>";
 			this.dialog_win.css("height", new_height);
 			$("#" + this.dialog_name).after(html);
@@ -230,16 +231,13 @@ function MonitorPlot(element_id, nid, option){
 			Plots[nid].close_l_opt("local_options_" + this.dialog_name)
 		}
 	}
-	this.check_scale = function(){
-		// Change scale
-		if ($("#scale_log_label_" + this.clean_name).hasClass("ui-state-active")){
-			this.plot_options.log_scale = true;
-			poll();
-		}
-		else if ($("#scale_lin_label_" + this.clean_name).hasClass("ui-state-active")){
-			this.plot_options.log_scale = false;
-			poll();
-		}
+	this.set_linear_scale = function(){
+		this.plot_options.log_scale = false
+		poll()
+	}
+	this.set_log_scale = function(){
+		this.plot_options.log_scale = true
+		poll()
 	}
 	this.close_l_opt = function(){
 		// Close local options bar

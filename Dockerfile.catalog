@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:4.10.3p1
 
 COPY conda_environment.yml .
 RUN conda env update --name base --file conda_environment.yml
