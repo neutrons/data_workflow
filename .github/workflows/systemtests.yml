@@ -22,9 +22,11 @@ jobs:
     - name: Build test data for autoreducer
       run: make SNSdata.tar.gz
     - name: Stand up docker containers
-      run: LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build -d
+      run: docker-compose up --build -d
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
+          LDAP_SERVER_URI: .
+          LDAP_DOMAIN_COMPONENT: .
     - name: Wait for everything to start up
       run: sleep 66
     - name: Test with pytest
