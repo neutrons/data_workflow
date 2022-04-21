@@ -33,6 +33,7 @@ services:
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
     depends_on:
       - db
 

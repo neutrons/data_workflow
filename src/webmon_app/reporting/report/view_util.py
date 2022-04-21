@@ -32,6 +32,7 @@ from django.core.cache import cache
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
+from reporting.users.view_util import is_instrument_staff
 
 
 def generate_key(instrument: str, run_id: int):
@@ -209,12 +210,14 @@ def processing_request(request, instrument, run_id, destination):
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     run_object = get_object_or_404(DataRun, instrument_id=instrument_id, run_number=run_id)
-    try:
-        send_processing_request(instrument_id, run_object, request.user, destination=destination)
-    except:  # noqa: E722
-        logging.error("Could not send post-processing request: %s", destination)
-        logging.error(sys.exc_info()[1])
-        return HttpResponseServerError()
+    # Check if the user has permissions to submit a processing request
+    if is_instrument_staff(request, instrument_id):
+        try:
+            send_processing_request(instrument_id, run_object, request.user, destination=destination)
+        except:  # noqa: E722
+            logging.error("Could not send post-processing request: %s", destination)
+            logging.error(sys.exc_info()[1])
+            return HttpResponseServerError()
     # return render(request, 'report/processing_request_failure.html', {})
     return redirect(reverse("report:detail", args=[instrument, run_id]))
 

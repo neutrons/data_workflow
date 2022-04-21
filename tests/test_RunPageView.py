@@ -1,5 +1,4 @@
 import pytest
-import unittest
 import requests
 from django.conf import settings
 
@@ -138,12 +137,12 @@ class TestRunPageView:
         self.verifyExtendedDashboard(extended_dashboard_instrument_scientist)
 
     # 1 test to confirm catalog data is received
-    @unittest.skip("Missing Catalog Creds")
+    @pytest.mark.skip("Missing Catalog Creds")
     def testInstrumentScientistCatalogDataExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         self.confirmCatalogDataExist(instrument_scientist)
 
-    @unittest.skip("Missing Catalog Creds")
+    @pytest.mark.skip("Missing Catalog Creds")
     def testGeneralUserCatalogDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmCatalogDataExist(general_user)
@@ -188,12 +187,12 @@ class TestRunPageView:
         )
 
     # 2 test to confirm plot data is received
-    @unittest.skip("JavaScript not processed, this data will be missing")
+    @pytest.mark.skip("JavaScript not processed, this data will be missing")
     def testInstrumentScientistPlotDataExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         self.confirmPlotDataExist(instrument_scientist)
 
-    @unittest.skip("JavaScript not processed, this data will be missing")
+    @pytest.mark.skip("JavaScript not processed, this data will be missing")
     def testGeneralUserPlotDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmPlotDataExist(general_user)
@@ -232,7 +231,7 @@ class TestRunPageView:
         assert instrument_scientist.status_code == 200
         self.confirmPVDataExist(instrument_scientist)
 
-    @unittest.skip("General User needs a self generated dataset to be able to view")
+    @pytest.mark.skip("General User needs a self generated dataset to be able to view")
     def testGeneralUserPVDataExist(self, general_user):
         assert general_user.status_code == 200
         self.confirmPVDataExist(general_user)

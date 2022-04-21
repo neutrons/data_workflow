@@ -21,7 +21,7 @@ Running unit tests
 ------------------
 
 The unit tests exist next to the code it is testing.
-They are run inside a conda enviroment and pointing at the correct directory with the configuration inside the root-level ``setup.cfg``.
+They are run inside a conda environment and pointing at the correct directory with the configuration inside the root-level ``setup.cfg``.
 Replace ``conda`` with ``mamba`` for the faster dependency resolver.
 This is based on what is run in `.github/workflow/ci.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/ci.yml>`_
 
@@ -32,7 +32,7 @@ This is based on what is run in `.github/workflow/ci.yml <https://github.com/neu
    DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
       python -m pytest src
 
-If the environment already exists, ``conda_enviroment.yml`` can be used to update it as well.
+If the environment already exists, ``conda_environment.yml`` can be used to update it as well.
 
 .. code-block:: shell
 
@@ -51,11 +51,11 @@ The system test are run via `.github/workflow/system.yml <https://github.com/neu
 
 Wait for a time for everything to get up and running.
 This is normally noted by seeing a collection of worker threads starting.
-Once started thests can be run via
+Once started tests can be run via
 
 .. code-block:: shell
 
-   DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
+   DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest \
       python -m pytest tests
 
 Developer setup
