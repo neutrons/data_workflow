@@ -76,6 +76,10 @@ The settings are split into a couple of bundled options that can be selected by 
 The environment variables ``LDAP_SERVER_URI`` and ``LDAP_DOMAIN_COMPONENT`` are shown above with no-op values.
 Senior developers can provide the values to use, then the developer setup can work with Neutron Scattering Division's (NSD) LDAP instance.
 
+The environment variables ``CATALOG_URL``, ``CATALOG_ID`` and
+``CATALOG_SECRET`` can be set to allow run metadata to be retrieved
+from `ONCat <https://oncat.ornl.gov>`_.
+
 Special users
 -------------
 
