@@ -46,6 +46,27 @@ class ViewUtilTest(TestCase):
                     update_time=update_time,
                 ).save()
 
+        # add data to test for PV with same name by different capitalization
+        sampletemp = PVName.objects.create(name="sampletemp")
+        sampletemp.save()
+        PV.objects.create(
+            instrument=inst,
+            name=sampletemp,
+            value=100,
+            status=0,
+            update_time=update_time,
+        ).save()
+
+        SampleTemp = PVName.objects.create(name="SampleTemp")
+        SampleTemp.save()
+        PV.objects.create(
+            instrument=inst,
+            name=SampleTemp,
+            value=300,
+            status=0,
+            update_time=update_time,
+        ).save()
+
     @classmethod
     def tearDownClass(cls):
         Instrument.objects.all().delete()
@@ -73,6 +94,14 @@ class ViewUtilTest(TestCase):
         self.assertEqual(len(data_dict), 1)
         data_pv3 = data_dict[0][1]
         self.assertEqual(data_pv3[-1][1], 27)
+
+        # check correct data is returned for different capitalization of PVName
+        request = mock.MagicMock()
+        request.GET = {"vars": "sampletemp,SampleTemp"}
+        data_dict = get_live_variables(request, inst)
+        self.assertEqual(len(data_dict), 2)
+        self.assertEqual(data_dict[0][1][-1][1], 100)  # sampletemp
+        self.assertEqual(data_dict[1][1][-1][1], 300)  # SampleTemp
 
     def test_get_cached_variables(self):
         from reporting.pvmon.view_util import get_cached_variables
