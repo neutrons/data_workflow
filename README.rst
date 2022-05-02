@@ -61,7 +61,7 @@ Developer's Entry Point
 -----------------------
 Start at the Developer's documentation. This requires building the docs:
 
-```bash
-make create/conda
-make docs
-```
+.. code-block:: bash
+
+   $ make create/conda
+   $ make docs
