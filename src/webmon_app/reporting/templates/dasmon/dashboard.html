@@ -65,24 +65,44 @@
 
 <p>
 List of instruments:<br>
+
   <table class="dashboard_table">
-    <thead>
-      <tr>
-        <th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th>
-      </tr>
-    </thead>
-    <tbody class='status_box'>
-    {% for item in instruments %}
-      <tr>
-        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
-        <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-        <td>
-          <div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div>
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
+    <!-- Left column of instruments -->
+    <td><table class="dashboard_table">
+        <!-- Column headers -->
+        <thead><tr><th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th></tr></thead>
+        <!-- Loop over each instrument producing one row -->
+        <tbody class='status_box'>
+        {% for item in instruments_left %}
+            <tr>
+                <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
+                <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
+                <td><div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table></td>
+
+    <!-- Insert some space between left and right columns of instruments -->
+    <td style="min-width:75px"></td>
+
+    <!-- Right column of instruments -->
+    <td><table class="dashboard_table">
+        <!-- Column headers -->
+        <thead><tr><th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th></tr></thead>
+        <!-- Loop over each instrument producing one row -->
+        <tbody class='status_box'>
+        {% for item in instruments_right %}
+            <tr>
+                <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
+                <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
+                <td><div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table></td>
   </table>
+
   <script id="source" language="javascript" type="text/javascript">plot_rates();</script>
   {% endblock %}
 {% block nocontent %}{% endblock %}
