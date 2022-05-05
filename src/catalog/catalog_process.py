@@ -21,7 +21,7 @@ if __name__ == "__main__":
     ICAT_USER = os.environ.get("ICAT_USER", default="icat")
     ICAT_PASSCODE = os.environ.get("ICAT_PASSCODE", default="icat")
     PORTS = os.environ.get("ACTIVE_MQ_PORTS", default=61613)
-    BROKERS = [("activemq", int(PORTS))]
+    BROKERS = [(os.environ.get("ACTIVE_MQ_HOST", default="activemq"), int(PORTS))]
 
     # Start the connection
     conn = stomp.Connection(host_and_ports=BROKERS)
