@@ -44,25 +44,25 @@ check: ## Check python dependencies
 	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
 	@python -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 
-wheel/dasmon: ## python wheel for service "dasmon"
+wheel/dasmon: ## create or update python wheel for service "dasmon"
 	cd src/dasmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/dasmon_app && python -m build --no-isolation --wheel
 	# verify it is correct
 	cd src/dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
 
-wheel/webmon: ## python wheel for service "webmon"
+wheel/webmon: ## create or update python wheel for service "webmon"
 	cd src/webmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/webmon_app && python -m build --no-isolation --wheel
 	# verify it is correct - ignoring duplicate file check
 	cd src/webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
 
-wheel/workflow: ## python wheel for service "workflow"
+wheel/workflow: ## create or update python wheel for service "workflow"
 	cd src/workflow_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/workflow_app && python -m build --no-isolation --wheel
 	# verify it is correct
 	cd src/workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
-wheel/all:  wheel/dasmon wheel/webmon wheel/workflow ##  python wheels for all servicess
+wheel/all:  wheel/dasmon wheel/webmon wheel/workflow ## create or update  python wheels for all servicess
 
 install/workflow: check
 	# Install the workflow manager, which defines the database schema
@@ -112,7 +112,7 @@ SNSdata.tar.gz:
 	# it needs to be removed when the directory changes
 	tar czf SNSdata.tar.gz -C tests/data/ .
 
-localdev/up: ## update python wheels, create images, and start containers for local development
+localdev/up: ## create images and start containers for local development. Doesn't update python wheels, though.
 	\cp docker-compose.localdev.yml docker-compose.yml
 	docker-compose up --build
 
