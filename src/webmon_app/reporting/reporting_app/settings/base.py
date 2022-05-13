@@ -1,6 +1,7 @@
 # Django settings for reporting_app project.
 import json
 import ldap
+from collections import defaultdict
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 from django.core.exceptions import ImproperlyConfigured
 from os import environ
@@ -319,6 +320,18 @@ INSTRUMENT_REDUCTION_SETUP = ("seq", "arcs", "corelli", "cncs", "ref_m")
 LIVE_DATA_SERVER = "/plots/$instrument/$run_number/update"
 LIVE_DATA_SERVER_DOMAIN = "livedata.sns.gov"
 LIVE_DATA_SERVER_PORT = "443"
+
+# set up the mapping of instruments to facilities
+FACILITY_INFO = defaultdict(lambda: "SNS")  # SNS is the default
+# add hfir instruments
+for instr in ["hb2c", "cg1d", "hb2a", "hb2b", "hb3a", "cg2", "cg3"]:
+    FACILITY_INFO[instr] = "HFIR"
+# read in additional values/overrides from the environment
+facility_info_additions = environ.get("FACILITY_INFO", "").strip()
+if facility_info_additions:
+    additions = json.loads(facility_info_additions)
+    for instr, facility in additions.items():
+        FACILITY_INFO[instr] = facility
 
 # Link out to fitting application
 FITTING_URLS = {}
