@@ -109,9 +109,7 @@ class ProcessingForm(forms.Form):
         :param ipts: experiment model object or string
         :param run: run model object or string
         """
-        facility_name = "SNS"
-        if hasattr(settings, "FACILITY_INFO"):
-            facility_name = settings.FACILITY_INFO.get(str(instrument), "SNS")
+        facility_name = settings.FACILITY_INFO.get(str(instrument), "SNS")
         if not ActiveInstrument.objects.is_adara(instrument):
             file_path = "/%s/%s/%s/0/%s/NeXus/%s_%r_event.nxs" % (
                 facility_name,

@@ -172,9 +172,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
 
     # Get facility from file path
     toks = file_path.split("/")
-    facility_name = "SNS"
-    if hasattr(settings, "FACILITY_INFO"):
-        facility_name = settings.FACILITY_INFO.get(str(instrument_id), "SNS")
+    facility_name = settings.FACILITY_INFO.get(str(instrument_id), "SNS")
     if len(toks) > 1:
         facility_name = toks[1].upper()
     # Sanity check

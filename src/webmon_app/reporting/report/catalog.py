@@ -49,9 +49,7 @@ def get_run_info(instrument, ipts, run_number):
     :param str run_number: run number
     :param str facility: facility name (SNS or HFIR)
     """
-    facility = "SNS"
-    if hasattr(settings, "FACILITY_INFO"):
-        facility = settings.FACILITY_INFO.get(instrument, "SNS")
+    facility = settings.FACILITY_INFO.get(instrument, "SNS")
     return _get_run_info(instrument, ipts, run_number, facility)
 
 
