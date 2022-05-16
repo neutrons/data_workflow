@@ -4,15 +4,21 @@ General User View
 .. toctree::
    :maxdepth: 2
 
-I have the same privileges as a guest without login.
-In addition, when I click on a specific run, I get information and plots (if set up that way by the instrument scientist/CIS)
+In addition to the :doc:`Guest_user`, there are additional privileges 
+for which the user must be logged in. To to that, click on the `login`
+link at the top right of the page. 
+
+As opposed to a guest user, when clicking on a specific run, a logged in user will get 
+more information, and plots (if set up that way by the instrument scientist/CIS).
 
 .. image:: images/example_general_user.png
    :width: 100%
    :align: center
    :alt: general user view example
 
-At the bottom of the page there is a table describing what has been done for the data
+At the bottom of the page there is a table describing the processing status of the
+particular data file. Any error messages will show up in red. Please communicate with your local
+contact about any such occurences. 
 
 .. image:: images/example_data_table.png
    :width: 100%
