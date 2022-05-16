@@ -2,7 +2,7 @@ name: Docker
 
 on:
   push:
-    branches: [ next ]
+    branches: [ qa ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -19,6 +19,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Create tag version
+        id: version
+        run: echo "::set-output name=version::$(git describe --tags --abbrev=0).b$(date +'%Y%m%d%H%M')"
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
@@ -47,7 +53,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.amq_test_gen
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.version.outputs.version }}
           push: true
 
       - name: Build and push Autoreducer
@@ -55,7 +63,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.autoreducer
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.version.outputs.version }}
           push: true
 
       - name: Build and push Catalog
@@ -63,7 +73,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.catalog
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/catalog:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/catalog:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/catalog:${{ steps.version.outputs.version }}
           push: true
 
       - name: Build and push Dasmon
@@ -71,7 +83,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.dasmon
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.version.outputs.version }}
           push: true
 
       - name: Build and push pv_test_gen
@@ -79,7 +93,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.pv_test_gen
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.version.outputs.version }}
           push: true
 
       - name: Build and push Webmon
@@ -87,7 +103,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.webmon
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/webmon:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/webmon:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.version.outputs.version }}
           push: true
 
       - name: Build and push Workflow
@@ -95,7 +113,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.workflow
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/workflow:latest-dev
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/workflow:latest-test
+            ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.version.outputs.version }}
           push: true
 
       - name: Trigger ORNL Deployment Pipeline
