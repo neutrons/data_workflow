@@ -5,7 +5,7 @@ Guest View
 ----------
 
 Web Monitor should be tested for the :doc:`Guest User View
-<../../users/usecases/Guest_user>` use case.
+<../../users/Guest_user>` use case.
 
 The complications comes from that the behavior is dependent on the
 domain you are accessing from.
@@ -27,7 +27,7 @@ General User View
 -----------------
 
 Web Monitor should be tested for the :doc:`General User View
-<../../users/usecases/General_user>` use case.
+<../../users/General_user>` use case.
 
 To test these views from a general user's perspective you must login
 with an account that has the appropriate permissions.  The account
@@ -47,7 +47,7 @@ Instrument Scientist View
 -------------------------
 
 Web Monitor should be tested for the :doc:`Instrument Scientist View
-<../../users/usecases/Instrument_scientist>` use case.
+<../../users/Instrument_scientist>` use case.
 
 Please confirm the UI elements that appeared in the General User View also
 appear when logged in as an Instrument Scientist.

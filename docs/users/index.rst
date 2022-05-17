@@ -10,12 +10,12 @@ Different views are described below, sorted by various access levels.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Use Cases:
 
-   usecases/Guest_user
-   usecases/General_user
-   usecases/Instrument_scientist
+   Guest_user
+   General_user
+   Instrument_scientist
    
 .. toctree::
    :maxdepth: 2
