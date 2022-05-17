@@ -1135,6 +1135,7 @@ def get_instrument_status_summary():
                 "pvstreamer_status": pvstreamer_status,
                 "completeness": completeness,
                 "completeness_msg": message,
+                "facility": settings.FACILITY_INFO.get(i.name, "SNS"),
             }
         )
     return instrument_list
