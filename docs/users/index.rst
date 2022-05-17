@@ -16,11 +16,9 @@ Different views are described below, sorted by various access levels.
    Guest_user
    General_user
    Instrument_scientist
-   
+
 .. toctree::
    :maxdepth: 2
    :caption: Release Notes
 
    release/index
-
-

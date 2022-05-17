@@ -4,11 +4,11 @@ General User View
 .. toctree::
    :maxdepth: 2
 
-In addition to the :doc:`Guest_user`, there are additional privileges 
+In addition to the :doc:`Guest_user`, there are additional privileges
 for which the user must be logged in. To to that, click on the `login`
-link at the top right of the page. 
+link at the top right of the page.
 
-As opposed to a guest user, when clicking on a specific run, a logged in user will get 
+As opposed to a guest user, when clicking on a specific run, a logged in user will get
 more information, and plots (if set up that way by the instrument scientist/CIS).
 
 .. image:: images/example_general_user.png
@@ -18,7 +18,7 @@ more information, and plots (if set up that way by the instrument scientist/CIS)
 
 At the bottom of the page there is a table describing the processing status of the
 particular data file. Any error messages will show up in red. Please communicate with your local
-contact about any such occurrences. 
+contact about any such occurrences.
 
 .. image:: images/example_data_table.png
    :width: 100%
