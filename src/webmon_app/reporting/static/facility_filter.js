@@ -4,7 +4,7 @@ function filter_facility(selection_value) {
     var result_style = document.querySelectorAll('.instrument_row').forEach((item) => {
         item.style.display = 'table-row';
     });
-    
+
     if (selection_value == "hfir") {
         document.querySelectorAll('.SNS_instrument').forEach((item) => {
             item.style.display = 'none';
