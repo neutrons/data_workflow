@@ -65,7 +65,12 @@
 
 <p>
 List of instruments:<br>
-
+  <label for="facility-select">Facility:</label>
+  <select name="facilities" id="facility-select">
+    <option value="all">All</option>
+    <option value="hfir">HFIR</option>
+    <option value="sns">SNS</option>
+  </select>
   <table class="dashboard_table">
     <!-- Left column of instruments -->
     <td><table class="dashboard_table">
@@ -74,7 +79,7 @@ List of instruments:<br>
         <!-- Loop over each instrument producing one row -->
         <tbody class='status_box'>
         {% for item in instruments_left %}
-            <tr>
+            <tr class='{{ item.facility }}_instrument instrument_row'>
                 <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
                 <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
                 <td><div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div></td>
@@ -93,7 +98,7 @@ List of instruments:<br>
         <!-- Loop over each instrument producing one row -->
         <tbody class='status_box'>
         {% for item in instruments_right %}
-            <tr>
+            <tr class='{{ item.facility }}_instrument instrument_row'>
                 <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
                 <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
                 <td><div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div></td>
@@ -102,7 +107,7 @@ List of instruments:<br>
         </tbody>
     </table></td>
   </table>
-
+  <script language="javascript" type="text/javascript" src="/static/facility_filter.js"></script>
   <script id="source" language="javascript" type="text/javascript">plot_rates();</script>
   {% endblock %}
 {% block nocontent %}{% endblock %}

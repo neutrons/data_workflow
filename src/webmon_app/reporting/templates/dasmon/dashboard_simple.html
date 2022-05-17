@@ -51,6 +51,12 @@
 
 <p>
 List of instruments:<br>
+<label for="facility-select">Facility:</label>
+<select name="facilities" id="facility-select">
+  <option value="all">All</option>
+  <option value="hfir">HFIR</option>
+  <option value="sns">SNS</option>
+</select>
 <table class="dashboard_table"><tr>
   <td><table class="dashboard_table">
     <thead>
@@ -60,7 +66,7 @@ List of instruments:<br>
     </thead>
     <tbody class='status_box'>
     {% for item in instruments_left %}
-      <tr>
+      <tr class='{{ item.facility }}_instrument instrument_row'>
         <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
         <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
       </tr>
@@ -76,7 +82,7 @@ List of instruments:<br>
     </thead>
     <tbody class='status_box'>
     {% for item in instruments_right %}
-      <tr>
+      <tr class='{{ item.facility }}_instrument instrument_row'>
         <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
         <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
       </tr>
@@ -85,6 +91,6 @@ List of instruments:<br>
   </table></td>
 
 </tr></table>
-
+<script language="javascript" type="text/javascript" src="/static/facility_filter.js"></script>
   {% endblock %}
 {% block nocontent %}{% endblock %}
