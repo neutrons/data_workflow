@@ -91,25 +91,6 @@ List of instruments:<br>
   </table></td>
 
 </tr></table>
-<script>
-    document.querySelector("#facility-select").addEventListener('change', (event) => {
-        var selection = event.target.value;
-
-        var result_style = document.querySelectorAll('.instrument_row').forEach((item) => {
-           item.style.display = 'table-row';
-        });
-
-        if (selection == "hfir") {
-            document.querySelectorAll('.SNS_instrument').forEach((item) => {
-                item.style.display = 'none';
-            });
-        } else if (selection == "sns") {
-            document.querySelectorAll('.HFIR_instrument').forEach((item) => {
-                item.style.display = 'none';
-            });
-        }
-    });
-  </script>
-
+<script language="javascript" type="text/javascript" src="/static/facility_filter.js"></script>
   {% endblock %}
 {% block nocontent %}{% endblock %}
