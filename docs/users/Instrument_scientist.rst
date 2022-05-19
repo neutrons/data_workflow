@@ -50,4 +50,6 @@ It will open a page like below
 One can then submit several runs for re-reduction.
 This is useful if there is a mistake in the reduction script.
 The messages for postprocessing are not necessarily handled in the order of run numbers.
-**Most instrument scientists do not have this option.**
+
+.. note::
+   Most instrument scientists do not have this option.
