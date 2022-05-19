@@ -4,14 +4,15 @@ Instrument Scientist View
 .. toctree::
    :maxdepth: 2
 
-At the bottom of the process table, the instrument scientist can send the data back for cataloging, or reduction.
+The instrument scientist (local contact) can send individual runs back for cataloging, or reduction, by clicking
+on the links at the bottom of the page.
 
 .. image:: images/example_submit_postprocessing.png
    :width: 100%
    :align: center
    :alt: submit post-processing example
 
-In addition several beamlines can open a setup page for auto-reduction (click on ``setup``).
+In addition, several beamlines can open a setup page for auto-reduction (click on ``setup``).
 
 .. image:: images/example_ARCS_auto_reduction.png
    :width: 100%
@@ -49,4 +50,6 @@ It will open a page like below
 One can then submit several runs for re-reduction.
 This is useful if there is a mistake in the reduction script.
 The messages for postprocessing are not necessarily handled in the order of run numbers.
-Most instrument scientists do not have this option.
+
+.. note::
+   Most instrument scientists do not have this option.
