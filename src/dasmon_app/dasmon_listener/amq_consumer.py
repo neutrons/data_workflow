@@ -483,7 +483,6 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
     if len(value_string) > 128:
         value_string = value_string[:128]
 
-    datetime_timestamp = datetime.datetime.fromtimestamp(time.time()).replace(tzinfo=timezone.get_current_timezone())
     if cache_only is False:
         status_entry = StatusVariable(instrument_id=instrument_id, key_id=key_id, value=value_string)
         # Force the timestamp value as needed
@@ -496,20 +495,17 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
             except:  # noqa: E722
                 logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_info()[1])
         status_entry.save()
-        datetime_timestamp = status_entry.timestamp
 
     # Update the latest value
     try:
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
         last_value.value = value_string
-        last_value.timestamp = datetime_timestamp
         last_value.save()
     except:  # noqa: E722
         last_value = StatusCache(
             instrument_id=instrument_id,
             key_id=key_id,
             value=value_string,
-            timestamp=datetime_timestamp,
         )
         last_value.save()
 

@@ -38,7 +38,7 @@ class StatusCache(models.Model):
     instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     key_id = models.ForeignKey(Parameter, on_delete=models.CASCADE)
     value = models.CharField(max_length=128)
-    timestamp = models.DateTimeField("timestamp")
+    timestamp = models.DateTimeField("timestamp", auto_now=True)
 
 
 class ActiveInstrumentManager(models.Manager):
