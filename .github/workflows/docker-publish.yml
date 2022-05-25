@@ -119,4 +119,4 @@ jobs:
           push: true
 
       - name: Trigger ORNL Deployment Pipeline
-        run: curl -X POST -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} -F ref=main https://code.ornl.gov/api/v4/projects/10858/trigger/pipeline
+        run: curl -X POST -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} -F ref=main https://code.ornl.gov/api/v4/projects/10858/trigger/pipeline | jq '. | del( .user )'
