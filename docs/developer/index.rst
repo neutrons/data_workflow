@@ -12,6 +12,7 @@ Developer Guide
    instruction/docker
    instruction/contribute
    instruction/manual_testing
+   instruction/deployment
 
 Modules
 -------
