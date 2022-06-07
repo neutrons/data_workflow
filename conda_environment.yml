@@ -15,6 +15,7 @@ dependencies:
 - setuptools
 - stomp.py=7.0.0
 - urllib3
+- versioningit~=1.1
 - pip
 - pip:
   - django-auth-ldap==4.0.0
