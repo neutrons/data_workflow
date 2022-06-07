@@ -15,6 +15,7 @@
 import django
 import os
 import sys
+import versioningit
 
 sys.path.insert(0, os.path.abspath("../src/catalog"))
 sys.path.insert(0, os.path.abspath("../src/dasmon_app/"))
@@ -31,7 +32,7 @@ copyright = "2022, SCSE@ORNL"
 author = "SCSE@ORNL"
 
 # The short X.Y version
-version = "2.6.0"
+version = versioningit.get_version("../src/webmon_app/")
 # The full version, including alpha/beta/rc tags
 release = ".".join(version.split(".")[:-1])
 
