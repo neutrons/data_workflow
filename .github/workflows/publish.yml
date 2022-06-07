@@ -1,0 +1,160 @@
+name: Wheel + Docker publish
+
+on:
+  push:
+    branches:
+      - qa
+      - main
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          mamba-version: "*"
+          environment-file: conda_environment.yml
+
+      - name: Install dev requirements
+        run: mamba env update --file conda_development.yml
+
+      - name: Build wheels
+        run: make wheel/all
+
+      - name: Get version
+        id: version
+        run: echo "::set-output name=version::$(versioningit src/webmon_app)"
+
+      - name: Create tag version
+        id: tag
+        run: echo "::set-output name=tag::$(versioningit src/webmon_app).b$(date +'%Y%m%d%H%M')"
+
+      - name: Create latest tag version
+        id: latest_tag
+        run: |
+          case ${{ github.ref }} in
+
+          refs/heads/qa)
+            echo "::set-output name=latest_tag::latest-test"
+            ;;
+
+          refs/heads/main)
+            echo "::set-output name=latest_tag::latest-prod"
+            ;;
+
+          *)
+            exit 1
+            ;;
+
+          esac
+
+      - name: Upload wheels
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.ref != 'refs/heads/next' }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          files: src/*/dist/*.whl
+
+      - name: Check tag names
+        run: |
+          echo ${{ steps.latest_tag.outputs.latest_tag }}
+          echo ${{ steps.tag.outputs.tag }}
+
+      - name: Build test data for autoreducer
+        run: make SNSdata.tar.gz
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push amq_test_gen
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.amq_test_gen
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Build and push Autoreducer
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.autoreducer
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Build and push Catalog
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.catalog
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/catalog:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/catalog:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Build and push Dasmon
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.dasmon
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Build and push pv_test_gen
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.pv_test_gen
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Build and push Webmon
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.webmon
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Build and push Workflow
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.workflow
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.tag.outputs.tag }}
+          push: true
+
+      - name: Trigger ORNL Test Deployment Pipeline
+        if: ${{ github.ref == 'refs/heads/qa' }}
+        run: curl -X POST -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} -F ref=main https://code.ornl.gov/api/v4/projects/10858/trigger/pipeline | jq '. | del( .user )' ; exit ${PIPESTATUS[0]}
