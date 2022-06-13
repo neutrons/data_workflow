@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.8'
 
 services:
 
@@ -8,11 +8,12 @@ services:
       - "80:80"
     volumes:
       - web-static:/var/www/workflow/static
-      - ./nginx/django.conf:/etc/nginx/conf.d/django.conf
-      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/docker-entrypoint.sh
-      - ./nginx/wait-for-it.sh:/usr/bin/wait-for-it.sh
+      - ./nginx/django.conf:/etc/nginx/conf.d/default.conf
+    healthcheck:
+      test: ["CMD", "service", "nginx", "status"]
     depends_on:
-      - webmon
+      webmon:
+        condition: service_healthy
 
   webmon:
     restart: always
@@ -20,11 +21,6 @@ services:
       context: .
       dockerfile: Dockerfile.webmon
       # build using the host's network, required in certain environments when accessing the debian repositories
-      network: host
-    expose:
-      - "8000"
-    ports:
-      - "8000:8000"
     volumes:
       - web-static:/var/www/workflow/static/
     env_file:
@@ -37,32 +33,41 @@ services:
       - CATALOG_URL=${CATALOG_URL}
       - CATALOG_ID=${CATALOG_ID}
       - CATALOG_SECRET=${CATALOG_SECRET}
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8000 || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   dasmon:
     build:
       context: .
       dockerfile: Dockerfile.dasmon
-      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
-      - activemq
-      - webmon
+      activemq:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
 
   workflow:
     build:
       context: .
       dockerfile: Dockerfile.workflow
-      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
     depends_on:
-      - activemq
-      - webmon
+      activemq:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
 
   db:
     restart: always
@@ -79,60 +84,69 @@ services:
       - "${DATABASE_PORT}:${DATABASE_PORT}"
     volumes:
       - pgdata:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   activemq:
     image: rmohr/activemq
     hostname: activemq
-    ports:
-      - "61613:61613"
-      - "8161:8161"
     volumes:
       - ./src/workflow_app/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
+    healthcheck:
+      test: "curl --silent --show-error -u admin:admin 'http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,service=Health' | grep --silent -e 'Good' -e 'Getting Worried'"
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   autoreducer:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer
-      network: host
     hostname: autoreducer
+    healthcheck:
+      test: ["CMD", "pgrep", "python"]
     depends_on:
-      - activemq
+      activemq:
+        condition: service_healthy
 
   amq_test_gen:
     restart: always
     build:
       context: .
       dockerfile: Dockerfile.amq_test_gen
-      network: host
     depends_on:
-      - activemq
+      activemq:
+        condition: service_healthy
 
   amq_pv_gen:
     restart: always
     build:
       context: .
       dockerfile: Dockerfile.pv_test_gen
-      network: host
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
 
   catalog_process:
     restart: always
     build:
       context: .
       dockerfile: Dockerfile.catalog
-      network: host
     environment:
       ICAT_USER: "icat"
       ICAT_PASSCODE: "icat"
       ACTIVE_MQ_PORTS: 61613
     depends_on:
-      - nginx
-      - activemq
+      activemq:
+        condition: service_healthy
 
 volumes:
-  web-django:
   web-static:
   pgdata:
