@@ -151,6 +151,14 @@ services:
       activemq:
         condition: service_healthy
 
+  autoheal:
+    restart: always
+    image: willfarrell/autoheal
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   web-static:
   pgdata:
