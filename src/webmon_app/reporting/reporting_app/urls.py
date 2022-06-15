@@ -21,4 +21,5 @@ urlpatterns = [
     path("pvmon/", include("reporting.pvmon.urls", namespace="pvmon")),
     path("users/", include("reporting.users.urls", namespace="users")),
     path("database/", admin.site.urls),
+    path("ht/", include("health_check.urls")),
 ]
