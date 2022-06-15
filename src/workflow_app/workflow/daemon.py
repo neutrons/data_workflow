@@ -9,6 +9,7 @@ import time
 import atexit
 from signal import SIGTERM
 import logging
+import psutil
 
 
 class Daemon:
@@ -144,14 +145,11 @@ class Daemon:
             logging.error("pidfile %s does not exist", self.pidfile)
             sys.exit(1)
 
-        try:
-            procfile = open(f"/proc/{pid}/status", "r")
-            procfile.close()
-        except IOError:
+        if psutil.pid_exists(pid):
+            logging.info("the process with the PID %d is running", pid)
+        else:
             logging.error("there is not a process with the PID specified in %s", self.pidfile)
             sys.exit(1)
-
-        logging.info("the process with the PID %d is running", pid)
 
     def run(self):
         """
