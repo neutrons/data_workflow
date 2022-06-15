@@ -137,7 +137,7 @@ class Daemon:
 
     def status(self):
         try:
-            pf = open(self.pidfile, 'r')
+            pf = open(self.pidfile, "r")
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -145,7 +145,7 @@ class Daemon:
             sys.exit(1)
 
         try:
-            procfile = open(f"/proc/{pid}/status", 'r')
+            procfile = open(f"/proc/{pid}/status", "r")
             procfile.close()
         except IOError:
             logging.error("there is not a process with the PID specified in %s", self.pidfile)
