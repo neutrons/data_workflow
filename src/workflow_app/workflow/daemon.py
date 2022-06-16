@@ -9,6 +9,7 @@ import time
 import atexit
 from signal import SIGTERM
 import logging
+import psutil
 
 
 class Daemon:
@@ -36,7 +37,7 @@ class Daemon:
                 # exit first parent
                 sys.exit(0)
         except OSError as e:
-            logging.error("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+            logging.error("fork #1 failed: %d (%s)\n", e.errno, e.strerror)
             sys.exit(1)
 
         # decouple from parent environment
@@ -51,7 +52,7 @@ class Daemon:
                 # exit from second parent
                 sys.exit(0)
         except OSError as e:
-            logging.error("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+            logging.error("fork #2 failed: %d (%s)\n", e.errno, e.strerror)
             sys.exit(1)
 
         # redirect standard file descriptors
@@ -69,7 +70,7 @@ class Daemon:
         atexit.register(self.delpid)
         pid = str(os.getpid())
         open(self.pidfile, "w+").write("%s\n" % pid)
-        logging.info("Started daemon with PID %s" % str(pid))
+        logging.info("Started daemon with PID %s", str(pid))
 
     def delpid(self):
         os.remove(self.pidfile)
@@ -88,7 +89,7 @@ class Daemon:
 
         if pid:
             message = "pidfile %s already exist. Daemon already running?\n"
-            logging.warning(message % self.pidfile)
+            logging.warning(message, self.pidfile)
             sys.exit(1)
 
         # Start the daemon
@@ -109,10 +110,10 @@ class Daemon:
 
         if not pid:
             message = "pidfile %s does not exist. Daemon not running?\n"
-            logging.error(message % self.pidfile)
+            logging.error(message, self.pidfile)
             return  # not an error in a restart
 
-        logging.info("Stopping daemon with PID %s" % str(pid))
+        logging.info("Stopping daemon with PID %s", str(pid))
 
         # Try killing the daemon process
         try:
@@ -134,6 +135,21 @@ class Daemon:
         """
         self.stop()
         self.start()
+
+    def status(self):
+        try:
+            pf = open(self.pidfile, "r")
+            pid = int(pf.read().strip())
+            pf.close()
+        except IOError:
+            logging.error("pidfile %s does not exist", self.pidfile)
+            sys.exit(1)
+
+        if psutil.pid_exists(pid):
+            logging.info("the process with the PID %d is running", pid)
+        else:
+            logging.error("there is not a process with the PID specified in %s", self.pidfile)
+            sys.exit(1)
 
     def run(self):
         """

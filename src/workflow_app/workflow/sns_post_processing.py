@@ -114,6 +114,8 @@ def run_daemon(
         daemon.stop()
     elif command == "restart":
         daemon.restart()
+    elif command == "status":
+        daemon.status()
 
 
 def run():
@@ -160,6 +162,7 @@ def run():
     subparsers.add_parser("start", help="Start daemon [-h for help]", parents=[start_parser])
     subparsers.add_parser("restart", help="Restart daemon [-h for help]", parents=[start_parser])
     subparsers.add_parser("stop", help="Stop daemon")
+    subparsers.add_parser("status", help="Show running status of daemon")
     subparsers.add_parser("dump", help="Dump task SQL")
     parser_task = subparsers.add_parser("add_task", help="Add task definition [-h for help]")
     parser_task.add_argument(

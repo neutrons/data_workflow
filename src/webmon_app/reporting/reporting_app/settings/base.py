@@ -197,7 +197,11 @@ INSTALLED_APPS = [
     "reporting.dasmon",
     "reporting.pvmon",
     "reporting.reduction",
-    # 'debug_toolbar',
+    "health_check",
+    "health_check.db",
+    "health_check.cache",
+    "health_check.storage",
+    "health_check.contrib.psutil",
 ]
 
 AUTHENTICATION_BACKENDS = (

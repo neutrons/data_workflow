@@ -53,6 +53,7 @@ def run():
     subparsers.add_parser("start", help="Start daemon [-h for help]")
     subparsers.add_parser("restart", help="Restart daemon [-h for help]")
     subparsers.add_parser("stop", help="Stop daemon")
+    subparsers.add_parser("status", help="Show running status of daemon")
     namespace = parser.parse_args()
 
     # Start the daemon
@@ -64,6 +65,8 @@ def run():
         daemon.stop()
     elif namespace.command == "restart":
         daemon.restart()
+    elif namespace.command == "status":
+        daemon.status()
 
     sys.exit(0)
 

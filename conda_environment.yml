@@ -10,6 +10,7 @@ dependencies:
 - oauthlib
 - postgresql=14
 - psycopg2-binary=2.9.3
+- psutil
 - python-ldap>=3.1
 - requests-oauthlib
 - setuptools
@@ -19,4 +20,5 @@ dependencies:
 - pip
 - pip:
   - django-auth-ldap==4.0.0
+  - django-health-check
   - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl
