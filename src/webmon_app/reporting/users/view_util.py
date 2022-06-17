@@ -28,9 +28,12 @@ def fill_template_values(request, **template_args):
     if request.user.is_authenticated:
         if hasattr(settings, "GRAVATAR_URL"):
             email = request.user.email
-            if email:
-                gravatar_url = settings.GRAVATAR_URL + hashlib.md5(email.encode("utf-8")).hexdigest() + "?d=identicon"
-                template_args["gravatar_url"] = gravatar_url
+            if not email:
+                # the username by itself will generate an identicon
+                email = request.user.username
+
+            gravatar_url = settings.GRAVATAR_URL + hashlib.md5(email.encode("utf-8")).hexdigest() + "?d=identicon"
+            template_args["gravatar_url"] = gravatar_url
     else:
         request.user.username = "Guest User"
 
