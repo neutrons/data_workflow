@@ -27,13 +27,10 @@ def fill_template_values(request, **template_args):
     template_args["user"] = request.user
     if request.user.is_authenticated:
         if hasattr(settings, "GRAVATAR_URL"):
-            if isinstance(settings.ALLOWED_DOMAIN, tuple) and len(settings.ALLOWED_DOMAIN) > 0:
-                domain = settings.ALLOWED_DOMAIN[0]
-            else:
-                domain = settings.ALLOWED_DOMAIN
-            guess_email = "%s@%s" % (request.user.username, domain)
-            gravatar_url = settings.GRAVATAR_URL + hashlib.md5(guess_email.encode()).hexdigest() + "?d=identicon"
-            template_args["gravatar_url"] = gravatar_url
+            email = request.user.email
+            if email:
+                gravatar_url = settings.GRAVATAR_URL + hashlib.md5(email.encode("utf-8")).hexdigest() + "?d=identicon"
+                template_args["gravatar_url"] = gravatar_url
     else:
         request.user.username = "Guest User"
 
