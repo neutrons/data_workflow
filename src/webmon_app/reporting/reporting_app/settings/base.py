@@ -138,6 +138,12 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
     f"ou=groups,{LDAP_DOMAIN_COMPONENT}", ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)"
 )
 AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr="cn")
+# get the Django user from the LDAP directory.
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+}
 
 # manually specified cert file
 AUTH_LDAP_CERT_FILE = environ.get("LDAP_CERT_FILE", "")
@@ -211,7 +217,7 @@ AUTHENTICATION_BACKENDS = (
 
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
-# See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
+# See https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["*"]
 
 # Set the following to the local domain name

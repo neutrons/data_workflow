@@ -17,7 +17,7 @@ class TestViews(TestCase):
         self.assertEqual(template_args["user"].username, "user")
         self.assertEqual(
             template_args["gravatar_url"],
-            "http://gravatar.url/2d0c80ccc09be582d10a15e736601e50?d=identicon",
+            "http://gravatar.url/ee11cbb19052e40b07aac0ca060c23ee?d=identicon",
         )
         self.assertEqual(template_args["logout_url"], "/users/logout")
         self.assertEqual(template_args["login_url"], "/users/login?next=/path/")
@@ -28,7 +28,7 @@ class TestViews(TestCase):
         self.assertEqual(template_args["user"].username, "user")
         self.assertEqual(
             template_args["gravatar_url"],
-            "http://gravatar.url/76569a591ceb2b0241c266e658260f9f?d=identicon",
+            "http://gravatar.url/ee11cbb19052e40b07aac0ca060c23ee?d=identicon",
         )
         self.assertEqual(template_args["logout_url"], "/users/logout")
         self.assertEqual(template_args["login_url"], "/users/login?next=/path/")
