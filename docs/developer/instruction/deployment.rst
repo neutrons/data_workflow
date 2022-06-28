@@ -42,10 +42,10 @@ The docker-compose files for TEST and PROD are the following:
 ============ ========================== ====================================================================================================================================== ====
 Service      repo                       TEST                                                                                                                                   PROD
 ============ ========================== ====================================================================================================================================== ====
-web-monitor  web-monitor-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/blob/main/test/docker-compose.yml>`_         *TODO*
-workflow-db  workflow-db-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-db-deploy/-/blob/main/test/docker-compose.yml>`_         *TODO*
+web-monitor  web-monitor-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/blob/main/test/docker-compose.yml>`_         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/blob/main/prod/docker-compose.yml>`_
+workflow-db  workflow-db-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-db-deploy/-/blob/main/test/docker-compose.yml>`_         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-db-deploy/-/blob/main/prod/docker-compose.yml>`_
 amqbroker    amqbroker-deploy           `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/amqbroker-deploy/-/blob/main/test/docker-compose.yml>`_           *N/A*
-workflow-mgr workflow-mgr-deploy        `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-mgr-deploy/-/blob/main/test/docker-compose.yml>`_        *TODO*
+workflow-mgr workflow-mgr-deploy        `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-mgr-deploy/-/blob/main/test/docker-compose.yml>`_        `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-mgr-deploy/-/blob/main/prod/docker-compose.yml>`_
 autoreducer  autoreducer-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/autoreducer-deploy/-/blob/main/test/docker-compose.yml>`_         *N/A*
 catalog      catalog-emulator-deploy    `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/catalog-emulator-deploy/-/blob/main/test/docker-compose.yml>`_    *N/A*
 testfixtures webmon-testfixtures-deploy `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/webmon-testfixtures-deploy/-/blob/main/test/docker-compose.yml>`_ *N/A*
@@ -70,7 +70,7 @@ CATALOG_SECRET         yes    `ONCat client secret <https://oncat.ornl.gov/#/bui
 CATALOG_URL            yes    `ONCat URL <https://oncat.ornl.gov>`_
 DATABASE_HOST                 PostgreSQL hostname
 DATABASE_NAME                 Database name
-DATABASE_PASS          yes    PostgreSQL Owner password|
+DATABASE_PASS          yes    PostgreSQL Owner password
 DATABASE_PORT                 PostgreSQL post
 DATABASE_USER                 PostgreSQL Owner username
 DJANGO_SETTINGS_MODULE        `Description of settings <https://data-workflow.readthedocs.io/en/latest/developer/instruction/build.html?highlight=DJANGO_SETTINGS_MODULE#description-of-settings>`_
@@ -114,8 +114,8 @@ WORKFLOW_USER                 ActiveMQ workflow username
 WORKFLOW_PASS          yes    ActiveMQ workflow password
 ====================== ====== ===========
 
-catalog environment variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+catalog environment variables (TEST only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ====================== ====== ===========
 Variable               Secret Description
@@ -126,8 +126,8 @@ ICAT_PASS              yes    ActiveMQ password
 ICAT_USER                     ActiveMQ username
 ====================== ====== ===========
 
-testfixtures environment variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+testfixtures environment variables (TEST only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ====================== ====== ===========
 Variable               Secret Description
@@ -145,16 +145,19 @@ ICAT_USER                     ActiveMQ username
 Additional configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* **amqbroker-deploy** -> `icat_activemq.xml <https://code.ornl.gov/sns-hfir-scse/deployments/amqbroker-deploy/-/blob/main/test/icat_activemq.xml>`_
+* **amqbroker-deploy** (TEST only) -> `icat_activemq.xml <https://code.ornl.gov/sns-hfir-scse/deployments/amqbroker-deploy/-/blob/main/test/icat_activemq.xml>`_
 
   * icat and workflow username and passwords are set in here
 
-* **autoreducer-deploy** -> `post_processing.conf <https://code.ornl.gov/sns-hfir-scse/deployments/autoreducer-deploy/-/blob/main/test/post_processing.conf>`_
+* **autoreducer-deploy** (TEST only)-> `post_processing.conf <https://code.ornl.gov/sns-hfir-scse/deployments/autoreducer-deploy/-/blob/main/test/post_processing.conf>`_
 
   * ActiveMQ server address needs to be set in here
   * icat username and password needs to be set in here
 
-* **web-monitor-deploy** -> `nginx <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/tree/main/test/nginx>`_
+* **web-monitor-deploy**
+
+  * TEST `nginx conf <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/tree/main/test/nginx/django.conf>`_
+  * PROD `nginx conf <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/tree/main/prod/nginx/django.conf>`_
 
 Notes
 ^^^^^
