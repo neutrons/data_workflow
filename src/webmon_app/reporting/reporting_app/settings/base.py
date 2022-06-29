@@ -351,3 +351,5 @@ FITTING_URLS = {}
 # setting these will force all execution to happen as a single user
 TEST_REMOTE_USER = ""
 TEST_REMOTE_PASSWD = ""
+
+GRAVATAR_URL = "https://www.gravatar.com/avatar/"
