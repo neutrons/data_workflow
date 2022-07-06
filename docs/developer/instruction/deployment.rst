@@ -1,61 +1,13 @@
 Deployment
 ==========
 
-Deployments:
-
-* TEST deployment http://webmon-test.ornl.gov
-* PROD deployment https://monitor.sns.gov
-
-
-Continuous Integration artifacts
---------------------------------
-
-We are deploying the following docker images:
-
-* `webmon <https://github.com/neutrons/data_workflow/pkgs/container/data_workflow%2Fwebmon>`_
-* `dasmon <https://github.com/orgs/neutrons/packages/container/package/data_workflow%2Fdasmon>`_
-* `workflow <https://github.com/neutrons/data_workflow/pkgs/container/data_workflow%2Fworkflow>`_
-* `autoreducer <https://github.com/neutrons/data_workflow/pkgs/container/data_workflow%2Fautoreducer>`_
-* `pv_test_gen <https://github.com/neutrons/data_workflow/pkgs/container/data_workflow%2Fpv_test_gen>`_
-* `amp_test_gen <https://github.com/neutrons/data_workflow/pkgs/container/data_workflow%2Famq_test_gen>`_
-* `catalog <https://github.com/neutrons/data_workflow/pkgs/container/data_workflow%2Fcatalog>`_
-
-Infrastructure
---------------
-
-Infrastructure repository that creates infrastructure for this deployment: https://code.ornl.gov/sns-hfir-scse/infrastructure/neutrons-test-environment
-
-Deployment repositories Dockerfiles
------------------------------------
-
-The deployment is done with docker-compose within GitLab jobs. All
-services are deployed for the TEST deployment while for the PROD
-deployment only **web-monitor**, **workflow-db** and **workflow-mgr**
-are deployment with this system. All the deployment repos can be found
-at https://code.ornl.gov/sns-hfir-scse/deployments.
-
-The **web-monitor-deploy** CI will trigger the deployment of all the
-other repositories except the database and ActiveMQ.
-
-The docker-compose files for TEST and PROD are the following:
-
-============ ========================== ====================================================================================================================================== ====
-Service      repo                       TEST                                                                                                                                   PROD
-============ ========================== ====================================================================================================================================== ====
-web-monitor  web-monitor-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/blob/main/test/docker-compose.yml>`_         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/blob/main/prod/docker-compose.yml>`_
-workflow-db  workflow-db-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-db-deploy/-/blob/main/test/docker-compose.yml>`_         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-db-deploy/-/blob/main/prod/docker-compose.yml>`_
-amqbroker    amqbroker-deploy           `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/amqbroker-deploy/-/blob/main/test/docker-compose.yml>`_           *N/A*
-workflow-mgr workflow-mgr-deploy        `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-mgr-deploy/-/blob/main/test/docker-compose.yml>`_        `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/workflow-mgr-deploy/-/blob/main/prod/docker-compose.yml>`_
-autoreducer  autoreducer-deploy         `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/autoreducer-deploy/-/blob/main/test/docker-compose.yml>`_         *N/A*
-catalog      catalog-emulator-deploy    `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/catalog-emulator-deploy/-/blob/main/test/docker-compose.yml>`_    *N/A*
-testfixtures webmon-testfixtures-deploy `docker-compose.yml <https://code.ornl.gov/sns-hfir-scse/deployments/webmon-testfixtures-deploy/-/blob/main/test/docker-compose.yml>`_ *N/A*
-============ ========================== ====================================================================================================================================== ====
+To deploy the web-monitor, you require **web-monitor**,
+**workflow-db** and **workflow-mgr**. For test deployments there are
+also **catalog**, **testfixtures**, **amqbroker** and **autoreducer**
+to fake external services.
 
 Configuration
 -------------
-
-All environment variable are set in the docker-compose files except
-those that are marked secret which are set in the GitLab CI variables.
 
 web-monitor environment variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -145,19 +97,16 @@ ICAT_USER                     ActiveMQ username
 Additional configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* **amqbroker-deploy** (TEST only) -> `icat_activemq.xml <https://code.ornl.gov/sns-hfir-scse/deployments/amqbroker-deploy/-/blob/main/test/icat_activemq.xml>`_
+* **amqbroker-deploy** (TEST only) -> `icat_activemq.xml <https://github.com/neutrons/data_workflow/blob/next/src/workflow_app/workflow/icat_activemq.xml>`_
 
   * icat and workflow username and passwords are set in here
 
-* **autoreducer-deploy** (TEST only)-> `post_processing.conf <https://code.ornl.gov/sns-hfir-scse/deployments/autoreducer-deploy/-/blob/main/test/post_processing.conf>`_
+* **autoreducer-deploy** (TEST only)-> `post_processing.conf <https://github.com/neutrons/post_processing_agent/tree/main/configuration>`_
 
   * ActiveMQ server address needs to be set in here
   * icat username and password needs to be set in here
 
-* **web-monitor-deploy**
-
-  * TEST `nginx conf <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/tree/main/test/nginx/django.conf>`_
-  * PROD `nginx conf <https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy/-/tree/main/prod/nginx/django.conf>`_
+* **web-monitor-deploy** -> `nginx conf <https://github.com/neutrons/data_workflow/blob/next/nginx/django.conf>`_
 
 Notes
 ^^^^^
