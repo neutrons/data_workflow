@@ -12,6 +12,7 @@ Welcome to Web Monitor's documentation!
    :maxdepth: 1
 
    users/index
+   releasenotes/index
    developer/index
    users/usecases/index
 
