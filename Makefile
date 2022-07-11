@@ -1,5 +1,5 @@
 prefix := /var/www/workflow
-PYTHON_VERSION:=3.7
+PYTHON_VERSION:=3.10
 
 # these are defined here because I couldn't figure out how to evaluate the commands
 # during target execution rather then when make parses the file

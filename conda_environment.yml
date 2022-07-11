@@ -2,7 +2,7 @@ name: webmon
 channels:
 - conda-forge
 dependencies:
-- python=3.7
+- python=3.10
 - django=3.2
 - gunicorn
 - httplib2
@@ -14,11 +14,11 @@ dependencies:
 - python-ldap>=3.1
 - requests-oauthlib
 - setuptools
-- stomp.py=7.0.0
+- stomp.py=8
 - urllib3
 - versioningit~=1.1
 - pip
 - pip:
-  - django-auth-ldap==4.0.0
+  - django-auth-ldap==4.1.0
   - django-health-check
   - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl

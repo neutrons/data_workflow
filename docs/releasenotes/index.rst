@@ -8,7 +8,7 @@ The development team is very happy to announce this release which focused on mod
 
 Dependency changes
 
-- python 2.7 to 3.7
+- python 2.7 to 3.10
 - apache to nginx
 - django 1.11 to 3.2
 - jquery 1.72 to 3.6

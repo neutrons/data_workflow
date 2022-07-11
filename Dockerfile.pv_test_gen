@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.10.3p1
+FROM continuumio/miniconda3:4.12.0
 
 # install psql executable, later invoked in the docker-entrypoint.sh
 RUN conda install postgresql=14 -c conda-forge
