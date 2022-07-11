@@ -8,7 +8,6 @@
 import sys
 import re
 import logging
-import functools
 from django import forms
 from django.core.exceptions import ValidationError
 from reporting.report.models import Instrument
@@ -35,7 +34,7 @@ def _get_choices(instrument):
             instrument.upper(),
             sys.exc_info()[1],
         )
-    return sorted(form_choices, key=functools.cmp_to_key(lambda x, y: (x[0], y[0])))
+    return sorted(form_choices, key=lambda x: x[1])
 
 
 def validate_integer_list(value):
