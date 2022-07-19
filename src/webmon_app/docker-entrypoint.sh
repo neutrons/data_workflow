@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 MANAGE_PY_WEBMON="/opt/conda/lib/python3.10/site-packages/reporting/manage.py"
 
 # wait for postgress to be available
-until PGPASSWORD=${DATABASE_PASS} psql -h "${DATABASE_HOST}" -U "${DATABASE_USER}" -c '\q'; do
+until PGPASSWORD=${DATABASE_PASS} psql -h "${DATABASE_HOST}" -U "${DATABASE_USER}" -d "${DATABASE_NAME}" -c '\q'; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
@@ -15,7 +15,8 @@ make install/webmon configure/webmon
 
 # add test users if not in prod
 >&2 echo "\n\nChecking if in prod...\n\n"
-if ! (".prod" in $DJANGO_SETTINGS_MODULE); then
+if [[ "$DJANGO_SETTINGS_MODULE" != *".prod" ]]; then
+  make configure/load_initial_data
   if [ -z "$GENERAL_USER_USERNAME"]; then
     GENERAL_USER_USERNAME="GeneralUser"
     GENERAL_USER_PASSWORD="GeneralUser"

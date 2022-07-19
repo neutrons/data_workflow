@@ -29,7 +29,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION error_rate(bigint)
-  OWNER TO postgres;
+  OWNER TO workflow;
 
 -- Function: run_rate(bigint)
 
@@ -57,4 +57,4 @@ END;$BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION run_rate(bigint)
-  OWNER TO postgres;
+  OWNER TO workflow;

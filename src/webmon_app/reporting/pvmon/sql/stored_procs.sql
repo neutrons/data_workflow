@@ -45,7 +45,7 @@ END;$BODY$
 LANGUAGE plpgsql VOLATILE
 COST 100;
 ALTER FUNCTION pvUpdate(character varying, double precision, bigint, bigint)
-OWNER TO postgres;
+OWNER TO workflow;
 
 -- Function: "pvUpdate"(character varying, character varying, double precision, bigint, bigint)
 
@@ -100,7 +100,7 @@ $BODY$
 LANGUAGE plpgsql VOLATILE
 COST 100;
 ALTER FUNCTION pvUpdate(character varying, character varying, double precision, bigint, bigint)
-OWNER TO postgres;
+OWNER TO workflow;
 
 -- Function: "pvStringUpdate"(character varying, character varying, character varying, bigint, bigint)
 
@@ -155,4 +155,4 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION pvStringUpdate(character varying, character varying, character varying, bigint, bigint)
-  OWNER TO postgres;
+  OWNER TO workflow;
