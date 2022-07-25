@@ -230,7 +230,7 @@
     "pk": 1,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.dashboard_simple",
         "path": "/dasmon/",
@@ -243,7 +243,7 @@
     "pk": 2,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.dashboard_simple",
         "path": "/dasmon/",
@@ -256,7 +256,7 @@
     "pk": 3,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.dashboard_simple",
         "path": "/dasmon/",
@@ -269,7 +269,7 @@
     "pk": 4,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.live_monitor",
         "path": "/dasmon/hysa/",
@@ -282,7 +282,7 @@
     "pk": 5,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.dashboard_simple",
         "path": "/dasmon/",
@@ -295,7 +295,7 @@
     "pk": 6,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.live_monitor",
         "path": "/dasmon/common/",
@@ -308,7 +308,7 @@
     "pk": 7,
     "fields": {
         "user": [
-            "postgres"
+            "workflow"
         ],
         "view": "dasmon.views.dashboard_simple",
         "path": "/dasmon/",

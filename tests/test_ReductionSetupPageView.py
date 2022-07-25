@@ -106,8 +106,8 @@ class TestWorkflow:
 
         conn = psycopg2.connect(
             database="workflow",
-            user="postgres",
-            password="postgres",
+            user="workflow",
+            password="workflow",
             port="5432",
             host="localhost",
         )

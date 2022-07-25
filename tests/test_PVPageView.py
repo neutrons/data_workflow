@@ -48,7 +48,7 @@ class TestPVPageView:
         return client.post(URL + next, data=login_data, timeout=None)
 
     def test_arcs_PV_page(self):
-        response = self.login("/pvmon/arcs/", "postgres", "postgres")
+        response = self.login("/pvmon/arcs/", "workflow", "workflow")
         assert response.status_code == 200
 
         check_PV(response.text, "BL18:SE:SampleTemp")

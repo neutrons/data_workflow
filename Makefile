@@ -89,23 +89,21 @@ configure/webmon: install/webmon
 	# Create the database tables. The database itself must have been
 	# created on the server already
 	python $(MANAGE_PY_WEBMON) makemigrations --noinput
-	python $(MANAGE_PY_WEBMON) migrate --noinput
+	python $(MANAGE_PY_WEBMON) migrate --fake-initial --noinput
 	python $(MANAGE_PY_WEBMON) migrate --run-syncdb --noinput
 
 	# Prepare web monitor cache: RUN THIS ONCE BY HAND
 	python $(MANAGE_PY_WEBMON) createcachetable webcache
 	python $(MANAGE_PY_WEBMON) ensure_adminuser --username=${DATABASE_USER} --email='workflow@example.com' --password=${DATABASE_PASS}
 
-	# Modify and copy the wsgi configuration
-	#cp reporting/apache/apache_django_wsgi.conf /etc/httpd/conf.d
-
 	# add the stored sql proceedures
 	python $(MANAGE_PY_WEBMON) add_stored_procs
 
+	@echo "\n\nReady to go\n"
+
+configure/load_initial_data: install/webmon
 	# use fixtures to load initial data
 	python $(MANAGE_PY_WEBMON) loaddata $(REPORT_DB_INIT)
-
-	@echo "\n\nReady to go\n"
 
 SNSdata.tar.gz:
 	# this doesn't have explicit dependencies on the data

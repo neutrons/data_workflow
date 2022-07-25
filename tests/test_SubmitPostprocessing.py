@@ -14,8 +14,8 @@ class TestPostProcessingAdminView:
         # connect to DB
         cls.conn = psycopg2.connect(
             database="workflow",
-            user="postgres",
-            password="postgres",
+            user="workflow",
+            password="workflow",
             port="5432",
             host="localhost",
         )
@@ -53,7 +53,7 @@ class TestPostProcessingAdminView:
         client.get(URL)  # sets the cookie
         csrftoken = client.cookies["csrftoken"]
 
-        login_data = dict(username="postgres", password="postgres", csrfmiddlewaretoken=csrftoken)
+        login_data = dict(username="workflow", password="workflow", csrfmiddlewaretoken=csrftoken)
         response = client.post(URL, data=login_data)
         assert response.status_code == 200
         return client

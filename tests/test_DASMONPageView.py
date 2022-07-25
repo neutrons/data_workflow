@@ -18,7 +18,7 @@ class TestDASMONPageView:
 
     @pytest.fixture
     def dasmon_diagnostics(self):
-        r = self.login("/dasmon/arcs/diagnostics/", "postgres", "postgres")
+        r = self.login("/dasmon/arcs/diagnostics/", "workflow", "workflow")
         yield r
 
     def testVerifyDASMONPageView(self, dasmon_diagnostics):
