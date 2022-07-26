@@ -109,6 +109,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer
+    ports:
+      - "8888:8888"
     hostname: autoreducer
     healthcheck:
       test: ["CMD", "pgrep", "python"]

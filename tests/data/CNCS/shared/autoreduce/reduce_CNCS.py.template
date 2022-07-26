@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+import sys
+from datetime import datetime
+print("Running reduction for "+sys.argv[1]+" at " + datetime.isoformat(datetime.now()))
+
+MaskBTPParameters=[]
+${mask}
+raw_vanadium="${raw_vanadium}"
+processed_vanadium="${processed_vanadium}"
+VanadiumIntegrationRange=[${vanadium_integration_min},${vanadium_integration_max}]#integration range for Vanadium in TOF at 1.0 meV
+grouping="${grouping}" #allowed values 1x1, 2x1, 4x1, 8x1, 8x2 powder
+Emin="${e_min}"
+Emax="${e_max}"
+Estep="${e_step}"
+E_pars_in_mev=${e_pars_in_mev}
+TIB_min="${tib_min}"
+TIB_max="${tib_max}"
+doTIB=${do_tib}
+T0="${t0}"
+Motor_names="${motor_names}"
+Temperature_names="${temperature_names}"
+create_elastic_nxspe=${create_elastic_nxspe} #+-0.1Ei, 5 steps
+create_MDnxs=${create_md_nxs}
+a="${a}"
+b="${b}"
+c="${c}"
+alpha="${alpha}"
+beta="${beta}"
+gamma="${gamma}"
+uVector="${u_vector}"
+vVector="${v_vector}"
+sub_directory="${sub_directory}"
+auto_tzero_flag = ${auto_tzero_flag}

@@ -46,7 +46,7 @@ class TestWorkflow:
     def getReductionScriptContents(self):
         return subprocess.check_output(
             "docker exec data_workflow_autoreducer_1 cat /SNS/ARCS/shared/autoreduce/reduce_ARCS.py", shell=True
-        )
+        ).decode()
 
     def initReductionGroup(self, conn, cursor):
         cursor.execute("SELECT * from reduction_reductionproperty WHERE instrument_id = 3;")
@@ -100,9 +100,14 @@ class TestWorkflow:
 
     def testReduction(self, instrument_scientist_client):
 
+        # backup reduce_ARCS.py
+        os.system(
+            """docker exec -i data_workflow_autoreducer_1 bash -c \
+            'cp /SNS/ARCS/shared/autoreduce/reduce_ARCS.py /tmp/reduce_ARCS.py'"""
+        )
         self.prepareEnvironmentForReductionScriptGeneration()
 
-        assert not self.getReductionScriptContents()
+        assert "this is a template" not in self.getReductionScriptContents()
 
         conn = psycopg2.connect(
             database="workflow",
@@ -119,8 +124,10 @@ class TestWorkflow:
 
         instrument_scientist_client.post(self.URL_base + self.reduction_path, data=reduction_data, timeout=None)
         time.sleep(1)
-        assert self.getReductionScriptContents()
+        assert "this is a template" in self.getReductionScriptContents()
+
+        # return reduce_ARCS.py back to starting state
         os.system(
-            """docker exec -i data_workflow_autoreducer_1 bash -c '> /SNS/ARCS/shared/autoreduce/reduce_ARCS.py'"""
+            """docker exec -i data_workflow_autoreducer_1 bash -c \
+            'cp /tmp/reduce_ARCS.py /SNS/ARCS/shared/autoreduce/reduce_ARCS.py'"""
         )
-        assert not self.getReductionScriptContents()

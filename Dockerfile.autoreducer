@@ -37,6 +37,7 @@ RUN cd /SNS && tar xzf ${DATA_TARBALL}
 
 # create startup script
 RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
+    echo "cd /SNS && python2 -m SimpleHTTPServer 8888 &" >> /usr/bin/run_postprocessing && \
     echo "/opt/postprocessing/queueProcessor.py &" >> /usr/bin/run_postprocessing && \
     echo "sleep 1" >> /usr/bin/run_postprocessing && \
     echo "tail -F /opt/postprocessing/log/postprocessing.log" >> /usr/bin/run_postprocessing && \
