@@ -37,11 +37,8 @@ def dashboard(request):
     # Get the system health status
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
     instrument_data = view_util.get_instrument_status_summary()
-    cutoff = int(len(instrument_data) / 2)
     template_values = {
         "instruments": instrument_data,
-        "instruments_left": instrument_data[:cutoff],
-        "instruments_right": instrument_data[cutoff:],
         "data": view_util.get_dashboard_data(),
         "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
         "postprocess_status": view_util.get_system_health(),
@@ -64,10 +61,8 @@ def dashboard_simple(request):
     # Get the system health status
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
     instrument_data = view_util.get_instrument_status_summary()
-    cutoff = int(len(instrument_data) / 2)
     template_values = {
-        "instruments_left": instrument_data[:cutoff],
-        "instruments_right": instrument_data[cutoff:],
+        "instruments": instrument_data,
         "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
         "postprocess_status": view_util.get_system_health(),
         "update_url": reverse("dasmon:dashboard_update"),

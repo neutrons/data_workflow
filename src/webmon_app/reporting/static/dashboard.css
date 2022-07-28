@@ -1,0 +1,67 @@
+.dashboard_parent {
+    width: fit-content;
+    margin-top: 2em;
+}
+
+.select_menu {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1em;
+}
+.select_menu label {
+    margin-top: 1em;
+}
+
+.column_heading_parent {
+    display: grid;
+    width: 100%;
+    grid-column-gap: 5em;
+}
+
+.first_column_heading {
+    width: 50%;
+    display: flex;
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.second_column_heading {
+    width: 50%;
+    display: flex;
+    grid-row: 1;
+    grid-column: 2;
+}
+
+.heading_element {
+    display: inline;
+    min-width: 7em;
+    border-bottom: 1px lightgray solid;
+    border-left: 1px lightgray solid;
+}
+
+.heading_element:nth-child(1){
+    border-left: 0px lightgray solid;
+}
+
+.instrument_list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-column-gap: 5em;
+    margin-top: 1em;
+    width: 100%;
+}
+
+.instrument_entry {
+    display: flex;
+    margin-bottom: 1em;
+    align-items: center;
+}
+
+.entry_element {
+    display: inline;
+    min-width: 8.2em;
+}
+
+#facility-select {
+    width: 10%;
+}

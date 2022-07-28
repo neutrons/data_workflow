@@ -6,6 +6,7 @@
 
 {% block header %}
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<link rel="stylesheet" media="all" href="/static/dashboard_simple.css" />
 
 <script>
   function poll() {
@@ -49,48 +50,31 @@
 </div>
 </div>
 
-<p>
-List of instruments:<br>
-<label for="facility-select">Facility:</label>
-<select name="facilities" id="facility-select">
-  <option value="all">All</option>
-  <option value="hfir">HFIR</option>
-  <option value="sns">SNS</option>
-</select>
-<table class="dashboard_table"><tr>
-  <td><table class="dashboard_table">
-    <thead>
-      <tr>
-        <th style="min-width:75px">Instrument</th> <th>Status</th>
-      </tr>
-    </thead>
-    <tbody class='status_box'>
-    {% for item in instruments_left %}
-      <tr class='{{ item.facility }}_instrument instrument_row'>
-        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
-        <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-      </tr>
+<div class="dashboard_parent">
+<div class="select_menu">
+  <span>List of instruments:</span>
+  <label for="facility-select">Facility:</label>
+  <select name="facilities" id="facility-select">
+    <option value="all">All</option>
+    <option value="hfir">HFIR</option>
+    <option value="sns">SNS</option>
+  </select>
+</div>
+<div class="column_heading_parent">
+    <div class="first_column_heading"><h3 class="heading_element">Instrument</h3><h3 class="heading_element">Status</h3></div>
+    <div class="second_column_heading"><h3 class="heading_element">Instrument</h3><h3 class="heading_element">Status</h3></div>
+</div>
+<div class="instrument_list">
+    <!-- Columns are handled by CSS using a grid. -->
+    {% for item in instruments %}
+    <div class="{{ item.facility }}_instrument instrument_entry">
+        <a href="{{ item.url|safe }}" class="entry_element">{{ item.name|upper }}</a>
+        <span id="{{ item.name }}_recording_status" class="entry_element">{{ item.recording_status }}</span>
+    </div>
     {% endfor %}
-    </tbody>
-  </table></td>
-  <td style="min-width:75px"></td>
-  <td><table class="dashboard_table">
-    <thead>
-      <tr>
-        <th style="min-width:75px">Instrument</th> <th>Status</th>
-      </tr>
-    </thead>
-    <tbody class='status_box'>
-    {% for item in instruments_right %}
-      <tr class='{{ item.facility }}_instrument instrument_row'>
-        <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
-        <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table></td>
+</div>
+</div>
 
-</tr></table>
 <script language="javascript" type="text/javascript" src="/static/facility_filter.js"></script>
   {% endblock %}
 {% block nocontent %}{% endblock %}

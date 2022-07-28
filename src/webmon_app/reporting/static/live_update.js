@@ -1,5 +1,5 @@
 function global_system_status_update(data, i){
-    var content = "<span id='"+data.instruments[i].name+"_recording_status'>"+data.instruments[i].recording_status+"</span>";
+    var content = "<span id='"+data.instruments[i].name+"_recording_status' class='entry_element'>"+data.instruments[i].recording_status+"</span>";
     $('#'+data.instruments[i].name+'_recording_status').replaceWith(content);
     return content
 }

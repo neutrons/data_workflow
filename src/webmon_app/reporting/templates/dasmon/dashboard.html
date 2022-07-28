@@ -9,6 +9,7 @@
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
+<link rel="stylesheet" media="all" href="/static/dashboard.css" />
 
 <script>
   var instrument_rates = {
@@ -63,51 +64,33 @@
 </div>
 </div>
 
-<p>
-List of instruments:<br>
+<div class="dashboard_parent">
+<div class="select_menu">
+  <span>List of instruments:</span>
   <label for="facility-select">Facility:</label>
   <select name="facilities" id="facility-select">
     <option value="all">All</option>
     <option value="hfir">HFIR</option>
     <option value="sns">SNS</option>
   </select>
-  <table class="dashboard_table">
-    <!-- Left column of instruments -->
-    <td><table class="dashboard_table">
-        <!-- Column headers -->
-        <thead><tr><th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th></tr></thead>
-        <!-- Loop over each instrument producing one row -->
-        <tbody class='status_box'>
-        {% for item in instruments_left %}
-            <tr class='{{ item.facility }}_instrument instrument_row'>
-                <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
-                <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-                <td><div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div></td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table></td>
+</div>
+<div class="column_heading_parent">
+    <div class="first_column_heading"><h3 class="heading_element">Instrument</h3><h3 class="heading_element">Status</h3><h3 class="heading_element">Processing</h3></div>
+    <div class="second_column_heading"><h3 class="heading_element">Instrument</h3><h3 class="heading_element">Status</h3><h3 class="heading_element">Processing</h3></div>
+</div>
+<div class="instrument_list">
+    <!-- Columns are handled by CSS using a grid. -->
+    {% for item in instruments %}
+    <div class="{{ item.facility }}_instrument instrument_entry">
+        <a href="{{ item.url|safe }}" class="entry_element">{{ item.name|upper }}</a>
+        <span id="{{ item.name }}_recording_status" class="entry_element">{{ item.recording_status }}</span>
+        <div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots entry_element"></div>
+    </div>
+    {% endfor %}
+</div>
+</div>
 
-    <!-- Insert some space between left and right columns of instruments -->
-    <td style="min-width:75px"></td>
-
-    <!-- Right column of instruments -->
-    <td><table class="dashboard_table">
-        <!-- Column headers -->
-        <thead><tr><th style="min-width:75px">Instrument</th> <th>Status</th> <th>Processing</th></tr></thead>
-        <!-- Loop over each instrument producing one row -->
-        <tbody class='status_box'>
-        {% for item in instruments_right %}
-            <tr class='{{ item.facility }}_instrument instrument_row'>
-                <td><a href='{{ item.url|safe }}'>{{ item.name|upper }}</a></td>
-                <td><span id='{{ item.name }}_recording_status'>{{ item.recording_status }}</span></td>
-                <td><div id="runs_per_hour_{{ item.name|lower }}" class="dashboard_plots"></div></td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table></td>
-  </table>
-  <script language="javascript" type="text/javascript" src="/static/facility_filter.js"></script>
-  <script id="source" language="javascript" type="text/javascript">plot_rates();</script>
-  {% endblock %}
+<script language="javascript" type="text/javascript" src="/static/facility_filter.js"></script>
+<script id="source" language="javascript" type="text/javascript">plot_rates();</script>
+{% endblock %}
 {% block nocontent %}{% endblock %}
