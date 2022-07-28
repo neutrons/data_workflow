@@ -79,6 +79,7 @@
     <div class="second_column_heading"><h3 class="heading_element">Instrument</h3><h3 class="heading_element">Status</h3><h3 class="heading_element">Processing</h3></div>
 </div>
 <div class="instrument_list">
+    <!-- Columns are handled by CSS using a grid. -->
     {% for item in instruments %}
     <div class="{{ item.facility }}_instrument instrument_entry">
         <a href="{{ item.url|safe }}" class="entry_element">{{ item.name|upper }}</a>

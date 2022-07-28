@@ -107,7 +107,7 @@ class TestRunPageView:
     def verifyDashboard(self, r):
         html = self.removeWhitespace(r.text)
 
-        self.assertHtml("""<p>List of instruments:<br>""", html)
+        self.assertHtml("""<span>List of instruments:</span>""", html)
         self.assertHtml(
             """<a href="/dasmon/dashboard/">extended dashboard</a> |
          <a href="/dasmon/summary/">latest runs</a>""",
@@ -126,7 +126,7 @@ class TestRunPageView:
         html = self.removeWhitespace(r.text)
 
         self.assertHtml("""<div id="runs_per_hour_""", html)
-        self.assertHtml("""" class="dashboard_plots"></div>""", html)
+        self.assertHtml("""class="dashboard_plots""", html)
 
     def testGeneralUserVerifyExtendedDashboard(self, extended_dashboard_general_user):
         assert extended_dashboard_general_user.status_code == 200
