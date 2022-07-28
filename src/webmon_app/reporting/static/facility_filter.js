@@ -17,7 +17,7 @@ function filter_facility(selection_value) {
             item.classList.remove("visible_instrument_entry");
         });
     }
-    
+
     if (document.querySelectorAll(".visible_instrument_entry").length == 1) {
         document.querySelector(".second_column_heading").style.display = "none";
     } else {
@@ -29,5 +29,4 @@ document.querySelector("#facility-select").addEventListener("change", (event) =>
     filter_facility(event.target.value);
 });
 // Call filter_facility to handle page refreshes.
-filter_facility(document.querySelector("#facility-select").value); 
-
+filter_facility(document.querySelector("#facility-select").value);

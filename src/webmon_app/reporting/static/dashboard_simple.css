@@ -37,7 +37,7 @@
     border-left: 1px lightgray solid;
 }
 
-.heading_element:nth-child(1){ 
+.heading_element:nth-child(1){
     border-left: 0px lightgray solid;
 }
 
@@ -64,5 +64,3 @@
 #facility-select {
     width: 15%;
 }
-
-
