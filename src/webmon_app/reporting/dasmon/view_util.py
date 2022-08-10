@@ -363,8 +363,10 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
         #    STATUS_FAULT = 1
         #    STATUS_UNRESPONSIVE = 2
         #    STATUS_INACTIVE = 3
+        meaning = {0: "OK", 1: "FAULT", 2: "UNRESPONSIVE", 3: "INACTIVE"}
         if int(last_value.value) > 0:
-            logging.error("%s status = %s", process, last_value.value)
+            value = int(last_value.value)
+            logging.error("%s - %s status = %s (%d)", instrument_id, process, meaning.get(value, "UNKNOWN"), value)
             return 2
     except:  # noqa: E722
         logging.debug("No cached status for %s on instrument %s", process, instrument_id.name)
