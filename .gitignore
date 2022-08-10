@@ -7,6 +7,9 @@ SNSdata.tar.gz
 src/dasmon_app/django_nscd_dasmon.egg-info/
 src/webmon_app/django_nscd_webmon.egg-info/
 src/workflow_app/django_nscd_workflow.egg-info/
+src/dasmon_app/dasmon_listener/_version.py
+src/webmon_app/reporting/_version.py
+src/workflow_app/workflow/_version.py
 
 *.o
 *.obj
