@@ -2,7 +2,6 @@
 """
     Live monitoring
 """
-import sys
 import json
 import logging
 from django.http import HttpResponse
@@ -471,7 +470,7 @@ def acknowledge_signal(request, instrument, sig_id):
         sig_object = get_object_or_404(Signal, id=sig_id)
         sig_object.delete()
     except:  # noqa: E722
-        logging.error("ACK signal %s/%s: %s" % (instrument, sig_id, sys.exc_info()[1]))
+        logging.exception("ACK signal %s/%s:", instrument, sig_id)
     return HttpResponse()
 
 
@@ -530,12 +529,12 @@ def notifications(request):
                         user_options.save()
                     except:  # noqa: E722
                         alert_list.append("Could not find instrument %s" % item)
-                        logging.error("Notification registration failed: %s", sys.exc_info()[1])
+                        logging.exception("Notification registration failed:")
                 alert_list.append("Your changes have been saved.")
 
             except:  # noqa: E722
                 alert_list.append("There was a problem processing your request.")
-                logging.error("Error processing notification settings: %s", sys.exc_info()[1])
+                logging.exception("Error processing notification settings:")
         else:
             alert_list.append("Your form is invalid. Please modify your entries and re-submit.")
             logging.error("Invalid form %s", options_form.errors)

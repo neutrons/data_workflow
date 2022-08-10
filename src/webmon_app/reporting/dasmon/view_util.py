@@ -4,7 +4,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 from reporting.report.models import Instrument, DataRun, WorkflowSummary
 from reporting.dasmon.models import (
     Parameter,
@@ -182,7 +181,7 @@ def is_running(instrument_id):
         else:
             return "Stopped"
     except:  # noqa: E722
-        logger.error("Could not determine running condition: %s", str(sys.exc_info()[1]))
+        logger.exception("Could not determine running condition:")
     return "Unknown"
 
 
@@ -325,7 +324,7 @@ def get_live_variables(request, instrument_id):
             data_dict.append([key, data_list])
         except:  # noqa: E722
             # Could not find data for this key
-            logger.warning("Could not process %s: %s", key, str(sys.exc_info()[1]))
+            logger.warning("Could not process %s", key, exc_info=True)
     return data_dict
 
 
@@ -464,7 +463,7 @@ def workflow_diagnostics(timeout=None):
                 pid_list.append(item.value)
                 process_list.append({"pid": item.value, "time": timezone.localtime(item.timestamp)})
     except:  # noqa: E722
-        logger.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("workflow_diagnostics:")
 
     dasmon_listener_list = []
     try:
@@ -479,7 +478,7 @@ def workflow_diagnostics(timeout=None):
 
                 dasmon_listener_list.append({"pid": item.value, "time": timezone.localtime(item.timestamp)})
     except:  # noqa: E722
-        logger.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("workflow_diagnostics:")
 
     # Heartbeat
     # NOTE:
@@ -628,7 +627,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
             status_time = last_value.timestamp
     except:  # noqa: E722
         # No data available, keep defaults
-        logger.error("pvstreamer_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("pvstreamer_diagnostics:")
 
     # Heartbeat
     try:
@@ -688,7 +687,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
             status_time = last_value.timestamp
     except:  # noqa: E722
         # No data available, keep defaults
-        logger.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("dasmon_diagnostics:")
 
     # Recent PVs, which come from DASMON straight to the DB
     last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -701,7 +700,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         last_pv_timestamp = latest.update_time
     except:  # noqa: E722
         # No data available, keep defaults
-        logger.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("dasmon_diagnostics:")
 
     # Recent AMQ messages
     last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -859,8 +858,7 @@ def get_completeness_status(instrument_id):
 
         return STATUS_WARNING
     except:  # noqa: E722
-        logger.error("Output data completeness status")
-        logger.error(sys.exc_info()[1])
+        logger.exception("Output data completeness status")
         return STATUS_UNKNOWN
 
 
@@ -911,7 +909,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 run_list = DataRun.objects.filter(id__gte=complete_since).order_by("created_on").reverse()
         except:  # noqa: E722
             # Invalid value for complete_since
-            logger.error("get_live_runs_update: %s", str(sys.exc_info()[1]))
+            logger.exception("get_live_runs_update:")
 
     status_list = []
     update_list = []
@@ -997,7 +995,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
         else:
             run_list = get_run_list(runs)
     except:  # noqa: E722
-        logger.error("get_live_runs: %s", str(sys.exc_info()[1]))
+        logger.exception("get_live_runs:")
     return run_list, first_run, last_run
 
 
@@ -1026,7 +1024,7 @@ def get_run_list(run_list):
                 _t = r.created_on.ctime()
             run_dicts.append(dict(run=r.run_number, timestamp=_t, status=status))
     except:  # noqa: E722
-        logger.error("dasmon.view_util.get_run_list: %s", sys.exc_info()[1])
+        logger.exception("dasmon.view_util.get_run_list:")
     return run_dicts
 
 
@@ -1054,7 +1052,7 @@ def get_signals(instrument_id):
     try:
         signals = Signal.objects.filter(instrument_id=instrument_id)
     except:  # noqa: E722
-        logger.error("Error reading signals: %s", str(sys.exc_info()[1]))
+        logger.exception("Error reading signals:")
         return []
 
     sig_alerts = []
@@ -1071,7 +1069,7 @@ def get_signals(instrument_id):
                 sig_entry.key = str(monitored[0].pv_name)
         except:  # noqa: E722
             # Could not find an entry for this signal
-            logger.error("Problem finding PV for signal: %s", str(sys.exc_info()[1]))
+            logger.exception("Problem finding PV for signal:")
 
         sig_alerts.append(sig_entry)
 
@@ -1101,16 +1099,16 @@ def get_signals(instrument_id):
                 for point in data[0][1]:
                     data_list.append("%g:%g" % (point[0], point[1]))
             except:  # noqa: E722
-                logger.error(sys.exc_info()[1])
+                logger.exception()
             sig_entry.data = ",".join(data_list)
             sig_alerts.append(sig_entry)
     except:  # noqa: E722
-        logger.error("Could not process monitored PVs: %s", str(sys.exc_info()[1]))
+        logger.exception("Could not process monitored PVs:")
 
     try:
         return sorted(sig_alerts, key=lambda s: str(s.name).lower())
     except:  # noqa: E722
-        logger.error("Could not sort monitored PV list: %s", str(sys.exc_info()[1]))
+        logger.exception("Could not sort monitored PV list:")
     return sig_alerts
 
 
@@ -1130,12 +1128,12 @@ def get_instrument_status_summary():
             try:
                 das_status = get_component_status(i, process="dasmon")
             except:  # noqa: E722
-                logger.error(sys.exc_info()[1])
+                logger.exception()
                 das_status = 2
             try:
                 pvstreamer_status = get_pvstreamer_status(i)
             except:  # noqa: E722
-                logger.error(sys.exc_info()[1])
+                logger.exception()
                 pvstreamer_status = 2
         else:
             dasmon_url = reverse("dasmon:live_runs", args=[i.name])

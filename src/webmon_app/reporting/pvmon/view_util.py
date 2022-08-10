@@ -5,7 +5,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 from reporting.pvmon.models import PVName, PV, PVCache, PVStringCache
 from django.utils import dateformat, timezone
 from django.conf import settings
@@ -98,7 +97,7 @@ def get_live_variables(request, instrument_id, key_id=None):
             data_dict.append([key, data_list])
         except:  # noqa: E722
             # Could not find data for this key
-            logging.warning("Could not process %s: %s", key, str(sys.exc_info()[1]))
+            logging.warning("Could not process %s: %s", key, exc_info=True)
     return data_dict
 
 

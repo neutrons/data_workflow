@@ -5,7 +5,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2016 Oak Ridge National Laboratory
 """
-import sys
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -29,7 +28,7 @@ def validate_integer_list(value):
                 try:
                     value_list.extend(range(int(range_toks[0]), int(range_toks[1]) + 1))
                 except:  # noqa: E722
-                    logging.error(sys.exc_info()[1])
+                    logging.exception("")
                     raise ValidationError("Error parsing %s for a range of integers" % value)
             else:
                 logging.error("Found more than two tokens around -")
@@ -39,7 +38,7 @@ def validate_integer_list(value):
             try:
                 value_list.append(int(item))
             except:  # noqa: E722
-                logging.error(sys.exc_info()[1])
+                logging.exception("")
                 raise ValidationError("Error parsing %s for a range of integers" % value)
 
     return value_list
@@ -217,7 +216,7 @@ class ProcessingForm(forms.Form):
         try:
             queue = StatusQueue.objects.get(name=self.cleaned_data["task"])
         except StatusQueue.DoesNotExist:
-            logging.error(sys.exc_info()[1])
+            logging.exception("")
 
         # Returns a report and task to be sent
         return {

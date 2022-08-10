@@ -2,7 +2,6 @@
 """
     ActiveMQ listener class for the workflow manager
 """
-import sys
 import stomp
 import logging
 from . import states
@@ -61,7 +60,7 @@ class Listener(stomp.ConnectionListener):
             action = states.StateAction(connection=connection, use_db_task=self._use_db_tasks)
             action(headers, message)
         except:  # noqa: E722
-            logging.error("Listener failed to process message: %s", str(sys.exc_info()[1]))
+            logging.exception("Listener failed to process message:")
             logging.error("  Message: %s: %s", headers["destination"], str(message))
         if not self._auto_ack:
             connection.ack(headers["message-id"], headers["subscription"])

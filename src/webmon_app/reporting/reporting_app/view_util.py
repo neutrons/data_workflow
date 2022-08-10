@@ -3,7 +3,6 @@
 
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 from django.conf import settings
 import logging
 
@@ -37,5 +36,5 @@ def reduction_setup_url(instrument):
 
             return reporting.reduction.view_util.reduction_setup_url(instrument)
     except:  # noqa: E722
-        logging.error("Error getting reduction setup url: %s", sys.exc_info()[1])
+        logging.exception("Error getting reduction setup url:")
     return None

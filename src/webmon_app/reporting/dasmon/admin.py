@@ -9,7 +9,6 @@ from reporting.dasmon.models import (
 )
 from django.contrib import admin
 import datetime
-import sys
 import logging
 
 
@@ -22,7 +21,7 @@ class StatusVariableAdmin(admin.ModelAdmin):
             try:
                 return datetime.datetime.fromtimestamp(int(obj.value))
             except:  # noqa: E722
-                logging.error(sys.exc_info()[1])
+                logging.exception("")
                 return "error"
         return "-"
 

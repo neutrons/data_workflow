@@ -5,7 +5,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 import time
 import stomp
 import logging
@@ -159,7 +158,7 @@ class Client:
                     allowed_lag=self._workflow_check_delay,
                 ).verify_workflow()
             except:  # noqa: E722
-                logging.error("Workflow verification failed: %s", sys.exc_info()[1])
+                logging.exception("Workflow verification failed:")
 
     def listen_and_wait(self, waiting_period=1.0):
         """
@@ -173,7 +172,7 @@ class Client:
             self.connect()
             self.verify_workflow()
         except:  # noqa: E722
-            logging.error("Problem starting AMQ client: %s", sys.exc_info()[1])
+            logging.exception("Problem starting AMQ client:")
 
         last_heartbeat = 0
         while True:
@@ -198,12 +197,12 @@ class Client:
                             persistent="false",
                         )
                 except:  # noqa: E722
-                    logging.error("Problem sending heartbeat: %s", sys.exc_info()[1])
+                    logging.exception("Problem sending heartbeat:")
 
                 # Check for workflow completion
                 if time.time() - self._workflow_check_start > self._workflow_check_delay:
                     self.verify_workflow()
                     self._workflow_check_start = time.time()
             except:  # noqa: E722
-                logging.error("Problem connecting to AMQ broker: %s", sys.exc_info()[1])
+                logging.exception("Problem connecting to AMQ broker:")
                 time.sleep(5.0)

@@ -4,7 +4,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 import logging
 import json
 import datetime
@@ -124,7 +123,7 @@ def needs_reduction(request, run_id):
     try:
         red_queue = StatusQueue.objects.get(name="REDUCTION.DATA_READY")
     except StatusQueue.DoesNotExist:
-        logging.error(sys.exc_info()[1])
+        logging.exception("")
         return False
 
     # Check whether we have a task for this queue
@@ -214,7 +213,7 @@ def processing_request(request, instrument, run_id, destination):
             send_processing_request(instrument_id, run_object, request.user, destination=destination)
         except:  # noqa: E722
             logging.error("Could not send post-processing request: %s", destination)
-            logging.error(sys.exc_info()[1])
+            logging.exception("")
             return HttpResponseServerError()
     # return render(request, 'report/processing_request_failure.html', {})
     return redirect(reverse("report:detail", args=[instrument, run_id]))
@@ -282,7 +281,7 @@ def run_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:  # noqa: E722
         connection.close()
-        logging.error("Run rate (%s): %s", str(instrument_id), sys.exc_info()[1])
+        logging.exception("Run rate (%s):", str(instrument_id))
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -316,7 +315,7 @@ def error_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except:  # noqa: E722
         connection.close()
-        logging.error("Error rate (%s): %s", str(instrument_id), sys.exc_info()[1])
+        logging.exception("Error rate (%s):", str(instrument_id))
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -416,7 +415,7 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
             else:
                 status = "<span %s class='red'>incomplete</span>" % element_id
     except:  # noqa: E722
-        logging.error("report.view_util.get_run_status_text: %s", sys.exc_info()[1])
+        logging.exception("report.view_util.get_run_status_text:")
     return status
 
 
@@ -451,7 +450,7 @@ def get_run_list_dict(run_list):
                 }
             )
     except:  # noqa: E722
-        logging.error("report.view_util.get_run_list_dict: %s", sys.exc_info()[1])
+        logging.exception("report.view_util.get_run_list_dict:")
     return run_dicts
 
 
@@ -491,7 +490,7 @@ def extract_ascii_from_div(html_data, trace_id=None):
                 return ascii_data
     except:  # noqa: E722
         # Unable to extract data from <div>
-        logging.debug("Unable to extract data from <div>: %s", sys.exc_info()[1])
+        logging.debug("Unable to extract data from <div>:", exc_info=True)
     return None
 
 
@@ -565,7 +564,7 @@ def get_plot_data_from_server(instrument, run_id, data_type="json"):
         if data_request.status == 200:
             json_data = data_request.read()
     except:  # noqa: E722
-        logging.error("Could not pull data from live data server:\n%s", sys.exc_info()[1])
+        logging.exception("Could not pull data from live data server:")
     return json_data
 
 
@@ -615,7 +614,7 @@ def extract_d3_data_from_json(json_data):
                 else:
                     plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
     except:  # noqa: E722
-        logging.error("Error finding reduced json data: %s", sys.exc_info()[1])
+        logging.exception("Error finding reduced json data:")
     return plot_data, x_label, y_label
 
 
@@ -638,5 +637,5 @@ def find_skipped_runs(instrument_id, start_run_number=0):
             if len(query_set) == 0:
                 missing_runs.append(i)
     except:  # noqa: E722
-        logging.error("Error finding missing runs: %s", sys.exc_info()[1])
+        logging.exception("Error finding missing runs:")
     return missing_runs

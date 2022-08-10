@@ -2,7 +2,6 @@
 """
     View utility functions for user management
 """
-import sys
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
@@ -118,7 +117,7 @@ def login_or_local_required_401(fn):
                 return fn(request, *args, **kws)
             return HttpResponse(status=401)
         except:  # noqa: E722
-            logging.error("[%s]: %s", request.path, sys.exc_info()[1])
+            logging.exception("[%s]:", request.path)
             return HttpResponse(status=500)
 
     return request_processor

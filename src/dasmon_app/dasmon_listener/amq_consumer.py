@@ -123,8 +123,7 @@ class Listener(stomp.ConnectionListener):
         try:
             data_dict = json.loads(message)
         except:  # noqa: E722
-            logging.error("Could not decode message from %s", destination)
-            logging.error(sys.exc_info()[1])
+            logging.exception("Could not decode message from %s", destination)
             return
         # If we get a STATUS message, store it as such
         if destination.endswith(".ACK"):
@@ -140,8 +139,7 @@ class Listener(stomp.ConnectionListener):
                 # Get the instrument object
                 instrument = self.retrieve_instrument(instrument_name)
         except:  # noqa: E722
-            logging.error("Could not extract instrument name from %s", destination)
-            logging.error(str(sys.exc_info()[1]))
+            logging.exception("Could not extract instrument name from %s", destination)
             return
 
         if "STATUS" in destination:
@@ -178,8 +176,7 @@ class Listener(stomp.ConnectionListener):
                 logging.warning("SIGNAL: %s: %s", destination, str(data_dict))
                 process_signal(instrument, data_dict)
             except:  # noqa: E722
-                logging.error("Could not process signal: %s", str(data_dict))
-                logging.error(sys.exc_info()[1])
+                logging.exception("Could not process signal: %s", str(data_dict))
 
         elif "APP.SMS" in destination:
             process_SMS(instrument, headers, data_dict)
@@ -258,7 +255,7 @@ def send_message(sender, recipients, subject, message):
         s.sendmail(sender, recipients, msg.as_string())
         s.quit()
     except:  # noqa: E722
-        logging.error("Could not send message: %s", sys.exc_info()[1])
+        logging.exception("Could not send message:")
 
 
 def process_SMS(instrument_id, headers, data):
@@ -296,7 +293,7 @@ def process_SMS(instrument_id, headers, data):
                 json.dumps(status_data),
             )
     except:  # noqa: E722
-        logging.error("Could not process SMS message: %s", sys.exc_info()[1])
+        logging.exception("Could not process SMS message:")
 
 
 def process_ack(data=None, headers=None):
@@ -355,7 +352,7 @@ def process_ack(data=None, headers=None):
             if EXTRA_LOGS:
                 logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)
     except:  # noqa: E722
-        logging.error("Error processing ack: %s", sys.exc_info()[1])
+        logging.exception("Error processing ack:")
 
 
 def notify_users(instrument_id, signal):
@@ -380,7 +377,7 @@ def notify_users(instrument_id, signal):
                 message=message,
             )
     except:  # noqa: E722
-        logging.error("Failed to notify users: %s", sys.exc_info()[1])
+        logging.exception("Failed to notify users:")
 
 
 def process_signal(instrument_id, data):
@@ -493,7 +490,7 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
                 )
                 status_entry.timestamp = datetime_timestamp
             except:  # noqa: E722
-                logging.error("Could not process timestamp [%s]: %s", timestamp, sys.exc_info()[1])
+                logging.exception("Could not process timestamp [%s]:")
         status_entry.save()
 
     # Update the latest value
@@ -665,9 +662,9 @@ class Client:
                         else:
                             logging.error("settings.PING_TOPIC is not defined")
                 except:  # noqa: E722
-                    logging.error("Problem writing heartbeat %s", sys.exc_info()[1])
+                    logging.exception("Problem writing heartbeat")
             except:  # noqa: E722
-                logging.error("Problem connecting to AMQ broker %s", sys.exc_info()[1])
+                logging.exception("Problem connecting to AMQ broker")
                 time.sleep(5.0)
 
     def send(self, destination, message, persistent="false"):

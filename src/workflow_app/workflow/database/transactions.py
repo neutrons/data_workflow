@@ -2,11 +2,9 @@
 """
     Perform DB transactions
 """
-import sys
 import os
 import json
 import logging
-import traceback
 
 # The workflow modules must be on the python path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "workflow.database.settings")
@@ -86,8 +84,7 @@ def add_status_entry(headers, data):
             ipts_id.instruments.add(instrument_id)
             ipts_id.save()
     except:  # noqa: E722
-        traceback.print_exc()
-        logging.error(sys.exc_info()[1])
+        logging.exception("")
 
     # Check whether we already have an entry for this run
     run_number = int(data_dict["run_number"])
@@ -174,7 +171,7 @@ def get_task(message_headers, message_data):
     try:
         data_dict = json.loads(message_data)
     except:  # noqa: E722
-        logging.error("transactions.get_task expects JSON-encoded message: %s", sys.exc_info()[1])
+        logging.exception("transactions.get_task expects JSON-encoded message:")
         return None
 
     # Look for instrument

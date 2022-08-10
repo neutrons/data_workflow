@@ -7,7 +7,6 @@
 import httplib2
 import json
 import logging
-import sys
 from reporting.dasmon.models import LegacyURL
 
 STATUS_HOST = "neutrons.ornl.gov"
@@ -49,7 +48,7 @@ def get_ops_status(instrument_id):
             organized_data.append({"group": group, "data": key_value_pairs})
         return organized_data
     except:  # noqa: E722
-        logging.warning("Could not get legacy DAS status: %s" % sys.exc_info()[1])
+        logging.warning("Could not get legacy DAS status:", exc_info=True)
         return []
 
 

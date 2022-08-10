@@ -10,7 +10,6 @@ from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
 from .database import transactions
 import json
 import logging
-import sys
 
 
 class StateAction:
@@ -62,7 +61,7 @@ class StateAction:
                 exec("from %s import %s as action_cls" % (module, cls))
                 action_cls(connection=self._send_connection)(headers, message)  # noqa: F821
             except:  # noqa: E722
-                logging.error("Task [%s] failed: %s" % (headers["destination"], sys.exc_info()[1]))
+                logging.exception("Task [%s] failed:", headers["destination"])
         if "task_queues" in task_def:
             for item in task_def["task_queues"]:
                 destination = "/queue/%s" % item
