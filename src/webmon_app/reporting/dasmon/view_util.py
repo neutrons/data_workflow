@@ -232,7 +232,7 @@ def fill_template_values(request, **template_args):
     template_args["dasmon_url"] = None
 
     # Get the system health status
-    template_args["das_status"] = get_system_health()
+    template_args["das_status"] = get_system_health(instrument_id)
     if is_adara:
         # Are we recording or not?
         template_args["recording_status"] = is_running(instrument_id)
