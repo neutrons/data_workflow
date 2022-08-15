@@ -33,6 +33,8 @@ services:
     environment:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
+      # gunicorn command line arguments
+      - GUNICORN_CMD_ARGS="--workers=4 --reload"
     depends_on:
       - db
 
