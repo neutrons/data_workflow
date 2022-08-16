@@ -714,7 +714,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     # Recent PVs
     if time.time() - last_pv_timestamp > timeout:
         slow_pvs = True
-        dasmon_conditions.append("No PV updates in the past %s seconds" % str(time.time() - last_pv_timestamp))
+        dasmon_conditions.append("No PV updates in the past %.2f seconds" % float(time.time() - last_pv_timestamp))
 
     # Recent AMQ
     try:
