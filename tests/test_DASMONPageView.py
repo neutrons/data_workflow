@@ -24,6 +24,12 @@ class TestDASMONPageView:
     def testVerifyDASMONPageView(self, dasmon_diagnostics):
         # verify finding the page
         assert dasmon_diagnostics.status_code == 200
+
+        # Check system statues
+        assert "<li class='status_0' id='workflow_status'>Workflow</li>" in dasmon_diagnostics.text
+        assert "<li class='status_0' id='dasmon_status'>DASMON</li>" in dasmon_diagnostics.text
+        assert "<li class='status_2' id='pvstreamer_status'>PVSD</li>" in dasmon_diagnostics.text
+
         # parse HTML
         parser = etree.HTMLParser()
         tree = etree.parse(StringIO(dasmon_diagnostics.text), parser)
