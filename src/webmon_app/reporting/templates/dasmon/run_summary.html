@@ -74,7 +74,7 @@ function poll(){
 
 {% block right_side_links %}
     <span style="float:right">
-    <a href="{% url 'dasmon:dashboard' %}">dashboard</a> | <b>latest runs</b>
+    <a href="{% url 'dasmon:dashboard' %}">dashboard</a> | <a href="{% url 'dasmon:dashboard_complete' %}">extended dashboard</a> | <b>latest runs</b>
     </span>
 {% endblock %}
 
