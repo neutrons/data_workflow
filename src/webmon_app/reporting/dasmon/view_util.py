@@ -4,7 +4,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 from reporting.report.models import Instrument, DataRun, WorkflowSummary
 from reporting.dasmon.models import (
     Parameter,
@@ -25,6 +24,8 @@ import time
 import reporting.report.view_util as report_view_util
 import reporting.pvmon.view_util as pvmon_view_util
 import reporting.users.view_util as users_view_util
+
+LOGNAME = "dasmon:view_util"
 
 
 def get_monitor_breadcrumbs(instrument_id, current_view="monitor"):
@@ -141,6 +142,8 @@ def get_latest(instrument_id, key_id):
 
 
 def is_running(instrument_id):
+    logger = logging.getLogger(LOGNAME)
+
     """
     Returns a string with the running status for a given instrument
 
@@ -150,7 +153,7 @@ def is_running(instrument_id):
         if not ActiveInstrument.objects.is_adara(instrument_id):
             return "-"
     except:  # noqa: E722
-        logging.error("Could not determine whether %s is running ADARA", str(instrument_id))
+        logger.error("Could not determine whether %s is running ADARA", str(instrument_id))
     try:
         is_recording = False
         key_id = Parameter.objects.get(name="recording")
@@ -178,7 +181,7 @@ def is_running(instrument_id):
         else:
             return "Stopped"
     except:  # noqa: E722
-        logging.error("Could not determine running condition: %s", str(sys.exc_info()[1]))
+        logger.exception("Could not determine running condition:")
     return "Unknown"
 
 
@@ -274,6 +277,7 @@ def get_live_variables(request, instrument_id):
     :param request: HttpRequest object
     :param instrument_id: Instrument object
     """
+    logger = logging.getLogger(LOGNAME)
     # Get variable update request
     live_vars = request.GET.get("vars", "")
     if len(live_vars) > 0:
@@ -284,7 +288,7 @@ def get_live_variables(request, instrument_id):
     try:
         plot_timeframe = int(plot_timeframe)
     except:  # noqa: E722
-        logging.warning("Bad time period request: %s", str(plot_timeframe))
+        logger.warning("Bad time period request: %s", str(plot_timeframe))
         plot_timeframe = settings.DASMON_PLOT_TIME_RANGE
 
     data_dict = []
@@ -320,7 +324,7 @@ def get_live_variables(request, instrument_id):
             data_dict.append([key, data_list])
         except:  # noqa: E722
             # Could not find data for this key
-            logging.warning("Could not process %s: %s", key, str(sys.exc_info()[1]))
+            logger.warning("Could not process %s", key, exc_info=True)
     return data_dict
 
 
@@ -347,6 +351,7 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
     :param red_timeout: number of hours before declaring a process dead
     :param yellow_timeout: number of seconds before declaring a process slow
     """
+    logger = logging.getLogger(LOGNAME)
     if yellow_timeout is None:
         yellow_timeout = settings.HEARTBEAT_TIMEOUT
     delta_short = datetime.timedelta(seconds=yellow_timeout)
@@ -363,18 +368,20 @@ def get_component_status(instrument_id, red_timeout=1, yellow_timeout=None, proc
         #    STATUS_FAULT = 1
         #    STATUS_UNRESPONSIVE = 2
         #    STATUS_INACTIVE = 3
+        meaning = {0: "OK", 1: "FAULT", 2: "UNRESPONSIVE", 3: "INACTIVE"}
         if int(last_value.value) > 0:
-            logging.error("%s status = %s", process, last_value.value)
+            value = int(last_value.value)
+            logger.error("%s - %s status = %s (%d)", instrument_id, process, meaning.get(value, "UNKNOWN"), value)
             return 2
     except:  # noqa: E722
-        logging.debug("No cached status for %s on instrument %s", process, instrument_id.name)
+        logger.debug("No cached status for %s on instrument %s", process, instrument_id.name)
         return 2
 
     if timezone.now() - last_value.timestamp > delta_long:
-        logging.debug("%s has a long delay in %s", process, instrument_id)
+        logger.debug("%s has a long delay in %s", process, instrument_id)
         return 2
     elif timezone.now() - last_value.timestamp > delta_short:
-        logging.debug("%s has a short delay in %s", process, instrument_id)
+        logger.debug("%s has a short delay in %s", process, instrument_id)
         return 1
     return 0
 
@@ -386,6 +393,7 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
     :param red_timeout: number of hours before declaring a process dead
     :param yellow_timeout: number of seconds before declaring a process slow
     """
+    logger = logging.getLogger(LOGNAME)
     if yellow_timeout is None:
         yellow_timeout = settings.HEARTBEAT_TIMEOUT
     delta_short = datetime.timedelta(seconds=yellow_timeout)
@@ -396,10 +404,10 @@ def get_workflow_status(red_timeout=1, yellow_timeout=None):
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr")
         last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=key_id).latest("timestamp")
         if int(last_value.value) > 0:
-            logging.error("WorkflowMgr status = %s", last_value.value)
+            logger.error("WorkflowMgr status = %s", last_value.value)
             return 2
     except:  # noqa: E722
-        logging.debug("No cached status for WorkflowMgr on instrument")
+        logger.debug("No cached status for WorkflowMgr on instrument")
         return 2
 
     if timezone.now() - last_value.timestamp > delta_long:
@@ -415,6 +423,7 @@ def workflow_diagnostics(timeout=None):
 
     :param timeout: number of seconds of silence before declaring a problem
     """
+    logger = logging.getLogger(LOGNAME)
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
@@ -439,7 +448,7 @@ def workflow_diagnostics(timeout=None):
     except:  # noqa: E722
         # No data available, keep defaults
         if common_services is None:
-            logging.error("workflow_diagnostics could not get 'common' instrument")
+            logger.error("workflow_diagnostics could not get 'common' instrument")
 
     # Determine the number of workflow manager processes running
     process_list = []
@@ -454,7 +463,7 @@ def workflow_diagnostics(timeout=None):
                 pid_list.append(item.value)
                 process_list.append({"pid": item.value, "time": timezone.localtime(item.timestamp)})
     except:  # noqa: E722
-        logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("workflow_diagnostics:")
 
     dasmon_listener_list = []
     try:
@@ -469,7 +478,7 @@ def workflow_diagnostics(timeout=None):
 
                 dasmon_listener_list.append({"pid": item.value, "time": timezone.localtime(item.timestamp)})
     except:  # noqa: E722
-        logging.error("workflow_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("workflow_diagnostics:")
 
     # Heartbeat
     # NOTE:
@@ -596,6 +605,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
     :param timeout: number of seconds of silence before declaring a problem
     :param process: name of the process to diagnose (pvsd or pvstreamer)
     """
+    logger = logging.getLogger(LOGNAME)
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
@@ -617,7 +627,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
             status_time = last_value.timestamp
     except:  # noqa: E722
         # No data available, keep defaults
-        logging.error("pvstreamer_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("pvstreamer_diagnostics:")
 
     # Heartbeat
     try:
@@ -659,6 +669,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     :param instrument_id: Instrument object
     :param timeout: number of seconds of silence before declaring a problem
     """
+    logger = logging.getLogger(LOGNAME)
     if timeout is None:
         timeout = settings.HEARTBEAT_TIMEOUT
     delay_time = datetime.timedelta(seconds=timeout)
@@ -676,7 +687,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
             status_time = last_value.timestamp
     except:  # noqa: E722
         # No data available, keep defaults
-        logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("dasmon_diagnostics:")
 
     # Recent PVs, which come from DASMON straight to the DB
     last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -689,7 +700,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         last_pv_timestamp = latest.update_time
     except:  # noqa: E722
         # No data available, keep defaults
-        logging.error("dasmon_diagnostics: %s", str(sys.exc_info()[1]))
+        logger.exception("dasmon_diagnostics:")
 
     # Recent AMQ messages
     last_amq_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
@@ -787,6 +798,7 @@ def get_completeness_status(instrument_id):
 
     :param instrument_id: Instrument object
     """
+    logger = logging.getLogger(LOGNAME)
     STATUS_OK = (0, "OK")
     # Warning status still says OK but the background color is yellow
     STATUS_WARNING = (1, "OK")
@@ -846,8 +858,7 @@ def get_completeness_status(instrument_id):
 
         return STATUS_WARNING
     except:  # noqa: E722
-        logging.error("Output data completeness status")
-        logging.error(sys.exc_info()[1])
+        logger.exception("Output data completeness status")
         return STATUS_UNKNOWN
 
 
@@ -860,6 +871,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     :param ipts_id: filter by experiment, if provided
     :param data_dict: dictionary to populate
     """
+    logger = logging.getLogger(LOGNAME)
     # Get the last run ID that the client knows about
     since_run_id = None
     run_list = []
@@ -897,7 +909,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 run_list = DataRun.objects.filter(id__gte=complete_since).order_by("created_on").reverse()
         except:  # noqa: E722
             # Invalid value for complete_since
-            logging.error("get_live_runs_update: %s", str(sys.exc_info()[1]))
+            logger.exception("get_live_runs_update:")
 
     status_list = []
     update_list = []
@@ -949,6 +961,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
     :param number_of_entries: number of entries to return if we didn't find any run in the defined period
     :param instrument_id: if provided, results will be limited to the given instrument
     """
+    logger = logging.getLogger(LOGNAME)
     run_list = []
     first_run = 0
     last_run = 0
@@ -982,7 +995,7 @@ def get_live_runs(timeframe=12, number_of_entries=25, instrument_id=None, as_htm
         else:
             run_list = get_run_list(runs)
     except:  # noqa: E722
-        logging.error("get_live_runs: %s", str(sys.exc_info()[1]))
+        logger.exception("get_live_runs:")
     return run_list, first_run, last_run
 
 
@@ -994,6 +1007,7 @@ def get_run_list(run_list):
 
     :param run_list: list of run object (usually a QuerySet)
     """
+    logger = logging.getLogger(LOGNAME)
     run_dicts = []
     try:
         for r in run_list:
@@ -1010,7 +1024,7 @@ def get_run_list(run_list):
                 _t = r.created_on.ctime()
             run_dicts.append(dict(run=r.run_number, timestamp=_t, status=status))
     except:  # noqa: E722
-        logging.error("dasmon.view_util.get_run_list: %s", sys.exc_info()[1])
+        logger.exception("dasmon.view_util.get_run_list:")
     return run_dicts
 
 
@@ -1034,10 +1048,11 @@ def get_signals(instrument_id):
 
     :param instrument_id: Instrument object
     """
+    logger = logging.getLogger(LOGNAME)
     try:
         signals = Signal.objects.filter(instrument_id=instrument_id)
     except:  # noqa: E722
-        logging.error("Error reading signals: %s", str(sys.exc_info()[1]))
+        logger.exception("Error reading signals:")
         return []
 
     sig_alerts = []
@@ -1054,7 +1069,7 @@ def get_signals(instrument_id):
                 sig_entry.key = str(monitored[0].pv_name)
         except:  # noqa: E722
             # Could not find an entry for this signal
-            logging.error("Problem finding PV for signal: %s", str(sys.exc_info()[1]))
+            logger.exception("Problem finding PV for signal:")
 
         sig_alerts.append(sig_entry)
 
@@ -1084,16 +1099,16 @@ def get_signals(instrument_id):
                 for point in data[0][1]:
                     data_list.append("%g:%g" % (point[0], point[1]))
             except:  # noqa: E722
-                logging.error(sys.exc_info()[1])
+                logger.exception()
             sig_entry.data = ",".join(data_list)
             sig_alerts.append(sig_entry)
     except:  # noqa: E722
-        logging.error("Could not process monitored PVs: %s", str(sys.exc_info()[1]))
+        logger.exception("Could not process monitored PVs:")
 
     try:
         return sorted(sig_alerts, key=lambda s: str(s.name).lower())
     except:  # noqa: E722
-        logging.error("Could not sort monitored PV list: %s", str(sys.exc_info()[1]))
+        logger.exception("Could not sort monitored PV list:")
     return sig_alerts
 
 
@@ -1102,6 +1117,7 @@ def get_instrument_status_summary():
     Create an instrument status dictionary that can be used
     to fill out the summary page template or the summary update response.
     """
+    logger = logging.getLogger(LOGNAME)
     instrument_list = []
     for i in Instrument.objects.all().order_by("name"):
         is_adara = ActiveInstrument.objects.is_adara(i)
@@ -1112,12 +1128,12 @@ def get_instrument_status_summary():
             try:
                 das_status = get_component_status(i, process="dasmon")
             except:  # noqa: E722
-                logging.error(sys.exc_info()[1])
+                logger.exception()
                 das_status = 2
             try:
                 pvstreamer_status = get_pvstreamer_status(i)
             except:  # noqa: E722
-                logging.error(sys.exc_info()[1])
+                logger.exception()
                 pvstreamer_status = 2
         else:
             dasmon_url = reverse("dasmon:live_runs", args=[i.name])
@@ -1170,7 +1186,8 @@ def add_status_entry(instrument_id, message_channel, value):
         update = StatusVariable(instrument_id=instrument_id, key_id=key_id, value=str(value))
         update.save()
     except:  # noqa: E722
-        logging.error("add_status_entry: could add parameter for %s", message_channel)
+        logger = logging.getLogger(LOGNAME)
+        logger.error("add_status_entry: could add parameter for %s", message_channel)
 
 
 def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_entries=10, start_time=None):
@@ -1187,7 +1204,8 @@ def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_
     try:
         key_id = Parameter.objects.get(name=message_channel)
     except:  # noqa: E722
-        logging.error("get_latest_updates: could not find parameter for %s", message_channel)
+        logger = logging.getLogger(LOGNAME)
+        logger.error("get_latest_updates: could not find parameter for %s", message_channel)
         return []
 
     # Determine what's the oldest time stamp we'll report

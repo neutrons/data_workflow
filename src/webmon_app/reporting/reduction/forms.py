@@ -5,7 +5,6 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
-import sys
 import re
 import logging
 from django import forms
@@ -29,11 +28,7 @@ def _get_choices(instrument):
         for item in choices:
             form_choices.append((item.value, item.description))
     except:  # noqa: E722
-        logging.error(
-            "_get_choices: %s instrument or grouping does not exist\n %s",
-            instrument.upper(),
-            sys.exc_info()[1],
-        )
+        logging.exception("_get_choices: %s instrument or grouping does not exist", instrument.upper())
     return sorted(form_choices, key=lambda x: x[1])
 
 
@@ -104,7 +99,7 @@ class BaseReductionConfigurationForm(forms.Form):
                     value = ""
                 reporting.reduction.view_util.store_property(instrument_id, key, value, user=user)
             except:  # noqa: E722
-                logging.error("BaseReductionConfigurationForm.to_db: %s", sys.exc_info()[1])
+                logging.exception("BaseReductionConfigurationForm.to_db:")
 
     def to_template(self):
         """
@@ -374,7 +369,7 @@ class MaskForm(forms.Form):
                     for item in mask_strings:
                         mask_list.append(eval(item.lower()))
         except:  # noqa: E722
-            logging.error("MaskForm count not parse a command line: %s", sys.exc_info()[1])
+            logging.exception("MaskForm count not parse a command line:")
         return mask_list
 
     @classmethod

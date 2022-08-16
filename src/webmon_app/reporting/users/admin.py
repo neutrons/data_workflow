@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 import socket
 from django.conf import settings  # noqa: F401
 import logging
-import sys
 
 
 class NonDeveloperUsers(admin.SimpleListFilter):
@@ -37,7 +36,7 @@ class NonDeveloperUsers(admin.SimpleListFilter):
                 nodes = DeveloperNode.objects.all().values_list("ip", flat=True)
                 return queryset.exclude(user__is_staff=True).exclude(ip__in=nodes)
             except:  # noqa: E722
-                logging.error(sys.exc_info()[1])
+                logging.exception("")
 
         return queryset
 

@@ -7,6 +7,10 @@ PYTHON_VERSION:=3.10
 MANAGE_PY_WEBMON=/opt/conda/lib/python$(PYTHON_VERSION)/site-packages/reporting/manage.py
 # this is found by `find /opt/conda -name db_init.json`
 REPORT_DB_INIT=/opt/conda/lib/python$(PYTHON_VERSION)/site-packages/reporting/fixtures/db_init.json
+# command to run docker compose. change this to be what you have installed
+# this can be overriden on the command line
+# DOCKER_COMPOSE="docker compose" make startdev
+DOCKER_COMPOSE ?= docker-compose
 
 
 help:
@@ -112,7 +116,7 @@ SNSdata.tar.gz:
 
 localdev/up: ## create images and start containers for local development. Doesn't update python wheels, though.
 	\cp docker-compose.localdev.yml docker-compose.yml
-	docker-compose up --build
+	$(DOCKER_COMPOSE) up --build
 
 clean:
 	rm -f SNSdata.tar.gz
