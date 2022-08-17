@@ -15,7 +15,7 @@
 .column_heading_parent {
     display: grid;
     width: 100%;
-    grid-column-gap: 5em;
+    grid-column-gap: 2em;
 }
 
 .first_column_heading {
@@ -46,7 +46,7 @@
 .instrument_list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-column-gap: 5em;
+    grid-column-gap: 2em;
     margin-top: 1em;
     width: 100%;
 }
@@ -59,7 +59,7 @@
 
 .entry_element {
     display: inline;
-    min-width: 8.2em;
+    min-width: 5.2em;
 }
 
 #facility-select {
