@@ -31,6 +31,7 @@ create/mamba:  ## create conda environment "webmon" with file conda_environment.
 
 docker/pruneall: ## stop and force remove all containers, images and volumes
 	docker system prune --force --all --volumes
+	docker system prune --force --all --volumes
 
 docs:  ## create HTML docs under docs/_build/html/. Requires activation of "webmon" conda environment
 	@cd docs && make html SPHINXOPTS="-W --keep-going -n" && echo -e "##########\n DOCS point your browser to file://$$(pwd)/_build/html/index.html\n##########"
