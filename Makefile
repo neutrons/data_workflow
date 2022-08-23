@@ -162,4 +162,3 @@ clean: wheel/clean ## delete the SNS data and all the python wheels
 .PHONY: wheel/workflow
 .PHONY: wheel/all
 .PHONY: wheel/clean
-.PHONY: junk
