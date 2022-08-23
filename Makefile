@@ -21,13 +21,16 @@ all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz
 
 create/conda:  ## create conda environment "webmon" with file conda_environment.yml
 	conda env create --name webmon --file conda_environment.yml
+	conda env update --name webmon --file conda_development.yml
 
 create/mamba:  ## create conda environment "webmon" with file conda_environment.yml using mamba
 	conda env create --name webmon python=$(PYTHON_VERSION)
 	conda install --name base -c conda-forge mamba
 	mamba env update --name webmon --file conda_environment.yml
+	mamba env update --name webmon --file conda_development.yml
 
 docker/pruneall: ## stop and force remove all containers, images and volumes
+	docker system prune --force --all --volumes
 	docker system prune --force --all --volumes
 
 docs:  ## create HTML docs under docs/_build/html/. Requires activation of "webmon" conda environment
@@ -67,6 +70,11 @@ wheel/workflow: ## create or update python wheel for service "workflow"
 	cd src/workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
 wheel/all:  wheel/dasmon wheel/webmon wheel/workflow ## create or update  python wheels for all servicess
+
+wheel/clean: ## delete all the python wheels
+	cd src/dasmon_app && rm -rf build/ dist/
+	cd src/webmon_app && rm -rf build/ dist/
+	cd src/workflow_app && rm -rf build/ dist/
 
 install/workflow: check
 	# Install the workflow manager, which defines the database schema
@@ -109,16 +117,27 @@ configure/load_initial_data: install/webmon
 	# use fixtures to load initial data
 	python $(MANAGE_PY_WEBMON) loaddata $(REPORT_DB_INIT)
 
-SNSdata.tar.gz:
+SNSdata.tar.gz: ## install SNS data for testing and limited info display
 	# this doesn't have explicit dependencies on the data
 	# it needs to be removed when the directory changes
 	tar czf SNSdata.tar.gz -C tests/data/ .
 
 localdev/up: ## create images and start containers for local development. Doesn't update python wheels, though.
-	\cp docker-compose.localdev.yml docker-compose.yml
-	$(DOCKER_COMPOSE) up --build
+	docker-compose --file docker-compose.yml up --build
 
-clean:
+localdev/dbup:  ## dbdumpfile=database_dump_file.sql DATABASE_PASS=$(dotenv get DATABASE_PASS) make localdev/dbup
+	if ! test -f "${dbdumpfile}"; then echo "dbdumpfile does not exists" && false; fi
+	if test -z "${DATABASE_PASS}"; then echo "DATABASE_PASS undefined" && false; fi
+	docker-compose --file docker-compose.yml stop
+	docker-compose --file docker-compose.yml down --volumes
+	sleep 2s
+	docker-compose --file docker-compose.yml up --detach db
+	sleep 10s  # give time for the database service to be ready
+	docker exec -i data_workflow_db_1 /bin/bash -c "pg_restore -d workflow -U workflow" <  ${dbdumpfile} | true  # continue even if returned errors
+	docker exec -i data_workflow_db_1 /bin/bash -c "psql -d workflow -U workflow -c \"ALTER ROLE workflow WITH PASSWORD '${DATABASE_PASS}';\""
+	LOAD_INITIAL_DATA="false" docker-compose --file docker-compose.yml up --build
+
+clean: wheel/clean ## delete the SNS data and all the python wheels
 	rm -f SNSdata.tar.gz
 	cd src/dasmon_app && rm -rf build/ dist/
 	cd src/webmon_app && rm -rf build/ dist/
@@ -135,8 +154,12 @@ clean:
 .PHONY: install/dasmonlistener
 .PHONY: install/webmon
 .PHONY: install/workflow
+.PHONY: SNSdata.tar.gz
 .PHONY: localdev/up
+.PHONY: localdev/dbup
 .PHONY: wheel/dasmon
 .PHONY: wheel/webmon
 .PHONY: wheel/workflow
 .PHONY: wheel/all
+.PHONY: wheel/clean
+.PHONY: junk
