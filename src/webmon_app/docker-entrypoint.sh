@@ -16,7 +16,9 @@ make install/webmon configure/webmon
 # add test users if not in prod
 >&2 echo "\n\nChecking if in prod...\n\n"
 if [[ "$DJANGO_SETTINGS_MODULE" != *".prod" ]]; then
-  make configure/load_initial_data
+  if [[ "${LOAD_INITIAL_DATA}" = "true" ]]; then
+    make configure/load_initial_data
+  fi
   if [ -z "$GENERAL_USER_USERNAME"]; then
     GENERAL_USER_USERNAME="GeneralUser"
     GENERAL_USER_PASSWORD="GeneralUser"
@@ -28,4 +30,5 @@ fi
 
 # start up web-service
 # entrypoint is python.package:function_name
-gunicorn reporting.reporting_app.wsgi:application --preload --bind 0.0.0.0:8000
+# additional command-line arguments via environment variable GUNICORN_CMD_ARGS
+gunicorn reporting.reporting_app.wsgi:application --bind 0.0.0.0:8000
