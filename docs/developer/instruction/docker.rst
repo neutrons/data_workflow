@@ -21,7 +21,7 @@ An additional flag ``-d`` can be supplied to run docker in detached mode.
    Use ``docker-compose --file <filename>`` to select a different configuration
 
 To start a single image, supply its name as an additional argument to ``docker-compose up``.
-
+wait-for-it.sh
 To stop all images, including in detached mode, run ``docker-compose down``.
 
 Cleaning docker
@@ -58,4 +58,4 @@ Misc
 
 .. _docker: https://www.docker.com/
 .. _docker-compose: https://docs.docker.com/compose/
-.. _the port of nginx: https://github.com/neutrons/data_workflow/blob/028e4b73d9c7bd85f6d47a452ea641dd2b8d312f/docker-compose.yml#L7
+.. _the port of nginx: https://github.com/neutrons/data_workflow/blob/next/docker-compose.yml
