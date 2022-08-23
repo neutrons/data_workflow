@@ -22,7 +22,7 @@ class PVNameCharField(forms.fields.CharField):
 class AddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['pv_name'] = PVNameCharField()
+        self.fields["pv_name"] = PVNameCharField()
 
     class Meta:
         model = MonitoredVariable
