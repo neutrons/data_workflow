@@ -21,7 +21,6 @@ An additional flag ``-d`` can be supplied to run docker in detached mode.
    Use ``docker-compose --file <filename>`` to select a different configuration
 
 To start a single image, supply its name as an additional argument to ``docker-compose up``.
-wait-for-it.sh
 To stop all images, including in detached mode, run ``docker-compose down``.
 
 Cleaning docker
