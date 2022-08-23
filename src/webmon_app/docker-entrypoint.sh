@@ -16,7 +16,9 @@ make install/webmon configure/webmon
 # add test users if not in prod
 >&2 echo "\n\nChecking if in prod...\n\n"
 if [[ "$DJANGO_SETTINGS_MODULE" != *".prod" ]]; then
-  make configure/load_initial_data
+  if [[ "${LOAD_INITIAL_DATA}" = "true" ]]; then
+    make configure/load_initial_data
+  fi
   if [ -z "$GENERAL_USER_USERNAME"]; then
     GENERAL_USER_USERNAME="GeneralUser"
     GENERAL_USER_PASSWORD="GeneralUser"

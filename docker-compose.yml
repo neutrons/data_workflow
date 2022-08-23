@@ -21,18 +21,21 @@ services:
       context: .
       dockerfile: Dockerfile.webmon
       # build using the host's network, required in certain environments when accessing the debian repositories
+      network: host
     volumes:
       - web-static:/var/www/workflow/static/
     env_file:
       - .env
       - .env.ci
     environment:
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - LOAD_INITIAL_DATA=${LOAD_INITIAL_DATA-true}
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
-      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
       - CATALOG_URL=${CATALOG_URL}
       - CATALOG_ID=${CATALOG_ID}
       - CATALOG_SECRET=${CATALOG_SECRET}
+      - GUNICORN_CMD_ARGS="--reload --workers=8"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/ht || exit 1
       interval: 60s
@@ -47,6 +50,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dasmon
+      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
@@ -62,6 +66,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.workflow
+      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
@@ -109,6 +114,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer
+      network: host
     ports:
       - "8888:8888"
     hostname: autoreducer
@@ -123,6 +129,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.amq_test_gen
+      network: host
     depends_on:
       activemq:
         condition: service_healthy
@@ -132,6 +139,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.pv_test_gen
+      network: host
     env_file:
       - .env
     depends_on:
@@ -145,6 +153,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.catalog
+      network: host
     environment:
       ICAT_USER: "icat"
       ICAT_PASSCODE: "icat"
