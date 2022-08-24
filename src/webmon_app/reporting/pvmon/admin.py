@@ -1,38 +1,32 @@
 from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable
-from reporting.report.models import Instrument
-from reporting.dasmon.models import ActiveInstrument
 from django.contrib import admin
-from django.contrib.admin.helpers import ActionForm
-from django.shortcuts import get_object_or_404
 from django import forms
+from django.core.exceptions import ValidationError
 import datetime
 
 
-def add_monitored(modeladmin, request, queryset):
-    """
-    Action used to easily add a monitored variable by typing its name
-    instead of browsing through a long list of entries.
-    """
-    pv_name = get_object_or_404(PVName, name=request.POST["pv_name"])
-    instrument_id = get_object_or_404(Instrument, name=request.POST["instrument"].lower())
-    m = MonitoredVariable(instrument=instrument_id, pv_name=pv_name)
-    m.save()
+class PVNameCharField(forms.fields.CharField):
+    def to_python(self, value):
+        if isinstance(value, PVName):
+            return value
+
+        if value is None:
+            return value
+
+        try:
+            return PVName.objects.get(name=value)
+        except PVName.DoesNotExist:
+            raise ValidationError("PvName does not exist")
 
 
-add_monitored.short_description = "Add monitored"
-
-
-class UpdateActionForm(ActionForm):
-    instrument = forms.ChoiceField(required=True, choices=[])
-    pv_name = forms.CharField(required=True, initial="")
-
+class AddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Get the list of available instruments
-        instruments = [
-            (str(i), str(i)) for i in Instrument.objects.all().order_by("name") if ActiveInstrument.objects.is_alive(i)
-        ]
-        self.fields["instrument"].choices = instruments
+        self.fields["pv_name"] = PVNameCharField()
+
+    class Meta:
+        model = MonitoredVariable
+        exclude = ()
 
 
 class PVAdmin(admin.ModelAdmin):
@@ -61,8 +55,7 @@ class PVNameAdmin(admin.ModelAdmin):
 class MonitoredVariableAdmin(admin.ModelAdmin):
     list_display = ("id", "instrument", "pv_name", "rule_name")
     list_editable = ("pv_name", "rule_name")
-    action_form = UpdateActionForm
-    actions = [add_monitored]
+    form = AddForm
 
 
 admin.site.register(PVName, PVNameAdmin)
