@@ -129,19 +129,26 @@
   </table>
   <p>
   {% endif %}
-  {% if html_data %}
-  <p>
-  {% if data_url %}Data access: <a href='{{ data_url }}'>download plot data points</a>{% if fitting_url %} | <a href='{{ fitting_url }}' target="_blank">fit data</a>{% endif %}{% endif %}
-  <div id="graph"></div>
 
-  {% elif plot_data %}
-  <p>
-  <div class="graph main">
-    <div class='graph cssmenu'></div>
-    <div class="graph" id="graph"></div>
-    <div class="graph user-console"></div>
-  </div>
+  {% if fitting_url %}
+    <p>
+    <a href='{{ fitting_url }}' target="_blank">fit data</a> |
   {% endif %}
+
+  {% if html_data %}
+    {% if data_url %}
+      Data access: <a href='{{ data_url }}'>download plot data points</a>
+    {% endif %}
+    <div id="graph"></div>
+  {% elif plot_data %}
+    <p>
+    <div class="graph main">
+      <div class='graph cssmenu'></div>
+      <div class="graph" id="graph"></div>
+      <div class="graph user-console"></div>
+    </div>
+  {% endif %}
+
   <p>
   {% if not no_icat_info %}
   Data files:
