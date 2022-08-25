@@ -117,12 +117,12 @@ configure/load_initial_data: install/webmon
 	# use fixtures to load initial data
 	python $(MANAGE_PY_WEBMON) loaddata $(REPORT_DB_INIT)
 
-SNSdata.tar.gz: ## install SNS data for testing and limited info display
+SNSdata.tar.gz:  ## install SNS data for testing and limited info display
 	# this doesn't have explicit dependencies on the data
 	# it needs to be removed when the directory changes
 	tar czf SNSdata.tar.gz -C tests/data/ .
 
-localdev/up: ## create images and start containers for local development. Doesn't update python wheels, though.
+localdev/up:  ## create images and start containers for local development. Doesn't update python wheels, though.
 	docker-compose --file docker-compose.yml up --build
 
 localdev/dbup:  ## dbdumpfile=database_dump_file.sql DATABASE_PASS=$(dotenv get DATABASE_PASS) make localdev/dbup
