@@ -35,7 +35,7 @@ services:
       - CATALOG_URL=${CATALOG_URL}
       - CATALOG_ID=${CATALOG_ID}
       - CATALOG_SECRET=${CATALOG_SECRET}
-      - GUNICORN_CMD_ARGS="--reload --workers=8"
+      - GUNICORN_CMD_ARGS=--reload --workers=8
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/ht || exit 1
       interval: 60s
