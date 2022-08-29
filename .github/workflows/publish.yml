@@ -154,7 +154,3 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.latest_tag.outputs.latest_tag }}
             ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.tag.outputs.tag }}
           push: true
-
-      - name: Trigger ORNL Test Deployment Pipeline
-        if: ${{ github.ref == 'refs/heads/qa' }}
-        run: curl --fail-with-body -sX POST -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} -F ref=main https://code.ornl.gov/api/v4/projects/10858/trigger/pipeline | jq '. | del( .user )' ; exit ${PIPESTATUS[0]}
