@@ -31,4 +31,4 @@ fi
 # start up web-service
 # entrypoint is python.package:function_name
 # additional command-line arguments via environment variable GUNICORN_CMD_ARGS
-gunicorn reporting.reporting_app.wsgi:application --bind 0.0.0.0:8000
+gunicorn reporting.reporting_app.wsgi:application --preload --bind 0.0.0.0:8000
