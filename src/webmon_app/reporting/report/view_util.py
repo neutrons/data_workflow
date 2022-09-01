@@ -463,9 +463,12 @@ def extract_ascii_from_div(html_data, trace_id=None):
 
     #TODO: allow to specify which trace to return in cases where we have multiple curves
     """
+    if isinstance(html_data, bytes):
+        html_data = html_data.decode()
+
     try:
-        result = re.search(r"newPlot\((.*)\)</script>", html_data)
-        jsondata_str = "[%s]" % result.group(1)
+        result = re.search(r"newPlot\((.*)\).*</script>", html_data, re.DOTALL)
+        jsondata_str = "[%s]" % result.group(1).replace("'", '"')
         data_list = json.loads(jsondata_str)
         ascii_data = ""
         for d in data_list:
