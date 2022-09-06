@@ -353,3 +353,6 @@ TEST_REMOTE_USER = ""
 TEST_REMOTE_PASSWD = ""
 
 GRAVATAR_URL = "https://www.gravatar.com/avatar/"
+
+# Default is "N j, Y, P", changing to make it parsable by python datetime
+DATETIME_FORMAT = "M j, Y, P"

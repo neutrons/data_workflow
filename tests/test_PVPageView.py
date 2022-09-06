@@ -29,7 +29,7 @@ def check_PV(text, PV):
         .replace("</span></td>", "")
         .replace("a.m.", "AM")
         .replace("p.m.", "PM"),
-        "%b. %d, %Y, %I:%M %p",
+        "%b %d, %Y, %I:%M %p",
     )
     time_delta = datetime.now() - time
     assert time_delta.total_seconds() < 120
