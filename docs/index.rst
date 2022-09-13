@@ -15,6 +15,7 @@ Welcome to Web Monitor's documentation!
    releasenotes/index
    developer/index
    users/usecases/index
+   admin
 
 Indices and tables
 ==================
