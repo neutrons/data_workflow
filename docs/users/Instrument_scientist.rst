@@ -35,6 +35,8 @@ The current settings on the configuration page are stored in a database.
 Changing them and clicking submit should yield a message at the bottom of the page that contains the change time.
 
 
+.. _admin-view:
+
 Admin View
 ----------
 
