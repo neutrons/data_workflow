@@ -15,9 +15,13 @@ Active Instrument
 
 URL: https://monitor.sns.gov/database/dasmon/activeinstrument/
 
-An instrument can be hidden from the Web Monitor by deselecting the
-``Is Alive`` option in the model. This is useful to hide testing or
-fake instruments.
+
+Some options can be modified in the full list, but clicking on the ``ID`` for the instrument allows for modifying the state of the following values
+
+* ``Is alive`` An instrument can be hidden from the Web Monitor by deselecting this ``Is alive`` option in the model. This is useful to hide testing or fake instruments.
+* ``Is adara`` for instruments that have switched to the adara DAS
+* ``Has pvsd`` for instruments that have pvstreamer
+* ``Has pvstreamer`` which is not turned on for instruments and appears to be covered by the ``Has pvsd`` parameter already
 
 
 Choice
