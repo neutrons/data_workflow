@@ -23,26 +23,34 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          mamba-version: "*"
-          environment-file: conda_environment.yml
-
-      - name: Install dev requirements
-        run: mamba env update --file conda_development.yml
-
+      - name: Setup libmamba solver
+        run: |
+          conda install -n base conda-libmamba-solver
+          conda config --set solver libmamba
+      - name: Install requirements
+        run: |
+          # --quiet should turn off progress bars to make logs more readable
+          conda env create --file conda_environment.yml --quiet
+          conda activate webmon
+          conda env update --file conda_development.yml --quiet
       - name: Build wheels
-        run: make wheel/all
-
+        run: |
+          conda activate webmon
+          make wheel/all
       - name: Get version
         id: version
-        run: echo "::set-output name=version::$(versioningit src/webmon_app)"
+        run: |
+          conda activate webmon
+          echo "::set-output name=version::$(versioningit src/webmon_app)"
 
       - name: Create tag version
         id: tag
-        run: echo "::set-output name=tag::$(versioningit src/webmon_app).b$(date +'%Y%m%d%H%M')"
+        run: |
+          conda activate webmon
+          echo "::set-output name=tag::$(versioningit src/webmon_app).b$(date +'%Y%m%d%H%M')"
 
       - name: Create latest tag version
         id: latest_tag
