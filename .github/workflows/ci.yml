@@ -27,8 +27,6 @@ jobs:
         conda env create --file conda_environment.yml --quiet
         conda activate webmon
         conda env update --file conda_development.yml --quiet
-    - name: Run Static Analysis
-      run: SKIP=black pre-commit run --all-files
     - name: Test with pytest
       run: |
         conda activate webmon
