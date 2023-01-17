@@ -23,12 +23,15 @@ jobs:
         conda config --set solver libmamba
     - name: Install requirements
       run: |
-        conda env create --file conda_environment.yml
-        conda env update --file conda_development.yml
+        # --quiet should turn off progress bars to make logs more readable
+        conda env create --file conda_environment.yml --quiet
+        conda activate -n webmon
+        conda env update --file conda_development.yml --quiet
     - name: Run Static Analysis
       run: SKIP=black pre-commit run --all-files
     - name: Test with pytest
       run: |
+        conda activate -n webmon
         export DJANGO_SETTINGS_MODULE='reporting.reporting_app.settings.unittest'
         python -m pytest --cov --cov-report=xml --cov-report=term src
     - name: Upload coverage to Codecov
