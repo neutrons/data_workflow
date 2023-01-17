@@ -17,12 +17,20 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        mamba-version: "*"
-        environment-file: conda_environment.yml
-    - name: Install testing requirements
-      run: mamba env update --file conda_development.yml
+    - name: Setup libmamba solver
+      run: |
+        conda install -n base conda-libmamba-solver
+        conda config --set solver libmamba
+    - name: Install requirements
+      run: |
+        # --quiet should turn off progress bars to make logs more readable
+        conda env create --file conda_environment.yml --quiet
+        conda activate webmon
+        conda env update --file conda_development.yml --quiet
     - name: Build wheels
-      run: make wheel/dasmon wheel/webmon wheel/workflow
+      run: |
+        conda activate webmon
+        make wheel/dasmon wheel/webmon wheel/workflow
     - name: Build test data for autoreducer
       run: make SNSdata.tar.gz
     - name: Stand up docker containers
@@ -34,7 +42,9 @@ jobs:
     - name: Wait for everything to start up
       run: sleep 66
     - name: Test with pytest
-      run: python -m pytest tests
+      run: |
+        conda activate webmon
+        python -m pytest tests
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
