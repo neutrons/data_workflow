@@ -23,7 +23,7 @@ jobs:
         conda config --set solver libmamba
     - name: Install requirements
       run: |
-        conda create --file conda_environment.yml
+        conda env create --file conda_environment.yml
         conda env update --file conda_development.yml
     - name: Run Static Analysis
       run: SKIP=black pre-commit run --all-files
