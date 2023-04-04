@@ -99,7 +99,6 @@ class TestWorkflow:
         return reduction_data
 
     def testReduction(self, instrument_scientist_client):
-
         # backup reduce_ARCS.py
         os.system(
             """docker exec -i data_workflow_autoreducer_1 bash -c \

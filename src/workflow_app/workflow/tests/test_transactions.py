@@ -16,7 +16,6 @@ from workflow.database.report.models import (
 
 
 class TransactionsTest(TestCase):
-
     data_dict = {
         "instrument": "HYSA",
         "facility": "SNS",
