@@ -1,5 +1,6 @@
 import pytest
 from django.test import TestCase
+from django.db import connection
 
 from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable, Instrument
 
@@ -175,6 +176,47 @@ class MonitoredVariableTest(TestCase):
         pv = MonitoredVariable.objects.get(id=1)
         max_len = pv._meta.get_field("rule_name").max_length
         self.assertEqual(max_len, 50)
+
+
+class SetInstrumentPVsTestCase(TestCase):
+    @classmethod
+    def setUpTestData(self):
+        # Create a test instrument and some test PVs
+        instrument = Instrument.objects.create(name="testInstrument")
+        instrument.save()
+        pvname = PVName.objects.create(name="testPV1")
+        pvname.save()
+        pvname = PVName.objects.create(name="testPV2")
+        pvname.save()
+        pvname = PVName.objects.create(name="testPV3")
+        pvname.save()
+        mv = MonitoredVariable.objects.create(name="testPV4")
+        mv.save()
+
+        # Define the PVs to set for the test instrument
+        pvs = ["testPV1", "testPV2"]
+
+        with connection.cursor() as cursor:
+            # Test setting PVs for an existing instrument
+            cursor.callproc("setInstrumentPVs", ["testInstrument", pvs])
+            result = cursor.fetchone()
+            self.assertIsNone(result)  # Check that the function returns None
+
+            # Check that the monitored variables were set correctly
+            self.assertEqual(MonitoredVariable.objects.count(), 2)
+            self.assertTrue(MonitoredVariable.objects.filter(pv_name="testPV1").exists())
+            self.assertEqual(MonitoredVariable.objects.get(name="testPV1").instrument, "testInstrument")
+            self.assertTrue(MonitoredVariable.objects.filter(pv_name="testPV2").exists())
+            self.assertEqual(MonitoredVariable.objects.get(name="testPV1").instrument, "testInstrument")
+
+    @classmethod
+    def tearDownClass(cls):
+        Instrument.objects.get(name="testInstrument").delete()
+        PVName.objects.get(name="testPV1").delete()
+        PVName.objects.get(name="testPV2").delete()
+        PVName.objects.get(name="testPV3").delete()
+        MonitoredVariable.objects.get(name="testPV1").delete()
+        MonitoredVariable.objects.get(name="testPV2").delete()
 
 
 if __name__ == "__main__":
