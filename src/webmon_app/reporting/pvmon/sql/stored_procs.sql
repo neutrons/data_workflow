@@ -156,3 +156,53 @@ $BODY$
   COST 100;
 ALTER FUNCTION pvStringUpdate(character varying, character varying, character varying, bigint, bigint)
   OWNER TO workflow;
+
+CREATE OR REPLACE FUNCTION setInstrumentPVs(instrument character varying, pvs text[])
+RETURNS void AS $$
+DECLARE
+    n_instrument bigint;
+    n_pv_id bigint;
+    n_pv_name character varying;
+    n_count integer;
+BEGIN
+    -- Get the ID of the instrument
+    SELECT id
+      INTO n_instrument
+      FROM report_instrument
+      WHERE name = lower(instrument);
+
+    -- Make sure the instrument exists
+    IF n_instrument IS NULL THEN
+        RAISE EXCEPTION 'Instrument % does not exist', instrument;
+    END IF;
+
+    -- Delete the existing monitored variables for this instrument
+    DELETE
+    FROM pvmon_monitoredvariable
+    WHERE instrument_id = n_instrument;
+
+    -- Insert the new monitored variables without duplicates
+    FOREACH n_pv_name IN ARRAY pvs
+    LOOP
+        SELECT id INTO n_pv_id FROM pvmon_pvname WHERE name = n_pv_name;
+        IF n_pv_id IS NOT NULL THEN
+            INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name)
+              SELECT pvmon_pv.instrument_id, pvmon_pv.name_id, ''
+              FROM pvmon_pv
+              WHERE pvmon_pv.instrument_id=n_instrument AND pvmon_pv.name_id = n_pv_id
+              LIMIT 1;
+        END IF;
+    END LOOP;
+    SELECT count(*)
+      INTO n_count
+      FROM pvmon_monitoredvariable;
+    IF n_count = 0 THEN
+      INSERT INTO pvmon_monitoredvariable (instrument_id, rule_name)
+      VALUES (n_instrument, '');
+    END IF;
+END;
+$$ LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+ALTER FUNCTION setInstrumentPVs(character varying, text[])
+  OWNER TO workflow;

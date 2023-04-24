@@ -65,3 +65,23 @@ Finally, follow the directions to open the postprocessing page.  Again,
 fill in the form and hit submit.  Ensure no error is returned.  Then attempt
 to find the job you just submitted by filling in the exact same information and
 instead clicking the 'find' button.
+
+
+Database Stored Function
+-------------------------
+
+Web Monitor should be tested to ensure proper functionality of the stored Database
+function `setInstrumentPVs`. This function is used by Instrument Scientist to set values in the
+`MonitoredVariable` table.
+
+In order to test this function a :doc:`Python Unit Test<../../../tests/test_setInstrumentPVs>`
+must be run manually. To run these unit tests execute the following commands:
+
+.. code-block:: shell
+
+   export DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.develop
+   make conda/create
+   make wheel/all  # create python packages for dasmon, webmon, and workflow
+   make SNSdata.tar.gz  # create fake SNS data for testing
+   make localdev/up  # build all the services
+   python tests/test_setInstrumentPVs.py
