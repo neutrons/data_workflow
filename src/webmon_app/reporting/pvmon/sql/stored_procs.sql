@@ -157,6 +157,8 @@ $BODY$
 ALTER FUNCTION pvStringUpdate(character varying, character varying, character varying, bigint, bigint)
   OWNER TO workflow;
 
+-- Function: "setInstrumentPVs"(character varying, text[])
+
 CREATE OR REPLACE FUNCTION setInstrumentPVs(instrument character varying, pvs text[])
 RETURNS void AS $$
 DECLARE
