@@ -3,10 +3,8 @@ import psycopg2
 import argparse
 import os
 import unittest
-import pytest
 
 
-@pytest.mark.skip
 class TestSetInstrumentPVs(unittest.TestCase):
     @classmethod
     def setUp(cls):
@@ -33,7 +31,7 @@ class TestSetInstrumentPVs(unittest.TestCase):
         parser.add_argument("--host", dest="host", default=os.getenv("DATABASE_HOST", "localhost"))
         parser.add_argument("--port", dest="port", default=os.getenv("DATABASE_PORT", "5432"))
         parser.add_argument("--database-name", dest="database", default=os.getenv("DATABASE_NAME", "workflow"))
-        options = parser.parse_args(None)
+        options = parser.parse_args(args="")
         return options
 
     @classmethod
@@ -114,7 +112,3 @@ class TestSetInstrumentPVs(unittest.TestCase):
         cursor = self.conn.cursor()
         with self.assertRaises(pge.RaiseException):
             cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
-
-
-if __name__ == "__main__":
-    unittest.main()
