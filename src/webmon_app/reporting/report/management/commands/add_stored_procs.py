@@ -27,7 +27,7 @@ error_rate_sql, run_rate_sql = _parse_sql_file(filename)
 
 # pv_update, pv_update2, are taken from pvmon/sql/stored_procs.sql
 filename = Path(__file__).resolve(strict=True).parent.parent.parent.parent / "pvmon" / "sql" / "stored_procs.sql"
-pv_update_sql, pv_update2_sql, pvstring_update_sql = _parse_sql_file(filename)
+pv_update_sql, pv_update2_sql, pvstring_update_sql, set_instrument_pvs_sql = _parse_sql_file(filename)
 
 
 class Command(BaseCommand):
@@ -42,3 +42,4 @@ class Command(BaseCommand):
             cursor.execute(pv_update_sql)
             cursor.execute(pv_update2_sql)
             cursor.execute(pvstring_update_sql)
+            cursor.execute(set_instrument_pvs_sql)
