@@ -62,7 +62,7 @@ Setup and Deployment for Development
 ------------------------------------
 
 Most of the shell commands used when working in the developer setup (a.k.a "localdev")
-are encapsulated in `make` targets. Type `make help` for a list of `make` targets
+are encapsulated in ``make`` targets. Type ``make help`` for a list of ``make`` targets
 and a brief description.
 
 When starting for scratch, open a shell where the following secret environment variables have
@@ -80,7 +80,7 @@ been initialized:
    CATALOG_ID=*****
    CATALOG_SECRET=*****
 
-It is recommended to store these variables in an `.envrc` file and manage their loading/unloading
+It is recommended to store these variables in an ``.envrc`` file and manage their loading/unloading
 into the shell with the `direnv <direnv/>`_ command-line utility.
 
 Description of settings
@@ -109,7 +109,7 @@ While one can connect to the production LDAP, in a developer environment there a
 * ``InstrumentScientist`` : ``InstrumentScientist`` has permissions similar to an instrument scientist
 
 
-After setting the environment variables, run the following `make` targets in the shell:
+After setting the environment variables, run the following ``make`` targets in the shell:
 
 .. code-block:: shell
 
@@ -134,39 +134,39 @@ Stoping and deleting the running containers as well as deleting the images and d
 
    docker-compose down --volumes
 
-this command will delete the database. Omit `--volumes` if preservation of the database is desired.
+this command will delete the database. Omit ``--volumes`` if preservation of the database is desired.
 
 Recreate the Python Wheels
 ++++++++++++++++++++++++++
-The selected format to inject `dasmon`, `webmon`, and `worflow` apps into their
+The selected format to inject ``dasmon``, ``webmon``, and ``workflow`` apps into their
 corresponding services is python wheels, thus any changes for the python
 source code requires rebuilding the python wheel(s).
 
-For instance, if the source code of `dasmon` is changed, run at this
-point `make wheel/dasmon` to rebuild the `dasmon` wheel.
+For instance, if the source code of ``dasmon`` is changed, run at this
+point ``make wheel/dasmon`` to rebuild the ``dasmon`` wheel.
 
-If necessary, delete all existing wheels with `make wheel/clean`
+If necessary, delete all existing wheels with ``make wheel/clean``
 
 Rebuild the Images
 ++++++++++++++++++
-Run `make localdev/up`. This `make` target builds the services
-with command `docker-compose up --build` using settings in `docker-compose.yml`.
+Run ``make localdev/up``. This ``make`` target builds the services
+with command ``docker-compose up --build`` using settings in ``docker-compose.yml``.
 
 More information on docker commands for this project can be found :doc:`here <docker>`.
 
 Uploading a Database Dump
 +++++++++++++++++++++++++
 
-Make target `localdev/dbup` contains the shell command to load the
+Make target ``localdev/dbup`` contains the shell command to load the
 database dump and start the service. Assuming that:
 
-- we started the `webmon` Conda environment
-- the full path to the dump file  is `./database_dump_file.sql`:
-- the current working directory is the root of the source tree (containing file `.env`):
+- we started the ``webmon`` Conda environment
+- the full path to the dump file  is ``./database_dump_file.sql``:
+- the current working directory is the root of the source tree (containing file ``.env``):
 
 .. code-block::
 
    (webmon) $> dbdumpfile=./database_dump_file.sql make DATABASE_PASS=$(dotenv get DATABASE_PASS) localdev/dbup
 
-Target `localdev/dbup` sets `LOAD_INITIAL_DATA="false"`, thus preventing loading the default
+Target ``localdev/dbup`` sets ``LOAD_INITIAL_DATA="false"``, thus preventing loading the default
 database dump (file "db_init.json")

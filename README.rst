@@ -14,10 +14,10 @@ Data Workflow Manager
 SNS data workflow manager and reporting app
 
 Dependencies:
- * `stomp <http://code.google.com/p/stomppy/>`_
+ * `stomp <https://github.com/jasonrbriggs/stomp.py>`_
  * `django <https://www.djangoproject.com/>`_
  * `MySQLdb <https://sourceforge.net/projects/mysql-python/>`_ if using MySQL
- * `psycopg2 <http://initd.org/psycopg/>`_ if using PostgreSQL
+ * `psycopg2 <https://www.psycopg.org/>`_ if using PostgreSQL
 
 It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker-compose.
 
