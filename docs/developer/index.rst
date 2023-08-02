@@ -10,6 +10,7 @@ Developer Guide
    instruction/build
    instruction/test_fixture
    instruction/docker
+   instruction/autoreduction
    instruction/contribute
    instruction/manual_testing
    instruction/deployment

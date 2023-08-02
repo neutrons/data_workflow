@@ -1,4 +1,4 @@
-How to Build A Local Instance
+How to Build a Local Instance
 ==============================
 
 .. toctree::
