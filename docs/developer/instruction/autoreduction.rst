@@ -43,6 +43,10 @@ to define the new templated variable and the logic using it, e.g.::
 4. Make the parameter visible on the web page by adding the parameter and a descriptive label to the HTML template used to display the form in
 `configuration_cncs.html <https://github.com/neutrons/data_workflow/blob/next/src/webmon_app/reporting/templates/reduction/configuration_cncs.html>`_.
 
+5. Create a pull request to `<https://github.com/neutrons/data_workflow/tree/next>`_.
+
+6. When the change has been merged, work with the DevOps team to deploy a new version of Web Monitor into production.
+
 How to test changes locally
 -----------------------
 
