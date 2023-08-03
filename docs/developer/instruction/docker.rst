@@ -12,7 +12,7 @@ Docker information
 Starting and Stopping
 ---------------------
 
-While docker can be used to start each individual container separately, using ``docker-compose up --buid`` is the preferred method because it starts all services in the correct order.
+While docker can be used to start each individual container separately, using ``docker-compose up --build`` is the preferred method because it starts all services in the correct order.
 Pressing ``ctrl-c`` will cleanly shutdown interactive docker.
 Pressing ``ctrl-c`` multiple times will kill the running images and leave docker in a somewhat funny state that likely requires running ``docker-compose down`` before starting again
 An additional flag ``-d`` can be supplied to run docker in detached mode.
