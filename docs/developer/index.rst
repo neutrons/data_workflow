@@ -47,3 +47,10 @@ For instance, `amq_pv_gen` depends on `db`.
     :width: 600px
     :align: center
     :alt: services dependence graph
+
+Related software
+----------------
+
+* `post_processing_agent <https://github.com/neutrons/post_processing_agent/>`_ is the system that runs on the autoreducer nodes
+* `live_data_server <https://github.com/neutrons/live_data_server>`_ is the system that contains database for holding the plots/divs produced by live reduction and autoreduction
+* `livereduce <https://github.com/mantidproject/livereduce>`_ is the ``sysctl`` daemon that runs on instrument computers and generates plots of the active acquisition
