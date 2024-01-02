@@ -3,7 +3,7 @@ channels:
 dependencies:
 - build
 - flake8
-- pytest<7
+- pytest
 - pytest-django
 - pytest-cov
 - python-dotenv
