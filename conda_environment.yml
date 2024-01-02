@@ -1,24 +1,25 @@
 name: webmon
 channels:
-- conda-forge
+  - conda-forge
+  - oncat 
 dependencies:
-- python=3.10
-- django=3.2
-- gunicorn
-- httplib2
-- make
-- oauthlib
-- postgresql=14
-- psycopg2-binary=2.9.3
-- psutil
-- python-ldap>=3.1
-- requests-oauthlib
-- setuptools
-- stomp.py=8
-- urllib3
-- versioningit~=1.1
-- pip
-- pip:
-  - django-auth-ldap==4.1.0
-  - django-health-check
-  - https://oncat.ornl.gov/packages/pyoncat-1.4.1-py3-none-any.whl
+  - python=3.10
+  - django=3.2
+  - gunicorn
+  - httplib2
+  - make
+  - oauthlib
+  - postgresql=14
+  - psycopg2-binary=2.9.3
+  - psutil
+  - python-ldap>=3.1
+  - requests-oauthlib
+  - setuptools
+  - stomp.py=8
+  - urllib3
+  - versioningit~=1.1
+  - pyoncat
+  - pip
+  - pip:
+    - django-auth-ldap==4.1.0
+    - django-health-check
