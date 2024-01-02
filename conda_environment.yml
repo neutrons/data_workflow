@@ -1,7 +1,7 @@
 name: webmon
 channels:
   - conda-forge
-  - oncat 
+  - oncat
 dependencies:
   - python=3.10
   - django=3.2
