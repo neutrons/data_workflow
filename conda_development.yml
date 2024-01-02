@@ -1,18 +1,18 @@
 channels:
-- conda-forge
+  - conda-forge
 dependencies:
-- build
-- flake8
-- pytest
-- pytest-django
-- pytest-cov
-- python-dotenv
-- python-build
-- pre-commit
-- sphinx
-- sphinx_rtd_theme=1.2.*
-- lxml
-- pip
-- pip:
-  - check-wheel-contents
-  - pytest-pythonpath
+  - build
+  - flake8
+  - python-dotenv
+  - python-build
+  - pre-commit
+  - sphinx
+  - sphinx_rtd_theme=1.2.*
+  - lxml
+  - pip
+  - pip:
+    - pytest
+    - pytest-django
+    - pytest-cov
+    - check-wheel-contents
+    - pytest-pythonpath
