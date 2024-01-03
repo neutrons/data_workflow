@@ -13,7 +13,7 @@ RUN useradd snsdata -G snswheel
 # put the developer configuration file in place
 RUN mkdir -p /etc/autoreduce/
 RUN mkdir -p /opt/postprocessing/log/
-RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/main/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
+RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/v2.7/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
 RUN yum install -y jq
 
 RUN contents="$(jq '.amq_queues[.amq_queues| length] |= . + "/queue/REDUCTION.CREATE_SCRIPT"' /etc/autoreduce/post_processing.conf)" && \
