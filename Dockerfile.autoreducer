@@ -1,10 +1,9 @@
-FROM centos:7
+FROM registry.access.redhat.com/ubi9/ubi
 
 # install various dependencies
-RUN yum install -y curl
-RUN curl http://packages.sns.gov/distros/rhel/7/sns/sns.repo -o /etc/yum.repos.d/sns.repo || echo "Cannot see packages.sns.gov"
-RUN yum install -y epel-release dnf-plugins-core yum-plugin-copr
-RUN yum updateinfo
+RUN curl http://packages.sns.gov/distros/rhel/9/sns/sns.repo -o /etc/dnf.repos.d/sns.repo || echo "Cannot see packages.sns.gov"
+RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+RUN dnf updateinfo
 
 # rpm needs to special groups first
 RUN groupadd snswheel
@@ -13,20 +12,16 @@ RUN useradd snsdata -G snswheel
 # put the developer configuration file in place
 RUN mkdir -p /etc/autoreduce/
 RUN mkdir -p /opt/postprocessing/log/
-RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/v2.7/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
-RUN yum install -y jq
-
-RUN contents="$(jq '.amq_queues[.amq_queues| length] |= . + "/queue/REDUCTION.CREATE_SCRIPT"' /etc/autoreduce/post_processing.conf)" && \
+RUN curl https://raw.githubusercontent.com/neutrons/post_processing_agent/v3.0/configuration/post_process_consumer.conf.development -o /etc/autoreduce/post_processing.conf
+RUN dnf install -y jq
+RUN contents="$(jq 'del(.processors)' /etc/autoreduce/post_processing.conf)" && \
 echo -E "${contents}" > /etc/autoreduce/post_processing.conf
 
 # This configuration allows it to run with docker-compose from https://github.com/neutrons/data_workflow
 RUN sed -i 's/localhost/activemq/' /etc/autoreduce/post_processing.conf
 
 # install postprocessing
-# the missing packages are python-stompest and python2-stompest-async
-RUN yum copr -y enable mantid/mantid/
-RUN yum install -y python-stompest python2-stompest-async || yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/python-stompest-2.1.6-1.noarch.rpm https://github.com/neutrons/post_processing_agent/releases/download/v2.5/python2-stompest-async-2.1.6-1.el7.noarch.rpm
-RUN yum install -y https://github.com/neutrons/post_processing_agent/releases/download/v2.5/postprocessing-2.5-1.x86_64.rpm
+RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.0/postprocessing-3.0.0-1.el9.noarch.rpm
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
@@ -35,9 +30,12 @@ RUN ls ${DATA_TARBALL}
 RUN mkdir /SNS
 RUN cd /SNS && tar xzf ${DATA_TARBALL}
 
+# add fake ONCat ingest scripts
+RUN touch /opt/postprocessing/scripts/oncat_ingest.py && \
+    touch /opt/postprocessing/scripts/oncat_reduced_ingest.py
+
 # create startup script
 RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
-    echo "cd /SNS && python2 -m SimpleHTTPServer 8888 &" >> /usr/bin/run_postprocessing && \
     echo "/opt/postprocessing/queueProcessor.py &" >> /usr/bin/run_postprocessing && \
     echo "sleep 1" >> /usr/bin/run_postprocessing && \
     echo "tail -F /opt/postprocessing/log/postprocessing.log" >> /usr/bin/run_postprocessing && \
