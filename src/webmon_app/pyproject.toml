@@ -10,7 +10,7 @@ method = "git"
 default-tag = "1.0.0"
 
 [tool.versioningit.next-version]
-method = "minor"
+method = "smallest"
 
 [tool.versioningit.format]
 distance = "{next_version}.dev{distance}"
