@@ -100,12 +100,12 @@ services:
       retries: 5
 
   activemq:
-    image: rmohr/activemq
+    image: apache/activemq-classic
     hostname: activemq
     volumes:
-      - ./src/workflow_app/workflow/icat_activemq.xml:/opt/activemq/conf/activemq.xml
+      - ./src/workflow_app/workflow/icat_activemq.xml:/opt/apache-activemq/conf/activemq.xml
     healthcheck:
-      test: "curl --silent --show-error -u admin:admin 'http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,service=Health' | grep --silent -e 'Good' -e 'Getting Worried'"
+      test: "curl --silent --show-error -u admin:admin -H 'Origin:http://localhost' 'http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,service=Health' | grep --silent -e 'Good' -e 'Getting Worried'"
       interval: 5s
       timeout: 5s
       retries: 5
