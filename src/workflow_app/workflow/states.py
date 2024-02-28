@@ -53,7 +53,7 @@ class StateAction:
         :param message: JSON-encoded message content
         """
         task_def = json.loads(task_data)
-        if "task_class" in task_def and len(task_def["task_class"].strip()) > 0:
+        if "task_class" in task_def and (task_def["task_class"] is not None) and len(task_def["task_class"].strip()) > 0:
             try:
                 toks = task_def["task_class"].strip().split(".")
                 module = ".".join(toks[: len(toks) - 1])
