@@ -3,4 +3,5 @@
     reporting app. The models are defined in the workflow manager and should be
     installed on the system before running the app.
 """
+
 from workflow.database.report.models import *  # noqa: F401, F403
