@@ -1,6 +1,7 @@
 """
     Actual process that each data run must go through.
 """
+
 import json
 import logging
 import datetime

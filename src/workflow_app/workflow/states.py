@@ -4,6 +4,7 @@
     To add an action for a specific queue, add a StateAction class
     with the name of the queue in lower-case, replacing periods with underscores.
 """
+
 from .state_utilities import logged_action
 from .settings import POSTPROCESS_ERROR, CATALOG_DATA_READY
 from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
