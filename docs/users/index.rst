@@ -5,7 +5,7 @@ User Documentation
 ==================
 
 The https://monitor.sns.gov is a portal for the users to monitor
-the status of data aquisition and reduction during experiments.
+the status of data acquisition and reduction during experiments.
 Different views are described below, sorted by various access levels.
 
 
@@ -16,6 +16,12 @@ Different views are described below, sorted by various access levels.
    Guest_user
    General_user
    Instrument_scientist
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Troubleshooting
+
+   troubleshooting/index
 
 .. toctree::
    :maxdepth: 2
