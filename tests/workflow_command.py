@@ -2,6 +2,7 @@
     ActiveMQ client used to issue commands to the post-processing workflow.
     NOTE: Only works for runs that are already in the DB
 """
+
 from report.models import Instrument, DataRun
 from workflow.settings import BROKERS, ICAT_USER, ICAT_PASSCODE
 import argparse

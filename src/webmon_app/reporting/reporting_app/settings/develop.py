@@ -1,4 +1,5 @@
 """This is the settings to be used for a local developer build inside of docker"""
+
 from .base import *  # noqa
 import ldap
 

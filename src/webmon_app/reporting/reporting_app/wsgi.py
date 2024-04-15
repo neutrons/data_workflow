@@ -13,6 +13,7 @@ middleware here, or combine a Django application with an application of another
 framework.
 
 """
+
 import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "reporting.reporting_app.settings.develop")

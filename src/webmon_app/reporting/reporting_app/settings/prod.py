@@ -1,4 +1,5 @@
 """This is the settings to be used for a remote production deploy"""
+
 from .base import *  # noqa
 from os import environ
 

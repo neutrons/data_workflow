@@ -4,6 +4,7 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+
 from reporting.report.models import Instrument, DataRun, WorkflowSummary
 from reporting.dasmon.models import (
     Parameter,

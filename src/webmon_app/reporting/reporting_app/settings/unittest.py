@@ -1,4 +1,5 @@
 """This configuration is meant for running the unittests outside of docker"""
+
 from .base import *  # noqa
 from .base import INSTALLED_APPS
 
