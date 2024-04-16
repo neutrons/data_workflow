@@ -115,9 +115,19 @@ services:
       context: .
       dockerfile: Dockerfile.autoreducer
       network: host
-    ports:
-      - "8888:8888"
     hostname: autoreducer
+    healthcheck:
+      test: ["CMD", "pgrep", "python"]
+    depends_on:
+      activemq:
+        condition: service_healthy
+
+  autoreducer_himem:
+    build:
+      context: .
+      dockerfile: Dockerfile.autoreducer.himem
+      network: host
+    hostname: autoreducer.himem
     healthcheck:
       test: ["CMD", "pgrep", "python"]
     depends_on:
