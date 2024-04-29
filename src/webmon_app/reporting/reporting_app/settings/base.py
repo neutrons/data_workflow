@@ -334,7 +334,24 @@ LIVE_DATA_SERVER_PORT = "443"
 # set up the mapping of instruments to facilities
 FACILITY_INFO = defaultdict(lambda: "SNS")  # SNS is the default
 # add hfir instruments
-for instr in ["hb2c", "cg1d", "hb2a", "hb2b", "hb3a", "cg2", "cg3"]:
+for instr in (
+    "cg1a",
+    "cg1b",
+    "cg1d",
+    "cg2",
+    "cg3",
+    "cg4b",
+    "cg4c",
+    "cg4d",
+    "hb1",
+    "hb1a",
+    "hb2a",
+    "hb2b",
+    "hb2c",
+    "hb2d",
+    "hb3",
+    "hb3a",
+):
     FACILITY_INFO[instr] = "HFIR"
 # read in additional values/overrides from the environment
 facility_info_additions = environ.get("FACILITY_INFO", "").strip()
