@@ -1,4 +1,5 @@
 """This is the settings to be used for a remote test deploy"""
+
 from .base import *  # noqa
 
 # symbols to make flake8 happy

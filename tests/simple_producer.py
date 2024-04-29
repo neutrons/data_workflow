@@ -1,6 +1,7 @@
 """
     Example of a simple non-listening producer
 """
+
 import stomp
 import json
 import time

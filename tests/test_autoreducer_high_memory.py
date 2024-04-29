@@ -1,5 +1,6 @@
 """This is to test that the reduction tasks go to the correct autoreducer node
 depending on if it requires high memoery or not"""
+
 import psycopg2
 import requests
 import time

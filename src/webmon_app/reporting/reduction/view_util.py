@@ -4,6 +4,7 @@
     @author: M. Doucet, Oak Ridge National Laboratory
     @copyright: 2014 Oak Ridge National Laboratory
 """
+
 from django.conf import settings
 from django.urls import reverse
 import logging
@@ -79,7 +80,7 @@ def send_template_request(instrument_id, template_dict, user="unknown"):
     """
     use_default = False
     if "use_default" in template_dict:
-        if type(template_dict["use_default"]) == bool:
+        if isinstance(template_dict["use_default"], bool):
             use_default = template_dict["use_default"]
         else:
             use_default = template_dict["use_default"].lower() == "true"

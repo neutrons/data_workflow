@@ -189,10 +189,10 @@ class Listener(stomp.ConnectionListener):
             # elif 'timestamp' in data_dict:
             #    timestamp = data_dict['timestamp']
             for key in data_dict:
-                if key == "monitors" and type(data_dict[key]) == dict:
+                if key == "monitors" and isinstance(data_dict[key], dict):
                     for item in data_dict[key]:
                         # Protect against old API
-                        if not type(data_dict[key][item]) == dict:
+                        if not isinstance(data_dict[key][item], dict):
                             key_id = self.retrieve_parameter("monitor_count_%s" % str(item))
                             store_and_cache(
                                 instrument,
