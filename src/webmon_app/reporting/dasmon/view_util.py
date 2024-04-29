@@ -1083,7 +1083,7 @@ def get_signals(instrument_id):
                 if len(latests) == 0:
                     latests = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
                 latest = latests.latest("update_time")
-                if type(latest.value) == float:
+                if isinstance(latest.value, float):
                     value = "%g" % latest.value
                 else:
                     value = "%s" % latest.value
