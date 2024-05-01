@@ -328,8 +328,8 @@ HELPLINE_EMAIL = "adara_support@ornl.gov"
 INSTRUMENT_REDUCTION_SETUP = ("seq", "arcs", "corelli", "cncs", "ref_m")
 
 LIVE_DATA_SERVER = "/plots/$instrument/$run_number/update"
-LIVE_DATA_SERVER_DOMAIN = "livedata.sns.gov"
-LIVE_DATA_SERVER_PORT = "443"
+LIVE_DATA_SERVER_DOMAIN = environ.get("LIVE_DATA_SERVER_DOMAIN", "livedata.sns.gov")
+LIVE_DATA_SERVER_PORT = environ.get("LIVE_DATA_SERVER_PORT", "443")
 
 # set up the mapping of instruments to facilities
 FACILITY_INFO = defaultdict(lambda: "SNS")  # SNS is the default
