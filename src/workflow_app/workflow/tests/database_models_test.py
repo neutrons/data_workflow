@@ -112,8 +112,8 @@ class TestModelsWorkflowSummary(TestCase):
 
         def status_lookup(run_id, param_string):
             vals = {
-                "CATALOG.COMPLETE": 1,
-                "CATALOG.STARTED": 0,
+                "CATALOG.ONCAT.COMPLETE": 1,
+                "CATALOG.ONCAT.STARTED": 0,
                 "REDUCTION.NOT_NEEDED": 0,
                 "REDUCTION.DISABLED": 0,
                 "REDUCTION.COMPLETE": 0,
@@ -141,8 +141,8 @@ class TestModelsWorkflowSummary(TestCase):
 
         def status_lookup(run_id, param_string):
             vals = {
-                "CATALOG.COMPLETE": 0,
-                "CATALOG.STARTED": 0,
+                "CATALOG.ONCAT.COMPLETE": 0,
+                "CATALOG.ONCAT.STARTED": 0,
                 "REDUCTION.NOT_NEEDED": 1,
                 "REDUCTION.DISABLED": 1,
                 "REDUCTION.COMPLETE": 0,
@@ -169,8 +169,8 @@ class TestModelsWorkflowSummary(TestCase):
 
         def status_lookup(run_id, param_string):
             vals = {
-                "CATALOG.COMPLETE": 0,
-                "CATALOG.STARTED": 0,
+                "CATALOG.ONCAT.COMPLETE": 0,
+                "CATALOG.ONCAT.STARTED": 0,
                 "REDUCTION.NOT_NEEDED": 0,
                 "REDUCTION.DISABLED": 0,
                 "REDUCTION.COMPLETE": 1,
@@ -198,8 +198,8 @@ class TestModelsWorkflowSummary(TestCase):
 
         def status_lookup(run_id, param_string):
             vals = {
-                "CATALOG.COMPLETE": 0,
-                "CATALOG.STARTED": 0,
+                "CATALOG.ONCAT.COMPLETE": 0,
+                "CATALOG.ONCAT.STARTED": 0,
                 "REDUCTION.NOT_NEEDED": 0,
                 "REDUCTION.DISABLED": 0,
                 "REDUCTION.COMPLETE": 0,
@@ -227,8 +227,8 @@ class TestModelsWorkflowSummary(TestCase):
 
         def status_lookup(run_id, param_string):
             vals = {
-                "CATALOG.COMPLETE": 1,
-                "CATALOG.STARTED": 0,
+                "CATALOG.ONCAT.COMPLETE": 1,
+                "CATALOG.ONCAT.STARTED": 0,
                 "REDUCTION.NOT_NEEDED": 1,
                 "REDUCTION.DISABLED": 0,
                 "REDUCTION.COMPLETE": 0,

@@ -1,7 +1,6 @@
 import psycopg2
 import requests
 import time
-import pytest
 from django.conf import settings
 from dotenv import dotenv_values
 
@@ -74,17 +73,16 @@ class TestPostProcessingWorkflow:
                 errors.append(result)
         return errors
 
-    @pytest.mark.skip("Skipping due to catalog start message not sending in CI")
     def test_catalog(self):
         cursor = self.__class__.conn.cursor()
 
         datarun_id = self.get_datarun_id(cursor, "arcs", "IPTS-27800", "214583")
 
         queue_id = self.get_queue_id(cursor, "CATALOG.REQUEST")
-        started_id = self.get_queue_id(cursor, "CATALOG.STARTED")
-        ready_id = self.get_queue_id(cursor, "CATALOG.DATA_READY")
-        complete_id = self.get_queue_id(cursor, "CATALOG.COMPLETE")
-        error_id = self.get_queue_id(cursor, "CATALOG.ERROR")
+        started_id = self.get_queue_id(cursor, "CATALOG.ONCAT.STARTED")
+        ready_id = self.get_queue_id(cursor, "CATALOG.ONCAT.DATA_READY")
+        complete_id = self.get_queue_id(cursor, "CATALOG.ONCAT.COMPLETE")
+        error_id = self.get_queue_id(cursor, "CATALOG.ONCAT.ERROR")
 
         # get current catalog status counts
         queues = [queue_id, started_id, ready_id, complete_id]

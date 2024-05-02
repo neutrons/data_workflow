@@ -198,6 +198,38 @@
     }
 },
 {
+    "model": "report.statusqueue",
+    "pk": 24,
+    "fields": {
+        "name": "CATALOG.ONCAT.DATA_READY",
+        "is_workflow_input": false
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 25,
+    "fields": {
+        "name": "CATALOG.ONCAT.STARTED",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 26,
+    "fields": {
+        "name": "CATALOG.ONCAT.ERROR",
+        "is_workflow_input": true
+    }
+},
+{
+    "model": "report.statusqueue",
+    "pk": 27,
+    "fields": {
+        "name": "CATALOG.ONCAT.COMPLETE",
+        "is_workflow_input": true
+    }
+},
+{
     "model": "report.task",
     "pk": 1,
     "fields": {
@@ -216,11 +248,11 @@
         "input_queue_id": 1,
         "task_class": " ",
         "task_queue_ids": [
-            4,
+            24,
             7
         ],
         "success_queue_ids": [
-            6,
+            27,
             11
         ]
     }
