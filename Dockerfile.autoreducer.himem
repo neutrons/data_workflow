@@ -15,7 +15,7 @@ RUN mkdir -p /opt/postprocessing/log/
 COPY tests/configuration/post_process_consumer.himem.conf /etc/autoreduce/post_processing.conf
 
 # install postprocessing
-RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.1/postprocessing-3.1.0-1.el9.noarch.rpm
+RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.2/postprocessing-3.2.0-1.el9.noarch.rpm
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
