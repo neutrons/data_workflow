@@ -378,9 +378,9 @@ class WorkflowSummary(models.Model):
         self.complete = False
 
         # Look for cataloging status
-        if len(RunStatus.objects.status(self.run_id, "CATALOG.COMPLETE")) > 0:
+        if len(RunStatus.objects.status(self.run_id, "CATALOG.ONCAT.COMPLETE")) > 0:
             self.cataloged = True
-        if len(RunStatus.objects.status(self.run_id, "CATALOG.STARTED")) > 0:
+        if len(RunStatus.objects.status(self.run_id, "CATALOG.ONCAT.STARTED")) > 0:
             self.catalog_started = True
 
         # Check whether we need reduction (default is no)

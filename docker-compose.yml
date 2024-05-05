@@ -158,20 +158,6 @@ services:
       webmon:
         condition: service_healthy
 
-  catalog_process:
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile.catalog
-      network: host
-    environment:
-      ICAT_USER: "icat"
-      ICAT_PASSCODE: "icat"
-      ACTIVE_MQ_PORTS: 61613
-    depends_on:
-      activemq:
-        condition: service_healthy
-
   autoheal:
     restart: always
     image: willfarrell/autoheal

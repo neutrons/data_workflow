@@ -123,7 +123,7 @@ class TestPostProcessingAdminView:
         self.send_request("POSTPROCESS.DATA_READY", RUN_NUMBER_MISSING, requestType="submit")
 
         new_status_count = self.get_status_count(RUN_NUMBER_MISSING)
-        assert new_status_count - status_count == 6
+        assert new_status_count - status_count == 5
 
     @pytest.mark.parametrize("run_number", [RUN_NUMBER_GOOD, RUN_NUMBER_MISSING])
     def testPostProcessingFind(self, run_number):
