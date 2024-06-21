@@ -25,6 +25,7 @@ class StatusVariable(models.Model):
     Table containing key-value pairs from the DASMON
     """
 
+    id = models.BigAutoField(primary_key=True)
     instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     key_id = models.ForeignKey(Parameter, on_delete=models.CASCADE)
     value = models.CharField(max_length=128)
