@@ -5,99 +5,109 @@ from reporting.reduction.models import ReductionProperty, Choice
 
 
 class TestREFMForm(TestCase):
+    default_test_fields = {
+        "skip_quicknxs": False,
+        # Options for all samples in the run
+        "plot_in_2D": False,
+        "use_const_q": False,
+        "const_q_cutoff": 0.02,
+        "q_step": -0.02,
+        "use_sangle": True,
+        "fit_peak_in_roi": False,
+        "sample_count": 1,
+        # Options for first sample
+        "force_peak": False,
+        "peak_min": 160,
+        "peak_max": 170,
+        "use_roi_bck": False,
+        "force_background": False,
+        "bck_min": 5,
+        "bck_max": 100,
+        "use_side_bck": False,
+        "bck_width": 10,
+        # Options for second sample
+        "force_peak_s2": False,
+        "peak_min_s2": 160,
+        "peak_max_s2": 170,
+        "use_roi_bck_s2": False,
+        "force_background_s2": False,
+        "bck_min_s2": 5,
+        "bck_max_s2": 100,
+        "use_side_bck_s2": False,
+        "bck_width_s2": 10,
+        # Options for third sample
+        "force_peak_s3": False,
+        "peak_min_s3": 160,
+        "peak_max_s3": 170,
+        "use_roi_bck_s3": False,
+        "force_background_s3": False,
+        "bck_min_s3": 5,
+        "bck_max_s3": 100,
+        "use_side_bck_s3": False,
+        "bck_width_s3": 10,
+    }
+
     def test_empty_form(self):
-        default_test_fields = {
-            "use_sangle": True,
-            "use_const_q": False,
-            "use_roi_bck": False,
-            "const_q_cutoff": 0.02,
-            "use_side_bck": False,
-            "bck_width": 10,
-            "fit_peak_in_roi": False,
-            "force_peak": False,
-            "plot_in_2D": False,
-            "peak_min": 160,
-            "peak_max": 170,
-            "force_background": False,
-            "bck_min": 5,
-            "bck_max": 100,
-            "skip_quicknxs": False,
-            "q_step": -0.02,
-        }
-
         form = forms.ReductionConfigurationREFMForm({})
-        self.assertFalse(form.is_valid())
-        for key in default_test_fields:
+        self.assertFalse(form.is_valid())  # empty instantiated form invalid because fields like `peak_min` are required
+        self.assertEqual(len(form.to_template()), len(self.default_test_fields) - 1)  # `skip_quicknxs` missing
+        for key in self.default_test_fields:
             self.assertTrue(key in form.fields)
-
+        # check the values for an empty form. Field values do not correspond to initial values
         self.assertEqual(
             form.to_template(),
             {
-                "bck_max": "",
-                "bck_min": "",
-                "bck_width": "",
-                "const_q_cutoff": "None",
-                "fit_peak_in_roi": "False",
-                "force_background": "False",
-                "force_peak": "False",
-                "peak_max": "",
-                "peak_min": "",
+                # Options for all samples in the run
                 "plot_in_2D": "False",
-                "q_step": "None",
-                "skip_quicknxs": "False",
                 "use_const_q": "False",
-                "use_roi_bck": "False",
+                "const_q_cutoff": "None",
+                "q_step": "None",
                 "use_sangle": "False",
+                "fit_peak_in_roi": "False",
+                "sample_count": "",
+                # Options for first sample
+                "force_peak": "False",
+                "peak_min": "",
+                "peak_max": "",
+                "use_roi_bck": "False",
+                "force_background": "False",
+                "bck_min": "",
+                "bck_max": "",
                 "use_side_bck": "False",
-            },
+                "bck_width": "",
+                # Options for second sample
+                "force_peak_s2": "False",
+                "peak_min_s2": "",
+                "peak_max_s2": "",
+                "use_roi_bck_s2": "False",
+                "force_background_s2": "False",
+                "bck_min_s2": "",
+                "bck_max_s2": "",
+                "use_side_bck_s2": "False",
+                "bck_width_s2": "",
+                # Options for third sample
+                "force_peak_s3": "False",
+                "peak_min_s3": "",
+                "peak_max_s3": "",
+                "use_roi_bck_s3": "False",
+                "force_background_s3": "False",
+                "bck_min_s3": "",
+                "bck_max_s3": "",
+                "use_side_bck_s3": "False",
+                "bck_width_s3": "",
+            }
         )
 
     def test_form_filled(self):
-        test_fields = {
-            "use_sangle": False,
-            "use_const_q": True,
-            "use_roi_bck": True,
-            "const_q_cutoff": 0.04,
-            "use_side_bck": True,
-            "bck_width": 11,
-            "fit_peak_in_roi": True,
-            "force_peak": True,
-            "plot_in_2D": True,
-            "peak_min": 170,
-            "peak_max": 160,
-            "force_background": True,
-            "bck_min": 6,
-            "bck_max": 1000,
-            "skip_quicknxs": True,
-            "q_step": -0.03,
-        }
-
-        form = forms.ReductionConfigurationREFMForm(test_fields)
-        form.full_clean()
-        for key, val in test_fields.items():
+        form = forms.ReductionConfigurationREFMForm(self.default_test_fields)
+        form.full_clean()  # Clean all of form.data and populate form._errors and form.cleaned_data.
+        for key, val in self.default_test_fields.items():
             self.assertEqual(form.cleaned_data.get(key), val)
-
         self.assertTrue(form.is_valid())
+        # form.to_template() returns a dictionary where fields values have been cast as a string
         self.assertEqual(
-            form.to_template(),
-            {
-                "use_sangle": "False",
-                "use_const_q": "True",
-                "const_q_cutoff": "0.04",
-                "fit_peak_in_roi": "True",
-                "plot_in_2D": "True",
-                "force_peak": "True",
-                "peak_min": "170",
-                "peak_max": "160",
-                "q_step": "-0.03",
-                "force_background": "True",
-                "bck_min": "6",
-                "bck_max": "1000",
-                "use_roi_bck": "True",
-                "use_side_bck": "True",
-                "bck_width": "11",
-                "skip_quicknxs": "True",
-            },
+            {**form.to_template(), **{"skip_quicknxs": "False"}},
+            {k: str(v) for k, v in self.default_test_fields.items()},
         )
 
         # this should do nothing, but shouldn't fail
@@ -106,7 +116,7 @@ class TestREFMForm(TestCase):
     def test_to_db(self):
         test_fields = {"const_q_cutoff": 0.04, "bck_width": 11}
         form = forms.ReductionConfigurationREFMForm(test_fields)
-        self.assertFalse(form.is_valid())
+        self.assertFalse(form.is_valid())  # invalid because fields like `peak_min` are required
 
         instrument = Instrument(name="inst")
         instrument.save()

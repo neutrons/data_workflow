@@ -300,42 +300,90 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     """
     Generic form for REF_M reduction instruments
     """
-
-    use_sangle = forms.BooleanField(required=False, initial=True)
-    use_const_q = forms.BooleanField(required=False, initial=False)
-    use_roi_bck = forms.BooleanField(required=False, initial=False)
-    const_q_cutoff = forms.FloatField(required=False, initial=0.02)
-    use_side_bck = forms.BooleanField(required=False, initial=False)
-    bck_width = forms.IntegerField(required=True, initial=10)
-    fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
-    force_peak = forms.BooleanField(required=False, initial=False)
-    plot_in_2D = forms.BooleanField(required=False, initial=False)
-    peak_min = forms.IntegerField(required=True, initial=160)
-    peak_max = forms.IntegerField(required=True, initial=170)
-    force_background = forms.BooleanField(required=False, initial=False)
-    bck_min = forms.IntegerField(required=True, initial=5)
-    bck_max = forms.IntegerField(required=True, initial=100)
     skip_quicknxs = forms.BooleanField(required=False, initial=False)
-    q_step = forms.FloatField(required=False, initial=-0.02)
 
-    # List of field that are used in the template
+    # Options for all samples in the run
+    plot_in_2D = forms.BooleanField(required=False, initial=False)
+    use_const_q = forms.BooleanField(required=False, initial=False)
+    const_q_cutoff = forms.FloatField(required=False, initial=0.02)
+    q_step = forms.FloatField(required=False, initial=-0.02)
+    use_sangle = forms.BooleanField(required=False, initial=True)
+    fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
+    sample_count = forms.IntegerField(required=True, min_value=1, initial=1, widget=forms.NumberInput(attrs={'size': '2'}))
+
+    # Options for first sample
+    force_peak = forms.BooleanField(required=False, initial=False)
+    peak_min = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={'size': '5'}))
+    peak_max = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={'size': '5'}))
+    use_roi_bck = forms.BooleanField(required=False, initial=False)
+    force_background = forms.BooleanField(required=False, initial=False)
+    bck_min = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={'size': '5'}))
+    bck_max = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={'size': '5'}))
+    use_side_bck = forms.BooleanField(required=False, initial=False)
+    bck_width = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={'size': '4'}))
+
+    # Options for second sample
+    force_peak_s2 = forms.BooleanField(required=False, initial=False)
+    peak_min_s2 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={'size': '5'}))
+    peak_max_s2 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={'size': '5'}))
+    use_roi_bck_s2 = forms.BooleanField(required=False, initial=False)
+    force_background_s2 = forms.BooleanField(required=False, initial=False)
+    bck_min_s2 = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={'size': '5'}))
+    bck_max_s2 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={'size': '5'}))
+    use_side_bck_s2 = forms.BooleanField(required=False, initial=False)
+    bck_width_s2 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={'size': '4'}))
+
+    # Options for third sample
+    force_peak_s3 = forms.BooleanField(required=False, initial=False)
+    peak_min_s3 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={'size': '5'}))
+    peak_max_s3 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={'size': '5'}))
+    use_roi_bck_s3 = forms.BooleanField(required=False, initial=False)
+    force_background_s3 = forms.BooleanField(required=False, initial=False)
+    bck_min_s3 = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={'size': '5'}))
+    bck_max_s3 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={'size': '5'}))
+    use_side_bck_s3 = forms.BooleanField(required=False, initial=False)
+    bck_width_s3 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={'size': '4'}))
+
+    # List of fields are used in the template
     _template_list = [
-        "use_sangle",
+        # Options for all samples in the run
+        "plot_in_2D",
         "use_const_q",
         "const_q_cutoff",
+        "q_step",
+        "use_sangle",
         "fit_peak_in_roi",
-        "plot_in_2D",
+        "sample_count",
+        # Options for first sample
         "force_peak",
         "peak_min",
         "peak_max",
-        "q_step",
+        "use_roi_bck",
         "force_background",
         "bck_min",
         "bck_max",
-        "use_roi_bck",
         "use_side_bck",
         "bck_width",
-        "skip_quicknxs",
+        # Options for second sample
+        "force_peak_s2",
+        "peak_min_s2",
+        "peak_max_s2",
+        "use_roi_bck_s2",
+        "force_background_s2",
+        "bck_min_s2",
+        "bck_max_s2",
+        "use_side_bck_s2",
+        "bck_width_s2",
+        # Options for third sample
+        "force_peak_s3",
+        "peak_min_s3",
+        "peak_max_s3",
+        "use_roi_bck_s3",
+        "force_background_s3",
+        "bck_min_s3",
+        "bck_max_s3",
+        "use_side_bck_s3",
+        "bck_width_s3",
     ]
 
 
