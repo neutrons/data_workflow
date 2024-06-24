@@ -300,6 +300,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     """
     Generic form for REF_M reduction instruments
     """
+
     skip_quicknxs = forms.BooleanField(required=False, initial=False)
 
     # Options for all samples in the run
@@ -309,40 +310,42 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     q_step = forms.FloatField(required=False, initial=-0.02)
     use_sangle = forms.BooleanField(required=False, initial=True)
     fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
-    sample_count = forms.IntegerField(required=True, min_value=1, initial=1, widget=forms.NumberInput(attrs={'size': '2'}))
+    sample_count = forms.IntegerField(
+        required=True, min_value=1, initial=1, widget=forms.NumberInput(attrs={"size": "2"})
+    )
 
     # Options for first sample
     force_peak = forms.BooleanField(required=False, initial=False)
-    peak_min = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={'size': '5'}))
-    peak_max = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={'size': '5'}))
+    peak_min = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={"size": "5"}))
+    peak_max = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={"size": "5"}))
     use_roi_bck = forms.BooleanField(required=False, initial=False)
     force_background = forms.BooleanField(required=False, initial=False)
-    bck_min = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={'size': '5'}))
-    bck_max = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={'size': '5'}))
+    bck_min = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={"size": "5"}))
+    bck_max = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={"size": "5"}))
     use_side_bck = forms.BooleanField(required=False, initial=False)
-    bck_width = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={'size': '4'}))
+    bck_width = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
 
     # Options for second sample
     force_peak_s2 = forms.BooleanField(required=False, initial=False)
-    peak_min_s2 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={'size': '5'}))
-    peak_max_s2 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={'size': '5'}))
+    peak_min_s2 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={"size": "5"}))
+    peak_max_s2 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={"size": "5"}))
     use_roi_bck_s2 = forms.BooleanField(required=False, initial=False)
     force_background_s2 = forms.BooleanField(required=False, initial=False)
-    bck_min_s2 = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={'size': '5'}))
-    bck_max_s2 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={'size': '5'}))
+    bck_min_s2 = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={"size": "5"}))
+    bck_max_s2 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={"size": "5"}))
     use_side_bck_s2 = forms.BooleanField(required=False, initial=False)
-    bck_width_s2 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={'size': '4'}))
+    bck_width_s2 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
 
     # Options for third sample
     force_peak_s3 = forms.BooleanField(required=False, initial=False)
-    peak_min_s3 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={'size': '5'}))
-    peak_max_s3 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={'size': '5'}))
+    peak_min_s3 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={"size": "5"}))
+    peak_max_s3 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={"size": "5"}))
     use_roi_bck_s3 = forms.BooleanField(required=False, initial=False)
     force_background_s3 = forms.BooleanField(required=False, initial=False)
-    bck_min_s3 = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={'size': '5'}))
-    bck_max_s3 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={'size': '5'}))
+    bck_min_s3 = forms.IntegerField(required=True, initial=5, widget=forms.NumberInput(attrs={"size": "5"}))
+    bck_max_s3 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={"size": "5"}))
     use_side_bck_s3 = forms.BooleanField(required=False, initial=False)
-    bck_width_s3 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={'size': '4'}))
+    bck_width_s3 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
 
     # List of fields are used in the template
     _template_list = [

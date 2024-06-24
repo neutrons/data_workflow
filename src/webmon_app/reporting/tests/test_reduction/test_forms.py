@@ -49,7 +49,9 @@ class TestREFMForm(TestCase):
 
     def test_empty_form(self):
         form = forms.ReductionConfigurationREFMForm({})
-        self.assertFalse(form.is_valid())  # empty instantiated form invalid because fields like `peak_min` are required
+        self.assertFalse(
+            form.is_valid()
+        )  # empty instantiated form invalid because fields like `peak_min` are required
         self.assertEqual(len(form.to_template()), len(self.default_test_fields) - 1)  # `skip_quicknxs` missing
         for key in self.default_test_fields:
             self.assertTrue(key in form.fields)
@@ -95,7 +97,7 @@ class TestREFMForm(TestCase):
                 "bck_max_s3": "",
                 "use_side_bck_s3": "False",
                 "bck_width_s3": "",
-            }
+            },
         )
 
     def test_form_filled(self):
