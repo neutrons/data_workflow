@@ -306,7 +306,6 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     # Options for all samples in the run
     plot_in_2D = forms.BooleanField(required=False, initial=False)
     use_const_q = forms.BooleanField(required=False, initial=False)
-    const_q_cutoff = forms.FloatField(required=False, initial=0.02)
     q_step = forms.FloatField(required=False, initial=-0.02)
     use_sangle = forms.BooleanField(required=False, initial=True)
     fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
@@ -352,7 +351,6 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
         # Options for all samples in the run
         "plot_in_2D",
         "use_const_q",
-        "const_q_cutoff",
         "q_step",
         "use_sangle",
         "fit_peak_in_roi",

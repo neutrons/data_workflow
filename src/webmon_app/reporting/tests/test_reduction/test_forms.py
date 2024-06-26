@@ -10,7 +10,6 @@ class TestREFMForm(TestCase):
         # Options for all samples in the run
         "plot_in_2D": False,
         "use_const_q": False,
-        "const_q_cutoff": 0.02,
         "q_step": -0.02,
         "use_sangle": True,
         "fit_peak_in_roi": False,
@@ -62,7 +61,6 @@ class TestREFMForm(TestCase):
                 # Options for all samples in the run
                 "plot_in_2D": "False",
                 "use_const_q": "False",
-                "const_q_cutoff": "None",
                 "q_step": "None",
                 "use_sangle": "False",
                 "fit_peak_in_roi": "False",
@@ -116,7 +114,7 @@ class TestREFMForm(TestCase):
         form.set_instrument("nonexist")
 
     def test_to_db(self):
-        test_fields = {"const_q_cutoff": 0.04, "bck_width": 11}
+        test_fields = {"bck_width": 11}
         form = forms.ReductionConfigurationREFMForm(test_fields)
         self.assertFalse(form.is_valid())  # invalid because fields like `peak_min` are required
 
@@ -129,10 +127,6 @@ class TestREFMForm(TestCase):
         use_sangle = ReductionProperty.objects.filter(instrument=instrument, key="use_sangle")
         self.assertEqual(len(use_sangle), 1)
         self.assertEqual(use_sangle[0].value, "")
-
-        const_q_cutoff = ReductionProperty.objects.filter(instrument=instrument, key="const_q_cutoff")
-        self.assertEqual(len(const_q_cutoff), 1)
-        self.assertEqual(const_q_cutoff[0].value, "0.04")
 
         bck_width = ReductionProperty.objects.filter(instrument=instrument, key="bck_width")
         self.assertEqual(len(bck_width), 1)
