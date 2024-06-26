@@ -6,8 +6,10 @@ services:
     image: nginx:1.21.1
     ports:
       - "80:80"
+      - "8080:8080"
     volumes:
       - web-static:/var/www/workflow/static
+      - web-static-livedata:/var/www/livedata/static
       - ./nginx/django.conf:/etc/nginx/conf.d/default.conf
     healthcheck:
       test: ["CMD", "service", "nginx", "status"]
@@ -20,8 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.webmon
-      # build using the host's network, required in certain environments when accessing the debian repositories
-      network: host
     volumes:
       - web-static:/var/www/workflow/static/
     env_file:
@@ -50,7 +50,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dasmon
-      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
@@ -66,7 +65,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.workflow
-      network: host
     env_file:
       - .env
     command: /usr/bin/docker-entrypoint.sh
@@ -114,7 +112,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer
-      network: host
     hostname: autoreducer
     healthcheck:
       test: ["CMD", "pgrep", "python"]
@@ -126,7 +123,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer.himem
-      network: host
     hostname: autoreducer.himem
     healthcheck:
       test: ["CMD", "pgrep", "python"]
@@ -139,7 +135,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.amq_test_gen
-      network: host
     depends_on:
       activemq:
         condition: service_healthy
@@ -149,9 +144,31 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.pv_test_gen
-      network: host
     env_file:
       - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+
+  livedata:
+    restart: always
+    image: ghcr.io/neutrons/live_data_server/live_data_server:latest-dev
+    hostname: livedata
+    env_file:
+      - .env
+    environment:
+      DJANGO_SUPERUSER_USERNAME: ${DATABASE_USER}
+      DJANGO_SUPERUSER_PASSWORD: ${DATABASE_PASS}
+    volumes:
+      - web-static-livedata:/var/www/livedata/static
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8000/admin || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
     depends_on:
       db:
         condition: service_healthy
@@ -168,4 +185,5 @@ services:
 
 volumes:
   web-static:
+  web-static-livedata:
   pgdata:
