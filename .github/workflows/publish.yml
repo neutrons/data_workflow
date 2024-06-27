@@ -113,16 +113,6 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.tag.outputs.tag }}
           push: true
 
-      - name: Build and push Catalog
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: Dockerfile.catalog
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/catalog:${{ steps.latest_tag.outputs.latest_tag }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/catalog:${{ steps.tag.outputs.tag }}
-          push: true
-
       - name: Build and push Dasmon
         uses: docker/build-push-action@v2
         with:
