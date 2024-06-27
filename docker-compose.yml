@@ -155,7 +155,8 @@ services:
   livedata:
     restart: always
     image: ghcr.io/neutrons/live_data_server/live_data_server:latest-dev
-    hostname: livedata
+    ports:
+      - "8000:8000"
     env_file:
       - .env
     environment:
@@ -163,6 +164,7 @@ services:
       DJANGO_SUPERUSER_PASSWORD: ${DATABASE_PASS}
     volumes:
       - web-static-livedata:/var/www/livedata/static
+      - ./config/livedata_local_settings.py:/var/www/livedata/app/local_settings.py
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/admin || exit 1
       interval: 60s
