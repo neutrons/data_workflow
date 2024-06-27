@@ -27,12 +27,10 @@ jobs:
         conda env create --file conda_environment.yml --quiet
         conda activate webmon
         conda env update --file conda_development.yml --quiet
-    - name: Build wheels
+    - name: Build requirements
       run: |
         conda activate webmon
-        make wheel/dasmon wheel/webmon wheel/workflow
-    - name: Build test data for autoreducer
-      run: make SNSdata.tar.gz
+        make all
     - name: Stand up docker containers
       run: docker-compose up --build -d
       env:

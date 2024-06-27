@@ -6,16 +6,21 @@ services:
     image: nginx:1.21.1
     ports:
       - "80:80"
-      - "8080:8080"
+      - "443:443"
     volumes:
       - web-static:/var/www/workflow/static
       - web-static-livedata:/var/www/livedata/static
       - ./nginx/django.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.crt:/etc/nginx/nginx.crt
+      - ./nginx/nginx.key:/etc/nginx/nginx.key
     healthcheck:
       test: ["CMD", "service", "nginx", "status"]
     depends_on:
       webmon:
         condition: service_healthy
+    networks:
+      default:
+        ipv4_address: 172.16.238.222
 
   webmon:
     restart: always
@@ -24,6 +29,7 @@ services:
       dockerfile: Dockerfile.webmon
     volumes:
       - web-static:/var/www/workflow/static/
+      - ./nginx/nginx.crt:/nginx.crt
     env_file:
       - .env
       - .env.ci
@@ -36,6 +42,7 @@ services:
       - CATALOG_ID=${CATALOG_ID}
       - CATALOG_SECRET=${CATALOG_SECRET}
       - GUNICORN_CMD_ARGS=--reload --workers=8
+      - HTTPLIB2_CA_CERTS=/nginx.crt
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/ht || exit 1
       interval: 60s
@@ -155,8 +162,6 @@ services:
   livedata:
     restart: always
     image: ghcr.io/neutrons/live_data_server/live_data_server:latest-dev
-    ports:
-      - "8000:8000"
     env_file:
       - .env
     environment:
@@ -189,3 +194,10 @@ volumes:
   web-static:
   web-static-livedata:
   pgdata:
+
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.16.238.0/24
