@@ -42,12 +42,12 @@ If the environment already exists, ``conda_environment.yml`` can be used to upda
 Running system test
 -------------------
 
-The system test are run via `.github/workflow/system.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/system.yml>`_ .
+The system test are run via `.github/workflow/systemtests.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/systemtests.yml>`_ .
 
 .. code-block:: shell
 
    make all # wheels and test data
-   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. docker-compose up --build
+   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest docker-compose up --build
 
 Wait for a time for everything to get up and running.
 This is normally noted by seeing a collection of worker threads starting.
@@ -55,8 +55,7 @@ Once started tests can be run via
 
 .. code-block:: shell
 
-   DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest \
-      python -m pytest tests
+   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest python -m pytest tests
 
 Setup and Deployment for Development
 ------------------------------------

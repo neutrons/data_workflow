@@ -17,7 +17,7 @@ help:
     # this nifty perl one-liner collects all comments headed by the double "#" symbols next to each target and recycles them as comments
 	@perl -nle'print $& if m{^[/a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
-all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz
+all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz ssl
 
 create/conda:  ## create conda environment "webmon" with file conda_environment.yml
 	conda env create --name webmon --file conda_environment.yml
@@ -120,6 +120,11 @@ SNSdata.tar.gz:  ## install SNS data for testing and limited info display
 	# this doesn't have explicit dependencies on the data
 	# it needs to be removed when the directory changes
 	tar czf SNSdata.tar.gz -C tests/data/ .
+
+ssl: nginx/nginx.crt nginx/nginx.key ## self-signed ssl certificates for livedata server
+
+nginx/nginx.crt nginx/nginx.key:
+	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 --config nginx/san.cnf
 
 localdev/up:  ## create images and start containers for local development. Doesn't update python wheels, though.
 	docker-compose --file docker-compose.yml up --build
