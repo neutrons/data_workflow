@@ -3,6 +3,7 @@ name: Wheel + Docker publish
 on:
   push:
     branches:
+      - next
       - qa
       - main
 
@@ -13,17 +14,17 @@ env:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
       - name: Setup libmamba solver
@@ -40,29 +41,28 @@ jobs:
         run: |
           conda activate webmon
           make wheel/all
-      - name: Get version
-        id: version
-        run: |
-          conda activate webmon
-          echo "::set-output name=version::$(versioningit src/webmon_app)"
 
       - name: Create tag version
         id: tag
         run: |
           conda activate webmon
-          echo "::set-output name=tag::$(versioningit src/webmon_app).b$(date +'%Y%m%d%H%M')"
+          echo "tag=$(versioningit src/webmon_app)" >> $GITHUB_OUTPUT
 
       - name: Create latest tag version
         id: latest_tag
         run: |
           case ${{ github.ref }} in
 
+          refs/heads/next)
+            echo "latest_tag=latest-dev" >> $GITHUB_OUTPUT
+            ;;
+
           refs/heads/qa)
-            echo "::set-output name=latest_tag::latest-test"
+            echo "latest_tag=latest-test" >> $GITHUB_OUTPUT
             ;;
 
           refs/heads/main)
-            echo "::set-output name=latest_tag::latest-prod"
+            echo "latest_tag=latest-prod" >> $GITHUB_OUTPUT
             ;;
 
           *)
@@ -72,10 +72,10 @@ jobs:
           esac
 
       - name: Upload wheels
-        uses: softprops/action-gh-release@v1
-        if: ${{ github.ref != 'refs/heads/next' }}
+        uses: softprops/action-gh-release@v2
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          tag_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.tag.outputs.tag }}
           files: src/*/dist/*.whl
 
       - name: Check tag names
@@ -87,68 +87,122 @@ jobs:
         run: make SNSdata.tar.gz
 
       - name: Log into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push amq_test_gen
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.amq_test_gen
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.latest_tag.outputs.latest_tag }}
+          push: true
+
+      - name: Push amq_test_gen with version tag only for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.amq_test_gen
+          tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Autoreducer
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.autoreducer
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.latest_tag.outputs.latest_tag }}
+          push: true
+
+      - name: Push Autoreducer with version tag only for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.autoreducer
+          tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Dasmon
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.dasmon
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.latest_tag.outputs.latest_tag }}
+          push: true
+
+      - name: Push Dasmon with version tag only for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.dasmon
+          tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push pv_test_gen
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.pv_test_gen
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.latest_tag.outputs.latest_tag }}
+          push: true
+
+      - name: Push pv_test_gen with version tag only for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.pv_test_gen
+          tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Webmon
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.webmon
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.latest_tag.outputs.latest_tag }}
+          push: true
+
+      - name: Push Webmon with version tag only for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.webmon
+          tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Workflow
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.workflow
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.latest_tag.outputs.latest_tag }}
+          push: true
+
+      - name: Push Workflow with version tag only for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.workflow
+          tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.tag.outputs.tag }}
           push: true
