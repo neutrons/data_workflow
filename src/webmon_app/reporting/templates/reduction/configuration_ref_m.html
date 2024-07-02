@@ -65,55 +65,277 @@ Instrument team members can use this page to generate a new automated reduction 
 </div>
 
 <div style="margin-bottom:60px;">
-<p>List of parameters for {{ instrument }} reduction template:</p>
+<p>List of parameters for {{ instrument }} reduction template: (hover over bold-face text for explanation)</p>
 <form action="" method="POST">{% csrf_token %}
+
+
   <table class="property_table  fixed_table" >
-    <tr><th></th> <td></td></tr>
-    <tr><td colspan="2"><br>The ROI in the data file is used to determine the reflectivity peak position.
-    If this ROI is invalid, the system will try to find an appropriate region to use.</td></tr>
 
-    <tr><td colspan="2"><br>You can choose to replace the ROI in the data by your own range.
-    Check the following box if you want to define your own ROI and use it for peak selection.</td></tr>
-    <tr class='tiny_input'><th>Force peak ROI</th><td>{{ options_form.force_peak }}
-                                        <span class='short_label'>Pixel<sub>min</sub></span> {{ options_form.peak_min }}
-                                        <span class='short_label'>Pixel<sub>max</sub></span> {{ options_form.peak_max }}</td></tr>
+    <tr>
+        <td style="font-size: 18px; text-decoration: underline;"><strong>Options for all samples</strong></td>
+    </tr>
 
-    <tr><td colspan="2"><br>A second ROI is available in the data file and can be used to define the background.
-    Check the following box if you want to use the 2nd ROI for your background, otherwise
-    a default region will be used.</td></tr>
-    <tr><th>Use 2nd ROI</th><td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck.id_for_label }}');">{{ options_form.use_roi_bck }}</td></tr>
+    <tr class='tiny_input'>
+        <td>
+            {{ options_form.plot_in_2D }}
+            <span title="Check the following box to see 2D plots on the monitor.
+Loading the page for each run will take much longer when this option is turned on.">
+                <strong>Show 2D plots</strong>
+            </span>
+        </td>
+    </tr>
 
-    <tr><td colspan="2"><br>You can choose to replace the 2nd ROI in the data by your own range.
-    Check the following box if you want to define your own 2nd ROI and use it for background selection.
-    <i>The option to use the 2nd ROI has to be turned ON to use this option.</i></td></tr>
-    <tr class='tiny_input'><th>Force background ROI</th><td><span onclick="toggle_roi_bck('#{{ options_form.force_background.id_for_label }}');">{{ options_form.force_background }}</span>
-                                        <span class='short_label'>Bck<sub>min</sub></span> {{ options_form.bck_min }}
-                                        <span class='short_label'>Bck<sub>max</sub></span> {{ options_form.bck_max }}</td></tr>
+    <tr class='tiny_input'>
+        <td>
+            {{ options_form.use_const_q }}
+            <strong>Use constant-Q binning</strong>
+        </td>
+    </tr>
 
-    <tr><td colspan="2"><br>As an alternative to using the 2nd ROI, you can use a region around the reflected peak to
-    estimate the background. Check the following box if you want to use the region on each side of the peak to estimate your background.</td></tr>
-    <tr class='tiny_input'><th>Use side background</th><td><span onclick="toggle_roi_bck('#{{ options_form.use_side_bck.id_for_label }}');">{{ options_form.use_side_bck }}</span>
-    Pixels on each side {{ options_form.bck_width }}</td></tr>
+    <tr class='tiny_input'>
+        <td>
+            <strong>Q step</strong>
+            {{ options_form.q_step }}
+        </td>
+    </tr>
 
-    <tr><td colspan="2"><br>Once the reflected peak ROI is selected, you can try to fine tune this ROI by fitting for
-    a peak within that region and updating the ROI [both center and width] according to the location found.
-    Check the following box if you want to find a peak within the ROI and redefine the ROI afterwards.</td></tr>
-    <tr><th>Automated ROI</th><td>{{ options_form.fit_peak_in_roi }}</td></tr>
+    <!-- Sample angle options -->
+    <tr>
+        <td>
+            {{ options_form.use_sangle }}
+            <span title="Check the following box if you want to use SANGLE,
+otherwise DANGLE will be used."><strong>Use SANGLE</strong></span>
+        </td>
+    </tr>
 
-    <tr><td colspan="2"><br>Check the following box if you want to use SANGLE, otherwise DANGLE will be used.</td></tr>
-    <tr><th>Use SANGLE</th><td>{{ options_form.use_sangle }}</td></tr>
+    <!-- Automated ROI options -->
+    <tr>
+        <td>
+            {{ options_form.fit_peak_in_roi }}
+            <span title="Once the reflected peak ROI is selected for each sample below,
+you can try to fine tune this ROI by fitting for a peak within that
+region and updating the ROI [both center and width] according to the
+location found. Check the box if you want to find a peak within the
+ROI and redefine the ROI afterwards.">
+                <strong>Automated ROI</strong>
+            </span>
+        </td>
+    </tr>
 
-    <!-- tr><td colspan="2"><br>When using constant-Q binning, provide a cutoff above which it will be used.</td></tr -->
-    <tr class='tiny_input'><th>Use constant-Q binning</th><td>{{ options_form.use_const_q }} </td></tr>
-    <!--  Cutoff (1/&Aring;) {{ options_form.const_q_cutoff }}</td></tr> -->
-    <tr class='tiny_input'><th>Q step</th><td>{{ options_form.q_step }}</td></tr>
+    <!-- Divider line -->
+    <td colspan="2"><hr></td>
 
-    <tr><td colspan="2"><br>Check the following box to see 2D plots on the monitor. Loading the page for
-    each run will take much longer when this option is turned on.</td></tr>
-    <tr class='tiny_input'><th>Show 2D plots</th><td>{{ options_form.plot_in_2D }}</td></tr>
+    <!-- Number of Samples in the run -->
+      <tr class='tiny_input'>
+        <td>
+            <span class='short_label' title="Number of samples in the run"><strong>Sample count</strong></span>
+            {{ options_form.sample_count }}
+        </td>
+    </tr>
+
+
+    <!-- Divider line -->
+    <td colspan="2"><hr></td>
+    <tr>
+        <td style="font-size: 18px; text-decoration: underline;"><strong>Sample # 1</strong></td>
+    </tr>
+
+    <!-- Force peak ROI options -->
+      <tr class='tiny_input'>
+        <td>
+            {{ options_form.force_peak }}
+            <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
+Check the following box if you want to define your own ROI and
+use it for peak selection."><strong>Force peak ROI</strong></span>
+            <span class='short_label'>Pixel<sub>min</sub></span>
+            {{ options_form.peak_min }}
+            <span class='short_label'>Pixel<sub>max</sub></span>
+            {{ options_form.peak_max }}
+        </td>
+    </tr>
+
+    <!-- Second ROI options -->
+    <tr>
+        <td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck.id_for_label }}');">
+            {{ options_form.use_roi_bck }}
+            <span title="A second ROI is available in the data file and can be used to define the background.
+Check the following box if you want to use the 2nd ROI for your background,
+otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
+        </td>
+    </tr>
+
+    <!-- Force background ROI options -->
+    <tr class='tiny_input'>
+        <td>
+            <span onclick="toggle_roi_bck('#{{ options_form.force_background.id_for_label }}');">
+                {{ options_form.force_background }}
+            </span>
+            <span title="You can choose to replace the 2nd ROI in the data by your own range.
+Check the following box if you want to define your own 2nd ROI and use it for background selection.
+The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
+            <span class='short_label'>Bck<sub>min</sub></span>
+            {{ options_form.bck_min }}
+            <span class='short_label'>Bck<sub>max</sub></span>
+            {{ options_form.bck_max }}
+        </td>
+    </tr>
+
+    <!-- Side background options -->
+    <tr class='tiny_input'>
+        <td>
+            <span onclick="toggle_roi_bck('#{{ options_form.use_side_bck.id_for_label }}');">
+                {{ options_form.use_side_bck }}
+            </span>
+            <span title="As an alternative to using the 2nd ROI,  you can use a region around
+the reflected peak to estimate the background. Check the following box
+if you want to use the region on each side of the peak to estimate your background.">
+                <strong>Use side background</strong>
+            </span>
+            Pixels on each side {{ options_form.bck_width }}
+        </td>
+    </tr>
+
+
+    <!-- Divider line -->
+    <td colspan="2"><hr></td>
+    <tr>
+        <td style="font-size: 18px; text-decoration: underline;" title="Sample 2 options ignored if Sample count is 1">
+            <strong>Sample # 2</strong>
+        </td>
+    </tr>
+
+    <!-- Force peak ROI options -->
+      <tr class='tiny_input'>
+        <td>
+            {{ options_form.force_peak_s2 }}
+            <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
+Check the following box if you want to define your own ROI and
+use it for peak selection."><strong>Force peak ROI</strong></span>
+            <span class='short_label'>Pixel<sub>min</sub></span>
+            {{ options_form.peak_min_s2 }}
+            <span class='short_label'>Pixel<sub>max</sub></span>
+            {{ options_form.peak_max_s2 }}
+        </td>
+    </tr>
+
+    <!-- Second ROI options -->
+    <tr>
+        <td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck_s2.id_for_label }}');">
+            {{ options_form.use_roi_bck_s2 }}
+            <span title="A second ROI is available in the data file and can be used to define the background.
+Check the following box if you want to use the 2nd ROI for your background,
+otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
+        </td>
+    </tr>
+
+    <!-- Force background ROI options -->
+    <tr class='tiny_input'>
+        <td>
+            <span onclick="toggle_roi_bck('#{{ options_form.force_background_s2.id_for_label }}');">
+                {{ options_form.force_background_s2 }}
+            </span>
+            <span title="You can choose to replace the 2nd ROI in the data by your own range.
+Check the following box if you want to define your own 2nd ROI and use it for background selection.
+The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
+            <span class='short_label'>Bck<sub>min</sub></span>
+            {{ options_form.bck_min_s2 }}
+            <span class='short_label'>Bck<sub>max</sub></span>
+            {{ options_form.bck_max_s2 }}
+        </td>
+    </tr>
+
+    <!-- Side background options -->
+    <tr class='tiny_input'>
+        <td>
+            <span onclick="toggle_roi_bck('#{{ options_form.use_side_bck_s2.id_for_label }}');">
+                {{ options_form.use_side_bck_s2 }}
+            </span>
+            <span title="As an alternative to using the 2nd ROI,  you can use a region around
+the reflected peak to estimate the background. Check the following box
+if you want to use the region on each side of the peak to estimate your background.">
+                <strong>Use side background</strong>
+            </span>
+            Pixels on each side {{ options_form.bck_width_s2 }}
+        </td>
+    </tr>
+
+
+    <!-- Divider line -->
+    <td colspan="2"><hr></td>
+    <tr>
+        <td style="font-size: 18px; text-decoration: underline;" title="Sample 3 options ignored if Sample count smaller than 3">
+            <strong>Sample # 3</strong>
+        </td>
+    </tr>
+
+
+    <!-- Force peak ROI options -->
+      <tr class='tiny_input'>
+        <td>
+            {{ options_form.force_peak_s3 }}
+            <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
+Check the following box if you want to define your own ROI and
+use it for peak selection."><strong>Force peak ROI</strong></span>
+            <span class='short_label'>Pixel<sub>min</sub></span>
+            {{ options_form.peak_min_s3 }}
+            <span class='short_label'>Pixel<sub>max</sub></span>
+            {{ options_form.peak_max_s3 }}
+        </td>
+    </tr>
+
+    <!-- Second ROI options -->
+    <tr>
+        <td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck_s3.id_for_label }}');">
+            {{ options_form.use_roi_bck_s3 }}
+            <span title="A second ROI is available in the data file and can be used to define the background.
+Check the following box if you want to use the 2nd ROI for your background,
+otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
+        </td>
+    </tr>
+
+    <!-- Force background ROI options -->
+    <tr class='tiny_input'>
+        <td>
+            <span onclick="toggle_roi_bck('#{{ options_form.force_background_s3.id_for_label }}');">
+                {{ options_form.force_background_s3 }}
+            </span>
+            <span title="You can choose to replace the 2nd ROI in the data by your own range.
+Check the following box if you want to define your own 2nd ROI and use it for background selection.
+The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
+            <span class='short_label'>Bck<sub>min</sub></span>
+            {{ options_form.bck_min_s3 }}
+            <span class='short_label'>Bck<sub>max</sub></span>
+            {{ options_form.bck_max_s3 }}
+        </td>
+    </tr>
+
+    <!-- Side background options -->
+    <tr class='tiny_input'>
+        <td>
+            <span onclick="toggle_roi_bck('#{{ options_form.use_side_bck_s3.id_for_label }}');">
+                {{ options_form.use_side_bck_s3 }}
+            </span>
+            <span title="As an alternative to using the 2nd ROI,  you can use a region around
+the reflected peak to estimate the background. Check the following box
+if you want to use the region on each side of the peak to estimate your background.">
+                <strong>Use side background</strong>
+            </span>
+            Pixels on each side {{ options_form.bck_width_s3 }}
+        </td>
+    </tr>
+
+
   </table>
+
 <p>
 <span style="float: right; margin-left:15px;" >
+<!--
+- id="submit_button": id of the input element. Used as a hook in JavaScript or CSS to apply styles or behaviors.
+- title="Click to create new reduction script": Tooltip that appears when the user hovers over the input element.
+- type="submit": Means this input field is a submit button for a form. When pressed, it will submit the form data.
+- name="button_choice": name of the input element to be used when collecting the form data.
+- value="submit": Text that appears on the button.
+-->
 <input id="submit_button" title="Click to create new reduction script" type="submit" name="button_choice" value="submit"/>
 <input id="reset_button" title="Click to populate the form with default values" type="submit" name="button_choice" value="reset"/>
 </span>
