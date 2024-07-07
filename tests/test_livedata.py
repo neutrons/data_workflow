@@ -1,5 +1,6 @@
 import time
 import os
+import hashlib
 
 import psycopg2
 import requests
@@ -60,11 +61,13 @@ class TestLiveDataServer:
         return response.text
 
     def test_reduction_request_livedata(self):
+        key = generate_key(self.instrument, self.run_number)
         ssl_crt_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../nginx/nginx.crt")
-        print(ssl_crt_filename)
+
         # first check that the there isn't an existing plot, should 404
         response = requests.get(
-            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/", verify=ssl_crt_filename
+            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/?key={key}",
+            verify=ssl_crt_filename,
         )
         assert response.status_code == 404
 
@@ -73,7 +76,8 @@ class TestLiveDataServer:
 
         # the data should now be on livedata
         response = requests.get(
-            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/", verify=ssl_crt_filename
+            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/?key={key}",
+            verify=ssl_crt_filename,
         )
         assert response.status_code == 200
         assert "Example Plot Data" in response.text
@@ -83,4 +87,18 @@ class TestLiveDataServer:
         # now verify that the run report page is templated correctly
         client = self.get_session()
         page = client.get(f"{WEBMON_TEST_URL}/report/{self.instrument}/{self.run_number}/")
-        assert "https://172.16.238.222:443/plots/arcs/214583/update/html/" in page.text
+        assert f"https://172.16.238.222:443/plots/arcs/214583/update/html/?key={key}" in page.text
+
+
+def generate_key(instrument, run_id):
+    """
+    Generate a secret key for a run on a given instrument
+    Used to simulate clients sending GET-requests using a secret key
+    @param instrument: instrument name
+    @param run_id: run number
+    """
+    secret_key = os.environ.get("LIVE_PLOT_SECRET_KEY")
+    if secret_key is None or len(secret_key) == 0:
+        return None
+
+    return hashlib.sha1(f"{instrument.upper()}{secret_key}{run_id}".encode("utf-8")).hexdigest()

@@ -47,5 +47,6 @@ jobs:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
           LDAP_DOMAIN_COMPONENT: .
+          LIVE_PLOT_SECRET_KEY: secretKey
     - name: Stand down docker containers
       run: docker-compose down

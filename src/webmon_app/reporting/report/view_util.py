@@ -47,10 +47,8 @@ def generate_key(instrument: str, run_id: int):
     secret_key = settings.LIVE_PLOT_SECRET_KEY
     if len(secret_key) == 0:
         return None
-    else:
-        h = hashlib.sha1()
-        h.update(("%s%s%s" % (instrument.upper(), secret_key, run_id)).encode("utf-8"))
-        return h.hexdigest()
+
+    return hashlib.sha1(f"{instrument.upper()}{secret_key}{run_id}".encode("utf-8")).hexdigest()
 
 
 def append_key(input_url, instrument, run_id):
