@@ -46,6 +46,9 @@
     function get_plot_update() {
         $.ajax({type: "GET",
                 url: "{{update_url}}",
+                headers: {
+                    "Authorization": "{{key}}"
+                },
                 success: function(data) {
                     if (div_data.localeCompare(data) != 0) {
                         div_data = data;
