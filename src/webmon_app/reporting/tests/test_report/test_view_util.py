@@ -10,12 +10,7 @@ from reporting.report.models import StatusQueue
 from reporting.report.models import Task
 from reporting.report.models import WorkflowSummary
 
-import os
 import json
-from reporting import dasmon, report, reporting_app
-import requests
-
-_ = [dasmon, report, reporting_app, os, requests]
 
 
 class ViewUtilTest(TestCase):
