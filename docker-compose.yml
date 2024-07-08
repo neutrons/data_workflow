@@ -42,7 +42,7 @@ services:
       - CATALOG_ID=${CATALOG_ID}
       - CATALOG_SECRET=${CATALOG_SECRET}
       - GUNICORN_CMD_ARGS=--reload --workers=8
-      - HTTPLIB2_CA_CERTS=/nginx.crt
+      - REQUESTS_CA_BUNDLE=/nginx.crt
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/ht || exit 1
       interval: 60s
