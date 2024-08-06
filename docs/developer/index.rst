@@ -7,6 +7,7 @@ Developer Guide
 .. toctree::
    :maxdepth: 1
 
+   design/overview
    instruction/build
    instruction/test_fixture
    instruction/docker
