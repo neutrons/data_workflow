@@ -156,15 +156,48 @@ class TestView(TestCase):
             reverse("reduction:configuration", args=["ref_m"]),
             data={
                 "button_choice": "submit",
-                "bck_width": 10,
+                # Options for all samples in the run
+                "plot_in_2D": True,
+                "use_const_q": False,
+                "q_step": -0.02,
+                "use_sangle": True,
+                "fit_peak_in_roi": False,
+                "sample_count": 3,
+                # Options for first sample
+                "force_peak": False,
                 "peak_min": 160,
                 "peak_max": 170,
+                "use_roi_bck": False,
+                "force_background": False,
                 "bck_min": 5,
                 "bck_max": 100,
+                "use_side_bck": False,
+                "bck_width": 10,
+                # Options for second sample
+                "force_peak_s2": True,
+                "peak_min_s2": 170,
+                "peak_max_s2": 180,
+                "use_roi_bck_s2": True,
+                "force_background_s2": True,
+                "bck_min_s2": 6,
+                "bck_max_s2": 101,
+                "use_side_bck_s2": True,
+                "bck_width_s2": 11,
+                # Options for third sample
+                "force_peak_s3": False,
+                "peak_min_s3": 180,
+                "peak_max_s3": 190,
+                "use_roi_bck_s3": False,
+                "force_background_s3": False,
+                "bck_min_s3": 7,
+                "bck_max_s3": 102,
+                "use_side_bck_s3": False,
+                "bck_width_s3": 12,
             },
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reduction/configuration_ref_m.html")
+        # open('/tmp/junk.html', 'wb').write(response.content)  # inspect with the browser
 
     def test_configuration_change(self):
         # no data
