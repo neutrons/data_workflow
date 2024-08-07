@@ -1,3 +1,6 @@
+.. image:: https://readthedocs.org/projects/data-workflow/badge/?version=latest
+   :target: https://data-workflow.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 .. image:: https://github.com/neutrons/data_workflow/actions/workflows/ci.yml/badge.svg?branch=next
    :alt: CI
    :target: https://github.com/neutrons/data_workflow/actions/workflows/ci.yml?query=branch:next
@@ -19,7 +22,7 @@ Dependencies:
  * `MySQLdb <https://sourceforge.net/projects/mysql-python/>`_ if using MySQL
  * `psycopg2 <https://www.psycopg.org/>`_ if using PostgreSQL
 
-It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker-compose.
+It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker compose.
 
 Workflow Manager
 ----------------

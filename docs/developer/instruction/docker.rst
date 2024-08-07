@@ -5,23 +5,23 @@ Docker information
    :maxdepth: 2
 
 .. note::
-   This document is updated, however, it may be good to read the ``docker-compose`` and ``Dockerfile.*`` in the repository themselves for the most up-to-date information.
+   This document is updated, however, it may be good to read the ``docker compose`` and ``Dockerfile.*`` in the repository themselves for the most up-to-date information.
 
-   This guide assumes that ``docker`` and `docker-compose`_ are present on your system.
+   This guide assumes that ``docker`` and `docker compose`_ are present on your system.
 
 Starting and Stopping
 ---------------------
 
-While docker can be used to start each individual container separately, using ``docker-compose up --build`` is the preferred method because it starts all services in the correct order.
+While docker can be used to start each individual container separately, using ``docker compose up --build`` is the preferred method because it starts all services in the correct order.
 Pressing ``ctrl-c`` will cleanly shutdown interactive docker.
-Pressing ``ctrl-c`` multiple times will kill the running images and leave docker in a somewhat funny state that likely requires running ``docker-compose down`` before starting again
+Pressing ``ctrl-c`` multiple times will kill the running images and leave docker in a somewhat funny state that likely requires running ``docker compose down`` before starting again
 An additional flag ``-d`` can be supplied to run docker in detached mode.
 
 .. note::
-   Use ``docker-compose --file <filename>`` to select a different configuration
+   Use ``docker compose --file <filename>`` to select a different configuration
 
-To start a single image, supply its name as an additional argument to ``docker-compose up``.
-To stop all images, including in detached mode, run ``docker-compose down``.
+To start a single image, supply its name as an additional argument to ``docker compose up``.
+To stop all images, including in detached mode, run ``docker compose down``.
 
 Cleaning docker
 ---------------
@@ -46,9 +46,9 @@ Misc
    * Add option ``--build`` to force rebuild the container if the local changes are not reflected in the container.
    * Add option ``--force-recreate`` to recreate all images if ``--build`` does not work.
    * If all fails (e.g. the local changes are not showing up in the runtime instances):
-       * stop the instance with ``docker-compose down``.
+       * stop the instance with ``docker compose down``.
        * prune caches of images, container and volumes.
-       * restart the instance with ``docker-compose up -d --build --force-recreate``.
+       * restart the instance with ``docker compose up -d --build --force-recreate``.
 
 2. If you cannot find web-monitor at ``localhost``, it is possible that the standard http port 80 is used by another application.  Here are two possible solutions:
 
@@ -56,5 +56,5 @@ Misc
    * Modify `the port of nginx`_ in the docker compose file to use a different port (e.g. change to ``81:80``).
 
 .. _docker: https://www.docker.com/
-.. _docker-compose: https://docs.docker.com/compose/
+.. _docker compose: https://docs.docker.com/compose/
 .. _the port of nginx: https://github.com/neutrons/data_workflow/blob/next/docker-compose.yml
