@@ -22,7 +22,7 @@ Dependencies:
  * `MySQLdb <https://sourceforge.net/projects/mysql-python/>`_ if using MySQL
  * `psycopg2 <https://www.psycopg.org/>`_ if using PostgreSQL
 
-It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker-compose.
+It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker compose.
 
 Workflow Manager
 ----------------

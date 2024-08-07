@@ -10,7 +10,7 @@ REPORT_DB_INIT=/opt/conda/lib/python$(PYTHON_VERSION)/site-packages/reporting/fi
 # command to run docker compose. change this to be what you have installed
 # this can be overriden on the command line
 # DOCKER_COMPOSE="docker compose" make startdev
-DOCKER_COMPOSE ?= docker-compose
+DOCKER_COMPOSE ?= "docker compose"
 
 
 help:
@@ -127,19 +127,19 @@ nginx/nginx.crt nginx/nginx.key:
 	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 --config nginx/san.cnf
 
 localdev/up:  ## create images and start containers for local development. Doesn't update python wheels, though.
-	docker-compose --file docker-compose.yml up --build
+	docker compose --file docker-compose.yml up --build
 
 localdev/dbup:  ## dbdumpfile=database_dump_file.sql DATABASE_PASS=$(dotenv get DATABASE_PASS) make localdev/dbup
 	if ! test -f "${dbdumpfile}"; then echo "dbdumpfile does not exists" && false; fi
 	if test -z "${DATABASE_PASS}"; then echo "DATABASE_PASS undefined" && false; fi
-	docker-compose --file docker-compose.yml stop
-	docker-compose --file docker-compose.yml down --volumes
+	docker compose --file docker-compose.yml stop
+	docker compose --file docker-compose.yml down --volumes
 	sleep 2s
-	docker-compose --file docker-compose.yml up --detach db
+	docker compose --file docker-compose.yml up --detach db
 	sleep 10s  # give time for the database service to be ready
-	docker exec -i data_workflow_db_1 /bin/bash -c "pg_restore -d workflow -U workflow" <  ${dbdumpfile} | true  # continue even if returned errors
-	docker exec -i data_workflow_db_1 /bin/bash -c "psql -d workflow -U workflow -c \"ALTER ROLE workflow WITH PASSWORD '${DATABASE_PASS}';\""
-	LOAD_INITIAL_DATA="false" docker-compose --file docker-compose.yml up --build
+	docker exec -i data_workflow-db-1 /bin/bash -c "pg_restore -d workflow -U workflow" <  ${dbdumpfile} | true  # continue even if returned errors
+	docker exec -i data_workflow-db-1 /bin/bash -c "psql -d workflow -U workflow -c \"ALTER ROLE workflow WITH PASSWORD '${DATABASE_PASS}';\""
+	LOAD_INITIAL_DATA="false" docker compose --file docker-compose.yml up --build
 
 clean: wheel/clean ## delete the SNS data and all the python wheels
 	rm -f SNSdata.tar.gz

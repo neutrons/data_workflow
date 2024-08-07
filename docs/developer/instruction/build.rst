@@ -47,7 +47,7 @@ The system test are run via `.github/workflow/systemtests.yml <https://github.co
 .. code-block:: shell
 
    make all # wheels and test data
-   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest docker-compose up --build
+   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest docker compose up --build
 
 Wait for a time for everything to get up and running.
 This is normally noted by seeing a collection of worker threads starting.
@@ -131,7 +131,7 @@ Stoping and deleting the running containers as well as deleting the images and d
 
 .. code-block:: shell
 
-   docker-compose down --volumes
+   docker compose down --volumes
 
 this command will delete the database. Omit ``--volumes`` if preservation of the database is desired.
 
@@ -149,7 +149,7 @@ If necessary, delete all existing wheels with ``make wheel/clean``
 Rebuild the Images
 ++++++++++++++++++
 Run ``make localdev/up``. This ``make`` target builds the services
-with command ``docker-compose up --build`` using settings in ``docker-compose.yml``.
+with command ``docker compose up --build`` using settings in ``docker-compose.yml``.
 
 More information on docker commands for this project can be found :doc:`here <docker>`.
 

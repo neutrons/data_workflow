@@ -31,21 +31,21 @@ class TestWorkflow:
     def prepareEnvironmentForReductionScriptGeneration(self):
         os.system(
             """
-        docker exec data_workflow_autoreducer_1 mkdir -p /SNS/ARCS/IPTS-123/nexus
-        docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/IPTS-123/nexus/ARCS_100.nxs.h5
-        docker exec data_workflow_autoreducer_1 mkdir -p /SNS/ARCS/shared/autoreduce/vanadium_files
-        docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/shared/autoreduce/reduce_ARCS_default.py
-        docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/shared/autoreduce/reduce_ARCS.py
-        docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/shared/autoreduce/reduce_ARCS.py.template
-        docker exec -i data_workflow_autoreducer_1 bash -c 'echo "#!/usr/bin/env python3\n# this is a template\ndef init():\nprint(5)\n" > /SNS/ARCS/shared/autoreduce/reduce_ARCS.py.template'
-        docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml
-        docker exec data_workflow_autoreducer_1 touch /SNS/ARCS/shared/autoreduce/vanadium_files/test_van201562.nxs
+        docker exec data_workflow-autoreducer-1 mkdir -p /SNS/ARCS/IPTS-123/nexus
+        docker exec data_workflow-autoreducer-1 touch /SNS/ARCS/IPTS-123/nexus/ARCS_100.nxs.h5
+        docker exec data_workflow-autoreducer-1 mkdir -p /SNS/ARCS/shared/autoreduce/vanadium_files
+        docker exec data_workflow-autoreducer-1 touch /SNS/ARCS/shared/autoreduce/reduce_ARCS_default.py
+        docker exec data_workflow-autoreducer-1 touch /SNS/ARCS/shared/autoreduce/reduce_ARCS.py
+        docker exec data_workflow-autoreducer-1 touch /SNS/ARCS/shared/autoreduce/reduce_ARCS.py.template
+        docker exec -i data_workflow-autoreducer-1 bash -c 'echo "#!/usr/bin/env python3\n# this is a template\ndef init():\nprint(5)\n" > /SNS/ARCS/shared/autoreduce/reduce_ARCS.py.template'
+        docker exec data_workflow-autoreducer-1 touch /SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml
+        docker exec data_workflow-autoreducer-1 touch /SNS/ARCS/shared/autoreduce/vanadium_files/test_van201562.nxs
         """  # noqa: E501
         )
 
     def getReductionScriptContents(self):
         return subprocess.check_output(
-            "docker exec data_workflow_autoreducer_1 cat /SNS/ARCS/shared/autoreduce/reduce_ARCS.py", shell=True
+            "docker exec data_workflow-autoreducer-1 cat /SNS/ARCS/shared/autoreduce/reduce_ARCS.py", shell=True
         ).decode()
 
     def initReductionGroup(self, conn, cursor):
@@ -101,7 +101,7 @@ class TestWorkflow:
     def testReduction(self, instrument_scientist_client):
         # backup reduce_ARCS.py
         os.system(
-            """docker exec -i data_workflow_autoreducer_1 bash -c \
+            """docker exec -i data_workflow-autoreducer-1 bash -c \
             'cp /SNS/ARCS/shared/autoreduce/reduce_ARCS.py /tmp/reduce_ARCS.py'"""
         )
         self.prepareEnvironmentForReductionScriptGeneration()
@@ -127,6 +127,6 @@ class TestWorkflow:
 
         # return reduce_ARCS.py back to starting state
         os.system(
-            """docker exec -i data_workflow_autoreducer_1 bash -c \
+            """docker exec -i data_workflow-autoreducer-1 bash -c \
             'cp /tmp/reduce_ARCS.py /SNS/ARCS/shared/autoreduce/reduce_ARCS.py'"""
         )
