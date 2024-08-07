@@ -32,7 +32,7 @@ jobs:
         conda activate webmon
         make all
     - name: Stand up docker containers
-      run: docker-compose up --build -d
+      run: docker compose up --build -d
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
@@ -49,4 +49,4 @@ jobs:
           LDAP_DOMAIN_COMPONENT: .
           LIVE_PLOT_SECRET_KEY: secretKey
     - name: Stand down docker containers
-      run: docker-compose down
+      run: docker compose down
