@@ -62,11 +62,11 @@ Media
 Presentations and other media related to the project.
 
 +------------------------------------------------------------+--------------------------------------------------------+
-| .. image:: images/doucet_2016.png                          |                                                        |
-|    :width: 250px                                           | :download:`PDF <images/doucet_2016.pdf>`               |
+| .. image:: images/NDAV_training_ar_2016.png                |                                                        |
+|    :width: 250px                                           | :download:`PDF <images/NDAV_training_ar_2016.pdf>`     |
 |    :height: 125px                                          |                                                        |
 |    :align: center                                          |                                                        |
-|    :alt: workflow management and instrument web monitoring | :download:`PPTX <images/doucet_2016.pptx>`             |
+|    :alt: workflow management and instrument web monitoring | :download:`PPTX <images/NDAV_training_ar_2016.pptx>`   |
 +------------------------------------------------------------+--------------------------------------------------------+
 | .. image:: images/backman_2024.png                         |                                                        |
 |    :width: 250px                                           | :download:`PDF <images/backman_2024.pdf>`              |
