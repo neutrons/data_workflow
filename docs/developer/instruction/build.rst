@@ -1,11 +1,28 @@
-How to Build a Local Instance
-==============================
+Developing in a Local Environment
+=================================
 
 .. toctree::
    :maxdepth: 2
 
 .. note::
    This document is updated, however, it may be good to read the `continuous integration <https://github.com/neutrons/data_workflow/tree/next/.github/workflows>`_ scripts as well.
+
+Description of available Django settings
+----------------------------------------
+Settings are split according to different target environments,
+which can be roughly divided into *local* and *remote* environments.
+A settings is selected by specifying variable ``DJANGO_SETTINGS_MODULE``
+
+**Local Environments:**
+    * ``reporting.reporting_app.settings.unittest`` for running outside of docker, in the conda environment
+    * ``reporting.reporting_app.settings.develop`` for local docker containers.
+      This can be connected to production ldap server in a read only mode and will ignore TLS errors.
+    * ``reporting.reporting_app.settings.envtest`` for running system tests with docker images.
+
+**Remote Environments:**
+    * ``reporting.reporting_app.settings.prod`` for the testing and production environments deployed by
+      the CI/CD pipeline of https://code.ornl.gov/sns-hfir-scse/deployments/web-monitor-deploy.
+
 
 Running static analysis
 -----------------------
@@ -39,8 +56,8 @@ If the environment already exists, ``conda_environment.yml`` can be used to upda
    conda activate webmon
    conda env update --file conda_development.yml
 
-Running system test
--------------------
+Running system tests
+--------------------
 
 The system test are run via `.github/workflow/systemtests.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/systemtests.yml>`_ .
 
@@ -57,14 +74,14 @@ Once started tests can be run via
 
    LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest python -m pytest tests
 
-Setup and Deployment for Development
-------------------------------------
+Building a local deployment
+---------------------------
 
 Most of the shell commands used when working in the developer setup (a.k.a "localdev")
 are encapsulated in ``make`` targets. Type ``make help`` for a list of ``make`` targets
 and a brief description.
 
-When starting for scratch, open a shell where the following secret environment variables have
+When starting from scratch, open a shell where the following secret environment variables have
 been initialized:
 
 .. code-block:: shell
@@ -82,17 +99,11 @@ been initialized:
 It is recommended to store these variables in an ``.envrc`` file and manage their loading/unloading
 into the shell with the `direnv <direnv/>`_ command-line utility.
 
-Description of settings
-+++++++++++++++++++++++
-The settings are split into a couple of bundled options that can be selected by specifying ``DJANGO_SETTINGS_MODULE``
-
-    * ``reporting.reporting_app.settings.unittest`` for running outside of docker in the conda environment
-    * ``reporting.reporting_app.settings.develop`` for local docker containers. This can be connected to production ldap server in a read only mode and will ignore TLS errors
-    * ``reporting.reporting_app.settings.envtest`` for the remote testing environment
-    * ``reporting.reporting_app.settings.prod`` for production
-
+Secret Variables
+++++++++++++++++
 The environment variables ``LDAP_SERVER_URI`` and ``LDAP_DOMAIN_COMPONENT`` are shown above with no-op values.
-Senior developers can provide the values to use, then the developer setup can work with Neutron Scattering Division's (NSD) LDAP instance.
+Senior developers can provide the values to use,
+then the developer setup can work with Neutron Scattering Division's (NSD) LDAP instance.
 
 The environment variables ``CATALOG_URL``, ``CATALOG_ID`` and
 ``CATALOG_SECRET`` can be set to allow run metadata to be retrieved
@@ -113,20 +124,23 @@ After setting the environment variables, run the following ``make`` targets in t
 .. code-block:: shell
 
    make conda/create
-   make wheel/all  # create python packages for dasmon, webmon, and workflow
-   make SNSdata.tar.gz  # create fake SNS data for testing
+   make all  # create: python packages for dasmon, webmon, and workflow; fake SNS data; self-signed SSL certificates
    make localdev/up  # build all the services
 
 The site is served at http://localhost by default.
 
-After making changes to the source code, it is necessary to:
+Porting changes in the source code to the local deployment
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+The apps are actually served in the local deployment from python wheels.
+Thus, after changing the source code of the apps,
+it is necessary to rebuild the python wheels and restart the services.
 
 1. stop the running containers
 2. recreate the python wheel(s) if the source code of the apps has changed
-3. rebuild the images
+3. rebuild the services
 
-Stop the Running Containers
-+++++++++++++++++++++++++++
+Stop the running containers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Stoping and deleting the running containers as well as deleting the images and docker volumes:
 
 .. code-block:: shell
@@ -135,8 +149,10 @@ Stoping and deleting the running containers as well as deleting the images and d
 
 this command will delete the database. Omit ``--volumes`` if preservation of the database is desired.
 
-Recreate the Python Wheels
-++++++++++++++++++++++++++
+Alternatively, do **Ctrl-C** in the terminal where  you ran ``make localdev/up`` or ``docker compose up --build``.
+
+Recreate the Python wheels
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 The selected format to inject ``dasmon``, ``webmon``, and ``workflow`` apps into their
 corresponding services is python wheels, thus any changes for the python
 source code requires rebuilding the python wheel(s).
@@ -146,14 +162,14 @@ point ``make wheel/dasmon`` to rebuild the ``dasmon`` wheel.
 
 If necessary, delete all existing wheels with ``make wheel/clean``
 
-Rebuild the Images
-++++++++++++++++++
-Run ``make localdev/up``. This ``make`` target builds the services
+Rebuild the services
+~~~~~~~~~~~~~~~~~~~~
+Run again ``make localdev/up``. This ``make`` target builds the services
 with command ``docker compose up --build`` using settings in ``docker-compose.yml``.
 
 More information on docker commands for this project can be found :doc:`here <docker>`.
 
-Uploading a Database Dump
+Uploading a database dump
 +++++++++++++++++++++++++
 
 Make target ``localdev/dbup`` contains the shell command to load the
