@@ -1113,10 +1113,22 @@ def get_signals(instrument_id):
     return sig_alerts
 
 
-def get_instrument_status_summary():
-    """
-    Create an instrument status dictionary that can be used
-    to fill out the summary page template or the summary update response.
+def get_instrument_status_summary() -> list:
+    r"""Status for each instrument in the database,
+    used to fill out the summary page template or the summary update response.
+
+    Returns
+    -------
+    list: List of dictionaries, each representing the status of an instrument. Each dictionary has the following keys:
+    - name: str, instrument name
+    - recording_status: bool, True if the instrument is currently recording data
+    - url: str, URL to access the instrument's live monitor page
+    - diagnostics_url: str, URL to access the instrument's diagnostics page
+    - dasmon_status: int, status of the DASMON process (0 = OK, 1 = Warning, 2 = Error)
+    - pvstreamer_status: int, status of the PVStreamer process (0 = OK, 1 = Warning, 2 = Error)
+    - completeness: int, completeness status of the last few runs (0 = OK, 1 = Warning, 2 = Error, -1 = Unknown)
+    - completeness_msg: str, message to display for the completeness status
+    - facility: str, facility name (default = "SNS
     """
     logger = logging.getLogger(LOGNAME)
     instrument_list = []
