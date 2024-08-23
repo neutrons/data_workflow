@@ -1,5 +1,8 @@
 FROM continuumio/miniconda3:4.12.0
 
+# Inspection tools
+RUN apt-get update && apt-get install -y vim emacs
+
 COPY conda_environment.yml .
 RUN conda env update --name base --file conda_environment.yml
 

@@ -5,6 +5,9 @@ RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.n
 RUN dnf updateinfo
 RUN dnf install -y procps-ng # pgrep is used for health check
 
+# Inspection tools
+RUN dnf install -y vim
+
 # rpm needs to special groups first
 RUN groupadd snswheel
 RUN useradd snsdata -G snswheel

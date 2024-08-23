@@ -1,5 +1,8 @@
 FROM continuumio/miniconda3:4.12.0
 
+# Inspection tools
+RUN apt-get update && apt-get install -y vim emacs
+
 # install psql executable, later invoked in the docker-entrypoint.sh
 RUN conda install postgresql=14 -c conda-forge
 

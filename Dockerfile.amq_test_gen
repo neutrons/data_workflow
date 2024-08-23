@@ -1,3 +1,7 @@
 FROM continuumio/miniconda3:4.12.0
+
+# Inspection tools
+RUN apt-get update && apt-get install -y vim emacs
+
 RUN python -m pip install web-monitor-amq-message-generator==0.3.0 -i https://code.ornl.gov/api/v4/projects/10770/packages/pypi/simple
 CMD ["webmonitor_amq_tester", "--broker", "activemq:61613"]
