@@ -25,4 +25,4 @@ repos:
     rev: 7.1.0
     hooks:
     - id: flake8
-      args: ['--exclude=\.template$']
+      exclude: '\.template$'
