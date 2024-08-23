@@ -20,7 +20,9 @@ repos:
     hooks:
       - id: black
         args: ['--line-length=119']
+        exclude: '\.template$'
   - repo: https://github.com/PyCQA/flake8
     rev: 7.1.0
     hooks:
     - id: flake8
+      exclude: '\.template$'
