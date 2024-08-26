@@ -1,6 +1,9 @@
 @startuml
 'https://plantuml.com/component-diagram
 
+left to right direction
+
+usecase webmonchow
 database db
 queue activemq
 cloud webmon
@@ -9,22 +12,23 @@ component workflow
 agent catalog_process
 hexagon nginx
 agent autoreducer
-usecase amq_test_gen
-usecase amq_pv_gen
 
-nginx <- catalog_process
+webmonchow -right-> db
+webmonchow -right-> activemq
 
-db <- webmon
-db <- amq_pv_gen
+webmon -down-> db
 
-webmon <- dasmon
-webmon <- nginx
-webmon <- workflow
+catalog_process -right-> nginx
+dasmon -down-> webmon
+nginx -down-> webmon
+workflow -right-> webmon
 
-activemq <- workflow
-activemq <- dasmon
-activemq <- autoreducer
-activemq <- amq_test_gen
-activemq <- catalog_process
+workflow -down-> activemq
+dasmon -down-> activemq
+autoreducer -down-> activemq
+activemq -down-> autoreducer
+webmon -up-> activemq
+catalog_process -right-> activemq
+activemq -right-> catalog_process
 
 @enduml

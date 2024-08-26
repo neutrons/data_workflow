@@ -93,23 +93,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push amq_test_gen
+      - name: Build and push webmonchow
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.amq_test_gen
+          file: Dockerfile.webmonchow
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.latest_tag.outputs.latest_tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/webmonchow:${{ steps.latest_tag.outputs.latest_tag }}
           push: true
 
-      - name: Push amq_test_gen with version tag only for main branch
+      - name: Push webmonchow with version tag only for main branch
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.amq_test_gen
+          file: Dockerfile.webmonchow
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/amq_test_gen:${{ steps.tag.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/webmonchow:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Autoreducer
@@ -148,25 +148,6 @@ jobs:
           file: Dockerfile.dasmon
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.tag.outputs.tag }}
-          push: true
-
-      - name: Build and push pv_test_gen
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.pv_test_gen
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.latest_tag.outputs.latest_tag }}
-          push: true
-
-      - name: Push pv_test_gen with version tag only for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.pv_test_gen
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/pv_test_gen:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Webmon

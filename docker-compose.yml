@@ -135,20 +135,13 @@ services:
       activemq:
         condition: service_healthy
 
-  amq_test_gen:
+  # Generator of AMQ messages and VP updates
+  # https://webmonchow.readthedocs.io/en/latest/index.html
+  webmonchow:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile.amq_test_gen
-    depends_on:
-      activemq:
-        condition: service_healthy
-
-  amq_pv_gen:
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile.pv_test_gen
+      dockerfile: Dockerfile.webmonchow
     env_file:
       - .env
     depends_on:

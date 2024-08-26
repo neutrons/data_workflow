@@ -42,7 +42,7 @@ Services
 
 The components making up the infrastructure of Web Monitor have dependencies.
 In the diagram below `service1` --> `service2` is to be read as `service1` depends on `service2`.
-For instance, `amq_pv_gen` depends on `db`.
+For instance, `webmonchow` depends on `db`.
 
 .. image:: images/services_dependence_graph.png
     :width: 600px
