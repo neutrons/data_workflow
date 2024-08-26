@@ -89,6 +89,7 @@ class TestPostProcessingAdminView:
         # POSTPROCESS.DATA_READY, should add 6 new RunStatus
         self.send_request("POSTPROCESS.DATA_READY", RUN_NUMBER_GOOD, requestType="submit")
 
+        time.sleep(0.1)
         new_status_count = self.get_status_count(RUN_NUMBER_GOOD)
         assert new_status_count - status_count == 10
 
