@@ -104,7 +104,7 @@ class Listener(stomp.ConnectionListener):
         for instrument in self._instruments:
             if str(instrument) == instrument_name:
                 return instrument
-        # If we haven't found it, create it.
+        # If we haven't found it, create and save it in the database
         instrument = Instrument(name=instrument_name)
         instrument.save()
         self._instruments.append(instrument)
@@ -112,7 +112,7 @@ class Listener(stomp.ConnectionListener):
 
     def on_message(self, frame):
         """
-        Process a message.
+        Process incoming messages from an ActiveMQ broker
 
         :param frame: stomp.utils.Frame
         """

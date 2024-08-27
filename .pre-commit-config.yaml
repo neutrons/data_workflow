@@ -11,6 +11,7 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: debug-statements
+        exclude: '\.template$'
       - id: requirements-txt-fixer
       - id: check-merge-conflict
       - id: end-of-file-fixer
@@ -20,7 +21,9 @@ repos:
     hooks:
       - id: black
         args: ['--line-length=119']
+        exclude: '\.template$'
   - repo: https://github.com/PyCQA/flake8
     rev: 7.1.0
     hooks:
     - id: flake8
+      exclude: '\.template$'

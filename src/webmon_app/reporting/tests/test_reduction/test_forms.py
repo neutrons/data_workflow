@@ -114,7 +114,7 @@ class TestREFMForm(TestCase):
         form.set_instrument("nonexist")
 
     def test_to_db(self):
-        test_fields = {"bck_width": 11}
+        test_fields = {"bck_width_s3": 11}
         form = forms.ReductionConfigurationREFMForm(test_fields)
         self.assertFalse(form.is_valid())  # invalid because fields like `peak_min` are required
 
@@ -128,9 +128,9 @@ class TestREFMForm(TestCase):
         self.assertEqual(len(use_sangle), 1)
         self.assertEqual(use_sangle[0].value, "")
 
-        bck_width = ReductionProperty.objects.filter(instrument=instrument, key="bck_width")
-        self.assertEqual(len(bck_width), 1)
-        self.assertEqual(bck_width[0].value, "11")
+        bck_width_s3 = ReductionProperty.objects.filter(instrument=instrument, key="bck_width_s3")
+        self.assertEqual(len(bck_width_s3), 1)
+        self.assertEqual(bck_width_s3[0].value, "11")
 
     def test_to_db_bad(self):
         # no clean data

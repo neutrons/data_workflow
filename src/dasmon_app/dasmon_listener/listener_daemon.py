@@ -41,7 +41,7 @@ class DasMonListenerDaemon(Daemon):
         Run the dasmon listener daemon
         """
         c = Client(BROKERS, AMQ_USER, AMQ_PWD, QUEUES, "dasmon_listener")
-        c.set_listener(Listener())
+        c.set_listener(Listener())  # Processes incoming messages from the ActiveMQ broker
         c.listen_and_wait(0.01)
 
 

@@ -222,7 +222,12 @@ ALLOWED_HOSTS = ["*"]
 
 # Set the following to the local domain name
 ALLOWED_DOMAIN = ("ornl.gov", "sns.gov")
-LOGIN_URL = "/workflow/users/login"
+
+# If a user tries to access a view requiring authentication and they are not logged in,
+# Django will redirect them to the URL defined by LOGIN_URL
+LOGIN_URL = "/users/login"
+
+# users are redirected to view "dashboard" of app "dasmon" after a successful log in
 LANDING_VIEW = "dasmon:dashboard"
 
 LOGGING = {

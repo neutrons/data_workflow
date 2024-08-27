@@ -28,3 +28,7 @@ _build/
 
 # Environment related
 .envrc
+
+# Self-signed certificates
+nginx/nginx.crt
+nginx/nginx.key

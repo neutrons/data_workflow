@@ -17,7 +17,7 @@ help:
     # this nifty perl one-liner collects all comments headed by the double "#" symbols next to each target and recycles them as comments
 	@perl -nle'print $& if m{^[/a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
-all: wheel/dasmon wheel/webmon wheel/workflow SNSdata.tar.gz ssl
+all: wheel/all SNSdata.tar.gz ssl  ## creates: all python wheels; fake SNS data; SSL self-signed certificates
 
 create/conda:  ## create conda environment "webmon" with file conda_environment.yml
 	conda env create --name webmon --file conda_environment.yml
@@ -50,25 +50,25 @@ check: ## Check python dependencies
 	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
 	@python -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 
-wheel/dasmon: ## create or update python wheel for service "dasmon"
+wheel/dasmon: ## create or update python wheel for service "dasmon". Clean up build/ first
 	cd src/dasmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/dasmon_app && python -m build --no-isolation --wheel
 	# verify it is correct
 	cd src/dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
 
-wheel/webmon: ## create or update python wheel for service "webmon"
+wheel/webmon: ## create or update python wheel for service "webmon". Clean up build/ first
 	cd src/webmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/webmon_app && python -m build --no-isolation --wheel
 	# verify it is correct - ignoring duplicate file check
 	cd src/webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
 
-wheel/workflow: ## create or update python wheel for service "workflow"
+wheel/workflow: ## create or update python wheel for service "workflow". Clean up build/ first
 	cd src/workflow_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/workflow_app && python -m build --no-isolation --wheel
 	# verify it is correct
 	cd src/workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
 
-wheel/all:  wheel/dasmon wheel/webmon wheel/workflow ## create or update  python wheels for all servicess
+wheel/all:  wheel/clean wheel/dasmon wheel/webmon wheel/workflow ## create python wheels for all services. Clean up build/ first
 
 wheel/clean: ## delete all the python wheels
 	cd src/dasmon_app && rm -rf build/ dist/
@@ -123,6 +123,9 @@ SNSdata.tar.gz:  ## install SNS data for testing and limited info display
 
 ssl: nginx/nginx.crt nginx/nginx.key ## self-signed ssl certificates for livedata server
 
+ssl/clean:  ## delete the self-signed ssl certificates for livedata server
+	rm -f nginx/nginx.crt nginx/nginx.key
+
 nginx/nginx.crt nginx/nginx.key:
 	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 --config nginx/san.cnf
 
@@ -141,11 +144,8 @@ localdev/dbup:  ## dbdumpfile=database_dump_file.sql DATABASE_PASS=$(dotenv get 
 	docker exec -i data_workflow-db-1 /bin/bash -c "psql -d workflow -U workflow -c \"ALTER ROLE workflow WITH PASSWORD '${DATABASE_PASS}';\""
 	LOAD_INITIAL_DATA="false" docker compose --file docker-compose.yml up --build
 
-clean: wheel/clean ## delete the SNS data and all the python wheels
+clean: wheel/clean ssl/clean ## deletes: all python wheels; fake SNS data; SSL self-signed certificates
 	rm -f SNSdata.tar.gz
-	cd src/dasmon_app && rm -rf build/ dist/
-	cd src/webmon_app && rm -rf build/ dist/
-	cd src/workflow_app && rm -rf build/ dist/
 
 # targets that don't create actual files
 .PHONY: check
@@ -159,6 +159,8 @@ clean: wheel/clean ## delete the SNS data and all the python wheels
 .PHONY: install/webmon
 .PHONY: install/workflow
 .PHONY: SNSdata.tar.gz
+.PHONY: ssl
+.PHONY: ssl/clean
 .PHONY: localdev/up
 .PHONY: localdev/dbup
 .PHONY: wheel/dasmon
