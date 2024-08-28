@@ -9,26 +9,19 @@ queue activemq
 cloud webmon
 component dasmon
 component workflow
-agent catalog_process
 hexagon nginx
 agent autoreducer
 
 webmonchow -right-> db
 webmonchow -right-> activemq
-
 webmon -down-> db
-
-catalog_process -right-> nginx
 dasmon -down-> webmon
 nginx -down-> webmon
 workflow -right-> webmon
-
 workflow -down-> activemq
 dasmon -down-> activemq
 autoreducer -down-> activemq
 activemq -down-> autoreducer
 webmon -up-> activemq
-catalog_process -right-> activemq
-activemq -right-> catalog_process
 
 @enduml
