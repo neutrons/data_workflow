@@ -17,7 +17,7 @@ This is given a fake filesystem with the contents of ``tests/data`` in the locat
 
 `webmonchow fixture <https://webmonchow.readthedocs.io/en/latest/index.html>`_
 creates pretend messages associated with runs being saved,
-as well as fake process variables (PVs) that the data aquisition would make.
+as well as fake process variables (PVs) that the data acquisition would make.
 
 ``catalog_process`` fixture is running the script located in ``src/catalog/catalog_process.py`` which responds with the messages in a similar way to how ONCAT would.
 The script creates a :py:obj:`~catalog_process.Listener` and responds accordingly.

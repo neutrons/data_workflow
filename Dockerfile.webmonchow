@@ -7,7 +7,7 @@ RUN conda install --yes --solver=libmamba -n base -c conda-forge -c neutrons pos
 
 # Install webmonchow from a feature branch (only to test the latest changes in webmonchow)
 # RUN conda install --yes --solver=libmamba -n base -c conda-forge postgresql=14
-#RUN python -m pip install git+https://github.com/neutrons/webmonchow.git@next#egg=webmonchow
+# RUN python -m pip install git+https://github.com/neutrons/webmonchow.git@next#egg=webmonchow
 
 # Start the AMQ and PV generators when starting the container
 CMD ["sh", "-c", "broadcast_pv & broadcast_amq --broker \"activemq:61613\" & wait"]
