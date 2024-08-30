@@ -3,7 +3,7 @@ FROM continuumio/miniconda3:23.3.1-0
 RUN conda install --yes -n base conda-libmamba-solver
 
 # Install webmonchow
-RUN conda install --yes --solver=libmamba -n base -c conda-forge -c neutrons postgresql=14 webmonchow=1.0.0
+RUN conda install --yes --solver=libmamba -n base -c conda-forge -c neutrons postgresql=14 webmonchow=1.0.1
 
 # Install webmonchow from a feature branch (only to test the latest changes in webmonchow)
 # RUN conda install --yes --solver=libmamba -n base -c conda-forge postgresql=14
