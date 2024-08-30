@@ -1,0 +1,36 @@
+"""
+Test of the autoreducer memory management that sets a max limit
+on the memory used by reduction scripts.
+"""
+
+import time
+
+from tests.utils import db_utils
+
+
+class TestAutoreducerMemoryLimit:
+    user = "InstrumentScientist"
+    pwd = "InstrumentScientist"
+    instrument = "pg3"
+    IPTS = "IPTS-4321"
+    run_number = 54321
+
+    def test_reduction_script_exceeds_memory_limit(self, db_connection, request_page):
+        """test that the reduction is terminated and an error is logged"""
+        run_id = db_utils.add_instrument_data_run(db_connection, self.instrument, self.IPTS, self.run_number)
+        db_utils.clear_previous_runstatus(db_connection, run_id)
+
+        # login and send reduction request
+        response = request_page("/report/pg3/54321/reduce/", self.user, self.pwd)
+        assert response.status_code == 200
+        assert response.url.endswith("/report/pg3/54321/")
+
+        # wait for reduction job to be terminated and database to be updated
+        time.sleep(5.0)
+
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.REQUEST")
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.STARTED")
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.DATA_READY")
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.ERROR")
+
+        assert db_utils.check_error_msg_contains(db_connection, run_id, "Total memory usage exceeded limit")

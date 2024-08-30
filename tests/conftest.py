@@ -1,8 +1,11 @@
 # third-party imports
+from dotenv import dotenv_values
+import psycopg2
 import pytest
 
 # standard imports
 import requests
+import time
 
 
 @pytest.fixture(scope="session")
@@ -56,3 +59,20 @@ def HTTPText():
             return substring.replace(" ", "") in self.text.replace(" ", "")
 
     return _HTTPText
+
+
+@pytest.fixture(scope="session")
+def db_connection():
+    """Database connection with config from env files"""
+    config = {**dotenv_values(".env"), **dotenv_values(".env.ci")}
+    assert config
+    conn = psycopg2.connect(
+        database=config["DATABASE_NAME"],
+        user=config["DATABASE_USER"],
+        password=config["DATABASE_PASS"],
+        port=config["DATABASE_PORT"],
+        host="localhost",
+    )
+    time.sleep(1)
+    yield conn
+    conn.close()
