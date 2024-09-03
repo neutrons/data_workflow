@@ -117,6 +117,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.autoreducer
+      args:
+        CONFIG_FILE: ./tests/configuration/post_process_consumer.conf
     hostname: autoreducer
     healthcheck:
       test: ["CMD", "pgrep", "python"]
@@ -127,7 +129,9 @@ services:
   autoreducer_himem:
     build:
       context: .
-      dockerfile: Dockerfile.autoreducer.himem
+      dockerfile: Dockerfile.autoreducer
+      args:
+        CONFIG_FILE: ./tests/configuration/post_process_consumer.himem.conf
     hostname: autoreducer.himem
     healthcheck:
       test: ["CMD", "pgrep", "python"]

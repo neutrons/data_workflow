@@ -15,7 +15,8 @@ RUN useradd snsdata -G snswheel
 # put the developer configuration file in place
 RUN mkdir -p /etc/autoreduce/
 RUN mkdir -p /opt/postprocessing/log/
-COPY tests/configuration/post_process_consumer.conf /etc/autoreduce/post_processing.conf
+ARG CONFIG_FILE=tests/configuration/post_process_consumer.conf
+COPY ${CONFIG_FILE} /etc/autoreduce/post_processing.conf
 
 # install postprocessing
 RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.3/postprocessing-3.3.0-1.el9.noarch.rpm
