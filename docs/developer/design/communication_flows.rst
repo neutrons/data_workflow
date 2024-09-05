@@ -1,5 +1,9 @@
+.. _communication_flows:
+
 ActiveMQ Communication Flows
 ============================
+
+.. contents:: :local:
 
 Autoreducers
 ------------
@@ -95,7 +99,7 @@ parameters for instruments that have implemented
 
 DASMON
 ------
-DASMON, from Data Acquisition System (DAS) Monitor, provides process variable (PV) updates from the
+DASMON, from Data Acquisition (DAQ) System Monitor, provides process variable (PV) updates from the
 beamlines to WebMon. Due to the high volume of PV updates, DASMON writes directly to the database.
 
 .. mermaid::
@@ -105,13 +109,12 @@ beamlines to WebMon. Due to the high volume of PV updates, DASMON writes directl
         participant Workflow DB
         participant Dasmon listener
         DASMON->>Workflow DB: PV update
-        Workflow DB->>Dasmon listener: PV update
         DASMON->>Dasmon listener: Heartbeats
 
 Dasmon listener
 ---------------
 
-Streaming Message Service (SMS)
+Stream Management Service (SMS)
 ...............................
 
 .. mermaid::
@@ -138,11 +141,34 @@ admins by email when a service has missed heartbeats (needs to be verified that 
         participant Dasmon listener
         participant Workflow DB
         actor Subscribed users
-        Other services->>Dasmon listener: Heartbeat
-        Dasmon listener->>Workflow DB: Status update
-        opt There are missed heartbeats
+        loop Every N s
+            Other services->>Dasmon listener: Heartbeat
+            Dasmon listener->>Workflow DB: Status update
+        end
+        opt Service has 3 missed heartbeats
             Dasmon listener->>Subscribed users: Email
         end
+
+
+.. mermaid::
+
+    flowchart LR
+        SMS["SMS (per beamline)"]
+        PVSD["PVSD (per beamline)"]
+        DASMON["DASMON (per beamline)"]
+        STC
+        Autoreducers
+        DasmonListener
+        WorkflowDB[(DB)]
+        SMS-->|heartbeat|DasmonListener
+        PVSD-->|heartbeat|DasmonListener
+        DASMON-->|heartbeat|DasmonListener
+        STC-->|heartbeat|DasmonListener
+        Autoreducers-->|heartbeat|DasmonListener
+        WorkflowManager-->|heartbeat|DasmonListener
+        DasmonListener-->|heartbeat|DasmonListener
+        DasmonListener-->WorkflowDB
+        DasmonListener-.->|if missed 3 heartbeats|InstrumentScientist
 
 WebMon interaction with Live Data Server
 ----------------------------------------
@@ -164,13 +190,15 @@ or HTML div) to Live Data Server.
         participant Live Data Server
 
         WebMon->>Autoreducer: REDUCTION.DATA_READY
-        Autoreducer->>Live Data Server: publish_plot
-        Note over Live Data Server: Store plot in DB
+        opt Publish plot
+            Autoreducer->>Live Data Server: publish_plot
+            Note over Live Data Server: Store plot in DB
+        end
 
 Display plot from Live Data Server
 ................................
 
-Run overview pages (monitor.sns.gov/report/<instrument>/<run number>/) will query the Live
+Run overview pages (``monitor.sns.gov/report/<instrument>/<run number>/``) will query the Live
 Data Server for a plot for that instrument and run number and display it if available.
 
 .. mermaid::
