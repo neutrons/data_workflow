@@ -41,9 +41,8 @@ Services
 --------
 
 The components making up the infrastructure of Web Monitor have dependencies.
-In the diagram below shows the dependencies of the local deployment.
-`service1` --> `service2` is to be read as `service1` depends on `service2`.
-For instance, `webmonchow` depends on `db`.
+In the diagram below shows the dependencies of the local deployment,
+where service ``webmonchow`` depends on service ``db``.
 
 .. image:: images/local_deployment_dependence_graph.png
     :width: 600px
