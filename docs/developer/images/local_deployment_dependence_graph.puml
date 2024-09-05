@@ -1,0 +1,43 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+left to right direction
+
+
+legend right
+|= Color |= Tier |
+| red | first |
+| blue | second |
+| green | third |
+endlegend
+
+component db #lightcoral
+component activemq #lightcoral
+component autoheal #lightcoral
+
+component webmon #lightblue
+component autoreducer #lightblue
+component autoreducer_himem #lightblue
+
+component nginx #lightgreen
+component dasmon #lightgreen
+component workflow #lightgreen
+component livedata #lightgreen
+component webmonchow #lightgreen
+
+nginx --> webmon
+webmon --> db
+webmon --> activemq
+dasmon --> activemq
+dasmon --> webmon
+workflow --> activemq
+workflow --> webmon
+autoreducer --> activemq
+autoreducer_himem --> activemq
+webmonchow --> db
+webmonchow --> activemq
+webmonchow --> webmon
+livedata --> db
+livedata --> webmon
+
+@enduml

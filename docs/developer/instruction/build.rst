@@ -7,6 +7,22 @@ Developing in a Local Environment
 .. note::
    This document is updated, however, it may be good to read the `continuous integration <https://github.com/neutrons/data_workflow/tree/next/.github/workflows>`_ scripts as well.
 
+Dependencies between services
+-----------------------------
+
+The services making up the infrastructure of Web Monitor have dependencies.
+The diagram below shows the dependencies for a local deployment guaranteeing that
+the application will run _and_ that both unit and system tests will pass.
+
+``service1`` --> ``service2`` is to be read as ``service1`` depends on ``service2``.
+For instance, ``webmonchow`` depends on ``db``.
+
+.. image:: ../images/local_deployment_dependence_graph.png
+   :width: 600px
+   :align: center
+   :alt: services dependence graph
+
+
 Description of available Django settings
 ----------------------------------------
 Settings are split according to different target environments,
