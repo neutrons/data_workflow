@@ -151,6 +151,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      webmon:
+        condition: service_healthy
       activemq:
         condition: service_healthy
 
