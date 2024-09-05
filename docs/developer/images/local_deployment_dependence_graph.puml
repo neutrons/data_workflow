@@ -18,12 +18,12 @@ component autoheal #lightcoral
 component webmon #lightblue
 component autoreducer #lightblue
 component autoreducer_himem #lightblue
-component webmonchow #lightblue
 
 component nginx #lightgreen
 component dasmon #lightgreen
 component workflow #lightgreen
 component livedata #lightgreen
+component webmonchow #lightgreen
 
 nginx --> webmon
 webmon --> db
@@ -36,6 +36,7 @@ autoreducer --> activemq
 autoreducer_himem --> activemq
 webmonchow --> db
 webmonchow --> activemq
+webmonchow --> webmon
 livedata --> db
 livedata --> webmon
 
