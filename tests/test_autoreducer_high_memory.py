@@ -3,7 +3,7 @@ depending on if it requires high memoery or not"""
 
 import time
 
-from tests.utils import db_utils
+import utils.db as db_utils
 
 
 class TestAutoreducerQueues:

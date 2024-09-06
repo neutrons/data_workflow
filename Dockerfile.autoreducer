@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi9/ubi
 # install various dependencies
 RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 RUN dnf updateinfo
-RUN dnf install -y procps-ng numpy # pgrep is used for health check, numpy for high memory test
+RUN dnf install -y procps-ng python3-numpy # pgrep is used for health check, numpy for high memory test
 
 # Inspection tools
 RUN dnf install -y vim

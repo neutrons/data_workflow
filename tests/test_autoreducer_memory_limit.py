@@ -4,8 +4,7 @@ on the memory used by reduction scripts.
 """
 
 import time
-
-from tests.utils import db_utils
+import utils.db as db_utils
 
 
 class TestAutoreducerMemoryLimit:
