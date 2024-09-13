@@ -1,13 +1,21 @@
 Developer documentation
 =======================
 
+Architecture
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   architecture/overview
+   architecture/communication_flows
+
 Developer Guide
 ---------------
 
 .. toctree::
    :maxdepth: 1
 
-   design/overview
    instruction/build
    instruction/test_fixture
    instruction/docker
@@ -25,15 +33,12 @@ The web-monitor contains three independent Django applications
     * :py:mod:`webmon <reporting>`: user facing web interface, visit the production version at `monitor.sns.gov`_.
     * :py:mod:`workflow`: backend manager.
 
-and a mocked catalog services.
-
 .. toctree::
    :maxdepth: 1
 
    dasmon/modules
    webmon/modules
    workflow/modules
-   catalog/modules
 
 .. _monitor.sns.gov: https://monitor.sns.gov/
 
