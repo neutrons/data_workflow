@@ -127,7 +127,7 @@ Reported conditions:<br>
 <table>
   <tbody>
 {% for item in post_diagnostics.ar_nodes %}
-    <tr><td>{{ item.node }}: </td><td>{{ item.time }}</td><td>{{ item.msg }}</td></tr>
+    <tr><td style="white-space:nowrap;">{{ item.node }}: </td><td style="white-space:nowrap;">{{ item.time }}</td><td>{{ item.msg }}</td></tr>
 {% endfor %}
   </tbody>
 </table>
