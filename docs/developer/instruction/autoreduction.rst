@@ -1,3 +1,5 @@
+.. autoreduction-parameter-configuration
+
 How to Modify an Instrument Autoreduction Configuration Page
 ============================================================
 
