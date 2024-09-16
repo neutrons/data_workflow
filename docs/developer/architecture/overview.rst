@@ -4,14 +4,9 @@ Overview
 High-level architecture
 -----------------------
 
-The diagram below describes the high-level architecture of WebMon, including some external resources
-that WebMon interacts with. The direction of the arrows shows the direction of data flow, e.g.
-Dasmon listener gets data from DASMON. The gray box labeled "DAS" are services owned by the Data
-Acquisition System team that feed information to WebMon. `ONCat <https://oncat.ornl.gov/>`_ is the
-experiment data catalog, which the autoreducers catalog runs to and the frontend fetches run
-metadata from. The autoreducers access instrument-specific reduction scripts and experiment data
-files on the HFIR/SNS file archive. The autoreducers also write reduced data files and reduction log
-files to the file archive.
+The diagram below describes the high-level architecture of WebMon, including both internal resources
+that are considered part of WebMon and external systems that WebMon interacts with.
+The arrows represent relationships between these services and resources.
 
 .. mermaid::
 
@@ -52,20 +47,30 @@ files to the file archive.
         TranslationService-->FileArchive
         FileArchive<-->Autoreducers
         style DAS fill:#D3D3D3, stroke-dasharray: 5 5
-        classDef webMonStyle fill:#FFFFE0, stroke:#B8860B
-        class WorkflowManager,DasmonListener,Database,Autoreducers,LiveDataServer,LiveReduce,WebMon,LiveDataDB webMonStyle
+        classDef externalStyle fill:#FAEFDE, stroke:#B08D55
+        class DASMON,TranslationService,SMS,FileArchive,ONCat externalStyle
 
         subgraph Legend
             direction LR
-            External["External resource"]
             Internal["Internal resource"]
-            External ~~~ Internal
+            External["External resource"]
+            Internal ~~~ External
         end
-        LiveReduce ~~~ External
+        LiveReduce ~~~ Internal
         style Legend fill:#FFFFFF,stroke:#000000
-        class Internal webMonStyle
+        class External externalStyle
 
-The section :ref:`communication_flows` provides sequence diagrams to show how the services interact.
+The gray box labeled "DAS" are services managed by the Data Acquisition System team that pass
+information to WebMon. The autoreducers interact with the HFIR/SNS file archive to access
+instrument-specific reduction scripts and experiment data files. The autoreducers also write reduced
+data files and reduction log files back to the file archive.
+
+Another external component is the experiment data catalog, `ONCat <https://oncat.ornl.gov/>`_, where
+the autoreducers catalog experiment metadata. The WebMon frontend retrieves and displays this
+metadata from ONCat.
+
+The section :ref:`communication_flows` includes sequence diagrams that show how the services
+interact.
 
 Message broker
 --------------

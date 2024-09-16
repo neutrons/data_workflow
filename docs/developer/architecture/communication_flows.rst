@@ -68,6 +68,8 @@ The post-processing workflow for the instrument is configurable in the database 
 The diagram shows the three post-processing steps that are available: autoreduction, cataloging of
 raw data in `ONCat <https://oncat.ornl.gov/>`_ and cataloging of reduced data in
 `ONCat <https://oncat.ornl.gov/>`_.
+Note that the sequence in the diagram is one possible workflow, but there are variations in the
+configured sequence and the steps included depending on the instrument.
 
 .. mermaid::
 
