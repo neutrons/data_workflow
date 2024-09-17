@@ -35,7 +35,7 @@ class TestDASMONPageView:
         tree = etree.parse(StringIO(dasmon_diagnostics.text), parser)
         table_content = tree.xpath("//tr/td//text()")
         # verify number of entries in the tables
-        expected_number_of_entries = 43
+        expected_number_of_entries = 48
         assert len(table_content) == expected_number_of_entries
         # -- DASMON diagnostics
         status = table_content[1]

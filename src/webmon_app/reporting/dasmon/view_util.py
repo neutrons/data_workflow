@@ -5,7 +5,7 @@
     @copyright: 2014 Oak Ridge National Laboratory
 """
 
-from reporting.report.models import Instrument, DataRun, WorkflowSummary
+from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information
 from reporting.dasmon.models import (
     Parameter,
     StatusVariable,
@@ -545,26 +545,37 @@ def postprocessing_diagnostics(timeout=None):
                             )
                             nodes.append(
                                 {
-                                    "node": "%s PID %s"
-                                    % (
-                                        item.name[
-                                            len(settings.SYSTEM_STATUS_PREFIX) : len(item.name) - 4  # noqa E203
-                                        ],
-                                        last_value.value,
-                                    ),
+                                    "node": item.name[
+                                        len(settings.SYSTEM_STATUS_PREFIX) : len(item.name) - 4  # noqa E203
+                                    ],
                                     "time": timezone.localtime(last_value.timestamp),
+                                    "msg": f"PID: {last_value.value}",
                                 }
                             )
                         else:
+                            node = item.name[len(settings.SYSTEM_STATUS_PREFIX) :]  # noqa E203
                             last_value = StatusCache.objects.filter(instrument_id=common_services, key_id=item).latest(
                                 "timestamp"
                             )
                             nodes.append(
                                 {
-                                    "node": item.name[len(settings.SYSTEM_STATUS_PREFIX) :],  # noqa E203
+                                    "node": node,
                                     "time": timezone.localtime(last_value.timestamp),
                                 }
                             )
+
+                            # get last run status performed from Information table by matching node name to description
+                            try:
+                                last_status = Information.objects.filter(description=node).latest("id")
+                                nodes.append(
+                                    {
+                                        "node": node,  # noqa E203
+                                        "time": timezone.localtime(last_status.run_status_id.created_on),
+                                        "msg": f"Last msg: {last_status.run_status_id}",
+                                    }
+                                )
+                            except:
+                                pass
                     except:  # noqa: E722
                         nodes.append(
                             {

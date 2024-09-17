@@ -121,7 +121,7 @@ services:
         CONFIG_FILE: ./tests/configuration/post_process_consumer.conf
     hostname: autoreducer
     healthcheck:
-      test: ["CMD", "pgrep", "python"]
+      test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
       activemq:
         condition: service_healthy
@@ -134,7 +134,7 @@ services:
         CONFIG_FILE: ./tests/configuration/post_process_consumer.himem.conf
     hostname: autoreducer.himem
     healthcheck:
-      test: ["CMD", "pgrep", "python"]
+      test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
       activemq:
         condition: service_healthy
