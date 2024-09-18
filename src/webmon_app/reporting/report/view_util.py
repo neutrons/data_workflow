@@ -356,8 +356,7 @@ def is_acquisition_complete(run_id):
 
     :param run_id: run object
     """
-    status_items = RunStatus.objects.filter(run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY")
-    return len(status_items) > 0
+    return RunStatus.objects.filter(run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY").count() > 0
 
 
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
