@@ -386,7 +386,9 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
         else:
             element_id = ""
         s = WorkflowSummary.objects.get(run_id=run_id)
-        if s.complete is True:
+        if not is_acquisition_complete(run_id):
+            status = "<span %s>acquiring</span>" % element_id
+        elif s.complete is True:
             status = "<span %s class='green'>complete</span>" % element_id
         else:
             last_error = run_id.last_error()
