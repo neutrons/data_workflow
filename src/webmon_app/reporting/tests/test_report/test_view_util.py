@@ -55,7 +55,7 @@ class ViewUtilTest(TestCase):
     def tearDownClass(cls):
         Instrument.objects.get(name="test_instrument").delete()
         IPTS.objects.get(expt_name="test_exp").delete()
-        StatusQueue.objects.get(name="test").delete()
+        StatusQueue.objects.all().delete()
         DataRun.objects.all().delete()
         WorkflowSummary.objects.all().delete()
 
@@ -221,7 +221,7 @@ class ViewUtilTest(TestCase):
         self.assertTrue("run_id_" in rst)
         # no show element id, green status
         rst = get_run_status_text(run_id)
-        self.assertTrue("green" in rst)
+        self.assertTrue("acquiring" in rst)
         # no show element, red status
         ipts = IPTS.objects.get(expt_name="test_exp")
         run = DataRun.objects.create(
@@ -231,12 +231,26 @@ class ViewUtilTest(TestCase):
             file="/tmp/test_65535.nxs",
         )
         run.save()
-        WorkflowSummary.objects.create(
+        workflowSummary = WorkflowSummary.objects.create(
             run_id=run,
             complete=False,
-        ).save()
+        )
+        workflowSummary.save()
+
+        rst = get_run_status_text(run)
+        self.assertTrue("acquiring" in rst)
+        dataReady = StatusQueue(name="POSTPROCESS.DATA_READY", is_workflow_input=True)
+        dataReady.save()
+        RunStatus.objects.create(run_id=run, queue_id=dataReady).save()
         rst = get_run_status_text(run)
         self.assertTrue("red" in rst)
+        self.assertTrue("incomplete" in rst)
+
+        workflowSummary.complete = True
+        workflowSummary.save()
+        rst = get_run_status_text(run)
+        self.assertTrue("green" in rst)
+        self.assertTrue("complete" in rst)
 
     def test_get_run_list_dict(self):
         from reporting.report.view_util import get_run_list_dict
