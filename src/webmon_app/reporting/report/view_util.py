@@ -356,8 +356,7 @@ def is_acquisition_complete(run_id):
 
     :param run_id: run object
     """
-    status_items = RunStatus.objects.filter(run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY")
-    return len(status_items) > 0
+    return RunStatus.objects.filter(run_id=run_id, queue_id__name="POSTPROCESS.DATA_READY").count() > 0
 
 
 def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
@@ -386,7 +385,9 @@ def get_run_status_text(run_id, show_error=False, use_element_id=False):
         else:
             element_id = ""
         s = WorkflowSummary.objects.get(run_id=run_id)
-        if s.complete is True:
+        if not is_acquisition_complete(run_id):
+            status = "<span %s>acquiring</span>" % element_id
+        elif s.complete is True:
             status = "<span %s class='green'>complete</span>" % element_id
         else:
             last_error = run_id.last_error()

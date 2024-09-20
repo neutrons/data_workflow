@@ -105,6 +105,9 @@ services:
   activemq:
     image: apache/activemq-classic
     hostname: activemq
+    ports:
+     - 8161:8161
+     - 61613:61613
     volumes:
       - ./src/workflow_app/workflow/icat_activemq.xml:/opt/apache-activemq/conf/activemq.xml
     healthcheck:

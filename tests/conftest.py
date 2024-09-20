@@ -2,6 +2,7 @@
 from dotenv import dotenv_values
 import psycopg2
 import pytest
+import stomp
 
 # standard imports
 import requests
@@ -76,3 +77,14 @@ def db_connection():
     time.sleep(1)
     yield conn
     conn.close()
+
+
+@pytest.fixture(scope="session")
+def amq_connection():
+    """activemq connection with config from env files"""
+    config = dotenv_values(".env")
+    assert config
+    conn = stomp.Connection(host_and_ports=[("localhost", 61613)])
+    conn.connect(config["ICAT_USER"], config["ICAT_PASS"], wait=True)
+    yield conn
+    conn.disconnect()
