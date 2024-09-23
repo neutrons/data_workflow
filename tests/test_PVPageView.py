@@ -21,16 +21,9 @@ def check_PV(text, PV):
     assert is_float(value)
 
     # just check that a new PV arrived in the last two minutes
-    time = re.findall(f'<td><span id="{PV}_timestamp">.*</span></td>', text)
+    time = re.findall(f'<td><span id="{PV}_timestamp">(.*)</span></td>', text)
     assert len(time) == 1
-    time = datetime.strptime(
-        time[0]
-        .replace(f'<td><span id="{PV}_timestamp">', "")
-        .replace("</span></td>", "")
-        .replace("a.m.", "AM")
-        .replace("p.m.", "PM"),
-        "%b %d, %Y, %I:%M %p",
-    )
+    time = datetime.strptime(time[0], "%b %d, %Y, %I:%M %p")
     time_delta = datetime.now() - time
     assert time_delta.total_seconds() < 120
 

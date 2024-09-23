@@ -16,7 +16,7 @@ from reporting.dasmon.models import (
 from reporting.pvmon.models import PVCache, PVStringCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils import dateformat, timezone
+from django.utils import timezone, formats
 from django.contrib.auth.models import Group
 from django.conf import settings
 import datetime
@@ -68,7 +68,6 @@ def get_cached_variables(instrument_id, monitored_only=False):
                 localtime = timezone.localtime(kvp.timestamp)
             except:  # noqa: E722
                 localtime = kvp.timestamp
-            df = dateformat.DateFormat(localtime)
 
             # Check whether we have a number
             try:
@@ -84,7 +83,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
             variable_dict = {
                 "key": str(kvp.key_id),
                 "value": string_value,
-                "timestamp": df.format(settings.DATETIME_FORMAT),
+                "timestamp": formats.localize(localtime),
             }
             key_value_pairs.append(variable_dict)
 
@@ -492,11 +491,11 @@ def workflow_diagnostics(timeout=None):
         time_diff = timezone.now() - status_time.replace(tzinfo=None)
     if time_diff > delay_time:
         dasmon_listener_warning = True
-        df = dateformat.DateFormat(status_time)
+
         wf_conditions.append(
             "No heartbeat since %s: %s"
             % (
-                df.format(settings.DATETIME_FORMAT),
+                formats.localize(status_time),
                 _red_message("contact the Neutron Data Sciences Group or Linux Support"),
             )
         )
@@ -648,12 +647,11 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
         timediff = timezone.now() - status_time.replace(tzinfo=None)
     if timediff > delay_time:
         dasmon_listener_warning = True
-        df = dateformat.DateFormat(status_time)
         pv_conditions.append(
             "No %s heartbeat since %s: %s"
             % (
                 process,
-                df.format(settings.DATETIME_FORMAT),
+                formats.localize(status_time),
                 _red_message("ask Linux Support or DAS to restart pvsd"),
             )
         )
@@ -746,8 +744,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dt = timezone.now().replace(tzinfo=None) - last_amq_time.replace(tzinfo=None)
     if dt > delay_time:
         slow_amq = True
-        df = dateformat.DateFormat(last_amq_time)
-        dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % df.format(settings.DATETIME_FORMAT))
+        dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % formats.localize(last_amq_time))
 
     # Heartbeat
     try:
@@ -756,11 +753,10 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dt = timezone.now().replace(tzinfo=None) - status_time.replace(tzinfo=None)
     if dt > delay_time:
         slow_status = True
-        df = dateformat.DateFormat(status_time)
         dasmon_conditions.append(
             "No heartbeat since %s: %s"
             % (
-                df.format(settings.DATETIME_FORMAT),
+                formats.localize(status_time),
                 _red_message("ask Linux Support or DAS to restart DASMON"),
             )
         )
@@ -941,14 +937,13 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                     localtime = timezone.localtime(r.created_on)
                 except:  # noqa: E722
                     localtime = r.created_on
-                df = dateformat.DateFormat(localtime)
                 reduce_url = reverse(
                     "report:submit_for_reduction",
                     args=[str(r.instrument_id), r.run_number],
                 )
                 expt_dict = {
                     "run": r.run_number,
-                    "timestamp": df.format(settings.DATETIME_FORMAT),
+                    "timestamp": formats.localize(localtime),
                     "last_error": status,
                     "run_id": r.id,
                     "reduce_url": ("<a id='reduce_%s' href='javascript:void(0);'" % r.run_number)
@@ -1099,8 +1094,7 @@ def get_signals(instrument_id):
                 else:
                     value = "%s" % latest.value
                 localtime = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.utc)
-                df = dateformat.DateFormat(localtime)
-                timestamp = df.format(settings.DATETIME_FORMAT)
+                timestamp = formats.localize(localtime)
             except:  # noqa: E722
                 value = "No data available"
                 timestamp = "-"
@@ -1257,7 +1251,6 @@ def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_
             localtime = timezone.localtime(item.timestamp)
         except:  # noqa: E722
             localtime = item.timestamp
-        df = dateformat.DateFormat(localtime)
         try:
             ts = timezone.make_naive(item.timestamp, timezone.utc).isoformat()
         except:  # noqa: E722
@@ -1265,7 +1258,7 @@ def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_
         template_data.append(
             {
                 "info": str(item.value),
-                "time": str(df.format(settings.DATETIME_FORMAT)),
+                "time": formats.localize(localtime),
                 "timestamp": ts,
             }
         )

@@ -9,8 +9,6 @@ from reporting.report.models import (
 )
 from reporting.report.models import Information, Error, Task
 from django.contrib import admin
-from django.utils import dateformat, timezone
-from django.conf import settings
 
 
 def reduction_not_needed(modeladmin, request, queryset):
@@ -77,9 +75,7 @@ class InformationAdmin(admin.ModelAdmin):
     search_fields = ["description"]
 
     def time(self, obj):
-        localtime = timezone.localtime(obj.run_status_id.created_on)
-        df = dateformat.DateFormat(localtime)
-        return df.format(settings.DATETIME_FORMAT)
+        return obj.run_status_id.created_on
 
 
 class ErrorAdmin(admin.ModelAdmin):
@@ -89,9 +85,7 @@ class ErrorAdmin(admin.ModelAdmin):
     search_fields = ["description"]
 
     def time(self, obj):
-        localtime = timezone.localtime(obj.run_status_id.created_on)
-        df = dateformat.DateFormat(localtime)
-        return df.format(settings.DATETIME_FORMAT)
+        return obj.run_status_id.created_on
 
 
 class StatusQueueAdmin(admin.ModelAdmin):

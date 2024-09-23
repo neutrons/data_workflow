@@ -51,6 +51,9 @@ TIME_ZONE = environ.get("TIME_ZONE", "America/New_York")
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = "en-us"
+FORMAT_MODULE_PATH = [
+    "reporting.formats",
+]
 
 SITE_ID = 1
 
@@ -376,6 +379,3 @@ TEST_REMOTE_USER = ""
 TEST_REMOTE_PASSWD = ""
 
 GRAVATAR_URL = "https://www.gravatar.com/avatar/"
-
-# Default is "N j, Y, P", changing to make it parsable by python datetime
-DATETIME_FORMAT = "M j, Y, P"

@@ -5,7 +5,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.utils import dateformat, timezone
+from django.utils import timezone, formats
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
@@ -72,11 +72,10 @@ def get_update(request, instrument):
 
     # Update the recording status
     localtime = timezone.now()
-    df = dateformat.DateFormat(localtime)
     recording_status = {
         "key": "recording_status",
         "value": dasmon_view_util.is_running(instrument_id),
-        "timestamp": df.format(settings.DATETIME_FORMAT),
+        "timestamp": formats.localize(localtime),
     }
     data_dict["variables"].append(recording_status)
 
