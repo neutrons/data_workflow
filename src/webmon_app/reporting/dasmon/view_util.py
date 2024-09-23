@@ -16,7 +16,7 @@ from reporting.dasmon.models import (
 from reporting.pvmon.models import PVCache, PVStringCache, MonitoredVariable
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils import dateformat, timezone
+from django.utils import dateformat, timezone, formats
 from django.contrib.auth.models import Group
 from django.conf import settings
 import datetime
@@ -84,7 +84,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
             variable_dict = {
                 "key": str(kvp.key_id),
                 "value": string_value,
-                "timestamp": df.format(settings.DATETIME_FORMAT),
+                "timestamp": df.format(formats.get_format("DATETIME_FORMAT")),
             }
             key_value_pairs.append(variable_dict)
 
@@ -496,7 +496,7 @@ def workflow_diagnostics(timeout=None):
         wf_conditions.append(
             "No heartbeat since %s: %s"
             % (
-                df.format(settings.DATETIME_FORMAT),
+                df.format(formats.get_format("DATETIME_FORMAT")),
                 _red_message("contact the Neutron Data Sciences Group or Linux Support"),
             )
         )
@@ -653,7 +653,7 @@ def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):
             "No %s heartbeat since %s: %s"
             % (
                 process,
-                df.format(settings.DATETIME_FORMAT),
+                df.format(formats.get_format("DATETIME_FORMAT")),
                 _red_message("ask Linux Support or DAS to restart pvsd"),
             )
         )
@@ -747,7 +747,9 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     if dt > delay_time:
         slow_amq = True
         df = dateformat.DateFormat(last_amq_time)
-        dasmon_conditions.append("No ActiveMQ updates from DASMON since %s" % df.format(settings.DATETIME_FORMAT))
+        dasmon_conditions.append(
+            "No ActiveMQ updates from DASMON since %s" % df.format(formats.get_format("DATETIME_FORMAT"))
+        )
 
     # Heartbeat
     try:
@@ -760,7 +762,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dasmon_conditions.append(
             "No heartbeat since %s: %s"
             % (
-                df.format(settings.DATETIME_FORMAT),
+                df.format(formats.get_format("DATETIME_FORMAT")),
                 _red_message("ask Linux Support or DAS to restart DASMON"),
             )
         )
@@ -948,7 +950,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
                 )
                 expt_dict = {
                     "run": r.run_number,
-                    "timestamp": df.format(settings.DATETIME_FORMAT),
+                    "timestamp": df.format(formats.get_format("DATETIME_FORMAT")),
                     "last_error": status,
                     "run_id": r.id,
                     "reduce_url": ("<a id='reduce_%s' href='javascript:void(0);'" % r.run_number)
@@ -1100,7 +1102,7 @@ def get_signals(instrument_id):
                     value = "%s" % latest.value
                 localtime = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.utc)
                 df = dateformat.DateFormat(localtime)
-                timestamp = df.format(settings.DATETIME_FORMAT)
+                timestamp = df.format(formats.get_format("DATETIME_FORMAT"))
             except:  # noqa: E722
                 value = "No data available"
                 timestamp = "-"
@@ -1265,7 +1267,7 @@ def get_latest_updates(instrument_id, message_channel, timeframe=2.0, number_of_
         template_data.append(
             {
                 "info": str(item.value),
-                "time": str(df.format(settings.DATETIME_FORMAT)),
+                "time": str(df.format(formats.get_format("DATETIME_FORMAT"))),
                 "timestamp": ts,
             }
         )

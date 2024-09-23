@@ -13,7 +13,7 @@ import datetime
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.utils import dateformat, timezone
+from django.utils import dateformat, timezone, formats
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
@@ -346,7 +346,7 @@ def instrument_summary(request, instrument):
                 ),
                 "total": expt.number_of_runs(),
                 "timestamp": expt.created_on.isoformat(),
-                "created_on": str(df.format(settings.DATETIME_FORMAT)),
+                "created_on": str(df.format(formats.get_format("DATETIME_FORMAT"))),
             }
         )
 
@@ -489,7 +489,7 @@ def live_errors(request, instrument):
                 ),
                 "info": str(err.description),
                 "timestamp": err.run_status_id.created_on.isoformat(),
-                "created_on": str(df.format(settings.DATETIME_FORMAT)),
+                "created_on": str(df.format(formats.get_format("DATETIME_FORMAT"))),
             }
         )
 

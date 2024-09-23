@@ -25,7 +25,7 @@ from reporting.report.models import (
 from django.urls import reverse
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
-from django.utils import dateformat, timezone
+from django.utils import dateformat, timezone, formats
 from django.conf import settings
 from django.db import connection, transaction
 from django.core.cache import cache
@@ -340,7 +340,7 @@ def get_current_status(instrument_id):
         df = dateformat.DateFormat(localtime)
         data_dict["last_run_id"] = last_run_id.id
         data_dict["last_run"] = last_run_id.run_number
-        data_dict["last_run_time"] = df.format(settings.DATETIME_FORMAT)
+        data_dict["last_run_time"] = df.format(formats.get_format("DATETIME_FORMAT"))
 
     if last_expt_id is not None:
         data_dict["last_expt_id"] = last_expt_id.id
@@ -429,7 +429,7 @@ def get_run_list_dict(run_list):
                         % (r.run_number, reduce_url, r.run_number)
                     ),
                     "run_id": r.id,
-                    "timestamp": str(df.format(settings.DATETIME_FORMAT)),
+                    "timestamp": str(df.format(formats.get_format("DATETIME_FORMAT"))),
                     "status": get_run_status_text(r, use_element_id=True),
                 }
             )
