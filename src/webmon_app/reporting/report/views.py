@@ -13,7 +13,7 @@ import datetime
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.utils import dateformat, timezone, formats
+from django.utils import timezone, formats
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
@@ -334,7 +334,6 @@ def instrument_summary(request, instrument):
     expt_list = []
     for expt in ipts:
         localtime = timezone.localtime(expt.created_on)
-        df = dateformat.DateFormat(localtime)
         expt_list.append(
             {
                 "experiment": str(
@@ -346,7 +345,7 @@ def instrument_summary(request, instrument):
                 ),
                 "total": expt.number_of_runs(),
                 "timestamp": expt.created_on.isoformat(),
-                "created_on": str(df.format(formats.get_format("DATETIME_FORMAT"))),
+                "created_on": formats.localize(localtime),
             }
         )
 
@@ -461,7 +460,6 @@ def live_errors(request, instrument):
     error_list = []
     for err in error_query:
         localtime = timezone.localtime(err.run_status_id.created_on)
-        df = dateformat.DateFormat(localtime)
         error_list.append(
             {
                 "experiment": str(
@@ -489,7 +487,7 @@ def live_errors(request, instrument):
                 ),
                 "info": str(err.description),
                 "timestamp": err.run_status_id.created_on.isoformat(),
-                "created_on": str(df.format(formats.get_format("DATETIME_FORMAT"))),
+                "created_on": formats.localize(localtime),
             }
         )
 
@@ -571,11 +569,10 @@ def get_instrument_update(request, instrument):
         for e in expt_list:
             if since_expt_id.created_on < e.created_on:
                 localtime = timezone.localtime(e.created_on)
-                df = dateformat.DateFormat(localtime)
                 expt_dict = {
                     "ipts": e.expt_name.upper(),
                     "n_runs": e.number_of_runs(),
-                    "created_on": df.format(settings.DATETIME_FORMAT),
+                    "created_on": formats.localize(localtime),
                     "timestamp": e.created_on.isoformat(),
                     "ipts_id": e.id,
                 }
@@ -622,12 +619,11 @@ def get_error_update(request, instrument):
 
                 if last_error_id.run_status_id.created_on < e.run_status_id.created_on:
                     localtime = timezone.localtime(e.run_status_id.created_on)
-                    df = dateformat.DateFormat(localtime)
                     err_dict = {
                         "run": e.run_status_id.run_id.run_number,
                         "ipts": e.run_status_id.run_id.ipts_id.expt_name,
                         "description": e.description,
-                        "created_on": df.format(settings.DATETIME_FORMAT),
+                        "created_on": formats.localize(localtime),
                         "timestamp": e.run_status_id.created_on.isoformat(),
                         "error_id": e.id,
                     }

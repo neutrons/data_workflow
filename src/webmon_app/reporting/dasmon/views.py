@@ -7,7 +7,7 @@ import logging
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.utils import dateformat, timezone, formats
+from django.utils import timezone, formats
 from django.conf import settings
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
@@ -399,11 +399,10 @@ def get_update(request, instrument):
     data_dict["variables"] = view_util.get_cached_variables(instrument_id, monitored_only=False)
 
     localtime = timezone.now()
-    df = dateformat.DateFormat(localtime)
     recording_status = {
         "key": "recording_status",
         "value": view_util.is_running(instrument_id),
-        "timestamp": df.format(formats.get_format("DATETIME_FORMAT")),
+        "timestamp": formats.localize(localtime),
     }
     data_dict["variables"].append(recording_status)
 
