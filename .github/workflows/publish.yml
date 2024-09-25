@@ -98,18 +98,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.webmonchow
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/webmonchow:${{ steps.latest_tag.outputs.latest_tag }}
-          push: true
-
-      - name: Push webmonchow with version tag only for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.webmonchow
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/webmonchow:${{ steps.tag.outputs.tag }}
+          tags:
+            - ${{ env.REGISTRY }}/${{ github.repository }}/webmonchow:${{ steps.latest_tag.outputs.latest_tag }}
+            - ${{ env.REGISTRY }}/${{ github.repository }}/webmonchow:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Autoreducer
@@ -117,18 +108,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.autoreducer
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.latest_tag.outputs.latest_tag }}
-          push: true
-
-      - name: Push Autoreducer with version tag only for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.autoreducer
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.tag.outputs.tag }}
+          tags:
+            - ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.latest_tag.outputs.latest_tag }}
+            - ${{ env.REGISTRY }}/${{ github.repository }}/autoreducer:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Dasmon
@@ -136,18 +118,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.dasmon
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.latest_tag.outputs.latest_tag }}
-          push: true
-
-      - name: Push Dasmon with version tag only for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.dasmon
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.tag.outputs.tag }}
+          tags:
+            - ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.latest_tag.outputs.latest_tag }}
+            - ${{ env.REGISTRY }}/${{ github.repository }}/dasmon:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Webmon
@@ -155,18 +128,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.webmon
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.latest_tag.outputs.latest_tag }}
-          push: true
-
-      - name: Push Webmon with version tag only for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.webmon
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.tag.outputs.tag }}
+          tags:
+            - ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.latest_tag.outputs.latest_tag }}
+            - ${{ env.REGISTRY }}/${{ github.repository }}/webmon:${{ steps.tag.outputs.tag }}
           push: true
 
       - name: Build and push Workflow
@@ -174,16 +138,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.workflow
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.latest_tag.outputs.latest_tag }}
-          push: true
-
-      - name: Push Workflow with version tag only for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.workflow
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.tag.outputs.tag }}
+          tags:
+            - ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.latest_tag.outputs.latest_tag }}
+            - ${{ env.REGISTRY }}/${{ github.repository }}/workflow:${{ steps.tag.outputs.tag }}
           push: true
