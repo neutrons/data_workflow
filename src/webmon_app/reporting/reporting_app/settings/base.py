@@ -206,6 +206,7 @@ INSTALLED_APPS = [
     "reporting.dasmon",
     "reporting.pvmon",
     "reporting.reduction",
+    "reporting.metrics",
     "health_check",
     "health_check.db",
     "health_check.cache",

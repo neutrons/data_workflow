@@ -114,16 +114,16 @@ def summary(request):
     adara_start = datetime.datetime(2012, 10, 1).replace(tzinfo=timezone.get_current_timezone())
     today = datetime.datetime.today().replace(tzinfo=timezone.get_current_timezone())
     # Fill in the partial data for the current month
-    runs = DataRun.objects.filter(created_on__gte=max_date)
+    number_of_runs = DataRun.objects.filter(created_on__gte=max_date).count()
     run_rate = []
     run_summary = [
         {
             "min_date": max_date,
             "max_date": datetime.datetime.today(),
-            "number_of_runs": len(runs),
+            "number_of_runs": number_of_runs,
         }
     ]
-    run_rate.append([1000 * int((today - epoch).total_seconds()), len(runs)])
+    run_rate.append([1000 * int((today - epoch).total_seconds()), number_of_runs])
     while True:
         # Make sure we don't display zeros for the period before
         # the system was installed

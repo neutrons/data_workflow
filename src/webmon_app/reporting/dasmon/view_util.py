@@ -121,13 +121,13 @@ def get_latest(instrument_id, key_id):
     # First get it from the cache
     try:
         last_value = StatusCache.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
-    except:  # noqa: E722
+    except StatusCache.DoesNotExist:
         # If that didn't work, get it from the table of values
-        values = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id)
-        # If we don't have any entry yet, just return Non
-        if len(values) == 0:
+        try:
+            last_value = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id).latest("timestamp")
+        except StatusVariable.DoesNotExist:
+            # If we don't have any entry yet, just return None
             return None
-        last_value = values.latest("timestamp")
 
         # Put the latest value in the cache so we don't have to go through this again
         cached = StatusCache(
