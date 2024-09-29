@@ -8,6 +8,7 @@ from django.db.models import Q
 
 
 def postprocessing_diagnostics():
+    """collect and return Cataloging & Reduction diagnostics"""
     common_services = Instrument.objects.get(name="common")
     agents = []
 
@@ -42,7 +43,7 @@ def postprocessing_diagnostics():
 
 
 def instrument_status():
-    # return map of instrument name to run status
+    """return map of instrument name to run status"""
 
     instruments = Instrument.objects.all().order_by("name")
     status = {}
@@ -57,18 +58,19 @@ def instrument_status():
 def run_statuses(minutes=60):
     """Of all the runs created in the last n minutes,
     return the number that are acquiring, complete, incomplete,
-    error along with the total number"""
+    error or unknown along with the total number"""
 
     runs = DataRun.objects.filter(created_on__gte=timezone.now() - timezone.timedelta(minutes=minutes)).order_by(
         "created_on"
     )
 
-    statuses = {"count": len(runs), "acquiring": 0, "incomplete": 0, "complete": 0, "error": 0}
+    statuses = {"total": len(runs), "acquiring": 0, "incomplete": 0, "complete": 0, "error": 0, "unknown": 0}
 
     for run_id in runs:
         try:
             s = WorkflowSummary.objects.get(run_id=run_id)
         except WorkflowSummary.DoesNotExist:
+            statuses["unknown"] += 1
             continue
 
         if not is_acquisition_complete(run_id):

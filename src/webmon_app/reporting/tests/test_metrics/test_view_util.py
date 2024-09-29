@@ -127,11 +127,12 @@ class ViewUtilTest(TestCase):
         WorkflowSummary.objects.create(run_id=dataRun0, complete=True)
 
         statuses = run_statuses()
-        assert statuses["count"] == 0
+        assert statuses["total"] == 0
         assert statuses["acquiring"] == 0
         assert statuses["incomplete"] == 0
         assert statuses["complete"] == 0
         assert statuses["error"] == 0
+        assert statuses["unknown"] == 0
 
         # run should be acquiring
         dataRun1 = DataRun(run_number=1, ipts_id=ipts, instrument_id=inst, file="/filename")
@@ -139,11 +140,12 @@ class ViewUtilTest(TestCase):
         WorkflowSummary.objects.create(run_id=dataRun1)
 
         statuses = run_statuses()
-        assert statuses["count"] == 1
+        assert statuses["total"] == 1
         assert statuses["acquiring"] == 1
         assert statuses["incomplete"] == 0
         assert statuses["complete"] == 0
         assert statuses["error"] == 0
+        assert statuses["unknown"] == 0
 
         # run should be incomplete
         dataRun2 = DataRun(run_number=2, ipts_id=ipts, instrument_id=inst, file="/filename")
@@ -152,11 +154,12 @@ class ViewUtilTest(TestCase):
         WorkflowSummary.objects.create(run_id=dataRun2)
 
         statuses = run_statuses()
-        assert statuses["count"] == 2
+        assert statuses["total"] == 2
         assert statuses["acquiring"] == 1
         assert statuses["incomplete"] == 1
         assert statuses["complete"] == 0
         assert statuses["error"] == 0
+        assert statuses["unknown"] == 0
 
         # run should be complete
         dataRun3 = DataRun(run_number=3, ipts_id=ipts, instrument_id=inst, file="/filename")
@@ -165,11 +168,12 @@ class ViewUtilTest(TestCase):
         WorkflowSummary.objects.create(run_id=dataRun3, complete=True)
 
         statuses = run_statuses()
-        assert statuses["count"] == 3
+        assert statuses["total"] == 3
         assert statuses["acquiring"] == 1
         assert statuses["incomplete"] == 1
         assert statuses["complete"] == 1
         assert statuses["error"] == 0
+        assert statuses["unknown"] == 0
 
         # run should be error
         dataRun4 = DataRun(run_number=4, ipts_id=ipts, instrument_id=inst, file="/filename")
@@ -180,8 +184,21 @@ class ViewUtilTest(TestCase):
         WorkflowSummary.objects.create(run_id=dataRun4)
 
         statuses = run_statuses()
-        assert statuses["count"] == 4
+        assert statuses["total"] == 4
         assert statuses["acquiring"] == 1
         assert statuses["incomplete"] == 1
         assert statuses["complete"] == 1
         assert statuses["error"] == 1
+        assert statuses["unknown"] == 0
+
+        # create run but now WorkflowSummary. status should be unknown
+        dataRun5 = DataRun(run_number=5, ipts_id=ipts, instrument_id=inst, file="/filename")
+        dataRun5.save()
+
+        statuses = run_statuses()
+        assert statuses["total"] == 5
+        assert statuses["acquiring"] == 1
+        assert statuses["incomplete"] == 1
+        assert statuses["complete"] == 1
+        assert statuses["error"] == 1
+        assert statuses["unknown"] == 1
