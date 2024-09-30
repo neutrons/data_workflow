@@ -41,9 +41,11 @@ class ViewUtilTest(TestCase):
         proposal_id.save()
         run_title = Parameter.objects.create(name="run_title")
         run_title.save()
+
+        # we add the run_title twice to check that the newest one is returned
         for p, v in zip(
-            [para, run_number, cnt_rate, proposal_id, run_title],
-            ["testValue", 0, 1, 2, "testRunTitle"],
+            [para, run_number, cnt_rate, proposal_id, run_title, run_title],
+            ["testValue", 0, 1, 2, "testRunTitle", "testRunTitleNew"],
         ):
             StatusVariable.objects.create(
                 instrument_id=inst,
@@ -106,6 +108,9 @@ class ViewUtilTest(TestCase):
         for d in pairs:
             if d["key"] == "testParam":
                 assert d["value"] == ref_val["value"]
+            if d["key"] == "run_title":
+                # expect run_title==testRunTitleNew because it's newest
+                assert d["value"] == "testRunTitleNew"
         for d in pairs_monitoredOnly:
             if d["key"] == "testParam":
                 assert d["value"] == ref_val["value"]
