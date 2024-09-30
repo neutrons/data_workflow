@@ -414,7 +414,7 @@ class ViewUtilTest(TestCase):
         assert template["run_number"] == "0"
         assert template["count_rate"] == "-"
         assert template["proposal_id"] == "2"
-        assert template["run_title"] == "testRunTitle"
+        assert template["run_title"] == "testRunTitleNew"
 
     def test_get_live_variables(self):
         from reporting.dasmon.view_util import get_live_variables
