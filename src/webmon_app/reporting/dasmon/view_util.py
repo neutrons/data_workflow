@@ -55,11 +55,19 @@ def get_cached_variables(instrument_id, monitored_only=False):
     :param instrument_id: Instrument object
     :param monitored_only: if True, only monitored parameters are returned
     """
-    parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name")
+    parameter_values = StatusCache.objects.filter(instrument_id=instrument_id).order_by("key_id__name", "-timestamp")
     # Variables that are displayed on top
     top_variables = ["run_number", "proposal_id", "run_title"]
     key_value_pairs = []
+    keys_used = set()
     for kvp in parameter_values:
+
+        if kvp.key_id in keys_used:
+            # only used the first value for each key, will be ordered newest first
+            continue
+
+        keys_used.add(kvp.key_id)
+
         if kvp.key_id.monitored or monitored_only is False:
             # Exclude top variables
             if monitored_only and str(kvp.key_id) in top_variables:
