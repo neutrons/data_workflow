@@ -72,29 +72,78 @@ metadata from ONCat.
 The section :ref:`communication_flows` includes sequence diagrams that show how the services
 interact.
 
-Message broker
---------------
+Inter-service communication
+---------------------------
 
-WebMon uses an `ActiveMQ <https://activemq.apache.org/>`_ message broker for communication between
-services. The message broker also serves as a load balancer by distributing post-processing jobs to
-the available autoreducers in a round-robin fashion.
+WebMon uses an `ActiveMQ <https://activemq.apache.org/>`_ message broker as the main method of
+communication between services. The message broker also serves as a load balancer by distributing
+post-processing jobs to the available autoreducers in a round-robin fashion. Communication with Live
+Data Server and ONCat occurs via their respective REST API:s.
 
-.. mermaid::
+Table 1 lists the type of communication between pairs services, which are loosely categorized as
+"client" and "service" in that interaction.
 
-    flowchart TB
-        TranslationService["`Streaming
-        Translation
-        Client
-        (STC)`"]
-        SMS["`Stream
-        Management
-        Service
-        (SMS)`"]
-        Broker[ActiveMQ broker]
-        Broker<-->Autoreducers
-        Broker<-->WorkflowManager[Workflow Manager]
-        Broker<-->DasmonListener[Dasmon listener]
-        Broker<-->DASMON
-        Broker<-->PVSD
-        Broker<-->TranslationService
-        Broker<-->SMS
+.. list-table:: Table 1: Inter-service communication types
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - "Client"
+     - "Server"
+     - Communication type
+   * - Autoreducers
+     - Dasmon Listener
+     - Message queue
+   * - Autoreducers
+     - Live Data Server
+     - REST API
+   * - Autoreducers
+     - ONCat
+     - REST API
+   * - DASMON
+     - Dasmon Listener
+     - Message queue
+   * - DASMON
+     - Workflow DB
+     - Direct database
+   * - Dasmon Listener
+     - Workflow DB
+     - Direct database
+   * - Live Data Server
+     - Live Data DB
+     - Direct database
+   * - Livereduce
+     - Live Data Server
+     - REST API
+   * - Livereduce
+     - Stream Management Service
+     - Stream socket
+   * - Process Variable Streaming Daemon (PVSD)
+     - Dasmon Listener
+     - Message queue
+   * - Stream Management Service (SMS)
+     - Dasmon Listener
+     - Message queue
+   * - Streaming Translation Client (STC)
+     - Dasmon Listener
+     - Message queue
+   * - Streaming Translation Client (STC)
+     - Workflow Manager
+     - Message queue
+   * - Workflow Manager
+     - Autoreducers
+     - Message queue
+   * - Workflow Manager
+     - Dasmon Listener
+     - Message queue
+   * - Workflow Manager
+     - Workflow DB
+     - Direct database
+   * - WebMon frontend
+     - Live Data Server
+     - REST API
+   * - WebMon frontend
+     - ONCat
+     - REST API
+   * - WebMon frontend
+     - Workflow DB
+     - Direct database
