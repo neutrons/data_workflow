@@ -148,11 +148,6 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "email": "mail",
 }
 
-# manually specified cert file
-AUTH_LDAP_CERT_FILE = environ.get("LDAP_CERT_FILE", "")
-if AUTH_LDAP_CERT_FILE:
-    AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_CACERTFILE: AUTH_LDAP_CERT_FILE}
-
 # ONCat Catalog
 CATALOG_URL = environ.get("CATALOG_URL")
 CATALOG_ID = environ.get("CATALOG_ID")

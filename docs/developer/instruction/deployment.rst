@@ -28,7 +28,6 @@ DATABASE_USER                 PostgreSQL Owner username
 DJANGO_SETTINGS_MODULE        `Description of settings <https://data-workflow.readthedocs.io/en/latest/developer/instruction/build.html?highlight=DJANGO_SETTINGS_MODULE#description-of-settings>`_
 ICAT_PASS              yes    ActiveMQ password
 ICAT_USER                     ActiveMQ username
-LDAP_CERT_FILE         yes    `ldap.OPT_X_TLS_CACERTFILE <https://www.python-ldap.org/en/latest/reference/ldap.html#ldap.OPT_X_TLS_CACERTFILE>`_
 LDAP_DOMAIN_COMPONENT  yes    Use in `AUTH_LDAP_USER_DN_TEMPLATE <https://django-auth-ldap.readthedocs.io/en/latest/reference.html#std:setting-AUTH_LDAP_USER_DN_TEMPLATE>`_
 LDAP_SERVER_URI        yes    `AUTH_LDAP_SERVER_URI <https://django-auth-ldap.readthedocs.io/en/latest/reference.html#auth-ldap-server-uri>`_
 TIME_ZONE                     `Time zone to use <https://docs.djangoproject.com/en/3.2/ref/settings/#time-zone-1>`_
