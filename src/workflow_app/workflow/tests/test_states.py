@@ -6,7 +6,20 @@ import workflow
 _ = [workflow]
 
 
+class FakeTestClass:
+    def __init__(self, connection):
+        pass
+
+    def __call__(self, headers, message):
+        raise ValueError
+
+
 class StateActionTest(TestCase):
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self.caplog = caplog
+
     def test_call_default_task(self):
         from workflow.states import StateAction
 
@@ -46,6 +59,57 @@ class StateActionTest(TestCase):
         mock_get_task.return_value = '{"task_class": "", "task_queues": ["QUEUE-0", "QUEUE-1"]}'
         sa(headers, message)
         assert mock_connection.send.call_count - original_call_count == 2  # one per task queue
+
+    @mock.patch("workflow.states.transactions.get_task")
+    def test_task_class_path(self, mock_get_task):
+        from workflow.states import StateAction
+
+        mock_connection = mock.Mock()
+        sa = StateAction(connection=mock_connection, use_db_task=True)
+        headers = {"destination": "test", "message-id": "test-0"}
+        message = '{"facility": "SNS", "instrument": "arcs", "ipts": "IPTS-5", "run_number": 3, "data_file": "test"}'
+
+        # test with task class "-" (inserted by Django admin interface when left empty)
+        mock_get_task.return_value = '{"task_class": "-"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert "does not match pattern" in self.caplog.text
+
+        # test with task class that does not follow the pattern "module_name.ClassName"
+        mock_get_task.return_value = '{"task_class": "FakeClass"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert "does not match pattern" in self.caplog.text
+
+        # test with module that does not exist
+        mock_get_task.return_value = '{"task_class": "fake_module.FakeClass"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert "cannot be imported" in self.caplog.text
+
+        # test with module exists but class does not
+        mock_get_task.return_value = '{"task_class": "workflow.states.FakeClass"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert "cannot be imported" in self.caplog.text
+
+        # test with module attribute is not a class
+        mock_get_task.return_value = '{"task_class": "workflow.state_utilities.decode_message"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert "cannot be imported" in self.caplog.text
+
+        # test with calling class fails
+        mock_get_task.return_value = '{"task_class": "workflow.tests.test_states.FakeTestClass"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert "Task [test] failed" in self.caplog.text
+
+        # test with valid class
+        mock_get_task.return_value = '{"task_class": "workflow.states.Reduction_request"}'
+        self.caplog.clear()
+        sa(headers, message)
+        assert mock_connection.send.call_count == 1
 
     @mock.patch("workflow.database.transactions.add_status_entry")
     def test_send(self, mockAddStatusEntry):

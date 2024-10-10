@@ -9,8 +9,12 @@ from .state_utilities import logged_action
 from .settings import POSTPROCESS_ERROR, CATALOG_DATA_READY
 from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
 from .database import transactions
+
+import importlib
+import inspect
 import json
 import logging
+import re
 
 
 class StateAction:
@@ -47,6 +51,30 @@ class StateAction:
             action_cls = globals()[destination]
             action_cls(connection=self._send_connection)(headers, message)
 
+    def _get_class_from_path(self, class_path: str):
+        """
+        Returns the class given by the class path
+        :param class_path: the class, e.g. "module_name.ClassName"
+        :return: class or None
+        """
+        # check that the string is in the format "package_name.module_name.class_name"
+        pattern = r"^[a-zA-Z0-9_\.]+\.[a-zA-Z0-9_]+$"
+        if not re.match(pattern, class_path):
+            logging.error(f"task_class {class_path} does not match pattern module_name.ClassName")
+            return None
+        module_name, class_name = class_path.rsplit(".", 1)
+
+        # try importing the class
+        try:
+            module = importlib.import_module(module_name)
+            cls = getattr(module, class_name)
+            if not inspect.isclass(cls):
+                raise ValueError
+            return cls
+        except (ModuleNotFoundError, AttributeError, ValueError):
+            logging.error(f"task_class {class_path} cannot be imported")
+            return None
+
     def _call_db_task(self, task_data, headers, message):
         """
         :param task_data: JSON-encoded task definition
@@ -59,14 +87,12 @@ class StateAction:
             and (task_def["task_class"] is not None)
             and len(task_def["task_class"].strip()) > 0
         ):
-            try:
-                toks = task_def["task_class"].strip().split(".")
-                module = ".".join(toks[: len(toks) - 1])
-                cls = toks[len(toks) - 1]
-                exec("from %s import %s as action_cls" % (module, cls))
-                action_cls(connection=self._send_connection)(headers, message)  # noqa: F821
-            except:  # noqa: E722
-                logging.exception("Task [%s] failed:", headers["destination"])
+            action_cls = self._get_class_from_path(task_def["task_class"])
+            if action_cls:
+                try:
+                    action_cls(connection=self._send_connection)(headers, message)  # noqa: F821
+                except:  # noqa: E722
+                    logging.exception("Task [%s] failed:", headers["destination"])
         if "task_queues" in task_def:
             for item in task_def["task_queues"]:
                 destination = "/queue/%s" % item
