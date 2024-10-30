@@ -139,7 +139,7 @@ After setting the environment variables, run the following ``make`` targets in t
 
 .. code-block:: shell
 
-   make conda/create
+   make create/conda # or "make create/mamba" for mamba, to create the webmon conda environment
    make all  # create: python packages for dasmon, webmon, and workflow; fake SNS data; self-signed SSL certificates
    make localdev/up  # build all the services
 
