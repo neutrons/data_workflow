@@ -176,7 +176,7 @@ source code requires rebuilding the python wheel(s).
 For instance, if the source code of ``dasmon`` is changed, run at this
 point ``make wheel/dasmon`` to rebuild the ``dasmon`` wheel.
 
-If necessary, delete all existing wheels with ``make wheel/clean``
+If necessary, delete all existing wheels with ``make wheel/clean``, then run ``make all`` to recreate them.
 
 Rebuild the services
 ~~~~~~~~~~~~~~~~~~~~
