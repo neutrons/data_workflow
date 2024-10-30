@@ -303,17 +303,17 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
 
     skip_quicknxs = forms.BooleanField(required=False, initial=False)
 
-    # Options for all samples in the run
+    # Options for all peaks in the run
     plot_in_2D = forms.BooleanField(required=False, initial=False)
     use_const_q = forms.BooleanField(required=False, initial=False)
     q_step = forms.FloatField(required=False, initial=-0.02)
     use_sangle = forms.BooleanField(required=False, initial=True)
     fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
-    sample_count = forms.IntegerField(
+    peak_count = forms.IntegerField(
         required=True, min_value=1, initial=1, widget=forms.NumberInput(attrs={"size": "2"})
     )
 
-    # Options for first sample
+    # Options for first peak
     force_peak = forms.BooleanField(required=False, initial=False)
     peak_min = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={"size": "5"}))
     peak_max = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={"size": "5"}))
@@ -324,7 +324,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     use_side_bck = forms.BooleanField(required=False, initial=False)
     bck_width = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
 
-    # Options for second sample
+    # Options for second peak
     force_peak_s2 = forms.BooleanField(required=False, initial=False)
     peak_min_s2 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={"size": "5"}))
     peak_max_s2 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={"size": "5"}))
@@ -335,7 +335,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
     use_side_bck_s2 = forms.BooleanField(required=False, initial=False)
     bck_width_s2 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
 
-    # Options for third sample
+    # Options for third peak
     force_peak_s3 = forms.BooleanField(required=False, initial=False)
     peak_min_s3 = forms.IntegerField(required=True, initial=160, widget=forms.NumberInput(attrs={"size": "5"}))
     peak_max_s3 = forms.IntegerField(required=True, initial=170, widget=forms.NumberInput(attrs={"size": "5"}))
@@ -348,14 +348,14 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
 
     # List of fields are used in the template
     _template_list = [
-        # Options for all samples in the run
+        # Options for all peaks in the run
         "plot_in_2D",
         "use_const_q",
         "q_step",
         "use_sangle",
         "fit_peak_in_roi",
-        "sample_count",
-        # Options for first sample
+        "peak_count",
+        # Options for first peak
         "force_peak",
         "peak_min",
         "peak_max",
@@ -365,7 +365,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
         "bck_max",
         "use_side_bck",
         "bck_width",
-        # Options for second sample
+        # Options for second peak
         "force_peak_s2",
         "peak_min_s2",
         "peak_max_s2",
@@ -375,7 +375,7 @@ class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
         "bck_max_s2",
         "use_side_bck_s2",
         "bck_width_s2",
-        # Options for third sample
+        # Options for third peak
         "force_peak_s3",
         "peak_min_s3",
         "peak_max_s3",
