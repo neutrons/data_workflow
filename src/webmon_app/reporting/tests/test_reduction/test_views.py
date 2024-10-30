@@ -198,7 +198,7 @@ class TestView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reduction/configuration_ref_m.html")
         # uncomment the following line only when debugging, in order to inspect the response content
-        # open("/tmp/junk.html", "wb").write(response.content)  # inspect with the browser
+        # open("/tmp/junk.html", "wb").write(response.content)  # take a look to file:///tmp/junk.html with the browser
 
     def test_configuration_change(self):
         # no data
