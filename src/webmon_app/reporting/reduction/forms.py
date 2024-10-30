@@ -296,7 +296,7 @@ class ReductionConfigurationCorelliForm(BaseReductionConfigurationForm):
     ]
 
 
-class ReductionConfigurationREFMForm(BaseReductionConfigurationForm):
+class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     """
     Generic form for REF_M reduction instruments
     """

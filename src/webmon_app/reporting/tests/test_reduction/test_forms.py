@@ -4,17 +4,17 @@ from reporting.report.models import Instrument
 from reporting.reduction.models import ReductionProperty, Choice
 
 
-class TestREFMForm(TestCase):
+class TestREF_MForm(TestCase):
     default_test_fields = {
         "skip_quicknxs": False,
-        # Options for all samples in the run
+        # Options for all peaks in the run
         "plot_in_2D": False,
         "use_const_q": False,
         "q_step": -0.02,
         "use_sangle": True,
         "fit_peak_in_roi": False,
-        "sample_count": 1,
-        # Options for first sample
+        "peak_count": 1,
+        # Options for first peak
         "force_peak": False,
         "peak_min": 160,
         "peak_max": 170,
@@ -24,7 +24,7 @@ class TestREFMForm(TestCase):
         "bck_max": 100,
         "use_side_bck": False,
         "bck_width": 10,
-        # Options for second sample
+        # Options for second peak
         "force_peak_s2": False,
         "peak_min_s2": 160,
         "peak_max_s2": 170,
@@ -34,7 +34,7 @@ class TestREFMForm(TestCase):
         "bck_max_s2": 100,
         "use_side_bck_s2": False,
         "bck_width_s2": 10,
-        # Options for third sample
+        # Options for third peak
         "force_peak_s3": False,
         "peak_min_s3": 160,
         "peak_max_s3": 170,
@@ -47,7 +47,7 @@ class TestREFMForm(TestCase):
     }
 
     def test_empty_form(self):
-        form = forms.ReductionConfigurationREFMForm({})
+        form = forms.ReductionConfigurationREF_MForm({})
         self.assertFalse(
             form.is_valid()
         )  # empty instantiated form invalid because fields like `peak_min` are required
@@ -58,14 +58,14 @@ class TestREFMForm(TestCase):
         self.assertEqual(
             form.to_template(),
             {
-                # Options for all samples in the run
+                # Options for all peaks in the run
                 "plot_in_2D": "False",
                 "use_const_q": "False",
                 "q_step": "None",
                 "use_sangle": "False",
                 "fit_peak_in_roi": "False",
-                "sample_count": "",
-                # Options for first sample
+                "peak_count": "",
+                # Options for first peak
                 "force_peak": "False",
                 "peak_min": "",
                 "peak_max": "",
@@ -75,7 +75,7 @@ class TestREFMForm(TestCase):
                 "bck_max": "",
                 "use_side_bck": "False",
                 "bck_width": "",
-                # Options for second sample
+                # Options for second peak
                 "force_peak_s2": "False",
                 "peak_min_s2": "",
                 "peak_max_s2": "",
@@ -85,7 +85,7 @@ class TestREFMForm(TestCase):
                 "bck_max_s2": "",
                 "use_side_bck_s2": "False",
                 "bck_width_s2": "",
-                # Options for third sample
+                # Options for third peak
                 "force_peak_s3": "False",
                 "peak_min_s3": "",
                 "peak_max_s3": "",
@@ -99,7 +99,7 @@ class TestREFMForm(TestCase):
         )
 
     def test_form_filled(self):
-        form = forms.ReductionConfigurationREFMForm(self.default_test_fields)
+        form = forms.ReductionConfigurationREF_MForm(self.default_test_fields)
         form.full_clean()  # Clean all of form.data and populate form._errors and form.cleaned_data.
         for key, val in self.default_test_fields.items():
             self.assertEqual(form.cleaned_data.get(key), val)
@@ -115,7 +115,7 @@ class TestREFMForm(TestCase):
 
     def test_to_db(self):
         test_fields = {"bck_width_s3": 11}
-        form = forms.ReductionConfigurationREFMForm(test_fields)
+        form = forms.ReductionConfigurationREF_MForm(test_fields)
         self.assertFalse(form.is_valid())  # invalid because fields like `peak_min` are required
 
         instrument = Instrument(name="inst")
@@ -134,7 +134,7 @@ class TestREFMForm(TestCase):
 
     def test_to_db_bad(self):
         # no clean data
-        form = forms.ReductionConfigurationREFMForm({})
+        form = forms.ReductionConfigurationREF_MForm({})
         form.to_db(0)
         self.assertEqual(len(ReductionProperty.objects.filter()), 0)
 
