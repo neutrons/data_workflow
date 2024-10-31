@@ -72,7 +72,7 @@ Instrument team members can use this page to generate a new automated reduction 
   <table class="property_table  fixed_table" >
 
     <tr>
-        <td style="font-size: 18px; text-decoration: underline;"><strong>Options for all samples</strong></td>
+        <td style="font-size: 18px; text-decoration: underline;"><strong>Options for all peaks</strong></td>
     </tr>
 
     <tr class='tiny_input'>
@@ -99,7 +99,7 @@ Loading the page for each run will take much longer when this option is turned o
         </td>
     </tr>
 
-    <!-- Sample angle options -->
+    <!-- Peak angle options -->
     <tr>
         <td>
             {{ options_form.use_sangle }}
@@ -112,7 +112,7 @@ otherwise DANGLE will be used."><strong>Use SANGLE</strong></span>
     <tr>
         <td>
             {{ options_form.fit_peak_in_roi }}
-            <span title="Once the reflected peak ROI is selected for each sample below,
+            <span title="Once the reflected peak ROI is selected for each peak below,
 you can try to fine tune this ROI by fitting for a peak within that
 region and updating the ROI [both center and width] according to the
 location found. Check the box if you want to find a peak within the
@@ -125,11 +125,11 @@ ROI and redefine the ROI afterwards.">
     <!-- Divider line -->
     <td colspan="2"><hr></td>
 
-    <!-- Number of Samples in the run -->
+    <!-- Number of Peaks in the run -->
       <tr class='tiny_input'>
         <td>
-            <span class='short_label' title="Number of samples in the run"><strong>Sample count</strong></span>
-            {{ options_form.sample_count }}
+            <span class='short_label' title="Number of peaks in the run"><strong>Peak count</strong></span>
+            {{ options_form.peak_count }}
         </td>
     </tr>
 
@@ -137,7 +137,7 @@ ROI and redefine the ROI afterwards.">
     <!-- Divider line -->
     <td colspan="2"><hr></td>
     <tr>
-        <td style="font-size: 18px; text-decoration: underline;"><strong>Sample # 1</strong></td>
+        <td style="font-size: 18px; text-decoration: underline;"><strong>Peak # 1</strong></td>
     </tr>
 
     <!-- Force peak ROI options -->
@@ -147,9 +147,9 @@ ROI and redefine the ROI afterwards.">
             <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
 Check the following box if you want to define your own ROI and
 use it for peak selection."><strong>Force peak ROI</strong></span>
-            <span class='short_label'>Pixel<sub>min</sub></span>
+            <label class='short_label' for='peak_min'>Pixel<sub>min</sub></label>
             {{ options_form.peak_min }}
-            <span class='short_label'>Pixel<sub>max</sub></span>
+            <label class='short_label' for='peak_max'>Pixel<sub>max</sub></label>
             {{ options_form.peak_max }}
         </td>
     </tr>
@@ -173,9 +173,9 @@ otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
             <span title="You can choose to replace the 2nd ROI in the data by your own range.
 Check the following box if you want to define your own 2nd ROI and use it for background selection.
 The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
-            <span class='short_label'>Bck<sub>min</sub></span>
+            <label class='short_label' for='bck_min'>Bck<sub>min</sub></label>
             {{ options_form.bck_min }}
-            <span class='short_label'>Bck<sub>max</sub></span>
+            <label class='short_label'  for='bck_max'>Bck<sub>max</sub></label>
             {{ options_form.bck_max }}
         </td>
     </tr>
@@ -191,7 +191,7 @@ the reflected peak to estimate the background. Check the following box
 if you want to use the region on each side of the peak to estimate your background.">
                 <strong>Use side background</strong>
             </span>
-            Pixels on each side {{ options_form.bck_width }}
+            <label for='bck_width'>Pixels on each side</label> {{ options_form.bck_width }}
         </td>
     </tr>
 
@@ -199,8 +199,8 @@ if you want to use the region on each side of the peak to estimate your backgrou
     <!-- Divider line -->
     <td colspan="2"><hr></td>
     <tr>
-        <td style="font-size: 18px; text-decoration: underline;" title="Sample 2 options ignored if Sample count is 1">
-            <strong>Sample # 2</strong>
+        <td style="font-size: 18px; text-decoration: underline;" title="Peak 2 options ignored if Peak count is 1">
+            <strong>Peak # 2</strong>
         </td>
     </tr>
 
@@ -211,9 +211,9 @@ if you want to use the region on each side of the peak to estimate your backgrou
             <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
 Check the following box if you want to define your own ROI and
 use it for peak selection."><strong>Force peak ROI</strong></span>
-            <span class='short_label'>Pixel<sub>min</sub></span>
+            <label class='short_label' for='peak_min_s2'>Pixel<sub>min</sub></label>
             {{ options_form.peak_min_s2 }}
-            <span class='short_label'>Pixel<sub>max</sub></span>
+            <label class='short_label' for='peak_max_s2'>Pixel<sub>max</sub></label>
             {{ options_form.peak_max_s2 }}
         </td>
     </tr>
@@ -237,9 +237,9 @@ otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
             <span title="You can choose to replace the 2nd ROI in the data by your own range.
 Check the following box if you want to define your own 2nd ROI and use it for background selection.
 The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
-            <span class='short_label'>Bck<sub>min</sub></span>
+            <label class='short_label' for='bck_min_s2'>Bck<sub>min</sub></label>
             {{ options_form.bck_min_s2 }}
-            <span class='short_label'>Bck<sub>max</sub></span>
+            <label class='short_label' for='bck_max_s2'>Bck<sub>max</sub></label>
             {{ options_form.bck_max_s2 }}
         </td>
     </tr>
@@ -255,7 +255,7 @@ the reflected peak to estimate the background. Check the following box
 if you want to use the region on each side of the peak to estimate your background.">
                 <strong>Use side background</strong>
             </span>
-            Pixels on each side {{ options_form.bck_width_s2 }}
+            <label for='bck_width_s2'>Pixels on each side</label> {{ options_form.bck_width_s2 }}
         </td>
     </tr>
 
@@ -263,8 +263,8 @@ if you want to use the region on each side of the peak to estimate your backgrou
     <!-- Divider line -->
     <td colspan="2"><hr></td>
     <tr>
-        <td style="font-size: 18px; text-decoration: underline;" title="Sample 3 options ignored if Sample count smaller than 3">
-            <strong>Sample # 3</strong>
+        <td style="font-size: 18px; text-decoration: underline;" title="Peak 3 options ignored if Peak count smaller than 3">
+            <strong>Peak # 3</strong>
         </td>
     </tr>
 
@@ -276,9 +276,9 @@ if you want to use the region on each side of the peak to estimate your backgrou
             <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
 Check the following box if you want to define your own ROI and
 use it for peak selection."><strong>Force peak ROI</strong></span>
-            <span class='short_label'>Pixel<sub>min</sub></span>
+            <label class='short_label' for='peak_min_s3'>Pixel<sub>min</sub></label>
             {{ options_form.peak_min_s3 }}
-            <span class='short_label'>Pixel<sub>max</sub></span>
+            <label class='short_label' for='peak_max_s3'>Pixel<sub>max</sub></label>
             {{ options_form.peak_max_s3 }}
         </td>
     </tr>
@@ -302,9 +302,9 @@ otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
             <span title="You can choose to replace the 2nd ROI in the data by your own range.
 Check the following box if you want to define your own 2nd ROI and use it for background selection.
 The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
-            <span class='short_label'>Bck<sub>min</sub></span>
+            <label class='short_label' for='bck_min_s3'>Bck<sub>min</sub></label>
             {{ options_form.bck_min_s3 }}
-            <span class='short_label'>Bck<sub>max</sub></span>
+            <label class='short_label' for='bck_max_s3'>Bck<sub>max</sub></label>
             {{ options_form.bck_max_s3 }}
         </td>
     </tr>
@@ -320,7 +320,7 @@ the reflected peak to estimate the background. Check the following box
 if you want to use the region on each side of the peak to estimate your background.">
                 <strong>Use side background</strong>
             </span>
-            Pixels on each side {{ options_form.bck_width_s3 }}
+            <label for='bck_width_s3'>Pixels on each side</label> {{ options_form.bck_width_s3 }}
         </td>
     </tr>
 

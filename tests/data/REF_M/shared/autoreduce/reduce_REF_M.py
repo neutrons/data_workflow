@@ -46,7 +46,7 @@ def _as_bool(value):
 
 def reduction_user_options():
     r"""Collects all values defined by the user in https://monitor.sns.gov/reduction/ref_m/"""
-    # Options common to all samples:
+    # Options common to all peaks:
     kwargs_common = dict(
         plot_2d=_as_bool(True),
         const_q_binning=_as_bool(False),
@@ -56,8 +56,8 @@ def reduction_user_options():
         publish=False,  # uploading to livedata server to be done later by `upload_html_report()`
     )
 
-    # Options for Sample 1
-    kwargs_sample_1 = dict(
+    # Options for Peak 1
+    kwargs_peak_1 = dict(
         use_roi=True,
         force_peak_roi=_as_bool(True),
         peak_roi=[int(149), int(159)],
@@ -68,8 +68,8 @@ def reduction_user_options():
         bck_offset=int(),
     )
 
-    # Options for Sample 2
-    kwargs_sample_2 = dict(
+    # Options for Peak 2
+    kwargs_peak_2 = dict(
         use_roi=True,
         force_peak_roi=_as_bool(True),
         peak_roi=[int(160), int(180)],
@@ -80,8 +80,8 @@ def reduction_user_options():
         bck_offset=int(),
     )
 
-    # Options for Sample 3
-    kwargs_sample_3 = dict(
+    # Options for Peak 3
+    kwargs_peak_3 = dict(
         use_roi=True,
         force_peak_roi=_as_bool(True),
         peak_roi=[int(160), int(180)],
@@ -92,28 +92,28 @@ def reduction_user_options():
         bck_offset=int(),
     )
 
-    # Do we have more than one sample in this run?
-    sample_count = int(1)
-    ReductionOptions = namedtuple("ReductionOptions", "common, sample_count, sample1, sample2, sample3")
-    return ReductionOptions(kwargs_common, sample_count, kwargs_sample_1, kwargs_sample_2, kwargs_sample_3)
+    # Do we have more than one peak in this run?
+    peak_count = int(1)
+    ReductionOptions = namedtuple("ReductionOptions", "common, peak_count, peak1, peak2, peak3")
+    return ReductionOptions(kwargs_common, peak_count, kwargs_peak_1, kwargs_peak_2, kwargs_peak_3)
 
 
 def reduce_events_file(event_file_path, outdir):
     event_file = os.path.split(event_file_path)[-1]  # file name
-    reports = list()  # autoreduction reports for each sample in the run, in HTML format
+    reports = list()  # autoreduction reports for each peak in the run, in HTML format
     opts = reduction_user_options()
-    assert opts.sample_count <= 3, "Sample count must be <= 3"
-    kwargs_samples = [opts.sample1, opts.sample2, opts.sample3]
-    sample_numbers = (
+    assert opts.peak_count <= 3, "Peak count must be <= 3"
+    kwargs_peaks = [opts.peak1, opts.peak2, opts.peak3]
+    peak_numbers = (
         [
             None,
         ]
-        if opts.sample_count == 1
-        else range(1, opts.sample_count + 1)
+        if opts.peak_count == 1
+        else range(1, opts.peak_count + 1)
     )  # numbers start at 1, not 0
-    for i, sample_number in enumerate(sample_numbers):
-        d = dict(data_run=event_file, output_dir=outdir, sample_number=sample_number)
-        kwargs = {**d, **opts.common, **kwargs_samples[i]}  # merge all partial dicts
+    for i, peak_number in enumerate(peak_numbers):
+        d = dict(data_run=event_file, output_dir=outdir, peak_number=peak_number)
+        kwargs = {**d, **opts.common, **kwargs_peaks[i]}  # merge all partial dicts
         reports.append(ReductionProcess(**kwargs).reduce())
     return reports
 

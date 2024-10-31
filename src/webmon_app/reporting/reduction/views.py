@@ -111,7 +111,7 @@ def configuration_ref_m(request, instrument):
             view_util.reset_to_default(instrument_id)
             return redirect(reverse("reduction:configuration", args=[instrument]))
 
-        options_form = forms.ReductionConfigurationREFMForm(request.POST)
+        options_form = forms.ReductionConfigurationREF_MForm(request.POST)
         options_form.set_instrument(instrument.lower())
         if options_form.is_valid():
             options_form.to_db(instrument_id, request.user)
@@ -129,7 +129,7 @@ def configuration_ref_m(request, instrument):
         props_list = ReductionProperty.objects.filter(instrument=instrument_id)
         for item in props_list:
             params_dict[str(item.key)] = str(item.value)
-        options_form = forms.ReductionConfigurationREFMForm(initial=params_dict)
+        options_form = forms.ReductionConfigurationREF_MForm(initial=params_dict)
         options_form.set_instrument(instrument.lower())
 
     last_action = datetime.datetime.now().isoformat()
