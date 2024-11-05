@@ -1,7 +1,6 @@
 channels:
   - conda-forge
 dependencies:
-  - build
   - flake8
   - python-dotenv
   - python-build
