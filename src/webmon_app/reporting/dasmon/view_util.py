@@ -22,7 +22,9 @@ from django.conf import settings
 import datetime
 import logging
 import time
+import socket
 import reporting.report.view_util as report_view_util
+import requests
 import reporting.pvmon.view_util as pvmon_view_util
 import reporting.users.view_util as users_view_util
 
@@ -614,6 +616,28 @@ def postprocessing_diagnostics(timeout=None):
     red_diag["conditions"] = red_conditions
 
     return red_diag
+
+
+def reduction_queue_sizes():
+    """Send request to activemq to get the reduction queue size using jolokia api"""
+    logger = logging.getLogger(LOGNAME)
+    results = []
+    url_template = settings.ACTIVEMQ_QUEUE_QUERY_URL
+
+    headers = headers = {"Origin": socket.gethostname()}
+    auth = (settings.ACTIVEMQ_ADMIN_USER, settings.ACTIVEMQ_ADMIN_PASS)
+    for queue in settings.ACTIVEMQ_REDUCTION_QUEUES:
+        url = url_template.format(queue=queue)
+        try:
+            response = requests.get(url, auth=auth, headers=headers, timeout=1)
+            if response.status_code == 200:
+                results.append({"queue": queue, "size": response.json()["value"]})
+            else:
+                logger.error("Error getting queue size for %s: %s", queue, response.text)
+        except Exception as e:
+            logger.error("Error getting queue size for %s: %s", queue, str(e))
+
+    return results
 
 
 def pvstreamer_diagnostics(instrument_id, timeout=None, process="pvstreamer"):

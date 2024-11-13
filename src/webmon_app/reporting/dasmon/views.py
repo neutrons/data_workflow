@@ -342,6 +342,8 @@ def diagnostics(request, instrument):
     wf_diag = view_util.workflow_diagnostics()
     # Post-processing
     red_diag = view_util.postprocessing_diagnostics()
+    # reduction queue size
+    red_queue_size = view_util.reduction_queue_sizes()
 
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id, "diagnostics")
     template_values = {
@@ -371,6 +373,7 @@ def diagnostics(request, instrument):
 
     template_values["wf_diagnostics"] = wf_diag
     template_values["post_diagnostics"] = red_diag
+    template_values["reduction_queue_size"] = red_queue_size
     template_values["action_messages"] = actions
 
     notices = []
