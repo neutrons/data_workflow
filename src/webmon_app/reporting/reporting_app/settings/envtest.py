@@ -11,6 +11,4 @@ if not SECRET_KEY or SECRET_KEY == "UNSET_SECRET":
 GENERAL_USER_USERNAME = environ.get("GENERAL_USER_USERNAME", "GeneralUser")  # noqa: F405
 GENERAL_USER_PASSWORD = environ.get("GENERAL_USER_PASSWORD", "GeneralUser")  # noqa: F405
 
-FITTING_URLS = {"ref_l": "https://reflectivity-test.ornl.gov/fit/ref_l/$run_number"}
-
 validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405

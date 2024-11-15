@@ -152,6 +152,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 CATALOG_URL = environ.get("CATALOG_URL")
 CATALOG_ID = environ.get("CATALOG_ID")
 CATALOG_SECRET = environ.get("CATALOG_SECRET")
+CATALOG_API_TOKEN = environ.get("CATALOG_API_TOKEN")
 
 # The DB settings are defined the same as in the workflow manager
 DATABASES = {
@@ -364,10 +365,6 @@ if facility_info_additions:
     additions = json.loads(facility_info_additions)
     for instr, facility in additions.items():
         FACILITY_INFO[instr] = facility
-
-# Link out to fitting application
-FITTING_URLS = {}
-
 
 # remote worker options
 # setting these will force all execution to happen as a single user
