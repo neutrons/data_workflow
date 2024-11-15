@@ -634,7 +634,7 @@ def reduction_queue_sizes():
                 results.append({"queue": queue, "size": response.json()["value"]})
             else:
                 logger.error("Error getting queue size for %s: %s", queue, response.text)
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             logger.error("Error getting queue size for %s: %s", queue, str(e))
 
     return results

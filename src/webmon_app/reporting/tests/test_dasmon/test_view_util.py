@@ -19,6 +19,30 @@ from workflow.database.report.models import WorkflowSummary
 _ = [django, dasmon, users]
 
 
+# This method will be used by the mock to replace requests.get
+def mocked_requests_get(*args, **kwargs):
+    class MockResponse:
+        def __init__(self, json_data={}, status_code=200, text=""):
+            self.json_data = json_data
+            self.status_code = status_code
+            self.text = text
+
+        def json(self):
+            return self.json_data
+
+    match args[0]:
+        case "http://activemq:8161/queue0":
+            return MockResponse({"value": 1}, 200)
+        case "http://activemq:8161/queue1":
+            return MockResponse(status_code=404, text="Not Found")
+        case "http://activemq:8161/queue2":
+            return MockResponse({"value": 2}, 200)
+        case "http://activemq:8161/queue3":  # test case timeout
+            from requests.exceptions import Timeout
+
+            raise Timeout("Test timeout")
+
+
 class ViewUtilTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -870,6 +894,21 @@ class ViewUtilTest(TestCase):
         # test
         inst_list = get_instruments_for_user(request)
         assert inst_list[0] == "TESTINST"
+
+    @mock.patch("requests.get", side_effect=mocked_requests_get)
+    def test_reduction_queue_sizes(self, mock_get):
+        from reporting.dasmon.view_util import reduction_queue_sizes
+
+        with self.settings(
+            ACTIVEMQ_QUEUE_QUERY_URL="http://activemq:8161/{queue}",
+            ACTIVEMQ_REDUCTION_QUEUES=[f"queue{n}" for n in range(4)],
+        ):
+            results = reduction_queue_sizes()
+        assert len(results) == 2
+        assert results[0]["queue"] == "queue0"
+        assert results[0]["size"] == 1
+        assert results[1]["queue"] == "queue2"
+        assert results[1]["size"] == 2
 
 
 if __name__ == "__main__":
