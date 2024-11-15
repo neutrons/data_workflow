@@ -35,7 +35,7 @@ class TestDASMONPageView:
         tree = etree.parse(StringIO(dasmon_diagnostics.text), parser)
         table_content = tree.xpath("//tr/td//text()")
         # verify number of entries in the tables
-        expected_number_of_entries = 48
+        expected_number_of_entries = 56
         assert len(table_content) == expected_number_of_entries
         # -- DASMON diagnostics
         status = table_content[1]
@@ -63,6 +63,15 @@ class TestDASMONPageView:
         autoreducer_pid = table_content[21]
         assert len(autoreducer) > 0
         assert len(autoreducer_pid) > 0
+        # -- Reduction queue lengths
+        assert table_content[31] == "CATALOG.ONCAT.DATA_READY: "
+        assert table_content[32] == "0"
+        assert table_content[33] == "REDUCTION.DATA_READY: "
+        assert table_content[34] == "0"
+        assert table_content[35] == "REDUCTION.HIMEM.DATA_READY: "
+        assert table_content[36] == "0"
+        assert table_content[37] == "REDUCTION_CATALOG.DATA_READY: "
+        assert table_content[38] == "0"
 
 
 if __name__ == "__main__":
