@@ -63,15 +63,7 @@ def _get_run_info(instrument, ipts, run_number, facility="SNS"):
     """
     run_info = {}
     try:
-        oncat = pyoncat.ONCat(
-            settings.CATALOG_URL,
-            # Here we're using the machine-to-machine "Client Credentials" flow,
-            # which requires a client ID and secret, but no *user* credentials.
-            flow=pyoncat.CLIENT_CREDENTIALS_FLOW,
-            client_id=settings.CATALOG_ID,
-            client_secret=settings.CATALOG_SECRET,
-        )
-        oncat.login()
+        oncat = pyoncat.ONCat(settings.CATALOG_URL, api_token=settings.CATALOG_API_TOKEN)
 
         datafiles = oncat.Datafile.list(
             facility=facility,
