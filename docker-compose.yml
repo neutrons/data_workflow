@@ -27,7 +27,8 @@ services:
       dockerfile: Dockerfile.webmon
     volumes:
       - web-static:/var/www/workflow/static/
-      - ./nginx/nginx.crt:/nginx.crt
+      # add in folder to be picked up by update-ca-certificates in docker entrypoint
+      - ./nginx/nginx.crt:/usr/local/share/ca-certificates/nginx.crt
     env_file:
       - .env
       - .env.ci
@@ -39,8 +40,9 @@ services:
       - CATALOG_URL=${CATALOG_URL}
       - CATALOG_ID=${CATALOG_ID}
       - CATALOG_SECRET=${CATALOG_SECRET}
+      - CATALOG_API_TOKEN=${CATALOG_API_TOKEN}
       - GUNICORN_CMD_ARGS=--reload --workers=8
-      - REQUESTS_CA_BUNDLE=/nginx.crt
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/ht || exit 1
       interval: 60s

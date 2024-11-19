@@ -26,6 +26,8 @@ if [[ "$DJANGO_SETTINGS_MODULE" != *".prod" ]]; then
   >&2 echo "Not in Production, setting up test users InstrumentScientist, and GeneralUser"
   python $MANAGE_PY_WEBMON ensure_adminuser --username="InstrumentScientist" --email='Instrument@Scientist.com' --password="InstrumentScientist"
   python $MANAGE_PY_WEBMON ensure_user --username="${GENERAL_USER_USERNAME}" --email='General@User.com' --password="${GENERAL_USER_PASSWORD}"
+  >&2 echo "Not in Production, updating certificates to add self-signed certificate"
+  update-ca-certificates
 fi
 
 # start up web-service
