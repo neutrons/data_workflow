@@ -574,8 +574,8 @@ class Client:
             self._connection = self.get_connection()
 
         logging.info("[%s] Subscribing to %s", self._consumer_name, str(self._queues))
-        for q in self._queues:
-            self._connection.subscribe(destination=q, id=1, ack="auto")
+        for i, q in enumerate(self._queues):
+            self._connection.subscribe(destination=q, id=i, ack="auto")
 
     def _disconnect(self):
         """

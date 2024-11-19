@@ -103,15 +103,16 @@ services:
       retries: 5
 
   activemq:
-    image: apache/activemq-classic
+    user: root
+    image: apache/activemq-artemis:latest-alpine
     hostname: activemq
     ports:
-     - 8161:8161
-     - 61613:61613
+      - 8161:8161
+      - 61613:61613
     volumes:
-      - ./src/workflow_app/workflow/icat_activemq.xml:/opt/apache-activemq/conf/activemq.xml
+      - ./config/artemis:/var/lib/artemis-instance/etc-override
     healthcheck:
-      test: "curl --silent --show-error -u admin:admin -H 'Origin:http://localhost' 'http://localhost:8161/api/jolokia/read/org.apache.activemq:type=Broker,brokerName=localhost,service=Health' | grep --silent -e 'Good' -e 'Getting Worried'"
+      test: wget --no-verbose --tries=1 --spider http://localhost:8161 || exit 1
       interval: 5s
       timeout: 5s
       retries: 5
