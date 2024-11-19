@@ -900,8 +900,8 @@ class ViewUtilTest(TestCase):
         from reporting.dasmon.view_util import reduction_queue_sizes
 
         with self.settings(
-            ACTIVEMQ_QUEUE_QUERY_URL="http://activemq:8161/{queue}",
-            ACTIVEMQ_REDUCTION_QUEUES=[f"queue{n}" for n in range(4)],
+            AMQ_QUEUE_QUERY_URL="http://activemq:8161/{queue}",
+            AMQ_REDUCTION_QUEUES=[f"queue{n}" for n in range(4)],
         ):
             results = reduction_queue_sizes()
         assert len(results) == 2

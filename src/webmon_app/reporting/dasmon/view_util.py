@@ -23,6 +23,7 @@ import datetime
 import logging
 import time
 import socket
+from json.decoder import JSONDecodeError
 import reporting.report.view_util as report_view_util
 import requests
 import reporting.pvmon.view_util as pvmon_view_util
@@ -622,20 +623,24 @@ def reduction_queue_sizes():
     """Send request to activemq to get the reduction queue size using jolokia api"""
     logger = logging.getLogger(LOGNAME)
     results = []
-    url_template = settings.ACTIVEMQ_QUEUE_QUERY_URL
+    url_template = settings.AMQ_QUEUE_QUERY_URL
 
     headers = headers = {"Origin": socket.gethostname()}
-    auth = (settings.ACTIVEMQ_ADMIN_USER, settings.ACTIVEMQ_ADMIN_PASS)
-    for queue in settings.ACTIVEMQ_REDUCTION_QUEUES:
+    auth = (settings.AMQ_USER, settings.AMQ_PASSWORD)
+    for queue in settings.AMQ_REDUCTION_QUEUES:
         url = url_template.format(queue=queue)
         try:
             response = requests.get(url, auth=auth, headers=headers, timeout=1)
-            if response.status_code == 200:
-                results.append({"queue": queue, "size": response.json()["value"]})
-            else:
-                logger.error("Error getting queue size for %s: %s", queue, response.text)
         except requests.exceptions.RequestException as e:
             logger.error("Error getting queue size for %s: %s", queue, str(e))
+        else:
+            try:
+                if response.status_code == 200:
+                    results.append({"queue": queue, "size": response.json()["value"]})
+                else:
+                    logger.error("Error getting queue size for %s: %s", queue, response.text)
+            except (JSONDecodeError, KeyError):
+                logger.error("Error getting queue size for %s: %s", queue, response.text)
 
     return results
 
