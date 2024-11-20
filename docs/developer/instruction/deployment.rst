@@ -17,9 +17,8 @@ Variable               Secret Description
 ====================== ====== ===========
 AMQ_BROKER                    List of ActiveMQ brokers
 APP_SECRET             yes    `Django SECRET_KEY <https://docs.djangoproject.com/en/3.2/ref/settings/#secret-key>`_
-CATALOG_ID             yes    `ONCat client ID <https://oncat.ornl.gov/#/build?section=authentication>`_
-CATALOG_SECRET         yes    `ONCat client secret <https://oncat.ornl.gov/#/build?section=authentication>`_
 CATALOG_URL            yes    `ONCat URL <https://oncat.ornl.gov>`_
+CATALOG_API_TOKEN      yes    `ONCat API token <https://oncat.ornl.gov>`_
 DATABASE_HOST                 PostgreSQL hostname
 DATABASE_NAME                 Database name
 DATABASE_PASS          yes    PostgreSQL Owner password

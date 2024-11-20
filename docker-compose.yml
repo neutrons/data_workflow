@@ -38,8 +38,6 @@ services:
       - LDAP_SERVER_URI=${LDAP_SERVER_URI}
       - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
       - CATALOG_URL=${CATALOG_URL}
-      - CATALOG_ID=${CATALOG_ID}
-      - CATALOG_SECRET=${CATALOG_SECRET}
       - CATALOG_API_TOKEN=${CATALOG_API_TOKEN}
       - GUNICORN_CMD_ARGS=--reload --workers=8
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt

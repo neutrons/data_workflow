@@ -17,8 +17,7 @@ DATABASES = {
 DEBUG = True
 
 CATALOG_URL = "catalog.test.xyz"
-CATALOG_ID = "test"
-CATALOG_SECRET = "test"
+CATALOG_API_TOKEN = "test"
 
 del CACHES  # noqa: F821
 

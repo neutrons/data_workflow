@@ -150,8 +150,6 @@ AUTH_LDAP_USER_ATTR_MAP = {
 
 # ONCat Catalog
 CATALOG_URL = environ.get("CATALOG_URL")
-CATALOG_ID = environ.get("CATALOG_ID")
-CATALOG_SECRET = environ.get("CATALOG_SECRET")
 CATALOG_API_TOKEN = environ.get("CATALOG_API_TOKEN")
 
 # The DB settings are defined the same as in the workflow manager
