@@ -109,8 +109,7 @@ been initialized:
    LDAP_USER_DN_TEMPLATE=*****
    LDAP_DOMAIN_COMPONENT=*****
    CATALOG_URL=*****
-   CATALOG_ID=*****
-   CATALOG_SECRET=*****
+   CATALOG_API_TOKEN=*****
 
 It is recommended to store these variables in an ``.envrc`` file and manage their loading/unloading
 into the shell with the `direnv <direnv/>`_ command-line utility.
@@ -121,8 +120,8 @@ The environment variables ``LDAP_SERVER_URI`` and ``LDAP_DOMAIN_COMPONENT`` are 
 Senior developers can provide the values to use,
 then the developer setup can work with Neutron Scattering Division's (NSD) LDAP instance.
 
-The environment variables ``CATALOG_URL``, ``CATALOG_ID`` and
-``CATALOG_SECRET`` can be set to allow run metadata to be retrieved
+The environment variables ``CATALOG_URL`` and ``CATALOG_API_TOKEN``
+can be set to allow run metadata to be retrieved
 from `ONCat <https://oncat.ornl.gov>`_.
 
 Special users
