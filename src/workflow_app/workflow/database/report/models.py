@@ -341,7 +341,7 @@ class WorkflowSummary(models.Model):
     Overall status of the workflow for a given run
     """
 
-    run_id = models.ForeignKey(DataRun, unique=True, on_delete=models.CASCADE)
+    run_id = models.OneToOneField(DataRun, on_delete=models.CASCADE)
 
     # Overall status of the workflow for this run
     complete = models.BooleanField(default=False)
@@ -521,7 +521,7 @@ class InstrumentStatus(models.Model):
     This can be used to quickly access status information.
     """
 
-    instrument_id = models.ForeignKey(Instrument, unique=True, on_delete=models.CASCADE)
+    instrument_id = models.OneToOneField(Instrument, on_delete=models.CASCADE)
     last_run_id = models.ForeignKey(DataRun, null=True, on_delete=models.CASCADE)
 
     class Meta:
