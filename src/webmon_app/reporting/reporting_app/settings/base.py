@@ -366,3 +366,6 @@ TEST_REMOTE_USER = ""
 TEST_REMOTE_PASSWD = ""
 
 GRAVATAR_URL = "https://www.gravatar.com/avatar/"
+
+# set the default auto field type
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

@@ -97,7 +97,7 @@ class ActiveInstrument(models.Model):
     have their DAS turned ON
     """
 
-    instrument_id = models.ForeignKey(Instrument, unique=True, on_delete=models.CASCADE)
+    instrument_id = models.OneToOneField(Instrument, on_delete=models.CASCADE)
     is_alive = models.BooleanField(default=True)
     is_adara = models.BooleanField(default=True)
     has_pvsd = models.BooleanField(default=False)
@@ -123,7 +123,7 @@ class LegacyURL(models.Model):
     Table of URLs pointing to the legacy instrument status service
     """
 
-    instrument_id = models.ForeignKey(Instrument, unique=True, on_delete=models.CASCADE)
+    instrument_id = models.OneToOneField(Instrument, on_delete=models.CASCADE)
     url = models.CharField(max_length=128)
     long_name = models.CharField(max_length=40)
 
