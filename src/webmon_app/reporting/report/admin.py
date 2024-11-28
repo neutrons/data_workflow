@@ -1,6 +1,7 @@
 from reporting.report.models import (
     DataRun,
     StatusQueue,
+    StatusQueueMessageCount,
     RunStatus,
     WorkflowSummary,
     IPTS,
@@ -93,6 +94,11 @@ class StatusQueueAdmin(admin.ModelAdmin):
     list_filter = ("is_workflow_input",)
 
 
+class StatusQueueMessageCountAdmin(admin.ModelAdmin):
+    list_display = ("id", "queue_id", "message_count", "created_on")
+    list_filter = ("queue_id",)
+
+
 class WorkflowSummaryAdmin(admin.ModelAdmin):
     readonly_fields = ("run_id",)
     list_filter = (
@@ -151,6 +157,7 @@ class InstrumentStatusAdmin(admin.ModelAdmin):
 
 admin.site.register(DataRun, DataRunAdmin)
 admin.site.register(StatusQueue, StatusQueueAdmin)
+admin.site.register(StatusQueueMessageCount, StatusQueueMessageCountAdmin)
 admin.site.register(RunStatus, RunStatusAdmin)
 admin.site.register(WorkflowSummary, WorkflowSummaryAdmin)
 admin.site.register(IPTS, IPTSAdmin)

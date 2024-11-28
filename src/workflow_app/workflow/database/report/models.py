@@ -235,6 +235,15 @@ class StatusQueue(models.Model):
         return self.name
 
 
+class StatusQueueMessageCount(models.Model):
+    queue = models.ForeignKey(StatusQueue, on_delete=models.CASCADE)
+    message_count = models.IntegerField()
+    created_on = models.DateTimeField("Timestamp", auto_now_add=True)
+
+    class Meta:
+        app_label = "report"
+
+
 class RunStatusManager(models.Manager):
     def status(self, run_id, status_description):
         """
