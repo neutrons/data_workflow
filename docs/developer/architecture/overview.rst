@@ -27,7 +27,7 @@ The arrows represent relationships between these services and resources.
         WorkflowManager[Workflow Manager]
         DasmonListener[Dasmon listener]
         Database[(Workflow DB)]
-        Autoreducers-->ONCat
+        PostProcessingAgent[Post-Processing Agent]-->ONCat
         LiveDataServer-->WebMon
         LiveDataServer<-->LiveDataDB[(LiveData DB)]
         LiveReduce
@@ -38,16 +38,16 @@ The arrows represent relationships between these services and resources.
         DASMON-->DasmonListener
         DASMON-->Database
         WorkflowManager-->Database
-        WorkflowManager<-->Autoreducers
-        Autoreducers-->LiveDataServer
+        WorkflowManager<-->PostProcessingAgent
+        PostProcessingAgent-->LiveDataServer
         Database-->WebMon
         ONCat-->WebMon
         LiveReduce-->LiveDataServer
         DasmonListener-->Database
         TranslationService-->FileArchive
-        FileArchive<-->Autoreducers
+        FileArchive<-->PostProcessingAgent
         style DAS fill:#D3D3D3, stroke-dasharray: 5 5
-        classDef externalStyle fill:#FAEFDE, stroke:#B08D55
+        classDef externalStyle fill:#faf2e6, stroke:#f2e3cb
         class DASMON,TranslationService,SMS,FileArchive,ONCat externalStyle
 
         subgraph Legend
@@ -61,12 +61,12 @@ The arrows represent relationships between these services and resources.
         class External externalStyle
 
 The gray box labeled "DAS" are services managed by the Data Acquisition System team that pass
-information to WebMon. The autoreducers interact with the HFIR/SNS file archive to access
-instrument-specific reduction scripts and experiment data files. The autoreducers also write reduced
-data files and reduction log files back to the file archive.
+information to WebMon. Post-Processing Agent interacts with the HFIR/SNS file archive to access
+instrument-specific reduction scripts and experiment data files. Post-Processing Agent also writes
+reduced data files and reduction log files back to the file archive.
 
 Another external component is the experiment data catalog, `ONCat <https://oncat.ornl.gov/>`_, where
-the autoreducers catalog experiment metadata. The WebMon frontend retrieves and displays this
+Post-Processing Agent catalogs experiment metadata. The WebMon frontend retrieves and displays this
 metadata from ONCat.
 
 The section :ref:`communication_flows` includes sequence diagrams that show how the services
@@ -77,8 +77,8 @@ Inter-service communication
 
 WebMon uses an `ActiveMQ <https://activemq.apache.org/>`_ message broker as the main method of
 communication between services. The message broker also serves as a load balancer by distributing
-post-processing jobs to the available autoreducers in a round-robin fashion. Communication with Live
-Data Server and ONCat occurs via their respective REST API:s.
+post-processing jobs to the available instances of Post-Processing Agent in a round-robin fashion.
+Communication with Live Data Server and ONCat occurs via their respective REST API:s.
 
 Table 1 lists the type of communication between pairs services, which are loosely categorized as
 "client" and "service" in that interaction.
@@ -90,13 +90,13 @@ Table 1 lists the type of communication between pairs services, which are loosel
    * - "Client"
      - "Server"
      - Communication type
-   * - Autoreducers
+   * - Post-Processing Agent
      - Dasmon Listener
      - Message queue
-   * - Autoreducers
+   * - Post-Processing Agent
      - Live Data Server
      - REST API
-   * - Autoreducers
+   * - Post-Processing Agent
      - ONCat
      - REST API
    * - DASMON
@@ -130,7 +130,7 @@ Table 1 lists the type of communication between pairs services, which are loosel
      - Workflow Manager
      - Message queue
    * - Workflow Manager
-     - Autoreducers
+     - Post-Processing Agent
      - Message queue
    * - Workflow Manager
      - Dasmon Listener

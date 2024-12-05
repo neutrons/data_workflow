@@ -75,3 +75,9 @@ Glossary
    Workflow
       Experiment data post-processing workflow. The available tasks are cataloging, autoreduction
       and reduced data cataloging.
+
+   Post-Processing Agent
+      Service that performs post-processing tasks like cataloging and autoreduction.
+
+   Autoreducer
+      Server where an instance of :term:`Post-Processing Agent` is running.
