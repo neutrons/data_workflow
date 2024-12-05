@@ -183,6 +183,26 @@ services:
       webmon:
         condition: service_healthy
 
+  artemis_data_collector:
+    restart: always
+    image: ghcr.io/neutrons/artemis_data_collector/artemis_data_collector:latest-prod
+    env_file:
+      - .env
+    environment:
+      INTERVAL: 60
+      ARTEMIS_URL: http://activemq:8161
+      ARTEMIS_USER: artemis
+      ARTEMIS_PASSWORD: artemis
+      ARTEMIS_BROKER_NAME: Artemis-Broker
+      QUEUE_LIST: "['REDUCTION.DATA_READY', 'REDUCTION.HIMEM.DATA_READY', 'CATALOG.ONCAT.DATA_READY', 'REDUCTION_CATALOG.DATA_READY']"
+    depends_on:
+      db:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+      activemq:
+        condition: service_healthy
+
   autoheal:
     restart: always
     image: willfarrell/autoheal
