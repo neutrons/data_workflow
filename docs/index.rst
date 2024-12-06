@@ -11,6 +11,7 @@ Welcome to Web Monitor's documentation!
 .. toctree::
    :maxdepth: 1
 
+   glossary
    users/index
    releasenotes/index
    developer/index
