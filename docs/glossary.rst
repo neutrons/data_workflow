@@ -17,15 +17,14 @@ Glossary
       Data Acquisition System.
 
    SMS
-   Stream Management Service
-      Service that aggregates data from fast neutron event data and slow PVs into a data stream
-      available for both live monitoring and file archiving. SMS reports its status to WebMon for
-      system diagnostics.
+      Stream Management Service (SMS) is a service that aggregates data from fast neutron event data
+      and slow PVs into a data stream available for both live monitoring and file archiving. SMS
+      reports its status to WebMon for system diagnostics.
 
    STC
-   Streaming Translation Client
-      Service that translates the experiment data stream from SMS to NeXus data file. Triggers the
-      post-processing workflow after the NeXus file has been created.
+      Streaming Translation Client (STC) is a service that translates the experiment data stream
+      from :term:`SMS` to a NeXus data file. Triggers the post-processing workflow after the NeXus
+      file has been created.
 
    PVSD
    Process Variable Streaming Daemon
@@ -33,7 +32,9 @@ Glossary
       changes to the SMS. PVSD reports its status to WebMon for system diagnostics.
 
    PV
-      Process Variable, for example sample environment variables.
+      Process Variables (PVs) are variables coming from the control system and can include sample
+      environment variables (e.g. temperature, magnetic field), instrument geometry and experiment
+      metadata. Subsets of PVs are used for monitoring experiments.
 
    ONCat
       Catalog for neutron experiment data at SNS and HFIR: https://oncat.ornl.gov.
@@ -66,11 +67,12 @@ Glossary
       :term:`autoreduction<Autoreduction>` can publish plots for a run to Live Data Server.
 
    Livereduce
-      Service for live data monitoring of the data stream. Publishes plots to
-      :term:`Live Data Server`.
+      Service for live monitoring of the data stream for the creation of plots which are published
+      to the :term:`Live Data Server`.
 
    IPTS
-      Experiments/runs are grouped by their Integrated Proposal Tracking System (IPTS) number.
+      Integrated Proposal Tracking System (IPTS) number is the experiment's proposal ID that is used
+      for grouping runs.
 
    Workflow
       Experiment data post-processing workflow. The available tasks are cataloging, autoreduction
