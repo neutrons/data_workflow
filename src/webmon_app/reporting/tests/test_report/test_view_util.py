@@ -9,6 +9,7 @@ from reporting.report.models import IPTS
 from reporting.report.models import StatusQueue
 from reporting.report.models import Task
 from reporting.report.models import WorkflowSummary
+from reporting.report.models import StatusQueueMessageCount
 
 import json
 
@@ -367,6 +368,26 @@ class ViewUtilTest(TestCase):
         inst = Instrument.objects.get(name="test_instrument")
         missing_runs = find_skipped_runs(inst)
         self.assertEqual(missing_runs[0], 5)
+
+    def test_get_status_queue_message_count(self):
+        from reporting.report.view_util import reduction_queue_sizes
+
+        sq1 = StatusQueue(name="TEST_QUEUE", is_workflow_input=True)
+        sq1.save()
+        sq2 = StatusQueue(name="TEST_QUEUE2", is_workflow_input=True)
+        sq2.save()
+
+        StatusQueueMessageCount(queue=sq1, message_count=10).save()
+        StatusQueueMessageCount(queue=sq1, message_count=11).save()
+        StatusQueueMessageCount(queue=sq1, message_count=12).save()
+        StatusQueueMessageCount(queue=sq2, message_count=42).save()
+
+        queue_size_list = reduction_queue_sizes()
+        self.assertEqual(len(queue_size_list), 2)
+        assert queue_size_list[0]["queue"] == "TEST_QUEUE"
+        assert queue_size_list[0]["message_count"] == 12
+        assert queue_size_list[1]["queue"] == "TEST_QUEUE2"
+        assert queue_size_list[1]["message_count"] == 42
 
 
 if __name__ == "__main__":

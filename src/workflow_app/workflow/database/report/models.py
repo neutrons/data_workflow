@@ -243,6 +243,16 @@ class StatusQueueMessageCount(models.Model):
     class Meta:
         app_label = "report"
 
+    def __str__(self):
+        return f"{self.queue}: {self.message_count} {self.created_on}"
+
+    def to_dict(self):
+        return {
+            "queue": str(self.queue),
+            "message_count": self.message_count,
+            "created_on": self.created_on,
+        }
+
 
 class RunStatusManager(models.Manager):
     def status(self, run_id, status_description):

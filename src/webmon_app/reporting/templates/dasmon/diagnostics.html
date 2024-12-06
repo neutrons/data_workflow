@@ -142,6 +142,30 @@ Reported conditions:<br>
 {% endif %}
 </div>
 
+{% if reduction_queue_size %}
+<p>
+  <b>Reduction queue length:</b>
+<div style="margin-left:20px">
+  <table>
+    <tbody>
+      <tr>
+	<th>Queue</th>
+	<th>Last updated</th>
+	<th>Count</th>
+      </tr>
+      {% for item in reduction_queue_size %}
+      <tr>
+        <td>{{ item.queue }}</td>
+        <td>{{ item.created_on }}</td>
+        <td>{{ item.message_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block nocontent %}{% endblock %}
