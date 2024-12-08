@@ -21,6 +21,7 @@ from reporting.report.models import (
     StatusQueue,
     Task,
     WorkflowSummary,
+    StatusQueueMessageCount,
 )
 from django.urls import reverse
 from django.http import HttpResponseServerError
@@ -629,3 +630,15 @@ def find_skipped_runs(instrument_id, start_run_number=0):
     except:  # noqa: E722
         logging.exception("Error finding missing runs:")
     return missing_runs
+
+
+def reduction_queue_sizes():
+    """
+    Get the size of the message queues
+    """
+    queue_sizes = []
+
+    for q in StatusQueueMessageCount.objects.values_list("queue_id").distinct():
+        queue_sizes.append(StatusQueueMessageCount.objects.filter(queue_id=q[0]).latest("created_on").to_dict())
+
+    return queue_sizes
