@@ -11,7 +11,12 @@ from reporting.report.models import Task
 from reporting.report.models import WorkflowSummary
 from reporting.report.models import StatusQueueMessageCount
 
+import os
 import json
+from reporting import dasmon, report, reporting_app
+import httplib2
+
+_ = [dasmon, report, reporting_app, os, httplib2]
 
 
 class ViewUtilTest(TestCase):
@@ -76,6 +81,21 @@ class ViewUtilTest(TestCase):
         with self.settings(LIVE_PLOT_SECRET_KEY="test_key"):
             rst = generate_key(inst, run_id)
             refval = "d556af22f61bf04e6eb79d88f5c9031230b29b33"
+            self.assertEqual(rst, refval)
+
+    def test_append_key(self):
+        from reporting.report.view_util import append_key
+
+        # case: client_key is None
+        input_url = "www.test.xyz"
+        inst = "test_instrument"
+        run_id = 1
+        rst = append_key(input_url, inst, run_id)
+        self.assertEqual(rst, input_url)
+        # case: client_key is not None
+        with self.settings(LIVE_PLOT_SECRET_KEY="test_key"):
+            rst = append_key(input_url, inst, run_id)
+            refval = f"{input_url}?key=d556af22f61bf04e6eb79d88f5c9031230b29b33"
             self.assertEqual(rst, refval)
 
     @mock.patch(("reporting.dasmon.view_util.fill_template_values"), return_value="passed")
@@ -299,15 +319,17 @@ class ViewUtilTest(TestCase):
         rst = get_plot_template_dict(run, inst, run_id)
         self.assertTrue("html_data" in rst.keys())
 
-    @mock.patch("requests.get")
-    def test_get_plot_data_from_server(self, mockRequestsGet):
+    @mock.patch("httplib2.HTTPSConnectionWithTimeout")
+    def test_get_plot_data_from_server(self, mockHTTPSCon):
         from reporting.report.view_util import get_plot_data_from_server
 
         # mock external dependencies
         getresponse_return = mock.MagicMock()
-        getresponse_return.status_code = 200
-        getresponse_return.text = "test"
-        mockRequestsGet.return_value = getresponse_return
+        getresponse_return.status = 200
+        getresponse_return.read = mock.MagicMock(return_value="test")
+        con_return = mock.MagicMock()
+        con_return.getresponse = mock.MagicMock(return_value=getresponse_return)
+        mockHTTPSCon.return_value = con_return
         # test
         inst = Instrument.objects.get(name="test_instrument")
         run = DataRun.objects.get(run_number=1, instrument_id=inst)
