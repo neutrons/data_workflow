@@ -39,6 +39,7 @@ Use ``test/test_consumer.py`` to simulate the worker nodes.
 
 Web Monitor
 -----------
+
 Reporting application for the workflow manager.
 The reporting app is built using django.
 It connects to the reporting database used by the workflow manager.
