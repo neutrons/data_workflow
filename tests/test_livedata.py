@@ -61,9 +61,9 @@ class TestLiveDataServer:
         return response.text
 
     def test_reduction_request_livedata(self):
-        key = generate_key(self.instrument, self.run_number)
         ssl_crt_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../nginx/nginx.crt")
 
+        key = generate_key(self.instrument, self.run_number)
         # first check that the there isn't an existing plot, should 404
         response = requests.get(
             f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/?key={key}",

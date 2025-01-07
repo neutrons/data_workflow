@@ -11,12 +11,7 @@ from reporting.report.models import Task
 from reporting.report.models import WorkflowSummary
 from reporting.report.models import StatusQueueMessageCount
 
-import os
 import json
-from reporting import dasmon, report, reporting_app
-import httplib2
-
-_ = [dasmon, report, reporting_app, os, httplib2]
 
 
 class ViewUtilTest(TestCase):
@@ -319,21 +314,19 @@ class ViewUtilTest(TestCase):
         rst = get_plot_template_dict(run, inst, run_id)
         self.assertTrue("html_data" in rst.keys())
 
-    @mock.patch("httplib2.HTTPSConnectionWithTimeout")
-    def test_get_plot_data_from_server(self, mockHTTPSCon):
+    @mock.patch("requests.get")
+    def test_get_plot_data_from_server(self, mockRequestsGet):
         from reporting.report.view_util import get_plot_data_from_server
 
         # mock external dependencies
         getresponse_return = mock.MagicMock()
-        getresponse_return.status = 200
-        getresponse_return.read = mock.MagicMock(return_value="test")
-        con_return = mock.MagicMock()
-        con_return.getresponse = mock.MagicMock(return_value=getresponse_return)
-        mockHTTPSCon.return_value = con_return
+        getresponse_return.status_code = 200
+        getresponse_return.text = "test"
+        mockRequestsGet.return_value = getresponse_return
         # test
         inst = Instrument.objects.get(name="test_instrument")
         run = DataRun.objects.get(run_number=1, instrument_id=inst)
-        rst = get_plot_data_from_server(inst, run)
+        rst = get_plot_data_from_server(inst.name, run)
         self.assertEqual(rst, "test")
 
     def test_extract_d3_data_from_json(self):

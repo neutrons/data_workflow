@@ -9,9 +9,9 @@ import logging
 import json
 import datetime
 import string
-import httplib2
 import re
 import hashlib
+import requests
 from reporting.report.models import (
     DataRun,
     RunStatus,
@@ -510,11 +510,12 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
         "plot_label_x": "",
         "plot_label_y": "",
         "update_url": None,
+        "key": generate_key(instrument, run_id),
     }
 
     url_template = string.Template(settings.LIVE_DATA_SERVER)
     live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
-    live_data_url = "https://%s:%s%s" % (
+    live_data_url = "https://{}:{}{}".format(
         settings.LIVE_DATA_SERVER_DOMAIN,
         settings.LIVE_DATA_SERVER_PORT,
         live_data_url,
@@ -524,7 +525,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     html_data = get_plot_data_from_server(instrument, run_id, "html")
     if html_data is not None:
         plot_dict["html_data"] = html_data
-        plot_dict["update_url"] = append_key("%s/html/" % live_data_url, instrument, run_id)
+        plot_dict["update_url"] = append_key(live_data_url + "/html/", instrument, run_id)
         if extract_ascii_from_div(html_data) is not None:
             plot_dict["data_url"] = reverse("report:download_reduced_data", args=[instrument, run_id])
         return plot_dict
@@ -534,7 +535,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
 
     # Third, local json data for the d3 plots
     if json_data:
-        plot_dict["update_url"] = append_key("%s/json/" % live_data_url, instrument, run_id)
+        plot_dict["update_url"] = append_key(live_data_url + "/json/", instrument, run_id)
 
     plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
     if plot_data is not None:
@@ -558,13 +559,16 @@ def get_plot_data_from_server(instrument, run_id, data_type="json"):
     try:
         url_template = string.Template(settings.LIVE_DATA_SERVER)
         live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
-        live_data_url += "/%s/" % data_type
+        live_data_url = "https://{}:{}{}/{}/".format(
+            settings.LIVE_DATA_SERVER_DOMAIN,
+            settings.LIVE_DATA_SERVER_PORT,
+            live_data_url,
+            data_type,
+        )
         live_data_url = append_key(live_data_url, instrument, run_id)
-        conn = httplib2.HTTPSConnectionWithTimeout(settings.LIVE_DATA_SERVER_DOMAIN, timeout=1.5)
-        conn.request("GET", live_data_url)
-        data_request = conn.getresponse()
-        if data_request.status == 200:
-            json_data = data_request.read()
+        data_request = requests.get(live_data_url, timeout=1.5)
+        if data_request.status_code == 200:
+            json_data = data_request.text
     except:  # noqa: E722
         logging.exception("Could not pull data from live data server:")
     return json_data
