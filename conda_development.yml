@@ -12,7 +12,5 @@ dependencies:
   - sphinx_rtd_theme=1.2.*
   - lxml
   - wheel
-  - pip
-  - pip:
-    - check-wheel-contents
-    - pytest-pythonpath
+  - check-wheel-contents
+  - pytest-pythonpath

@@ -61,10 +61,6 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = True
 
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale.
-USE_L10N = True
-
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
@@ -151,7 +147,7 @@ CATALOG_API_TOKEN = environ.get("CATALOG_API_TOKEN")
 # The DB settings are defined the same as in the workflow manager
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",  # , 'mysql', 'sqlite3' or 'oracle'.
+        "ENGINE": "django.db.backends.postgresql",  # , 'mysql', 'sqlite3' or 'oracle'.
         "NAME": environ.get("DATABASE_NAME"),  # Or path to database file if using sqlite3.
         "USER": environ.get("DATABASE_USER"),  # Not used with sqlite3.
         "PASSWORD": environ.get("DATABASE_PASS"),  # Not used with sqlite3.

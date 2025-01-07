@@ -9,8 +9,8 @@ dependencies:
   - httplib2
   - make
   - oauthlib
-  - postgresql=14
-  - psycopg2-binary=2.9.3
+  - postgresql
+  - psycopg>=3.1.8
   - psutil
   - python-ldap>=3.1
   - requests-oauthlib
@@ -21,7 +21,7 @@ dependencies:
   - pyoncat
   - sphinx_rtd_theme=1.2.*  # readthedocs use this env file, and we need to install this theme here
   - sphinxcontrib-mermaid
+  - django-health-check
   - pip
   - pip:
     - django-auth-ldap==4.1.0
-    - django-health-check

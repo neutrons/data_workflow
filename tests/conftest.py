@@ -1,6 +1,6 @@
 # third-party imports
 from dotenv import dotenv_values
-import psycopg2
+import psycopg
 import pytest
 import stomp
 
@@ -67,8 +67,8 @@ def db_connection():
     """Database connection with config from env files"""
     config = {**dotenv_values(".env"), **dotenv_values(".env.ci")}
     assert config
-    conn = psycopg2.connect(
-        database=config["DATABASE_NAME"],
+    conn = psycopg.connect(
+        dbname=config["DATABASE_NAME"],
         user=config["DATABASE_USER"],
         password=config["DATABASE_PASS"],
         port=config["DATABASE_PORT"],

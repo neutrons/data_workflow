@@ -7,7 +7,7 @@ def get_status_queue_id(db_connection, queue_name):
     """
     Return the id for the statusqueue for the provided name
 
-    :param psycopg2.Connection db_connection: database connection
+    :param psycopg.Connection db_connection: database connection
     :param int run_id: ID of the run in table datarun
     :param str queue_name: status queue
     :return: int, ID of the status queue in table statusqueue
@@ -31,14 +31,14 @@ def check_run_status_exist(db_connection, run_id, queue_name):
     """
     Return if the run status was created for the given run_id and queue_name
 
-    :param psycopg2.Connection db_connection: database connection
+    :param psycopg.Connection db_connection: database connection
     :param int run_id: ID of the run in table datarun
     :param str queue_name: status queue
     :return: bool
     """
     cursor = db_connection.cursor()
     queue_id = get_status_queue_id(db_connection, queue_name)
-    cursor.execute("SELECT * FROM report_runstatus WHERE run_id_id = %s AND queue_id_id = %s", (run_id[0], queue_id))
+    cursor.execute("SELECT * FROM report_runstatus WHERE run_id_id = %s AND queue_id_id = %s", (run_id, queue_id))
     result = cursor.fetchone() is not None
     cursor.close()
     return result
@@ -48,7 +48,7 @@ def clear_previous_runstatus(db_connection, run_id):
     """
     Remove all previous run statuses for the given run_id
 
-    :param psycopg2.Connection db_connection: database connection
+    :param psycopg.Connection db_connection: database connection
     :param tuple(int,) run_id: ID of the run in table datarun
     """
     cursor = db_connection.cursor()
@@ -56,14 +56,14 @@ def clear_previous_runstatus(db_connection, run_id):
     cursor.execute(
         "DELETE FROM report_error WHERE run_status_id_id IN (SELECT id FROM report_runstatus "
         "WHERE run_id_id = %s);",
-        run_id,
+        (run_id,),
     )
     cursor.execute(
         "DELETE FROM report_information WHERE run_status_id_id IN (SELECT id FROM report_runstatus "
         "WHERE run_id_id = %s);",
-        run_id,
+        (run_id,),
     )
-    cursor.execute("DELETE FROM report_runstatus WHERE run_id_id = %s;", run_id)
+    cursor.execute("DELETE FROM report_runstatus WHERE run_id_id = %s;", (run_id,))
     db_connection.commit()
     cursor.close()
 
@@ -74,7 +74,7 @@ def add_instrument_data_run(conn, instrument, ipts, run_number, facility="SNS"):
 
     Returns the id for the created rundata
 
-    :param psycopg2.Connection conn: database connection
+    :param psycopg.Connection conn: database connection
     :param str instrument: instrument
     :param str ipts: IPTS identifier, e.g. "IPTS-1234"
     :param int run_number: run number
@@ -128,14 +128,14 @@ def add_instrument_data_run(conn, instrument, ipts, run_number, facility="SNS"):
         conn.commit()
     cursor.close()
 
-    return run_id
+    return run_id[0]
 
 
 def check_error_msg_contains(conn, run_id, error_msg):
     """
     Return if there is an error record for the run that contains error_msg in description
 
-    :param psycopg2.Connection conn: database connection
+    :param psycopg.Connection conn: database connection
     :param int run_id: ID of the run in table datarun
     :param str error_msg: error msg to check for
     :return: bool
