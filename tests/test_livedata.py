@@ -61,15 +61,13 @@ class TestLiveDataServer:
         return response.text
 
     def test_reduction_request_livedata(self):
-        key = generate_key(self.instrument, self.run_number)
         ssl_crt_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../nginx/nginx.crt")
 
         key = generate_key(self.instrument, self.run_number)
         # first check that the there isn't an existing plot, should 404
         response = requests.get(
-            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/",
+            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/?key={key}",
             verify=ssl_crt_filename,
-            headers={"Authorization": key},
         )
         assert response.status_code == 404
 
@@ -78,9 +76,8 @@ class TestLiveDataServer:
 
         # the data should now be on livedata
         response = requests.get(
-            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/",
+            f"{LIVEDATA_TEST_URL}/plots/{self.instrument}/{self.run_number}/update/html/?key={key}",
             verify=ssl_crt_filename,
-            headers={"Authorization": key},
         )
         assert response.status_code == 200
         assert "Example Plot Data" in response.text
@@ -90,8 +87,7 @@ class TestLiveDataServer:
         # now verify that the run report page is templated correctly
         client = self.get_session()
         page = client.get(f"{WEBMON_TEST_URL}/report/{self.instrument}/{self.run_number}/")
-        assert 'url: "https://172.16.238.222:443/plots/arcs/214583/update/html/"' in page.text
-        assert f'"Authorization": "{key}"' in page.text
+        assert f"https://172.16.238.222:443/plots/arcs/214583/update/html/?key={key}" in page.text
 
 
 def generate_key(instrument, run_id):

@@ -78,6 +78,21 @@ class ViewUtilTest(TestCase):
             refval = "d556af22f61bf04e6eb79d88f5c9031230b29b33"
             self.assertEqual(rst, refval)
 
+    def test_append_key(self):
+        from reporting.report.view_util import append_key
+
+        # case: client_key is None
+        input_url = "www.test.xyz"
+        inst = "test_instrument"
+        run_id = 1
+        rst = append_key(input_url, inst, run_id)
+        self.assertEqual(rst, input_url)
+        # case: client_key is not None
+        with self.settings(LIVE_PLOT_SECRET_KEY="test_key"):
+            rst = append_key(input_url, inst, run_id)
+            refval = f"{input_url}?key=d556af22f61bf04e6eb79d88f5c9031230b29b33"
+            self.assertEqual(rst, refval)
+
     @mock.patch(("reporting.dasmon.view_util.fill_template_values"), return_value="passed")
     def test_fill_template_values(self, mockDasmonTemplateFiller):
         from reporting.report.view_util import fill_template_values
@@ -311,7 +326,7 @@ class ViewUtilTest(TestCase):
         # test
         inst = Instrument.objects.get(name="test_instrument")
         run = DataRun.objects.get(run_number=1, instrument_id=inst)
-        rst = get_plot_data_from_server(inst, run)
+        rst = get_plot_data_from_server(inst.name, run)
         self.assertEqual(rst, "test")
 
     def test_extract_d3_data_from_json(self):
