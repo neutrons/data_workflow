@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg
 import requests
 import time
 from django.conf import settings
@@ -13,8 +13,8 @@ class TestPostProcessingWorkflow:
     def setup_class(cls):
         config = {**dotenv_values(".env"), **dotenv_values(".env.ci")}
         assert config
-        cls.conn = psycopg2.connect(
-            database=config["DATABASE_NAME"],
+        cls.conn = psycopg.connect(
+            dbname=config["DATABASE_NAME"],
             user=config["DATABASE_USER"],
             password=config["DATABASE_PASS"],
             port=config["DATABASE_PORT"],

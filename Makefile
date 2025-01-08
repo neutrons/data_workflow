@@ -1,5 +1,5 @@
 prefix := /var/www/workflow
-PYTHON_VERSION:=3.10
+PYTHON_VERSION:=3.12
 
 # these are defined here because I couldn't figure out how to evaluate the commands
 # during target execution rather then when make parses the file
@@ -47,7 +47,7 @@ check: ## Check python dependencies
 	echo CONDA_PREFIX=${CONDA_PREFIX}
 
 	@python -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
-	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
+	@python -c "import psycopg" || echo "\nWARNING: psycopg is not installed: http://initd.org/psycopg\n"
 	@python -c "import stomp" || echo "\nERROR: stomp.py is not installed: http://code.google.com/p/stomppy\n"
 
 wheel/dasmon: ## create or update python wheel for service "dasmon". Clean up build/ first

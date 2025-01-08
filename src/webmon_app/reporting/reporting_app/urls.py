@@ -2,7 +2,6 @@
 """
     Define url structure
 """
-# from django.conf.urls import include, re_path
 from django.urls import include, path
 from django.contrib.auth.decorators import login_required
 

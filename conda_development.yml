@@ -4,15 +4,12 @@ dependencies:
   - flake8
   - python-dotenv
   - python-build
-  - pytest<7
-  - pytest-django<4.6
+  - pytest
+  - pytest-django
   - pytest-cov
   - pre-commit
   - sphinx
   - sphinx_rtd_theme=1.2.*
   - lxml
   - wheel
-  - pip
-  - pip:
-    - check-wheel-contents
-    - pytest-pythonpath
+  - check-wheel-contents
