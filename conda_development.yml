@@ -4,8 +4,8 @@ dependencies:
   - flake8
   - python-dotenv
   - python-build
-  - pytest<7
-  - pytest-django<4.6
+  - pytest
+  - pytest-django
   - pytest-cov
   - pre-commit
   - sphinx
@@ -13,4 +13,3 @@ dependencies:
   - lxml
   - wheel
   - check-wheel-contents
-  - pytest-pythonpath
