@@ -24,4 +24,4 @@ dependencies:
   - django-health-check
   - pip
   - pip:
-    - django-auth-ldap==4.1.0
+    - django-auth-ldap==5.1.0
