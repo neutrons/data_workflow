@@ -123,19 +123,19 @@ ROI and redefine the ROI afterwards.">
     </tr>
 
     <!-- Divider line -->
-    <td colspan="2"><hr></td>
+    <td><hr></td>
 
     <!-- Number of Peaks in the run -->
       <tr class='tiny_input'>
         <td>
-            <span class='short_label' title="Number of peaks in the run"><strong>Peak count</strong></span>
+            <span title="Number of peaks in the run"><strong>Peak count</strong></span>
             {{ options_form.peak_count }}
         </td>
     </tr>
 
 
     <!-- Divider line -->
-    <td colspan="2"><hr></td>
+    <td><hr></td>
     <tr>
         <td style="font-size: 18px; text-decoration: underline;"><strong>Peak # 1</strong></td>
     </tr>
@@ -144,7 +144,7 @@ ROI and redefine the ROI afterwards.">
       <tr class='tiny_input'>
         <td>
             {{ options_form.force_peak }}
-            <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
+            <span title="You can choose to replace the ROI in the data by your own range.
 Check the following box if you want to define your own ROI and
 use it for peak selection."><strong>Force peak ROI</strong></span>
             <label class='short_label' for='peak_min'>Pixel<sub>min</sub></label>
@@ -191,13 +191,13 @@ the reflected peak to estimate the background. Check the following box
 if you want to use the region on each side of the peak to estimate your background.">
                 <strong>Use side background</strong>
             </span>
-            <label for='bck_width'>Pixels on each side</label> {{ options_form.bck_width }}
+            <label class='long_label' for='bck_width'>Pixels on each side</label> {{ options_form.bck_width }}
         </td>
     </tr>
 
 
     <!-- Divider line -->
-    <td colspan="2"><hr></td>
+    <td><hr></td>
     <tr>
         <td style="font-size: 18px; text-decoration: underline;" title="Peak 2 options ignored if Peak count is 1">
             <strong>Peak # 2</strong>
@@ -208,7 +208,7 @@ if you want to use the region on each side of the peak to estimate your backgrou
       <tr class='tiny_input'>
         <td>
             {{ options_form.force_peak_s2 }}
-            <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
+            <span title="You can choose to replace the ROI in the data by your own range.
 Check the following box if you want to define your own ROI and
 use it for peak selection."><strong>Force peak ROI</strong></span>
             <label class='short_label' for='peak_min_s2'>Pixel<sub>min</sub></label>
@@ -255,13 +255,13 @@ the reflected peak to estimate the background. Check the following box
 if you want to use the region on each side of the peak to estimate your background.">
                 <strong>Use side background</strong>
             </span>
-            <label for='bck_width_s2'>Pixels on each side</label> {{ options_form.bck_width_s2 }}
+            <label class='long_label' for='bck_width_s2'>Pixels on each side</label> {{ options_form.bck_width_s2 }}
         </td>
     </tr>
 
 
     <!-- Divider line -->
-    <td colspan="2"><hr></td>
+    <td><hr></td>
     <tr>
         <td style="font-size: 18px; text-decoration: underline;" title="Peak 3 options ignored if Peak count smaller than 3">
             <strong>Peak # 3</strong>
@@ -273,7 +273,7 @@ if you want to use the region on each side of the peak to estimate your backgrou
       <tr class='tiny_input'>
         <td>
             {{ options_form.force_peak_s3 }}
-            <span class='short_label' title="You can choose to replace the ROI in the data by your own range.
+            <span title="You can choose to replace the ROI in the data by your own range.
 Check the following box if you want to define your own ROI and
 use it for peak selection."><strong>Force peak ROI</strong></span>
             <label class='short_label' for='peak_min_s3'>Pixel<sub>min</sub></label>
@@ -320,7 +320,7 @@ the reflected peak to estimate the background. Check the following box
 if you want to use the region on each side of the peak to estimate your background.">
                 <strong>Use side background</strong>
             </span>
-            <label for='bck_width_s3'>Pixels on each side</label> {{ options_form.bck_width_s3 }}
+            <label class='long_label' for='bck_width_s3'>Pixels on each side</label> {{ options_form.bck_width_s3 }}
         </td>
     </tr>
 
