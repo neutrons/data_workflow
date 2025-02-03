@@ -1,7 +1,7 @@
 """
-    Utilities common to the whole web application.
+Utilities common to the whole web application.
 
-    @copyright: 2014 Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 
 from django.conf import settings

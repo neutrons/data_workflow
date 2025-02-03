@@ -335,7 +335,7 @@ class ViewUtilTest(TestCase):
         # null case
         plot_data, x_label, y_label = extract_d3_data_from_json(None)
         self.assertEqual(plot_data, None)
-        self.assertEqual(x_label, "Q [1/\u00C5]")
+        self.assertEqual(x_label, "Q [1/\u00c5]")
         self.assertEqual(y_label, "Absolute reflectivity")
         # main_output in data_dict['main_output']
         json_data = json.dumps(

@@ -1,6 +1,6 @@
 # pylint: disable=invalid-name
 """
-    Define url structure
+Define url structure
 """
 from django.urls import re_path
 from . import views

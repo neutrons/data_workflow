@@ -1,5 +1,5 @@
 """
-    DASMON listener daemon
+DASMON listener daemon
 """
 
 import sys

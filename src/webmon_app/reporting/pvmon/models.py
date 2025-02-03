@@ -1,8 +1,8 @@
 """
-    Models for PV monitor app
+Models for PV monitor app
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 
 from django.db import models

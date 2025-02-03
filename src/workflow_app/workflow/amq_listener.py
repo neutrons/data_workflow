@@ -1,6 +1,6 @@
 # pylint: disable=bare-except, line-too-long
 """
-    ActiveMQ listener class for the workflow manager
+ActiveMQ listener class for the workflow manager
 """
 import stomp
 import logging

@@ -1,9 +1,9 @@
 # pylint: disable=bare-except, too-many-instance-attributes, too-many-arguments, invalid-name, line-too-long
 """
-    ActiveMQ workflow manager client
+ActiveMQ workflow manager client
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 import time
 import stomp

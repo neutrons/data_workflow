@@ -1,7 +1,7 @@
 """
-    Dasmon app models
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2015 Oak Ridge National Laboratory
+Dasmon app models
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2015 Oak Ridge National Laboratory
 """
 
 from django.db import models
