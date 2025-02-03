@@ -1,6 +1,6 @@
 # pylint: disable=bare-except, too-many-arguments, invalid-name
 """
-    AMQ test client
+AMQ test client
 """
 import sys
 import time

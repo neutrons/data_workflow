@@ -1,8 +1,8 @@
 """
-    Status monitor utilities to support 'dasmon' views
+Status monitor utilities to support 'dasmon' views
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 
 from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information

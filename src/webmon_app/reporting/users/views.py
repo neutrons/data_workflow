@@ -1,5 +1,5 @@
 """
-    User management
+User management
 """
 
 from django.shortcuts import render, redirect

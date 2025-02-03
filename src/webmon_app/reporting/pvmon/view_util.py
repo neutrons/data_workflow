@@ -1,9 +1,9 @@
 # pylint: disable=too-many-branches, line-too-long, too-many-locals, too-many-statements, bare-except, invalid-name
 """
-    Utilities to compile the PVs stored in the web monitor DB.
+Utilities to compile the PVs stored in the web monitor DB.
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 from reporting.pvmon.models import PVName, PV, PVCache, PVStringCache
 from django.utils import timezone, formats

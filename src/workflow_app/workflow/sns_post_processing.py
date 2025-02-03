@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # pylint: disable=invalid-name, line-too-long, too-many-arguments
 """
-    Workflow manager process
+Workflow manager process
 """
 import os
 import sys

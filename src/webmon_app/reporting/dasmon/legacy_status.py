@@ -1,8 +1,8 @@
 """
-    Get the status of legacy instruments
+Get the status of legacy instruments
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2015 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2015 Oak Ridge National Laboratory
 """
 
 import httplib2

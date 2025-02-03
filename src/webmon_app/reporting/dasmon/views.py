@@ -1,6 +1,6 @@
 # pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except
 """
-    Live monitoring
+Live monitoring
 """
 import json
 import logging

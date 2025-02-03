@@ -1,9 +1,9 @@
 # pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, unused-argument
 """
-    Report views
+Report views
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014-2015 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014-2015 Oak Ridge National Laboratory
 """
 import sys
 import logging

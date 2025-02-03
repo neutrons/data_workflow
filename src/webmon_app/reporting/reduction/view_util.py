@@ -1,8 +1,8 @@
 """
-    Utilities for reduction configuration views
+Utilities for reduction configuration views
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 
 from django.conf import settings

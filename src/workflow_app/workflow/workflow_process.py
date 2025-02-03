@@ -1,5 +1,5 @@
 """
-    Actual process that each data run must go through.
+Actual process that each data run must go through.
 """
 
 import json
