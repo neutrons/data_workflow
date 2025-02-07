@@ -34,7 +34,6 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
 
 DEBUG = environ.get("DEBUG", True)
-TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -98,15 +97,6 @@ STATICFILES_FINDERS = ("django.contrib.staticfiles.finders.FileSystemFinder",)
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = "-0zoc$fl2fa&amp;rmzeo#uh-qz-k+4^1)_9p1qwby1djzybqtl_nn"
 
-# ------- Template settings for Django 1.6 ------
-TEMPLATE_LOADERS = (
-    "django.template.loaders.filesystem.Loader",
-    "django.template.loaders.app_directories.Loader",
-    #     'django.template.loaders.eggs.Loader',
-)
-TEMPLATE_DIRS = (BASE_DIR / "templates",)
-# ------ End of template settings for Django 1.6 ------
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -160,7 +150,7 @@ DATABASES = {
     }
 }
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -170,7 +160,6 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
-MIDDLEWARE = MIDDLEWARE_CLASSES
 
 ROOT_URLCONF = "reporting.reporting_app.urls"
 
