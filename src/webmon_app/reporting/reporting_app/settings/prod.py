@@ -13,3 +13,6 @@ if not SECRET_KEY or SECRET_KEY == "UNSET_SECRET":
 DEBUG = environ.get("DEBUG", False)
 
 validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405
+
+CSRF_TRUSTED_ORIGINS = ["https://monitor.sns.gov", "https://webmon-test.ornl.gov"]
+CSRF_COOKIE_SECURE = True
