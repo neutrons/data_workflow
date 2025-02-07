@@ -17,7 +17,7 @@ dependencies:
   - setuptools
   - stomp.py=8
   - urllib3
-  - versioningit~=1.1
+  - versioningit
   - pyoncat
   - sphinx_rtd_theme=1.2.*  # readthedocs use this env file, and we need to install this theme here
   - sphinxcontrib-mermaid
