@@ -1,5 +1,5 @@
 """
-    Example of a simple non-listening producer
+Example of a simple non-listening producer
 """
 
 import stomp

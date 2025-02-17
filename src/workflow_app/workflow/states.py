@@ -1,8 +1,8 @@
 """
-    Action classes to be called when receiving specific messages.
+Action classes to be called when receiving specific messages.
 
-    To add an action for a specific queue, add a StateAction class
-    with the name of the queue in lower-case, replacing periods with underscores.
+To add an action for a specific queue, add a StateAction class
+with the name of the queue in lower-case, replacing periods with underscores.
 """
 
 from .state_utilities import logged_action

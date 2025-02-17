@@ -1,6 +1,6 @@
 # pylint: disable=bare-except, invalid-name
 """
-    View utility functions for user management
+View utility functions for user management
 """
 from django.urls import reverse
 from django.shortcuts import redirect

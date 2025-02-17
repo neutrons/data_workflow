@@ -1,9 +1,9 @@
 # pylint: disable=bare-except, line-too-long, invalid-name
 """
-    Forms for auto-reduction configuration
+Forms for auto-reduction configuration
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 import re
 import logging
