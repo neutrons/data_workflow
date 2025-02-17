@@ -19,7 +19,7 @@ ARG CONFIG_FILE=tests/configuration/post_process_consumer.conf
 COPY ${CONFIG_FILE} /etc/autoreduce/post_processing.conf
 
 # install postprocessing
-RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.3.4/postprocessing-3.3.4-1.el9.noarch.rpm
+RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.4.0/postprocessing-3.4.0-1.el9.noarch.rpm
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
