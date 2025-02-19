@@ -1,6 +1,6 @@
 # pylint: disable=invalid-name, line-too-long
 """
-    Define url structure
+Define url structure
 """
 from django.urls import include, path
 from django.contrib.auth.decorators import login_required

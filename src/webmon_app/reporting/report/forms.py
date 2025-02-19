@@ -1,9 +1,9 @@
 # pylint: disable=invalid-name, line-too-long, too-many-branches
 """
-    Forms for auto-reduction configuration
+Forms for auto-reduction configuration
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2016 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2016 Oak Ridge National Laboratory
 """
 from django import forms
 from django.core.exceptions import ValidationError

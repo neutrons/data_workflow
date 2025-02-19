@@ -1,5 +1,5 @@
 """
-    Live PV monitoring
+Live PV monitoring
 """
 
 from django.http import HttpResponse

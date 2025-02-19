@@ -1,6 +1,6 @@
 # pylint: disable=too-many-locals, too-many-statements, bare-except, invalid-name
 """
-    Perform DB transactions
+Perform DB transactions
 """
 import os
 import json

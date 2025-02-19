@@ -1,8 +1,8 @@
 """
-    Status monitor utilities to support 'report' views
+Status monitor utilities to support 'report' views
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 
 import logging
@@ -584,7 +584,7 @@ def extract_d3_data_from_json(json_data):
     :param json_data: json data block
     """
     plot_data = None
-    x_label = "Q [1/\u00C5]"
+    x_label = "Q [1/\u00c5]"
     y_label = "Absolute reflectivity"
 
     # Return dummy data if not data is coming in.

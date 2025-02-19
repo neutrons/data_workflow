@@ -1,9 +1,9 @@
 # pylint: disable=invalid-name, line-too-long, too-many-locals, bare-except, too-many-statements, too-many-branches
 """
-    DASMON ActiveMQ consumer class
+DASMON ActiveMQ consumer class
 
-    @author: M. Doucet, Oak Ridge National Laboratory
-    @copyright: 2014 Oak Ridge National Laboratory
+@author: M. Doucet, Oak Ridge National Laboratory
+@copyright: 2014 Oak Ridge National Laboratory
 """
 import sys
 import time
