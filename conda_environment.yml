@@ -3,14 +3,14 @@ channels:
   - conda-forge
   - oncat
 dependencies:
-  - python=3.12
+  - python=3.11
   - django=4.2
   - gunicorn
   - httplib2
   - make
   - oauthlib
   - postgresql
-  - psycopg>=3.1.8
+  - psycopg2-binary=2.9.3
   - psutil
   - python-ldap>=3.1
   - requests-oauthlib

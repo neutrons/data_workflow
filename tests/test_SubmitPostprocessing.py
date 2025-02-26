@@ -1,6 +1,6 @@
 import requests
 import time
-import psycopg
+import psycopg2
 import pytest
 
 INSTRUMENT = "arcs"
@@ -12,8 +12,8 @@ IPTS = "IPTS-27800"
 class TestPostProcessingAdminView:
     def setup_class(cls):
         # connect to DB
-        cls.conn = psycopg.connect(
-            dbname="workflow",
+        cls.conn = psycopg2.connect(
+            database="workflow",
             user="workflow",
             password="workflow",
             port="5432",

@@ -2,7 +2,7 @@ import time
 import os
 import hashlib
 
-import psycopg
+import psycopg2
 import requests
 
 LIVEDATA_TEST_URL = "https://172.16.238.222"
@@ -17,8 +17,8 @@ class TestLiveDataServer:
     @classmethod
     def setup_class(cls):
         """Clean the database before running tests"""
-        conn = psycopg.connect(
-            dbname=os.environ.get("DATABASE_NAME", "workflow"),
+        conn = psycopg2.connect(
+            database=os.environ.get("DATABASE_NAME", "workflow"),
             user=os.environ.get("DATABASE_USER", "workflow"),
             password=os.environ.get("DATABASE_PASS", "workflow"),
             port=os.environ.get("DATABASE_PORT", 5432),
