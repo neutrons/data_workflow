@@ -966,7 +966,7 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     return data_dict
 
 
-def get_live_runs(timeframe=2, number_of_entries=10, instrument_id=None, as_html=True):
+def get_live_runs(timeframe=0.5, number_of_entries=10, instrument_id=None, as_html=True):
     """
     Get recent runs for all instruments.
     If no run is found in the last few hours (defined by the timeframe parameter),
