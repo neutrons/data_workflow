@@ -3,7 +3,7 @@ import json
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",  # , 'mysql', 'sqlite3' or 'oracle'.
+        "ENGINE": "django.db.backends.postgresql_psycopg2",  # , 'mysql', 'sqlite3' or 'oracle'.
         "NAME": os.environ.get("DATABASE_NAME"),  # Or path to database file if using sqlite3.
         "USER": os.environ.get("DATABASE_USER"),  # Not used with sqlite3.
         "PASSWORD": os.environ.get("DATABASE_PASS"),  # Not used with sqlite3.

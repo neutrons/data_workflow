@@ -36,18 +36,16 @@ class TestSMSQueues:
             return
 
         cursor.execute(
-            "SELECT id FROM report_datarun WHERE instrument_id_id = %s AND run_number = %s;", (inst_id[0], run_number)
+            "SELECT id FROM report_datarun WHERE instrument_id_id = %s AND run_number = %s;", (inst_id, run_number)
         )
         run_id = cursor.fetchone()
         if run_id is None:
             return
 
-        run_id = run_id[0]
-
         db_utils.clear_previous_runstatus(conn, run_id)
-        cursor.execute("DELETE FROM report_workflowsummary WHERE run_id_id = %s;", (run_id,))
-        cursor.execute("DELETE FROM report_instrumentstatus WHERE last_run_id_id = %s;", (run_id,))
-        cursor.execute("DELETE FROM report_datarun WHERE id = %s;", (run_id,))
+        cursor.execute("DELETE FROM report_workflowsummary WHERE run_id_id = %s;", run_id)
+        cursor.execute("DELETE FROM report_instrumentstatus WHERE last_run_id_id = %s;", run_id)
+        cursor.execute("DELETE FROM report_datarun WHERE id = %s;", (run_id))
         conn.commit()
         cursor.close()
 

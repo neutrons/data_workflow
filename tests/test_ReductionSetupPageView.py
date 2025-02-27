@@ -1,6 +1,6 @@
 import os
 import time
-import psycopg
+import psycopg2
 import pytest
 import requests
 import subprocess
@@ -49,18 +49,16 @@ class TestWorkflow:
         ).decode()
 
     def initReductionGroup(self, conn, cursor):
-        cursor.execute("SELECT id FROM report_instrument where name = %s;", ("arcs",))
-        inst_id = cursor.fetchone()[0]
-        cursor.execute("SELECT * from reduction_reductionproperty WHERE instrument_id = %s;", (inst_id,))
+        cursor.execute("SELECT * from reduction_reductionproperty WHERE instrument_id = 3;")
         if cursor.fetchone() is None:
             timestamp = datetime.datetime.now()
             cursor.execute(
                 "INSERT INTO reduction_reductionproperty (instrument_id, key, value, timestamp) VALUES(%s, %s, %s, %s)",
-                (inst_id, "grouping", "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml", timestamp),
+                (3, "grouping", "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml", timestamp),
             )
             conn.commit()
 
-        cursor.execute("SELECT * from reduction_choice WHERE instrument_id = %s;", (inst_id,))
+        cursor.execute("SELECT * from reduction_choice WHERE instrument_id = 3;")
         if cursor.fetchone() is None:
             cursor.execute("SELECT * FROM reduction_reductionproperty WHERE key = 'grouping';")
             props = cursor.fetchone()
@@ -110,8 +108,8 @@ class TestWorkflow:
 
         assert "this is a template" not in self.getReductionScriptContents()
 
-        conn = psycopg.connect(
-            dbname="workflow",
+        conn = psycopg2.connect(
+            database="workflow",
             user="workflow",
             password="workflow",
             port="5432",
