@@ -262,7 +262,6 @@ def retrieve_rates(instrument_id, last_run_id):
     return runs, errors
 
 
-@transaction.atomic
 def run_rate(instrument_id, n_hours=24):
     """
     Returns the rate of new runs for the last n_hours hours.
@@ -270,15 +269,16 @@ def run_rate(instrument_id, n_hours=24):
     :param instrument_id: Instrument model object
     :param n_hours: number of hours to track
     """
-    # Try calling the stored procedure (faster)
     try:
-        cursor = connection.cursor()
-        cursor.callproc("run_rate", (instrument_id.id,))
-        msg = cursor.fetchone()[0]
-        cursor.execute('FETCH ALL IN "%s"' % msg)
-        rows = cursor.fetchall()
-        cursor.close()
-        return [[int(r[0]), int(r[1])] for r in rows]
+        # Try calling the stored procedure (faster)
+        with transaction.atomic():
+            cursor = connection.cursor()
+            cursor.callproc("run_rate", (instrument_id.id,))
+            msg = cursor.fetchone()[0]
+            cursor.execute('FETCH ALL IN "%s"' % msg)
+            rows = cursor.fetchall()
+            cursor.close()
+        return [[int(row[0]), int(row[1])] for row in rows]
     except:  # noqa: E722
         connection.close()
         logging.exception("Run rate (%s):", str(instrument_id))
@@ -296,7 +296,6 @@ def run_rate(instrument_id, n_hours=24):
         return runs
 
 
-@transaction.atomic
 def error_rate(instrument_id, n_hours=24):
     """
     Returns the rate of errors for the last n_hours hours.
@@ -304,15 +303,16 @@ def error_rate(instrument_id, n_hours=24):
     :param instrument_id: Instrument model object
     :param n_hours: number of hours to track
     """
-    # Try calling the stored procedure (faster)
     try:
-        cursor = connection.cursor()
-        cursor.callproc("error_rate", (instrument_id.id,))
-        msg = cursor.fetchone()[0]
-        cursor.execute('FETCH ALL IN "%s"' % msg)
-        rows = cursor.fetchall()
-        cursor.close()
-        return [[int(r[0]), int(r[1])] for r in rows]
+        # Try calling the stored procedure (faster)
+        with transaction.atomic():
+            cursor = connection.cursor()
+            cursor.callproc("error_rate", (instrument_id.id,))
+            msg = cursor.fetchone()[0]
+            cursor.execute('FETCH ALL IN "%s"' % msg)
+            rows = cursor.fetchall()
+            cursor.close()
+        return [[int(row[0]), int(row[1])] for row in rows]
     except:  # noqa: E722
         connection.close()
         logging.exception("Error rate (%s):", str(instrument_id))
