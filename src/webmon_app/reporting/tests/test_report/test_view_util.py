@@ -10,6 +10,7 @@ from reporting.report.models import StatusQueue
 from reporting.report.models import Task
 from reporting.report.models import WorkflowSummary
 from reporting.report.models import StatusQueueMessageCount
+from reporting.report.models import Error
 
 import json
 
@@ -23,6 +24,8 @@ class ViewUtilTest(TestCase):
         ipts.save()
         sq = StatusQueue(name="test", is_workflow_input=True)
         sq.save()
+        sq_DataReady = StatusQueue(name="POSTPROCESS.DATA_READY", is_workflow_input=True)
+        sq_DataReady.save()
         for run_number in range(10):
             # make a missing run
             if run_number == 5:
@@ -42,7 +45,7 @@ class ViewUtilTest(TestCase):
             rs.save()
             WorkflowSummary.objects.create(
                 run_id=run,
-                complete=True,
+                complete=run_number % 2 == 0,
                 catalog_started=True,
                 cataloged=True,
                 reduction_needed=False,
@@ -51,6 +54,17 @@ class ViewUtilTest(TestCase):
                 reduction_cataloged=True,
                 reduction_catalog_started=True,
             )
+            if run_number > 4:
+                rs2 = RunStatus.objects.create(
+                    run_id=run,
+                    queue_id=sq_DataReady,
+                    message_id=f"msg: test_run_{run_number}",
+                )
+                rs2.save()
+
+                if run_number == 7:
+                    e = Error(run_status_id=rs2, description="test_error")
+                    e.save()
 
     @classmethod
     def tearDownClass(cls):
@@ -227,47 +241,6 @@ class ViewUtilTest(TestCase):
         self.assertEqual(rst["catalog"], 0)
         self.assertEqual(rst["reduction"], 0)
 
-    def test_get_run_status_text(self):
-        from reporting.report.view_util import get_run_status_text
-
-        inst = Instrument.objects.get(name="test_instrument")
-        run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
-        # show element id
-        rst = get_run_status_text(run_id, use_element_id=True)
-        self.assertTrue("run_id_" in rst)
-        # no show element id, green status
-        rst = get_run_status_text(run_id)
-        self.assertTrue("acquiring" in rst)
-        # no show element, red status
-        ipts = IPTS.objects.get(expt_name="test_exp")
-        run = DataRun.objects.create(
-            run_number=65535,
-            ipts_id=ipts,
-            instrument_id=inst,
-            file="/tmp/test_65535.nxs",
-        )
-        run.save()
-        workflowSummary = WorkflowSummary.objects.create(
-            run_id=run,
-            complete=False,
-        )
-        workflowSummary.save()
-
-        rst = get_run_status_text(run)
-        self.assertTrue("acquiring" in rst)
-        dataReady = StatusQueue(name="POSTPROCESS.DATA_READY", is_workflow_input=True)
-        dataReady.save()
-        RunStatus.objects.create(run_id=run, queue_id=dataReady).save()
-        rst = get_run_status_text(run)
-        self.assertTrue("red" in rst)
-        self.assertTrue("incomplete" in rst)
-
-        workflowSummary.complete = True
-        workflowSummary.save()
-        rst = get_run_status_text(run)
-        self.assertTrue("green" in rst)
-        self.assertTrue("complete" in rst)
-
     def test_get_run_list_dict(self):
         from reporting.report.view_util import get_run_list_dict
 
@@ -276,6 +249,39 @@ class ViewUtilTest(TestCase):
         rst = get_run_list_dict(runs)
         # note: run_5 is skipped on purpose
         self.assertEqual(len(rst), 9)
+        print(rst)
+
+    def test_get_run_status_text_dict(self):
+        from reporting.report.view_util import get_run_status_text_dict
+
+        inst = Instrument.objects.get(name="test_instrument")
+        runs = DataRun.objects.filter(instrument_id=inst, run_number__in=[4, 6, 7, 8, 9])
+        runs_id = [run.id for run in runs]
+
+        rst = get_run_status_text_dict(runs)
+
+        self.assertEqual(len(rst), 5)
+        for run_id in runs_id:
+            self.assertTrue(run_id in rst)
+
+        self.assertEqual(rst[runs_id[0]], "<span >acquiring</span>")
+        self.assertEqual(rst[runs_id[1]], "<span  class='green'>complete</span>")
+        self.assertEqual(rst[runs_id[2]], "<span  class='red'><b>error</b></span>")
+        self.assertEqual(rst[runs_id[3]], "<span  class='green'>complete</span>")
+        self.assertEqual(rst[runs_id[4]], "<span  class='red'>incomplete</span>")
+
+        # Now with use_element_id=True
+        rst = get_run_status_text_dict(runs, True)
+
+        self.assertEqual(len(rst), 5)
+        for run_id in runs_id:
+            self.assertTrue(run_id in rst)
+
+        self.assertEqual(rst[runs_id[0]], f"<span id='run_id_{runs_id[0]}'>acquiring</span>")
+        self.assertEqual(rst[runs_id[1]], f"<span id='run_id_{runs_id[1]}' class='green'>complete</span>")
+        self.assertEqual(rst[runs_id[2]], f"<span id='run_id_{runs_id[2]}' class='red'><b>error</b></span>")
+        self.assertEqual(rst[runs_id[3]], f"<span id='run_id_{runs_id[3]}' class='green'>complete</span>")
+        self.assertEqual(rst[runs_id[4]], f"<span id='run_id_{runs_id[4]}' class='red'>incomplete</span>")
 
     def test_extract_ascii_from_div(self):
         from reporting.report.view_util import extract_ascii_from_div
