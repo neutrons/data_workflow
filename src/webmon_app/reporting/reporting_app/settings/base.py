@@ -281,6 +281,12 @@ PVMON_NUMBER_OF_OLD_PTS = 20
 DASMON_PLOT_TIME_RANGE = 2 * 60 * 60
 # Max number of old PV points to show when there were no points in defined time range
 DASMON_NUMBER_OF_OLD_PTS = 20
+# Time range in number of hours when showing list of latest runs
+LATEST_RUNS_TIME_RANGE_HOURS = environ.get("LATEST_RUNS_TIME_RANGE_HOURS", 12.0)
+try:
+    LATEST_RUNS_TIME_RANGE_HOURS = float(LATEST_RUNS_TIME_RANGE_HOURS)
+except ValueError:
+    LATEST_RUNS_TIME_RANGE_HOURS = 12.0
 
 # MONITORING OPTION
 MONITOR_ON = True
