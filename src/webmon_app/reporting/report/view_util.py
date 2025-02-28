@@ -386,37 +386,42 @@ def get_post_processing_status(red_timeout=0.25, yellow_timeout=120):
     return {"catalog": 0, "reduction": 0}
 
 
-def get_run_status_text(run_id, show_error=False, use_element_id=False):
+def get_run_status_text_dict(run_list, use_element_id=False):
     """
-    Get a textual description of the current status
-    for a given run
+    Return a dictionary of run status texts {run_id: status}
+    """
 
-    :param run_id: run object
-    :param show_error: if true, the last error will be whow, otherwise "error"
-    """
-    status = "unknown"
-    try:
+    complete = dict(WorkflowSummary.objects.filter(run_id__in=run_list).values_list("run_id", "complete"))
+    acquisition_complete = (
+        RunStatus.objects.filter(run_id__in=run_list, queue_id__name="POSTPROCESS.DATA_READY")
+        .values_list("run_id", flat=True)
+        .distinct()
+    )
+    errors = (
+        Error.objects.filter(run_status_id__run_id__in=run_list)
+        .values_list("run_status_id__run_id", flat=True)
+        .distinct()
+    )
+
+    run_statuses = {}
+    for r in run_list:
+        status = "unknown"
         if use_element_id:
-            element_id = "id='run_id_%s'" % run_id.id
+            element_id = "id='run_id_%s'" % r.id
         else:
             element_id = ""
-        s = WorkflowSummary.objects.get(run_id=run_id)
-        if not is_acquisition_complete(run_id):
+        if r.id not in acquisition_complete:
             status = "<span %s>acquiring</span>" % element_id
-        elif s.complete is True:
+        elif complete.get(r.id, False) is True:
             status = "<span %s class='green'>complete</span>" % element_id
         else:
-            last_error = run_id.last_error()
-            if last_error is not None:
-                if show_error:
-                    status = "<span %s class='red'>%s</span>" % (element_id, last_error)
-                else:
-                    status = "<span %s class='red'><b>error</b></span>" % element_id
+            if r.id in errors:
+                status = "<span %s class='red'><b>error</b></span>" % element_id
             else:
                 status = "<span %s class='red'>incomplete</span>" % element_id
-    except:  # noqa: E722
-        logging.exception("report.view_util.get_run_status_text:")
-    return status
+        run_statuses[r.id] = status
+
+    return run_statuses
 
 
 def get_run_list_dict(run_list):
@@ -427,8 +432,14 @@ def get_run_list_dict(run_list):
     :param run_list: list of run object (usually a QuerySet)
     """
     run_dicts = []
+
+    run_status_text_dict = get_run_status_text_dict(run_list, use_element_id=True)
+
     try:
         for r in run_list:
+            if r.id not in run_status_text_dict:
+                continue
+
             localtime = timezone.localtime(r.created_on)
 
             run_url = reverse("report:detail", args=[str(r.instrument_id), r.run_number])
@@ -445,11 +456,12 @@ def get_run_list_dict(run_list):
                     ),
                     "run_id": r.id,
                     "timestamp": formats.localize(localtime),
-                    "status": get_run_status_text(r, use_element_id=True),
+                    "status": run_status_text_dict.get(r.id, "unknown"),
                 }
             )
     except:  # noqa: E722
         logging.exception("report.view_util.get_run_list_dict:")
+
     return run_dicts
 
 
