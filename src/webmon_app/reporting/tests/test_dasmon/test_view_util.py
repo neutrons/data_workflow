@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils import timezone
 
-from reporting.report.models import Instrument, Information, RunStatus, StatusQueue
+from reporting.report.models import Instrument, Information, RunStatus, StatusQueue, Error
 from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable, Signal
 from workflow.database.report.models import DataRun
 from workflow.database.report.models import IPTS
@@ -579,69 +579,6 @@ class ViewUtilTest(TestCase):
         assert dasmon_diag["status"] == 0
         assert dasmon_diag["dasmon_listener_warning"] is False
 
-    def test_get_completeness_status(self):
-        from reporting.dasmon.view_util import get_completeness_status
-
-        # make records
-        inst = Instrument.objects.create(name="testinst_completeness")
-        inst.save()
-        ipts = IPTS.objects.create(expt_name="test_exp")
-        ipts.save()
-        for rn in range(4):
-            run = DataRun.objects.create(
-                run_number=rn,
-                ipts_id=ipts,
-                instrument_id=inst,
-                file=f"/tmp/test_{rn}.nxs",
-            )
-            run.save()
-            WorkflowSummary.objects.create(
-                run_id=run,
-                complete=True,
-                catalog_started=True,
-                cataloged=True,
-                reduction_needed=False,
-                reduction_started=True,
-                reduced=True,
-                reduction_cataloged=True,
-                reduction_catalog_started=True,
-            )
-        # test
-        # -- ok
-        status = get_completeness_status(inst)
-        assert status == (0, "OK")
-        # -- unknown
-        inst = Instrument.objects.get(name="testinst")
-        status = get_completeness_status(inst)
-        assert status == (-1, "Unknown")
-        # -- warning
-        inst = Instrument.objects.create(name="testinst_completeness_error")
-        inst.save()
-        for rn in range(4):
-            run = DataRun.objects.create(
-                run_number=rn,
-                ipts_id=ipts,
-                instrument_id=inst,
-                file=f"/tmp/test_{rn}.nxs",
-            )
-            run.save()
-            WorkflowSummary.objects.create(
-                run_id=run,
-                complete=False,
-                catalog_started=True,
-                cataloged=True,
-                reduction_needed=True,
-                reduction_started=True,
-                reduced=True,
-                reduction_cataloged=True,
-                reduction_catalog_started=True,
-            )
-        status = get_completeness_status(inst)
-        assert status == (1, "OK")
-        # -- error
-        # NOTE: testing error requires dragging entire workflow.database.report.models
-        #       in, which is something better to carry out in their unit test.
-
     def test_get_live_runs_update(self):
         from reporting.dasmon.view_util import get_live_runs_update
 
@@ -734,7 +671,7 @@ class ViewUtilTest(TestCase):
             runs.append(run)
             WorkflowSummary.objects.create(
                 run_id=run,
-                complete=True,
+                complete=rn % 2 == 0,
                 catalog_started=True,
                 cataloged=True,
                 reduction_needed=True,
@@ -743,12 +680,20 @@ class ViewUtilTest(TestCase):
                 reduction_cataloged=True,
                 reduction_catalog_started=True,
             ).save()
+            if rn == 3:
+                queue = StatusQueue(name="QUEUE")
+                queue.save()
+                rs = RunStatus(run_id=run, queue_id=queue)
+                rs.save()
+                Error(run_status_id=rs, description="test_error").save()
+
         # test
         run_list = get_run_list(runs)
         assert len(run_list) == 4
+        expected_status = {0: "complete", 1: "incomplete", 2: "complete", 3: "error"}
         for i, d in enumerate(run_list):
             assert d["run"] == i
-            assert d["status"] == "complete"
+            assert d["status"] == expected_status[i]
 
     def test_get_signals(self):
         from reporting.dasmon.view_util import get_signals
@@ -786,26 +731,20 @@ class ViewUtilTest(TestCase):
         #  'url': '/dasmon/common/',
         #  'diagnostics_url': '/dasmon/common/diagnostics/',
         #  'dasmon_status': 2,
-        #  'pvstreamer_status': 2,
-        #  'completeness': -1,
-        #  'completeness_msg': 'Unknown'},
+        #  'pvstreamer_status': 2},
         # {'name': 'testinst',
         #  'recording_status': 'Unknown',
         #  'url': '/dasmon/testinst/',
         #  'diagnostics_url': '/dasmon/testinst/diagnostics/',
         #  'dasmon_status': 2,
-        #  'pvstreamer_status': 2,
-        #  'completeness': -1,
-        #  'completeness_msg': 'Unknown'}
+        #  'pvstreamer_status': 2}
         # ]
         for me in instrument_list:
             assert me["recording_status"] == "Unknown"
             assert me["url"] == f"/dasmon/{me['name']}/"
             assert me["diagnostics_url"] == f"/dasmon/{me['name']}/diagnostics/"
-            assert me["dasmon_status"] == 2
-            assert me["pvstreamer_status"] == 2
-            assert me["completeness"] == -1
-            assert me["completeness_msg"] == "Unknown"
+            assert me["dasmon_status"] == -1
+            assert me["pvstreamer_status"] == -1
 
     def test_get_dashboard_data(self):
         from reporting.dasmon.view_util import get_dashboard_data
