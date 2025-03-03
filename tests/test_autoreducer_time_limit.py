@@ -4,6 +4,7 @@ on the memory used by reduction scripts.
 """
 
 import time
+
 import tests.utils.db as db_utils
 
 

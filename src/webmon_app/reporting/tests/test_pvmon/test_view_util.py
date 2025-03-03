@@ -1,10 +1,11 @@
-import pytest
-from unittest import mock
-from django.test import TestCase
 import time
+from unittest import mock
 
+import pytest
+from django.test import TestCase
+
+from reporting.pvmon.models import PV, PVCache, PVName, PVString, PVStringCache
 from reporting.report.models import Instrument
-from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache
 
 
 class ViewUtilTest(TestCase):

@@ -1,9 +1,11 @@
-import pytest
-from unittest import mock
-from django.test import TestCase
-from workflow.daemon import Daemon
-import workflow
 import os
+from unittest import mock
+
+import pytest
+from django.test import TestCase
+
+import workflow
+from workflow.daemon import Daemon
 
 _ = [os, workflow]
 

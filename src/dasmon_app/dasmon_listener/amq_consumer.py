@@ -5,15 +5,17 @@ DASMON ActiveMQ consumer class
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2014 Oak Ridge National Laboratory
 """
+
+import datetime
+import json
+import logging
+import os
+import smtplib
 import sys
 import time
-import stomp
-import logging
-import json
-import os
-import datetime
-import smtplib
 from email.mime.text import MIMEText
+
+import stomp
 
 if os.path.isfile("settings.py"):
     logging.warning("Using local settings.py file")
@@ -22,10 +24,12 @@ else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dasmon_listener.settings")
 
 from . import settings  # noqa: E402
-from .settings import INSTALLATION_DIR  # noqa: E402
-from .settings import PURGE_TIMEOUT  # noqa: E402
-from .settings import IMAGE_PURGE_TIMEOUT  # noqa: E402
-from .settings import MIN_NOTIFICATION_LEVEL  # noqa: E402
+from .settings import (
+    IMAGE_PURGE_TIMEOUT,  # noqa: E402
+    INSTALLATION_DIR,  # noqa: E402
+    MIN_NOTIFICATION_LEVEL,  # noqa: E402
+    PURGE_TIMEOUT,  # noqa: E402
+)
 
 sys.path.append(INSTALLATION_DIR)
 
@@ -33,23 +37,21 @@ import django  # noqa: E402
 
 django.setup()
 from django.utils import timezone  # noqa: E402
-
 from reporting.dasmon.models import (  # noqa: E402
-    StatusVariable,
     Parameter,
-    StatusCache,
     Signal,
+    StatusCache,
+    StatusVariable,
     UserNotification,
 )  # noqa: E402
 from reporting.pvmon.models import (  # noqa: E402
     PV,
+    MonitoredVariable,
     PVCache,
     PVString,
     PVStringCache,
-    MonitoredVariable,
 )  # noqa: E402
 from workflow.database.report.models import Instrument  # noqa: E402
-
 
 # ACK data
 acks = {}
@@ -648,7 +650,7 @@ class Client:
                         store_and_cache(self.common_instrument, pid_key_id, str(os.getpid()))
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
-                            from .settings import PING_TOPIC, ACK_TOPIC
+                            from .settings import ACK_TOPIC, PING_TOPIC
 
                             payload = {
                                 "reply_to": ACK_TOPIC,

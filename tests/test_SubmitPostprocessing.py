@@ -1,7 +1,8 @@
-import requests
 import time
+
 import psycopg2
 import pytest
+import requests
 
 INSTRUMENT = "arcs"
 RUN_NUMBER_GOOD = "201562"  # is in SNSdata.tar.gz

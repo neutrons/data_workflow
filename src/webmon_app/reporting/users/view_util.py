@@ -2,16 +2,17 @@
 """
 View utility functions for user management
 """
-from django.urls import reverse
-from django.shortcuts import redirect
-from django.contrib.auth.models import Group
-from django.http import HttpResponse
-from django.conf import settings
 
 # import code for encoding urls and generating md5 hashes
 import hashlib
-import socket
 import logging
+import socket
+
+from django.conf import settings
+from django.contrib.auth.models import Group
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.urls import reverse
 
 from reporting.users.models import PageView
 

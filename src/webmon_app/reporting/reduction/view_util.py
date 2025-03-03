@@ -5,16 +5,22 @@ Utilities for reduction configuration views
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
+import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
+
 from django.conf import settings
 from django.urls import reverse
-import logging
-import json
-from reporting.reduction.models import ReductionProperty, PropertyModification, PropertyDefault
-import reporting.reporting_app.view_util as reporting_view_util
+
 import reporting.dasmon.view_util as dasmon_view_util
-import urllib.request
-import urllib.parse
-import urllib.error
+import reporting.reporting_app.view_util as reporting_view_util
+from reporting.reduction.models import (
+    PropertyDefault,
+    PropertyModification,
+    ReductionProperty,
+)
 
 
 def reduction_setup_url(instrument):

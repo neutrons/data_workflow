@@ -16,14 +16,12 @@ repos:
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: sort-simple-yaml
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    # ruff must appear before black in the list of hooks
     hooks:
-      - id: black
-        args: ['--line-length=119']
-        exclude: '\.template$'
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.2
-    hooks:
-    - id: flake8
-      exclude: '\.template$'
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        exclude: '\.template$|tests/data/'
+      - id: ruff-format
+        exclude: '\.template$|tests/data/'

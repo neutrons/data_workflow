@@ -1,7 +1,8 @@
 # flake8: noqa: F401
+from pathlib import Path
+
 from django.core.management.base import BaseCommand
 from django.db import connection
-from pathlib import Path
 
 
 def _parse_sql_file(filename):

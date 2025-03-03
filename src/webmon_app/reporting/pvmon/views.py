@@ -2,20 +2,22 @@
 Live PV monitoring
 """
 
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
-from django.utils import timezone, formats
-from django.conf import settings
-from django.views.decorators.cache import cache_page, cache_control
-from django.views.decorators.vary import vary_on_cookie
-from reporting.report.models import Instrument
-
 import json
-from . import view_util
+
+from django.conf import settings
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.utils import formats, timezone
+from django.views.decorators.cache import cache_control, cache_page
+from django.views.decorators.vary import vary_on_cookie
+
+import reporting.dasmon.view_util as dasmon_view_util
 import reporting.report.view_util as report_view_util
 import reporting.users.view_util as users_view_util
-import reporting.dasmon.view_util as dasmon_view_util
+from reporting.report.models import Instrument
+
+from . import view_util
 
 
 @users_view_util.login_or_local_required
