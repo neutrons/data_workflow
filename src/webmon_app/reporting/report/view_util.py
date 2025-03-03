@@ -279,9 +279,9 @@ def run_rate(instrument_id, n_hours=24):
         rows = cursor.fetchall()
         cursor.close()
         return [[int(r[0]), int(r[1])] for r in rows]
-    except:  # noqa: E722
+    except Exception as e:
         connection.close()
-        logging.exception("Run rate (%s):", str(instrument_id))
+        logging.exception("Call to stored procedure run_rate(%s) failed: %s", str(instrument_id), str(e))
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -313,9 +313,9 @@ def error_rate(instrument_id, n_hours=24):
         rows = cursor.fetchall()
         cursor.close()
         return [[int(r[0]), int(r[1])] for r in rows]
-    except:  # noqa: E722
+    except Exception as e:
         connection.close()
-        logging.exception("Error rate (%s):", str(instrument_id))
+        logging.exception("Call to stored procedure error_rate(%s) failed: %s", str(instrument_id), str(e))
 
         # Do it by hand (slow)
         time = timezone.now()
