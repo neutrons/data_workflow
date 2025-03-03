@@ -227,6 +227,8 @@ def retrieve_rates(instrument_id, last_run_id):
     :param instrument_id: Instrument object
     :param last_run_id: DataRun object
     """
+    n_hours = 24
+
     last_run = None
     if last_run_id is not None:
         last_run = last_run_id.run_number
@@ -249,20 +251,36 @@ def retrieve_rates(instrument_id, last_run_id):
 
     # If we didn't find good rates in the cache, recalculate them
     if runs is None or errors is None:
-        runs = run_rate(instrument_id)
-        errors = error_rate(instrument_id)
+        # check for any run in the last n-hours
+        time_oldest = timezone.now() - datetime.timedelta(hours=n_hours + 1)  # is +1 needed?
+        have_runs = bool(DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=time_oldest).count() > 0)
+
+        # only query further if there are runs for the instrument
+        if have_runs:
+            runs = run_rate(instrument_id, n_hours=n_hours)
+            errors = error_rate(instrument_id, n_hours=n_hours)
+        else:
+            runs = []
+            errors = []
+            num_runs = 0  # there are no runs
+            for i in range(n_hours):
+                runs.append([-i, num_runs])
+                errors.append([-i, num_runs])
+
+        # cache the run rate
         cache.set("%s_run_rate" % instrument_id.name, runs, settings.RUN_RATE_CACHE_TIMEOUT)
         cache.set(
             "%s_error_rate" % instrument_id.name,
             errors,
             settings.RUN_RATE_CACHE_TIMEOUT,
         )
+
+        # add the last run view for this instrument to the cache
         cache.set("%s_rate_last_run" % instrument_id.name, last_run)
 
     return runs, errors
 
 
-@transaction.atomic
 def run_rate(instrument_id, n_hours=24):
     """
     Returns the rate of new runs for the last n_hours hours.
@@ -270,15 +288,16 @@ def run_rate(instrument_id, n_hours=24):
     :param instrument_id: Instrument model object
     :param n_hours: number of hours to track
     """
-    # Try calling the stored procedure (faster)
     try:
-        cursor = connection.cursor()
-        cursor.callproc("run_rate", (instrument_id.id,))
-        msg = cursor.fetchone()[0]
-        cursor.execute('FETCH ALL IN "%s"' % msg)
-        rows = cursor.fetchall()
-        cursor.close()
-        return [[int(r[0]), int(r[1])] for r in rows]
+        # Try calling the stored procedure (faster)
+        with transaction.atomic():
+            cursor = connection.cursor()
+            cursor.callproc("run_rate", (instrument_id.id,))
+            msg = cursor.fetchone()[0]
+            cursor.execute('FETCH ALL IN "%s"' % msg)
+            rows = cursor.fetchall()
+            cursor.close()
+        return [[int(row[0]), int(row[1])] for row in rows]
     except:  # noqa: E722
         connection.close()
         logging.exception("Run rate (%s):", str(instrument_id))
@@ -296,7 +315,6 @@ def run_rate(instrument_id, n_hours=24):
         return runs
 
 
-@transaction.atomic
 def error_rate(instrument_id, n_hours=24):
     """
     Returns the rate of errors for the last n_hours hours.
@@ -304,15 +322,16 @@ def error_rate(instrument_id, n_hours=24):
     :param instrument_id: Instrument model object
     :param n_hours: number of hours to track
     """
-    # Try calling the stored procedure (faster)
     try:
-        cursor = connection.cursor()
-        cursor.callproc("error_rate", (instrument_id.id,))
-        msg = cursor.fetchone()[0]
-        cursor.execute('FETCH ALL IN "%s"' % msg)
-        rows = cursor.fetchall()
-        cursor.close()
-        return [[int(r[0]), int(r[1])] for r in rows]
+        # Try calling the stored procedure (faster)
+        with transaction.atomic():
+            cursor = connection.cursor()
+            cursor.callproc("error_rate", (instrument_id.id,))
+            msg = cursor.fetchone()[0]
+            cursor.execute('FETCH ALL IN "%s"' % msg)
+            rows = cursor.fetchall()
+            cursor.close()
+        return [[int(row[0]), int(row[1])] for row in rows]
     except:  # noqa: E722
         connection.close()
         logging.exception("Error rate (%s):", str(instrument_id))
