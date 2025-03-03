@@ -5,7 +5,7 @@ Status monitor utilities to support 'dasmon' views
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information
+from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information, Error
 from reporting.dasmon.models import (
     Parameter,
     StatusVariable,
@@ -1027,13 +1027,19 @@ def get_run_list(run_list):
     """
     logger = logging.getLogger(LOGNAME)
     run_dicts = []
+
+    complete = dict(WorkflowSummary.objects.filter(run_id__in=run_list).values_list("run_id", "complete"))
+    errors = (
+        Error.objects.filter(run_status_id__run_id__in=run_list)
+        .values_list("run_status_id__run_id", flat=True)
+        .distinct()
+    )
     try:
         for r in run_list:
-            s = WorkflowSummary.objects.get(run_id=r)
             status = "incomplete"
-            if s.complete is True:
+            if complete.get(r.id, False) is True:
                 status = "complete"
-            elif r.last_error() is not None:
+            elif r.id in errors:
                 status = "error"
             # workaround for timezone issue
             try:

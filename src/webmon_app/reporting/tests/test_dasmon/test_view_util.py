@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils import timezone
 
-from reporting.report.models import Instrument, Information, RunStatus, StatusQueue
+from reporting.report.models import Instrument, Information, RunStatus, StatusQueue, Error
 from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable, Signal
 from workflow.database.report.models import DataRun
 from workflow.database.report.models import IPTS
@@ -734,7 +734,7 @@ class ViewUtilTest(TestCase):
             runs.append(run)
             WorkflowSummary.objects.create(
                 run_id=run,
-                complete=True,
+                complete=rn % 2 == 0,
                 catalog_started=True,
                 cataloged=True,
                 reduction_needed=True,
@@ -743,12 +743,20 @@ class ViewUtilTest(TestCase):
                 reduction_cataloged=True,
                 reduction_catalog_started=True,
             ).save()
+            if rn == 3:
+                queue = StatusQueue(name="QUEUE")
+                queue.save()
+                rs = RunStatus(run_id=run, queue_id=queue)
+                rs.save()
+                Error(run_status_id=rs, description="test_error").save()
+
         # test
         run_list = get_run_list(runs)
         assert len(run_list) == 4
+        expected_status = {0: "complete", 1: "incomplete", 2: "complete", 3: "error"}
         for i, d in enumerate(run_list):
             assert d["run"] == i
-            assert d["status"] == "complete"
+            assert d["status"] == expected_status[i]
 
     def test_get_signals(self):
         from reporting.dasmon.view_util import get_signals
