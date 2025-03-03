@@ -28,6 +28,8 @@
         for (var i=0; i<data.instruments.length; i++)
         {
            global_system_status_update(data, i);
+           var content = "<li class='status_"+data.instruments[i].completeness+"' id='"+data.instruments[i].name+"_completeness'>"+data.instruments[i].completeness_msg+"</td>";
+           $('#'+data.instruments[i].name+'_completeness').replaceWith(content);
         }
         {% for item in data %}
         instrument_rates.{{ item|lower }} = data.instrument_rates.{{ item|lower }};{% endfor %}

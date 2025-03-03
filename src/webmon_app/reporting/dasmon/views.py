@@ -104,7 +104,7 @@ def expert_status(request):
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
 
     template_values = {
-        "instruments": view_util.get_instrument_status_summary(True),
+        "instruments": view_util.get_instrument_status_summary(),
         "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
         "postprocess_status": view_util.get_system_health(),
         "update_url": reverse("dasmon:dashboard_update"),

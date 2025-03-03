@@ -5,7 +5,7 @@ Status monitor utilities to support 'dasmon' views
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information, Error
+from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information
 from reporting.dasmon.models import (
     Parameter,
     StatusVariable,
@@ -149,7 +149,7 @@ def get_latest(instrument_id, key_id):
     return last_value
 
 
-def is_running(instrument_id, is_adara=None):
+def is_running(instrument_id):
     logger = logging.getLogger(LOGNAME)
 
     """
@@ -158,7 +158,7 @@ def is_running(instrument_id, is_adara=None):
     :param instrument_id: Instrument object
     """
     try:
-        if (is_adara is None and not ActiveInstrument.objects.is_adara(instrument_id)) or is_adara is False:
+        if not ActiveInstrument.objects.is_adara(instrument_id):
             return "-"
     except:  # noqa: E722
         logger.error("Could not determine whether %s is running ADARA", str(instrument_id))
@@ -168,10 +168,6 @@ def is_running(instrument_id, is_adara=None):
         last_value = get_latest(instrument_id, key_id)
         if last_value is not None:
             is_recording = last_value.value.lower() == "true"
-
-        # return early if we are not recording
-        if not is_recording:
-            return "Stopped"
 
         is_paused = False
         try:
@@ -185,11 +181,13 @@ def is_running(instrument_id, is_adara=None):
             # pylint: disable=pointless-except
             pass
 
-        if is_paused:
-            return "Paused"
+        if is_recording:
+            if is_paused:
+                return "Paused"
+            else:
+                return "Recording"
         else:
-            return "Recording"
-
+            return "Stopped"
     except:  # noqa: E722
         logger.exception("Could not determine running condition:")
     return "Unknown"
@@ -810,6 +808,76 @@ def _red_message(msg):
     return "<span class='red'><b>%s</b></span>" % str(msg)
 
 
+def get_completeness_status(instrument_id):
+    """
+    Check that the latest runs have successfully completed post-processing
+
+    :param instrument_id: Instrument object
+    """
+    logger = logging.getLogger(LOGNAME)
+    STATUS_OK = (0, "OK")
+    # Warning status still says OK but the background color is yellow
+    STATUS_WARNING = (1, "OK")
+    # Since incomplete might mean error conditions or a simple backlog
+    # of runs to process, we report 'incomplete' on a red background
+    STATUS_ERROR = (2, "Error")
+    STATUS_UNKNOWN = (-1, "Unknown")
+
+    try:
+        # Check for completeness of the three runs before the last run.
+        # We don't use the last one because we may still be working on it.
+        latest_run_id = DataRun.objects.get_last_cached_run(instrument_id)
+
+        # If we don't have any run yet, return unknown
+        if latest_run_id is None:
+            return STATUS_UNKNOWN
+
+        latest_runs = (
+            DataRun.objects.filter(
+                instrument_id=instrument_id,
+                run_number__gte=latest_run_id.run_number - 3,
+            )
+            .order_by("created_on")
+            .reverse()
+        )
+
+        # We need at least 3 runs for a meaningful status
+        if len(latest_runs) == 0:
+            return STATUS_UNKNOWN
+        if len(latest_runs) < 2:
+            if WorkflowSummary.objects.get(run_id=latest_runs[0]).complete is True:
+                return STATUS_OK
+            else:
+                return STATUS_WARNING
+
+        r0 = latest_runs[0]
+        r1 = latest_runs[1]
+        s0 = WorkflowSummary.objects.get(run_id=r0)
+        s1 = WorkflowSummary.objects.get(run_id=r1)
+        status0 = s0.complete
+        status1 = s1.complete
+        error0 = r0.last_error() is not None
+        error1 = r1.last_error() is not None
+
+        # If the last run is complete, but any of the previous two has an error,
+        # then return a warning
+        if status0 and (not status1 and error1):
+            return STATUS_WARNING
+
+        # If we have errors within the last 3 runs, report an error
+        if (not status0 and error0) or (not status1 and error1):
+            return STATUS_ERROR
+
+        # If everything but the last run is incomplete, we are OK
+        if status1:
+            return STATUS_OK
+
+        return STATUS_WARNING
+    except:  # noqa: E722
+        logger.exception("Output data completeness status")
+        return STATUS_UNKNOWN
+
+
 def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     """
     Get updated information about the latest runs
@@ -959,19 +1027,13 @@ def get_run_list(run_list):
     """
     logger = logging.getLogger(LOGNAME)
     run_dicts = []
-
-    complete = dict(WorkflowSummary.objects.filter(run_id__in=run_list).values_list("run_id", "complete"))
-    errors = (
-        Error.objects.filter(run_status_id__run_id__in=run_list)
-        .values_list("run_status_id__run_id", flat=True)
-        .distinct()
-    )
     try:
         for r in run_list:
+            s = WorkflowSummary.objects.get(run_id=r)
             status = "incomplete"
-            if complete.get(r.id, False) is True:
+            if s.complete is True:
                 status = "complete"
-            elif r.id in errors:
+            elif r.last_error() is not None:
                 status = "error"
             # workaround for timezone issue
             try:
@@ -1067,7 +1129,7 @@ def get_signals(instrument_id):
     return sig_alerts
 
 
-def get_instrument_status_summary(expert=False) -> list:
+def get_instrument_status_summary() -> list:
     r"""Status for each instrument in the database,
     used to fill out the summary page template or the summary update response.
 
@@ -1080,48 +1142,44 @@ def get_instrument_status_summary(expert=False) -> list:
     - diagnostics_url: str, URL to access the instrument's diagnostics page
     - dasmon_status: int, status of the DASMON process (0 = OK, 1 = Warning, 2 = Error)
     - pvstreamer_status: int, status of the PVStreamer process (0 = OK, 1 = Warning, 2 = Error)
+    - completeness: int, completeness status of the last few runs (0 = OK, 1 = Warning, 2 = Error, -1 = Unknown)
+    - completeness_msg: str, message to display for the completeness status
     - facility: str, facility name (default = "SNS
     """
     logger = logging.getLogger(LOGNAME)
     instrument_list = []
-
-    # get all active instruments is_alive and is_adara
-    ai = ActiveInstrument.objects.all().values("instrument_id", "is_alive", "is_adara").distinct()
-    is_adara = {i["instrument_id"]: i["is_adara"] for i in ai}
-    is_alive = {i["instrument_id"]: i["is_alive"] for i in ai}
-
     for i in Instrument.objects.all().order_by("name"):
-        if not is_alive.get(i.id, True):
+        is_adara = ActiveInstrument.objects.is_adara(i)
+        if not ActiveInstrument.objects.is_alive(i):
             continue
-
-        das_status = -1
-        pvstreamer_status = -1
-        if is_adara.get(i.id, True):
+        if is_adara:
             dasmon_url = reverse("dasmon:live_monitor", args=[i.name])
-
-            if expert:
-                try:
-                    das_status = get_component_status(i, process="dasmon")
-                except:  # noqa: E722
-                    logger.exception()
-                    das_status = 2
-                try:
-                    pvstreamer_status = get_pvstreamer_status(i)
-                except:  # noqa: E722
-                    logger.exception()
-                    pvstreamer_status = 2
+            try:
+                das_status = get_component_status(i, process="dasmon")
+            except:  # noqa: E722
+                logger.exception()
+                das_status = 2
+            try:
+                pvstreamer_status = get_pvstreamer_status(i)
+            except:  # noqa: E722
+                logger.exception()
+                pvstreamer_status = 2
         else:
             dasmon_url = reverse("dasmon:live_runs", args=[i.name])
-
+            das_status = -1
+            pvstreamer_status = -1
         diagnostics_url = reverse("dasmon:diagnostics", args=[i.name])
+        completeness, message = get_completeness_status(i)
         instrument_list.append(
             {
                 "name": i.name,
-                "recording_status": is_running(i, is_adara.get(i.id, True)),
+                "recording_status": is_running(i),
                 "url": dasmon_url,
                 "diagnostics_url": diagnostics_url,
                 "dasmon_status": das_status,
                 "pvstreamer_status": pvstreamer_status,
+                "completeness": completeness,
+                "completeness_msg": message,
                 "facility": settings.FACILITY_INFO.get(i.name, "SNS"),
             }
         )
