@@ -149,7 +149,7 @@ def get_latest(instrument_id, key_id):
     return last_value
 
 
-def is_running(instrument_id):
+def is_running(instrument_id, is_adara=None):
     logger = logging.getLogger(LOGNAME)
 
     """
@@ -158,7 +158,7 @@ def is_running(instrument_id):
     :param instrument_id: Instrument object
     """
     try:
-        if not ActiveInstrument.objects.is_adara(instrument_id):
+        if (is_adara is None and not ActiveInstrument.objects.is_adara(instrument_id)) or is_adara is False:
             return "-"
     except:  # noqa: E722
         logger.error("Could not determine whether %s is running ADARA", str(instrument_id))
@@ -168,6 +168,10 @@ def is_running(instrument_id):
         last_value = get_latest(instrument_id, key_id)
         if last_value is not None:
             is_recording = last_value.value.lower() == "true"
+
+        # return early if we are not recording
+        if not is_recording:
+            return "Stopped"
 
         is_paused = False
         try:
@@ -181,13 +185,11 @@ def is_running(instrument_id):
             # pylint: disable=pointless-except
             pass
 
-        if is_recording:
-            if is_paused:
-                return "Paused"
-            else:
-                return "Recording"
+        if is_paused:
+            return "Paused"
         else:
-            return "Stopped"
+            return "Recording"
+
     except:  # noqa: E722
         logger.exception("Could not determine running condition:")
     return "Unknown"
@@ -1082,14 +1084,19 @@ def get_instrument_status_summary(expert=False) -> list:
     """
     logger = logging.getLogger(LOGNAME)
     instrument_list = []
+
+    # get all active instruments is_alive and is_adara
+    ai = ActiveInstrument.objects.all().values("instrument_id", "is_alive", "is_adara").distinct()
+    is_adara = {i["instrument_id"]: i["is_adara"] for i in ai}
+    is_alive = {i["instrument_id"]: i["is_alive"] for i in ai}
+
     for i in Instrument.objects.all().order_by("name"):
-        is_adara = ActiveInstrument.objects.is_adara(i)
-        if not ActiveInstrument.objects.is_alive(i):
+        if not is_alive.get(i.id, True):
             continue
 
         das_status = -1
         pvstreamer_status = -1
-        if is_adara:
+        if is_adara.get(i.id, True):
             dasmon_url = reverse("dasmon:live_monitor", args=[i.name])
 
             if expert:
@@ -1110,7 +1117,7 @@ def get_instrument_status_summary(expert=False) -> list:
         instrument_list.append(
             {
                 "name": i.name,
-                "recording_status": is_running(i),
+                "recording_status": is_running(i, is_adara.get(i.id, True)),
                 "url": dasmon_url,
                 "diagnostics_url": diagnostics_url,
                 "dasmon_status": das_status,
