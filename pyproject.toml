@@ -1,0 +1,12 @@
+# configure options here to work for all sub-packages
+[tool.ruff]
+select = ["ASYNC","E", "F", "I", "UP032", "W"]
+ignore = ["E402", "E722", "F405"]
+line-length = 120
+
+[tool.pytest]
+pythonpath = ["src/", "src/dasmon_app", "src/webmon_app", "src/workflow_app"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*"]
