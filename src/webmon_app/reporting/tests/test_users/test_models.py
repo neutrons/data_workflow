@@ -1,7 +1,9 @@
 from datetime import datetime
-from django.test import TestCase
+
 from django.contrib.auth.models import User
-from reporting.users.models import PageView, DeveloperNode, SiteNotification
+from django.test import TestCase
+
+from reporting.users.models import DeveloperNode, PageView, SiteNotification
 
 
 class TestModels(TestCase):

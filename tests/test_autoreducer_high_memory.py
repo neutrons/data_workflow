@@ -49,7 +49,8 @@ class TestAutoreducerQueues:
         cursor.execute("DELETE FROM report_task_success_queue_ids WHERE task_id = %s", (task_id,))
 
         cursor.execute(
-            "INSERT INTO report_task_task_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)", (task_id, queue_id)
+            "INSERT INTO report_task_task_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)",
+            (task_id, queue_id),
         )
         cursor.execute(
             "INSERT INTO report_task_success_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)",
@@ -61,9 +62,15 @@ class TestAutoreducerQueues:
         """return the hostname that executed the task that is stored in the report information"""
         cursor = conn.cursor()
         queue_id = db_utils.get_status_queue_id(conn, "REDUCTION.STARTED")
-        cursor.execute("SELECT id FROM report_runstatus WHERE run_id_id = %s AND queue_id_id = %s", (run_id, queue_id))
+        cursor.execute(
+            "SELECT id FROM report_runstatus WHERE run_id_id = %s AND queue_id_id = %s",
+            (run_id, queue_id),
+        )
         runstatus_id = cursor.fetchone()[0]
-        cursor.execute("SELECT description FROM report_information WHERE run_status_id_id = %s", (runstatus_id,))
+        cursor.execute(
+            "SELECT description FROM report_information WHERE run_status_id_id = %s",
+            (runstatus_id,),
+        )
         description = cursor.fetchone()[0]
         return description
 

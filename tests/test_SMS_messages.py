@@ -1,7 +1,8 @@
 """Test the status acquiring appears when a SMS message is received and before the data is ready"""
 
-import time
 import json
+import time
+
 import tests.utils.db as db_utils
 
 
@@ -36,7 +37,8 @@ class TestSMSQueues:
             return
 
         cursor.execute(
-            "SELECT id FROM report_datarun WHERE instrument_id_id = %s AND run_number = %s;", (inst_id, run_number)
+            "SELECT id FROM report_datarun WHERE instrument_id_id = %s AND run_number = %s;",
+            (inst_id, run_number),
         )
         run_id = cursor.fetchone()
         if run_id is None:

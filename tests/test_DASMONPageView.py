@@ -1,7 +1,8 @@
+from io import StringIO
+
 import pytest
 import requests
 from lxml import etree
-from io import StringIO
 
 
 class TestDASMONPageView:

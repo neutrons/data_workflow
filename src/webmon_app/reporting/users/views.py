@@ -2,12 +2,12 @@
 User management
 """
 
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.contrib.auth import login, logout, authenticate
-
 # Application-specific imports
 from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
 from reporting.users.view_util import fill_template_values
 
 

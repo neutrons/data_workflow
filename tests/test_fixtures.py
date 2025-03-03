@@ -1,6 +1,6 @@
 # third-party imports
-from django.conf import settings
 import pytest
+from django.conf import settings
 
 
 def test_request_page(request_page):

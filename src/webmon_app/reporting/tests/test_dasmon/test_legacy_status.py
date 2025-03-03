@@ -1,8 +1,9 @@
-import pytest
-import httplib2
+import json
 from unittest import mock
 
-import json
+import httplib2
+import pytest
+
 from reporting import dasmon
 
 # print version in case it fails

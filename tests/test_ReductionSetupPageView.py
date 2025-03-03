@@ -1,10 +1,11 @@
+import datetime
 import os
+import subprocess
 import time
+
 import psycopg2
 import pytest
 import requests
-import subprocess
-import datetime
 
 
 class TestWorkflow:
@@ -45,7 +46,8 @@ class TestWorkflow:
 
     def getReductionScriptContents(self):
         return subprocess.check_output(
-            "docker exec data_workflow-autoreducer-1 cat /SNS/ARCS/shared/autoreduce/reduce_ARCS.py", shell=True
+            "docker exec data_workflow-autoreducer-1 cat /SNS/ARCS/shared/autoreduce/reduce_ARCS.py",
+            shell=True,
         ).decode()
 
     def initReductionGroup(self, conn, cursor):
@@ -54,7 +56,12 @@ class TestWorkflow:
             timestamp = datetime.datetime.now()
             cursor.execute(
                 "INSERT INTO reduction_reductionproperty (instrument_id, key, value, timestamp) VALUES(%s, %s, %s, %s)",
-                (3, "grouping", "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml", timestamp),
+                (
+                    3,
+                    "grouping",
+                    "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml",
+                    timestamp,
+                ),
             )
             conn.commit()
 
@@ -64,7 +71,12 @@ class TestWorkflow:
             props = cursor.fetchone()
             cursor.execute(
                 "INSERT INTO reduction_choice (instrument_id, property_id, description, value) VALUES(%s, %s, %s, %s)",
-                (props[1], props[0], "2X1", "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml"),
+                (
+                    props[1],
+                    props[0],
+                    "2X1",
+                    "/SNS/ARCS/shared/autoreduce/ARCS_2X1_grouping.xml",
+                ),
             )
             conn.commit()
 

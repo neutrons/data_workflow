@@ -5,11 +5,13 @@ ActiveMQ workflow manager client
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2014 Oak Ridge National Laboratory
 """
-import time
-import stomp
-import logging
+
 import json
+import logging
 import os
+import time
+
+import stomp
 
 from .database.transactions import get_message_queues
 from .workflow_process import WorkflowProcess

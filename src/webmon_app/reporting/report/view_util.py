@@ -5,34 +5,35 @@ Status monitor utilities to support 'report' views
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-import logging
-import json
 import datetime
-import string
-import re
 import hashlib
+import json
+import logging
+import re
+import string
+
 import requests
-from reporting.report.models import (
-    DataRun,
-    RunStatus,
-    IPTS,
-    Instrument,
-    Error,
-    StatusQueue,
-    Task,
-    WorkflowSummary,
-    StatusQueueMessageCount,
-)
-from django.urls import reverse
+from django.conf import settings
+from django.core.cache import cache
+from django.db import connection, transaction
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
-from django.utils import timezone, formats
-from django.conf import settings
-from django.db import connection, transaction
-from django.core.cache import cache
+from django.urls import reverse
+from django.utils import formats, timezone
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
+from reporting.report.models import (
+    IPTS,
+    DataRun,
+    Error,
+    Instrument,
+    RunStatus,
+    StatusQueue,
+    StatusQueueMessageCount,
+    Task,
+    WorkflowSummary,
+)
 from reporting.users.view_util import is_instrument_staff
 
 
@@ -281,7 +282,11 @@ def run_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except Exception as e:
         connection.close()
-        logging.exception("Call to stored procedure run_rate(%s) failed: %s", str(instrument_id), str(e))
+        logging.exception(
+            "Call to stored procedure run_rate(%s) failed: %s",
+            str(instrument_id),
+            str(e),
+        )
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -315,7 +320,11 @@ def error_rate(instrument_id, n_hours=24):
         return [[int(r[0]), int(r[1])] for r in rows]
     except Exception as e:
         connection.close()
-        logging.exception("Call to stored procedure error_rate(%s) failed: %s", str(instrument_id), str(e))
+        logging.exception(
+            "Call to stored procedure error_rate(%s) failed: %s",
+            str(instrument_id),
+            str(e),
+        )
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -527,11 +536,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
 
     url_template = string.Template(settings.LIVE_DATA_SERVER)
     live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
-    live_data_url = "https://{}:{}{}".format(
-        settings.LIVE_DATA_SERVER_DOMAIN,
-        settings.LIVE_DATA_SERVER_PORT,
-        live_data_url,
-    )
+    live_data_url = f"https://{settings.LIVE_DATA_SERVER_DOMAIN}:{settings.LIVE_DATA_SERVER_PORT}{live_data_url}"
 
     # First option: html data
     html_data = get_plot_data_from_server(instrument, run_id, "html")
@@ -571,11 +576,8 @@ def get_plot_data_from_server(instrument, run_id, data_type="json"):
     try:
         url_template = string.Template(settings.LIVE_DATA_SERVER)
         live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
-        live_data_url = "https://{}:{}{}/{}/".format(
-            settings.LIVE_DATA_SERVER_DOMAIN,
-            settings.LIVE_DATA_SERVER_PORT,
-            live_data_url,
-            data_type,
+        live_data_url = (
+            f"https://{settings.LIVE_DATA_SERVER_DOMAIN}:{settings.LIVE_DATA_SERVER_PORT}{live_data_url}/{data_type}/"
         )
         live_data_url = append_key(live_data_url, instrument, run_id)
         data_request = requests.get(live_data_url, timeout=1.5)
