@@ -5,9 +5,11 @@ Get the status of legacy instruments
 @copyright: 2015 Oak Ridge National Laboratory
 """
 
-import httplib2
 import json
 import logging
+
+import httplib2
+
 from reporting.dasmon.models import LegacyURL
 
 STATUS_HOST = "neutrons.ornl.gov"

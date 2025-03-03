@@ -2,26 +2,28 @@
 """
 Live monitoring
 """
+
 import json
 import logging
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
-from django.utils import timezone, formats
-from django.conf import settings
-from django.views.decorators.cache import cache_page, cache_control
-from django.views.decorators.vary import vary_on_cookie
-from django.template import loader
-from django.contrib.auth.decorators import login_required
-from django import forms
 
-from reporting.report.models import Instrument
+from django import forms
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.template import loader
+from django.urls import reverse
+from django.utils import formats, timezone
+from django.views.decorators.cache import cache_control, cache_page
+from django.views.decorators.vary import vary_on_cookie
+
 import reporting.report.view_util as report_view_util
-from reporting.users.models import SiteNotification
 import reporting.users.view_util as users_view_util
 from reporting.dasmon.models import ActiveInstrument, Signal, UserNotification
-from . import view_util
-from . import legacy_status
+from reporting.report.models import Instrument
+from reporting.users.models import SiteNotification
+
+from . import legacy_status, view_util
 
 
 @users_view_util.login_or_local_required
@@ -497,9 +499,7 @@ def notifications(request):
             options = ()
             for i in instrument_list:
                 options += ((i, i),)
-            self.fields["instruments"] = forms.MultipleChoiceField(
-                widget=forms.CheckboxSelectMultiple, choices=options
-            )
+            self.fields["instruments"] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, choices=options)
 
     # Process request
     alert_list = []

@@ -2,11 +2,10 @@
 DASMON listener daemon
 """
 
-import sys
 import argparse
-
 import logging
 import logging.handlers
+import sys
 
 # Set log level
 logging.getLogger().setLevel(logging.INFO)
@@ -21,14 +20,16 @@ fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
 
 
-from .amq_consumer import Client, Listener  # noqa: E402
-
 # Daemon imports
 from workflow.daemon import Daemon  # noqa: E402
-from .settings import BROKERS  # noqa: E402
-from .settings import AMQ_USER  # noqa: E402
-from .settings import AMQ_PWD  # noqa: E402
-from .settings import QUEUES  # noqa: E402
+
+from .amq_consumer import Client, Listener  # noqa: E402
+from .settings import (
+    AMQ_PWD,  # noqa: E402
+    AMQ_USER,  # noqa: E402
+    BROKERS,  # noqa: E402
+    QUEUES,  # noqa: E402
+)
 
 
 class DasMonListenerDaemon(Daemon):

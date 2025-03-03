@@ -6,6 +6,7 @@ Models for PV monitor app
 """
 
 from django.db import models
+
 from reporting.report.models import Instrument
 
 

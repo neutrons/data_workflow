@@ -1,6 +1,7 @@
+import time
+
 import psycopg2
 import requests
-import time
 from django.conf import settings
 from dotenv import dotenv_values
 
@@ -165,7 +166,9 @@ class TestPostProcessingWorkflow:
         counts_before = self.get_message_counts(cursor, datarun_id, queues)
 
         response = self.login(
-            "/report/arcs/214583/catalog/", settings.GENERAL_USER_USERNAME, settings.GENERAL_USER_PASSWORD
+            "/report/arcs/214583/catalog/",
+            settings.GENERAL_USER_USERNAME,
+            settings.GENERAL_USER_PASSWORD,
         )
         assert response.status_code == 200
         assert response.url.endswith("/report/arcs/214583/")

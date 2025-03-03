@@ -1,10 +1,11 @@
 # Django settings
-from .database.settings import *  # noqa: F401, F403
+import json
 
 # Set logging level
 import logging
 import os
-import json
+
+from .database.settings import *  # noqa: F401, F403
 
 LOGGING_LEVEL = logging.INFO
 

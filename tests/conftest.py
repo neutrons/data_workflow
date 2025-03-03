@@ -1,12 +1,13 @@
 # third-party imports
-from dotenv import dotenv_values
+import time
+
 import psycopg2
 import pytest
-import stomp
 
 # standard imports
 import requests
-import time
+import stomp
+from dotenv import dotenv_values
 
 
 @pytest.fixture(scope="session")

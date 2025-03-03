@@ -1,6 +1,7 @@
-import logging
-from .database import transactions
 import json
+import logging
+
+from .database import transactions
 
 
 def decode_message(message):

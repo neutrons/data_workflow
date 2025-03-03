@@ -11,22 +11,38 @@ class TestRunPageView:
 
     @pytest.fixture
     def instrument_scientist(self):
-        r = self.login("/report/arcs/214583/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login(
+            "/report/arcs/214583/",
+            self.instrument_scientist_usern4me,
+            self.instrument_scientist_usern4me,
+        )
         yield r
 
     @pytest.fixture
     def dashboard_instrument_scientist(self):
-        r = self.login("/dasmon/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login(
+            "/dasmon/",
+            self.instrument_scientist_usern4me,
+            self.instrument_scientist_usern4me,
+        )
         yield r
 
     @pytest.fixture
     def extended_dashboard_instrument_scientist(self):
-        r = self.login("/dasmon/dashboard/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login(
+            "/dasmon/dashboard/",
+            self.instrument_scientist_usern4me,
+            self.instrument_scientist_usern4me,
+        )
         yield r
 
     @pytest.fixture
     def latest_runs_instrument_scientist(self):
-        r = self.login("/dasmon/summary/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login(
+            "/dasmon/summary/",
+            self.instrument_scientist_usern4me,
+            self.instrument_scientist_usern4me,
+        )
         yield r
 
     @pytest.fixture
@@ -36,7 +52,11 @@ class TestRunPageView:
 
     @pytest.fixture
     def general_user(self):
-        r = self.login("/report/arcs/214583/", self.general_user_usern4me, self.general_user_p4ssword)
+        r = self.login(
+            "/report/arcs/214583/",
+            self.general_user_usern4me,
+            self.general_user_p4ssword,
+        )
         yield r
 
     @pytest.fixture
@@ -51,7 +71,11 @@ class TestRunPageView:
 
     @pytest.fixture
     def reduction_setup_page(self):
-        r = self.login("/reduction/arcs/", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login(
+            "/reduction/arcs/",
+            self.instrument_scientist_usern4me,
+            self.instrument_scientist_usern4me,
+        )
         yield r
 
     @pytest.fixture
@@ -61,7 +85,11 @@ class TestRunPageView:
 
     @pytest.fixture
     def post_processing_page(self):
-        r = self.login("/report/processing", self.instrument_scientist_usern4me, self.instrument_scientist_usern4me)
+        r = self.login(
+            "/report/processing",
+            self.instrument_scientist_usern4me,
+            self.instrument_scientist_usern4me,
+        )
         yield r
 
     def removeWhitespace(self, text):
@@ -89,7 +117,10 @@ class TestRunPageView:
         assert "Could not communicate with the online catalog" not in r.text
         assert "There is no catalog information for this run yet" not in r.text
 
-        self.assertHtml("<td>Run title</td><td><b>HfO2:12Y omega=90.5,Ei=60 Flux,T=300.944 K</b></td>", r.text)
+        self.assertHtml(
+            "<td>Run title</td><td><b>HfO2:12Y omega=90.5,Ei=60 Flux,T=300.944 K</b></td>",
+            r.text,
+        )
         self.assertHtml("<td>Run start</td><td>Oct. 20, 2021, 6:50 a.m.</td>", r.text)
         self.assertHtml("<td>Run end</td><td>Oct. 20, 2021, 6:53 a.m.</td>", r.text)
         self.assertHtml("<td>Duration</td><td>179.45538330078125</td>", r.text)
@@ -239,10 +270,17 @@ class TestRunPageView:
     def testInstrumentScientistReductionButtonsExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         r = instrument_scientist
-        self.assertHtml("""<a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>""", r.text)
-        self.assertHtml("""<a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>""", r.text)
         self.assertHtml(
-            """<a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>""", r.text
+            """<a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>""",
+            r.text,
+        )
+        self.assertHtml(
+            """<a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>""",
+            r.text,
+        )
+        self.assertHtml(
+            """<a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>""",
+            r.text,
         )
         self.assertHtml("""<a href='/reduction/arcs/'>setup</a>""", r.text)
 
@@ -265,9 +303,13 @@ class TestRunPageView:
             """,
             html,
         )
-        self.assertHtml("""<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""", html)
         self.assertHtml(
-            """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E""", html
+            """<tr><th>Grouping file</th> <td ><select name="grouping" id="id_grouping">""",
+            html,
+        )
+        self.assertHtml(
+            """<tr class='tiny_input'><th>Energy binning <span style='font-weight: normal;'>[% of E""",
+            html,
         )
         self.assertHtml("""<span >E<sub>min</sub> <input type="number" name="e_min" value=""", html)
         self.assertHtml("""<sub>step</sub> <input type="number" name="e_step" value=""", html)
@@ -289,7 +331,10 @@ class TestRunPageView:
 
         self.assertHtml("""<th><label for="id_experiment">Experiment:</label></th>""", r.text)
         self.assertHtml("""<th><label for="id_run_list">Run list:</label></th>""", r.text)
-        self.assertHtml("""<th><label for="id_create_as_needed">Create as needed:</label></th>""", r.text)
+        self.assertHtml(
+            """<th><label for="id_create_as_needed">Create as needed:</label></th>""",
+            r.text,
+        )
         self.assertHtml("""<th><label for="id_task">Task:</label></th>""", r.text)
         self.assertHtml("""<th><label for="id_instrument">Instrument:</label></th>""", r.text)
         self.assertHtml(

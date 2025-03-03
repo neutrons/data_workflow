@@ -5,24 +5,24 @@ Automated reduction configuration view
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-import logging
-import json
 import datetime
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.urls import reverse
-from django.shortcuts import render, get_object_or_404, redirect
+import json
+import logging
+
 from django.conf import settings
-from django.utils import dateparse, timezone
 from django.forms.formsets import formset_factory
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import dateparse, timezone
+from django.views.decorators.csrf import csrf_exempt
+
+import reporting.dasmon.view_util as dasmon_view_util
+import reporting.users.view_util as users_view_util
+from reporting.reduction.models import ReductionProperty
 from reporting.report.models import Instrument
 
-from reporting.reduction.models import ReductionProperty
-from . import forms
-from . import view_util
-
-import reporting.users.view_util as users_view_util
-import reporting.dasmon.view_util as dasmon_view_util
+from . import forms, view_util
 
 
 @users_view_util.login_or_local_required

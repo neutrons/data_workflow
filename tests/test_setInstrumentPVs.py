@@ -1,8 +1,9 @@
-import psycopg2.errors as pge
-import psycopg2
 import argparse
 import os
 import unittest
+
+import psycopg2
+import psycopg2.errors as pge
 
 
 class TestSetInstrumentPVs(unittest.TestCase):
@@ -27,10 +28,18 @@ class TestSetInstrumentPVs(unittest.TestCase):
     def getSettings(cls):
         parser = argparse.ArgumentParser()
         parser.add_argument("--user", dest="user", default=os.getenv("DATABASE_USER", "workflow"))
-        parser.add_argument("--password", dest="password", default=os.getenv("DATABASE_PASS", "workflow"))
+        parser.add_argument(
+            "--password",
+            dest="password",
+            default=os.getenv("DATABASE_PASS", "workflow"),
+        )
         parser.add_argument("--host", dest="host", default=os.getenv("DATABASE_HOST", "localhost"))
         parser.add_argument("--port", dest="port", default=os.getenv("DATABASE_PORT", "5432"))
-        parser.add_argument("--database-name", dest="database", default=os.getenv("DATABASE_NAME", "workflow"))
+        parser.add_argument(
+            "--database-name",
+            dest="database",
+            default=os.getenv("DATABASE_NAME", "workflow"),
+        )
         options = parser.parse_args(args="")
         return options
 
@@ -65,7 +74,10 @@ class TestSetInstrumentPVs(unittest.TestCase):
         expected_values = [self.ids[0], self.ids[1]]
 
         cursor = self.conn.cursor()
-        cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
+        cursor.execute(
+            "SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])",
+            (test_instrument, test_pvs),
+        )
         cursor.execute("SELECT instrument_id, pv_name_id FROM pvmon_monitoredvariable;")
         result = cursor.fetchall()
         self.assertListEqual(expected_values, result)
@@ -76,7 +88,10 @@ class TestSetInstrumentPVs(unittest.TestCase):
         expected_values = self.ids
 
         cursor = self.conn.cursor()
-        cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
+        cursor.execute(
+            "SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])",
+            (test_instrument, test_pvs),
+        )
         cursor.execute("SELECT instrument_id, pv_name_id FROM pvmon_monitoredvariable;")
         result = cursor.fetchall()
         self.assertListEqual(expected_values, result)
@@ -88,7 +103,10 @@ class TestSetInstrumentPVs(unittest.TestCase):
 
         cursor = self.conn.cursor()
 
-        cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
+        cursor.execute(
+            "SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])",
+            (test_instrument, test_pvs),
+        )
         cursor.execute("SELECT instrument_id, pv_name_id FROM pvmon_monitoredvariable;")
         result = cursor.fetchall()
         self.assertListEqual(expected_values, result)
@@ -100,7 +118,10 @@ class TestSetInstrumentPVs(unittest.TestCase):
 
         cursor = self.conn.cursor()
 
-        cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
+        cursor.execute(
+            "SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])",
+            (test_instrument, test_pvs),
+        )
         cursor.execute("SELECT instrument_id, pv_name_id FROM pvmon_monitoredvariable;")
         result = cursor.fetchall()
         self.assertListEqual(expected_values, result)
@@ -111,4 +132,7 @@ class TestSetInstrumentPVs(unittest.TestCase):
 
         cursor = self.conn.cursor()
         with self.assertRaises(pge.RaiseException):
-            cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
+            cursor.execute(
+                "SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])",
+                (test_instrument, test_pvs),
+            )

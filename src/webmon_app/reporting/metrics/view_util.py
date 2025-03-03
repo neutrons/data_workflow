@@ -1,10 +1,11 @@
-from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information
-from reporting.dasmon.models import Parameter, StatusCache, ActiveInstrument
-from reporting.report.view_util import is_acquisition_complete
-from reporting.dasmon.view_util import is_running
 from django.conf import settings
-from django.utils import timezone
 from django.db.models import Q
+from django.utils import timezone
+
+from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache
+from reporting.dasmon.view_util import is_running
+from reporting.report.models import DataRun, Information, Instrument, WorkflowSummary
+from reporting.report.view_util import is_acquisition_complete
 
 
 def postprocessing_diagnostics():
@@ -14,7 +15,8 @@ def postprocessing_diagnostics():
 
     for node_prefix in settings.POSTPROCESS_NODE_PREFIX:
         params = Parameter.objects.filter(
-            ~Q(name__endswith="_pid"), name__startswith=settings.SYSTEM_STATUS_PREFIX + node_prefix
+            ~Q(name__endswith="_pid"),
+            name__startswith=settings.SYSTEM_STATUS_PREFIX + node_prefix,
         )
         for param in params:
             node = param.name.removeprefix(settings.SYSTEM_STATUS_PREFIX)
@@ -64,7 +66,14 @@ def run_statuses(minutes=60):
         "created_on"
     )
 
-    statuses = {"total": len(runs), "acquiring": 0, "incomplete": 0, "complete": 0, "error": 0, "unknown": 0}
+    statuses = {
+        "total": len(runs),
+        "acquiring": 0,
+        "incomplete": 0,
+        "complete": 0,
+        "error": 0,
+        "unknown": 0,
+    }
 
     for run_id in runs:
         try:

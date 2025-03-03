@@ -1,6 +1,7 @@
-import requests
 import re
 from datetime import datetime
+
+import requests
 
 
 def is_float(value):

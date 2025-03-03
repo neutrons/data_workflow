@@ -1,8 +1,9 @@
-import pytest
 from unittest import mock
-from django.test import TestCase
-import workflow
 
+import pytest
+from django.test import TestCase
+
+import workflow
 
 _ = [workflow]
 

@@ -1,10 +1,11 @@
+from django.contrib import admin
+
 from reporting.reduction.models import (
-    ReductionProperty,
-    PropertyModification,
     Choice,
     PropertyDefault,
+    PropertyModification,
+    ReductionProperty,
 )
-from django.contrib import admin
 
 
 class ReductionPropertyAdmin(admin.ModelAdmin):

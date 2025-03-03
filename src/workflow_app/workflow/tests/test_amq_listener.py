@@ -1,7 +1,9 @@
-import pytest
 from unittest import mock
-from django.test import TestCase
+
+import pytest
 import stomp
+from django.test import TestCase
+
 import workflow
 from workflow.amq_listener import Listener
 

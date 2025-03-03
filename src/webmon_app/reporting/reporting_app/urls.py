@@ -2,12 +2,11 @@
 """
 Define url structure
 """
-from django.urls import include, path
-from django.contrib.auth.decorators import login_required
-
-from django.views.generic.base import RedirectView
 
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
+from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)

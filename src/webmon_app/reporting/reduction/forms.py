@@ -5,13 +5,16 @@ Forms for auto-reduction configuration
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2014 Oak Ridge National Laboratory
 """
-import re
+
 import logging
+import re
+
 from django import forms
 from django.core.exceptions import ValidationError
-from reporting.report.models import Instrument
-from reporting.reduction.models import ReductionProperty, Choice
+
 import reporting.reduction.view_util
+from reporting.reduction.models import Choice, ReductionProperty
+from reporting.report.models import Instrument
 
 
 def _get_choices(instrument):
@@ -310,7 +313,10 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     use_sangle = forms.BooleanField(required=False, initial=True)
     fit_peak_in_roi = forms.BooleanField(required=False, initial=False)
     peak_count = forms.IntegerField(
-        required=True, min_value=1, initial=1, widget=forms.NumberInput(attrs={"size": "2"})
+        required=True,
+        min_value=1,
+        initial=1,
+        widget=forms.NumberInput(attrs={"size": "2"}),
     )
 
     # Options for first peak

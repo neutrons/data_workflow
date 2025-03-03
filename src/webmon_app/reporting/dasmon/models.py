@@ -5,6 +5,7 @@ Dasmon app models
 """
 
 from django.db import models
+
 from reporting.report.models import Instrument
 
 
