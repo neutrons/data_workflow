@@ -274,15 +274,13 @@ def run_rate(instrument_id, n_hours=24):
     try:
         # Try calling the stored procedure (faster)
         with transaction.atomic():
-            cursor = connection.cursor()
-            cursor.callproc("run_rate", (instrument_id.id,))
-            msg = cursor.fetchone()[0]
-            cursor.execute('FETCH ALL IN "%s"' % msg)
-            rows = cursor.fetchall()
-            cursor.close()
+            with connection.cursor() as cursor:
+                cursor.callproc("run_rate", (instrument_id.id,))
+                msg = cursor.fetchone()[0]
+                cursor.execute('FETCH ALL IN "%s"' % msg)
+                rows = cursor.fetchall()
         return [[int(row[0]), int(row[1])] for row in rows]
     except Exception:
-        connection.close()
         logging.exception("Call to stored procedure run_rate(%s) failed", str(instrument_id))
         logging.error("Running query from python")
 
@@ -316,15 +314,13 @@ def error_rate(instrument_id, n_hours=24):
     try:
         # Try calling the stored procedure (faster)
         with transaction.atomic():
-            cursor = connection.cursor()
-            cursor.callproc("error_rate", (instrument_id.id,))
-            msg = cursor.fetchone()[0]
-            cursor.execute('FETCH ALL IN "%s"' % msg)
-            rows = cursor.fetchall()
-            cursor.close()
+            with connection.cursor() as cursor:
+                cursor.callproc("error_rate", (instrument_id.id,))
+                msg = cursor.fetchone()[0]
+                cursor.execute('FETCH ALL IN "%s"' % msg)
+                rows = cursor.fetchall()
         return [[int(row[0]), int(row[1])] for row in rows]
     except Exception:
-        connection.close()
         logging.exception("Call to stored procedure error_rate(%s) failed", str(instrument_id))
         logging.error("Running query from python")
 
