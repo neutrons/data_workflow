@@ -271,6 +271,7 @@ def run_rate(instrument_id, n_hours=24):
     :param n_hours: number of hours to track
     """
     # Try calling the stored procedure (faster)
+    msg = ""  # start with empty message to help with logging
     try:
         cursor = connection.cursor()
         cursor.callproc("run_rate", (instrument_id.id,))
@@ -282,6 +283,7 @@ def run_rate(instrument_id, n_hours=24):
     except Exception:
         connection.close()
         logging.exception("Call to stored procedure run_rate(%s) failed", str(instrument_id))
+        logging.error("Running query from python")
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -295,6 +297,8 @@ def run_rate(instrument_id, n_hours=24):
             runs.append([-i, n])
         return runs
     except SystemExit:
+        if msg:  # skip empty string
+            logging.error("message returned from fetchone: %s", str(msg))
         logging.exception("Call to stored procedure error_rate(%s) created system exit", str(instrument_id))
         raise
 
@@ -308,6 +312,7 @@ def error_rate(instrument_id, n_hours=24):
     :param n_hours: number of hours to track
     """
     # Try calling the stored procedure (faster)
+    msg = ""  # start with empty message to help with logging
     try:
         cursor = connection.cursor()
         cursor.callproc("error_rate", (instrument_id.id,))
@@ -316,9 +321,10 @@ def error_rate(instrument_id, n_hours=24):
         rows = cursor.fetchall()
         cursor.close()
         return [[int(r[0]), int(r[1])] for r in rows]
-    except Exception as e:
+    except Exception:
         connection.close()
-        logging.exception("Call to stored procedure error_rate(%s) failed: %s", str(instrument_id), str(e))
+        logging.exception("Call to stored procedure error_rate(%s) failed", str(instrument_id))
+        logging.error("Running query from python")
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -335,7 +341,9 @@ def error_rate(instrument_id, n_hours=24):
             errors.append([-i, n])
         return errors
     except SystemExit:
-        logging.exception("Call to stored procedure error_rate(%s) created system exit: %s", str(instrument_id))
+        if msg:  # skip empty string
+            logging.error("message returned from fetchone: %s", str(msg))
+        logging.exception("Call to stored procedure error_rate(%s) created system exit", str(instrument_id))
         raise
 
 
