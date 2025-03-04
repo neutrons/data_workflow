@@ -279,9 +279,9 @@ def run_rate(instrument_id, n_hours=24):
         rows = cursor.fetchall()
         cursor.close()
         return [[int(r[0]), int(r[1])] for r in rows]
-    except Exception as e:
+    except Exception:
         connection.close()
-        logging.exception("Call to stored procedure run_rate(%s) failed: %s", str(instrument_id), str(e))
+        logging.exception("Call to stored procedure run_rate(%s) failed", str(instrument_id))
 
         # Do it by hand (slow)
         time = timezone.now()
@@ -294,6 +294,9 @@ def run_rate(instrument_id, n_hours=24):
             running_sum += n
             runs.append([-i, n])
         return runs
+    except SystemExit:
+        logging.exception("Call to stored procedure error_rate(%s) created system exit", str(instrument_id))
+        raise
 
 
 @transaction.atomic
@@ -331,6 +334,9 @@ def error_rate(instrument_id, n_hours=24):
             running_sum += n
             errors.append([-i, n])
         return errors
+    except SystemExit:
+        logging.exception("Call to stored procedure error_rate(%s) created system exit: %s", str(instrument_id))
+        raise
 
 
 def get_current_status(instrument_id):
@@ -433,6 +439,10 @@ def get_run_list_dict(run_list):
     """
     run_dicts = []
 
+    # return early if provided an empty list
+    if len(run_list) == 0:
+        return run_dicts
+
     run_status_text_dict = get_run_status_text_dict(run_list, use_element_id=True)
 
     try:
@@ -459,8 +469,11 @@ def get_run_list_dict(run_list):
                     "status": run_status_text_dict.get(r.id, "unknown"),
                 }
             )
-    except:  # noqa: E722
-        logging.exception("report.view_util.get_run_list_dict:")
+    except Exception:
+        logging.exception("report.view_util.get_run_list_dict: %s", str(run_list))
+    except SystemExit:
+        logging.exception("report.view_util.get_run_list_dict SystemExit: %s", str(run_list))
+        raise
 
     return run_dicts
 
@@ -582,7 +595,7 @@ def get_plot_data_from_server(instrument, run_id, data_type="json"):
         if data_request.status_code == 200:
             json_data = data_request.text
     except:  # noqa: E722
-        logging.exception("Could not pull data from live data server:")
+        logging.exception("Could not pull data from live data server: %s", str(instrument))
     return json_data
 
 
@@ -655,7 +668,7 @@ def find_skipped_runs(instrument_id, start_run_number=0):
             if len(query_set) == 0:
                 missing_runs.append(i)
     except:  # noqa: E722
-        logging.exception("Error finding missing runs:")
+        logging.exception("Error finding missing runs: %s", str(instrument_id))
     return missing_runs
 
 
