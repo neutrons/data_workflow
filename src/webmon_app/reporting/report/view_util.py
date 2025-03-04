@@ -219,6 +219,14 @@ def processing_request(request, instrument, run_id, destination):
     return redirect(reverse("report:detail", args=[instrument, run_id]))
 
 
+def __generate_empty_rates(n_hours):
+    runs = []
+    num_runs = 0  # there are no runs
+    for i in range(n_hours):
+        runs.append([-i, num_runs])
+    return runs
+
+
 def retrieve_rates(instrument_id, last_run_id):
     """
     Retrieve the run rate and error rate for an instrument.
@@ -227,6 +235,8 @@ def retrieve_rates(instrument_id, last_run_id):
     :param instrument_id: Instrument object
     :param last_run_id: DataRun object
     """
+    n_hours = 24
+
     last_run = None
     if last_run_id is not None:
         last_run = last_run_id.run_number
@@ -249,14 +259,37 @@ def retrieve_rates(instrument_id, last_run_id):
 
     # If we didn't find good rates in the cache, recalculate them
     if runs is None or errors is None:
-        runs = run_rate(instrument_id)
-        errors = error_rate(instrument_id)
+        # check for any run in the last n-hours
+        time_oldest = timezone.now() - datetime.timedelta(hours=n_hours + 1)  # is +1 needed?
+
+        # only query further if there are runs for the instrument
+        have_runs = bool(DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=time_oldest).count() > 0)
+        if have_runs:
+            runs = run_rate(instrument_id, n_hours=n_hours)
+        else:
+            runs = __generate_empty_rates(n_hours)
+
+        # same for errors
+        have_errors = bool(
+            Error.objects.filter(
+                run_status_id__run_id__instrument_id=instrument_id, run_status_id__created_on__gte=time_oldest
+            ).count()
+            > 0
+        )
+        if have_errors:
+            errors = error_rate(instrument_id, n_hours=n_hours)
+        else:
+            errors = __generate_empty_rates(n_hours)
+
+        # cache the run rate
         cache.set("%s_run_rate" % instrument_id.name, runs, settings.RUN_RATE_CACHE_TIMEOUT)
         cache.set(
             "%s_error_rate" % instrument_id.name,
             errors,
             settings.RUN_RATE_CACHE_TIMEOUT,
         )
+
+        # add the last run view for this instrument to the cache
         cache.set("%s_rate_last_run" % instrument_id.name, last_run)
 
     return runs, errors
