@@ -64,7 +64,9 @@ def reduction_user_options():
         force_bck_roi=_as_bool(${force_background}),
         bck_roi=[int(${bck_min}), int(${bck_max})],
         use_tight_bck=${use_side_bck},
-        bck_offset=int(${bck_width})
+        bck_offset=int(${bck_width}),
+        force_low_res = _as_bool(${force_low_res}),
+        low_res_roi = [int(${low_res_min}), int(${low_res_max})]
     )
 
     # Options for Peak 2
@@ -76,7 +78,9 @@ def reduction_user_options():
         force_bck_roi=_as_bool(${force_background_s2}),
         bck_roi = [int(${bck_min_s2}), int(${bck_max_s2})],
         use_tight_bck=_as_bool(${use_side_bck_s2}),
-        bck_offset=int(${bck_width_s2})
+        bck_offset=int(${bck_width_s2}),
+        force_low_res = _as_bool(${force_low_res_s2}),
+        low_res_roi = [int(${low_res_min_s2}), int(${low_res_max_s2})]
     )
 
     # Options for Peak 3
@@ -89,6 +93,8 @@ def reduction_user_options():
         bck_roi=[int(${bck_min_s3}), int(${bck_max_s3})],
         use_tight_bck=_as_bool(${use_side_bck_s3}),
         bck_offset=int(${bck_width_s3}),
+        force_low_res = _as_bool(${force_low_res_s3}),
+        low_res_roi = [int(${low_res_min_s3}), int(${low_res_max_s3})]
     )
 
     # Do we have more than one peak in this run?
@@ -130,7 +136,7 @@ def main():
     file_path = args.report_file
     if file_path and os.path.basename(file_path) == file_path:
         file_path = os.path.join(args.outdir, file_path)
-    run_number = re.search(r'REF_M_\d+', args.events_file).group(0)
+    run_number = re.search(r'REF_M_(\d+)', args.events_file).group(1)
     upload_html_report(reports, publish=(not args.no_publish), run_number=run_number, report_file=file_path)
 
     # Check if the auto-reduce data has been saved to the canonical IPTS-XXXXX/shared/autoreduce directory

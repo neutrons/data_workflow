@@ -24,6 +24,9 @@ class TestREF_MForm(TestCase):
         "bck_max": 100,
         "use_side_bck": False,
         "bck_width": 10,
+        "force_low_res": False,
+        "low_res_min": 42,
+        "low_res_max": 142,
         # Options for second peak
         "force_peak_s2": False,
         "peak_min_s2": 160,
@@ -34,6 +37,9 @@ class TestREF_MForm(TestCase):
         "bck_max_s2": 100,
         "use_side_bck_s2": False,
         "bck_width_s2": 10,
+        "force_low_res_s2": False,
+        "low_res_min_s2": 42,
+        "low_res_max_s2": 142,
         # Options for third peak
         "force_peak_s3": False,
         "peak_min_s3": 160,
@@ -44,6 +50,9 @@ class TestREF_MForm(TestCase):
         "bck_max_s3": 100,
         "use_side_bck_s3": False,
         "bck_width_s3": 10,
+        "force_low_res_s3": False,
+        "low_res_min_s3": 42,
+        "low_res_max_s3": 142,
     }
 
     def test_empty_form(self):
@@ -75,6 +84,9 @@ class TestREF_MForm(TestCase):
                 "bck_max": "",
                 "use_side_bck": "False",
                 "bck_width": "",
+                "force_low_res": "False",
+                "low_res_min": "",
+                "low_res_max": "",
                 # Options for second peak
                 "force_peak_s2": "False",
                 "peak_min_s2": "",
@@ -85,6 +97,9 @@ class TestREF_MForm(TestCase):
                 "bck_max_s2": "",
                 "use_side_bck_s2": "False",
                 "bck_width_s2": "",
+                "force_low_res_s2": "False",
+                "low_res_min_s2": "",
+                "low_res_max_s2": "",
                 # Options for third peak
                 "force_peak_s3": "False",
                 "peak_min_s3": "",
@@ -95,6 +110,9 @@ class TestREF_MForm(TestCase):
                 "bck_max_s3": "",
                 "use_side_bck_s3": "False",
                 "bck_width_s3": "",
+                "force_low_res_s3": "False",
+                "low_res_min_s3": "",
+                "low_res_max_s3": "",
             },
         )
 

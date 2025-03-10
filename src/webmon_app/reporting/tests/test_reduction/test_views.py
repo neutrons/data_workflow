@@ -173,6 +173,9 @@ class TestView(TestCase):
                 "bck_max": 100,
                 "use_side_bck": False,
                 "bck_width": 10,
+                "force_low_res": False,
+                "low_res_min": 42,
+                "low_res_max": 142,
                 # Options for second peak
                 "force_peak_s2": True,
                 "peak_min_s2": 170,
@@ -183,6 +186,9 @@ class TestView(TestCase):
                 "bck_max_s2": 101,
                 "use_side_bck_s2": True,
                 "bck_width_s2": 11,
+                "force_low_res_s2": True,
+                "low_res_min_s2": 91,
+                "low_res_max_s2": 181,
                 # Options for third peak
                 "force_peak_s3": False,
                 "peak_min_s3": 180,
@@ -193,12 +199,15 @@ class TestView(TestCase):
                 "bck_max_s3": 102,
                 "use_side_bck_s3": False,
                 "bck_width_s3": 12,
+                "force_low_res_s3": False,
+                "low_res_min_s3": 66,
+                "low_res_max_s3": 166,
             },
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "reduction/configuration_ref_m.html")
         # uncomment the following line only when debugging, in order to inspect the response content
-        # open("/tmp/junk.html", "wb").write(response.content)  # take a look to file:///tmp/junk.html with the browser
+        open("/tmp/junk.html", "wb").write(response.content)  # take a look to file:///tmp/junk.html with the browser
 
     def test_configuration_change(self):
         # no data

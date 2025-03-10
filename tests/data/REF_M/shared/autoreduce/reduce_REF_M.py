@@ -66,6 +66,8 @@ def reduction_user_options():
         bck_roi=[int(28), int(80)],
         use_tight_bck=False,
         bck_offset=int(),
+        force_low_res=False,
+        low_res_roi=[int(20), int(236)],
     )
 
     # Options for Peak 2
@@ -78,6 +80,8 @@ def reduction_user_options():
         bck_roi=[int(30), int(70)],
         use_tight_bck=_as_bool(False),
         bck_offset=int(),
+        force_low_res=False,
+        low_res_roi=[int(20), int(236)],
     )
 
     # Options for Peak 3
@@ -90,6 +94,8 @@ def reduction_user_options():
         bck_roi=[int(30), int(70)],
         use_tight_bck=_as_bool(False),
         bck_offset=int(),
+        force_low_res=False,
+        low_res_roi=[int(20), int(236)],
     )
 
     # Do we have more than one peak in this run?

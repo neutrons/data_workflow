@@ -195,6 +195,20 @@ if you want to use the region on each side of the peak to estimate your backgrou
         </td>
     </tr>
 
+    <!-- Force low-res ROI options -->
+      <tr class='tiny_input'>
+        <td>
+            {{ options_form.force_low_res }}
+            <span title="Override the low resolution (Y-Pixel) range in the sample logs with your own range.
+Check the following box if you want to define your own range and use it for peak selection.">
+                <strong>Force low-res ROI</strong></span>
+            <label class='short_label' for='low_res_min'>Pixel<sub>min</sub></label>
+            {{ options_form.low_res_min }}
+            <label class='short_label' for='low_res_max'>Pixel<sub>max</sub></label>
+            {{ options_form.low_res_max }}
+        </td>
+    </tr>
+
 
     <!-- Divider line -->
     <td><hr></td>
@@ -256,6 +270,20 @@ if you want to use the region on each side of the peak to estimate your backgrou
                 <strong>Use side background</strong>
             </span>
             <label class='long_label' for='bck_width_s2'>Pixels on each side</label> {{ options_form.bck_width_s2 }}
+        </td>
+    </tr>
+
+    <!-- Force low-res ROI options -->
+      <tr class='tiny_input'>
+        <td>
+            {{ options_form.force_low_res_s2 }}
+            <span title="Override the low resolution (Y-Pixel) range in the sample logs with your own range.
+Check the following box if you want to define your own range and use it for peak selection.">
+                <strong>Force low-res ROI</strong></span>
+            <label class='short_label' for='low_res_min_s2'>Pixel<sub>min</sub></label>
+            {{ options_form.low_res_min_s2 }}
+            <label class='short_label' for='low_res_max_s2'>Pixel<sub>max</sub></label>
+            {{ options_form.low_res_max_s2 }}
         </td>
     </tr>
 
@@ -321,6 +349,20 @@ if you want to use the region on each side of the peak to estimate your backgrou
                 <strong>Use side background</strong>
             </span>
             <label class='long_label' for='bck_width_s3'>Pixels on each side</label> {{ options_form.bck_width_s3 }}
+        </td>
+    </tr>
+
+    <!-- Force low-res ROI options -->
+      <tr class='tiny_input'>
+        <td>
+            {{ options_form.force_low_res_s3 }}
+            <span title="Override the low resolution (Y-Pixel) range in the sample logs with your own range.
+Check the following box if you want to define your own range and use it for peak selection.">
+                <strong>Force low-res ROI</strong></span>
+            <label class='short_label' for='low_res_min_s3'>Pixel<sub>min</sub></label>
+            {{ options_form.low_res_min_s3 }}
+            <label class='short_label' for='low_res_max_s3'>Pixel<sub>max</sub></label>
+            {{ options_form.low_res_max_s3 }}
         </td>
     </tr>
 
