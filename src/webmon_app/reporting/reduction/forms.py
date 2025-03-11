@@ -323,6 +323,9 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     bck_max = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={"size": "5"}))
     use_side_bck = forms.BooleanField(required=False, initial=False)
     bck_width = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
+    force_low_res = forms.BooleanField(required=False, initial=False)
+    low_res_min = forms.IntegerField(required=True, initial=20, widget=forms.NumberInput(attrs={"size": "5"}))
+    low_res_max = forms.IntegerField(required=True, initial=236, widget=forms.NumberInput(attrs={"size": "5"}))
 
     # Options for second peak
     force_peak_s2 = forms.BooleanField(required=False, initial=False)
@@ -334,6 +337,9 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     bck_max_s2 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={"size": "5"}))
     use_side_bck_s2 = forms.BooleanField(required=False, initial=False)
     bck_width_s2 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
+    force_low_res_s2 = forms.BooleanField(required=False, initial=False)
+    low_res_min_s2 = forms.IntegerField(required=True, initial=20, widget=forms.NumberInput(attrs={"size": "5"}))
+    low_res_max_s2 = forms.IntegerField(required=True, initial=236, widget=forms.NumberInput(attrs={"size": "5"}))
 
     # Options for third peak
     force_peak_s3 = forms.BooleanField(required=False, initial=False)
@@ -345,6 +351,9 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     bck_max_s3 = forms.IntegerField(required=True, initial=100, widget=forms.NumberInput(attrs={"size": "5"}))
     use_side_bck_s3 = forms.BooleanField(required=False, initial=False)
     bck_width_s3 = forms.IntegerField(required=True, initial=10, widget=forms.NumberInput(attrs={"size": "4"}))
+    force_low_res_s3 = forms.BooleanField(required=False, initial=False)
+    low_res_min_s3 = forms.IntegerField(required=True, initial=20, widget=forms.NumberInput(attrs={"size": "5"}))
+    low_res_max_s3 = forms.IntegerField(required=True, initial=236, widget=forms.NumberInput(attrs={"size": "5"}))
 
     # List of fields are used in the template
     _template_list = [
@@ -365,6 +374,9 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
         "bck_max",
         "use_side_bck",
         "bck_width",
+        "force_low_res",
+        "low_res_min",
+        "low_res_max",
         # Options for second peak
         "force_peak_s2",
         "peak_min_s2",
@@ -375,6 +387,9 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
         "bck_max_s2",
         "use_side_bck_s2",
         "bck_width_s2",
+        "force_low_res_s2",
+        "low_res_min_s2",
+        "low_res_max_s2",
         # Options for third peak
         "force_peak_s3",
         "peak_min_s3",
@@ -385,6 +400,9 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
         "bck_max_s3",
         "use_side_bck_s3",
         "bck_width_s3",
+        "force_low_res_s3",
+        "low_res_min_s3",
+        "low_res_max_s3",
     ]
 
 
