@@ -110,6 +110,9 @@ configure/webmon: install/webmon
 	# add the stored sql proceedures
 	python $(MANAGE_PY_WEBMON) add_stored_procs
 
+	# add indexes
+	python $(MANAGE_PY_WEBMON) add_indices
+
 	@echo "\n\nReady to go\n"
 
 configure/load_initial_data: install/webmon
