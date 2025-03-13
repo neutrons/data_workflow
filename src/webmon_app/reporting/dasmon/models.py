@@ -118,16 +118,6 @@ class Signal(models.Model):
     timestamp = models.DateTimeField("timestamp")
 
 
-class LegacyURL(models.Model):
-    """
-    Table of URLs pointing to the legacy instrument status service
-    """
-
-    instrument_id = models.OneToOneField(Instrument, on_delete=models.CASCADE)
-    url = models.CharField(max_length=128)
-    long_name = models.CharField(max_length=40)
-
-
 class UserNotification(models.Model):
     """
     Table of users to notify
