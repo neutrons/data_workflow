@@ -21,7 +21,6 @@ from reporting.users.models import SiteNotification
 import reporting.users.view_util as users_view_util
 from reporting.dasmon.models import ActiveInstrument, Signal, UserNotification
 from . import view_util
-from . import legacy_status
 
 
 @users_view_util.login_or_local_required
@@ -153,62 +152,6 @@ def run_summary_update(request):
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
     response["Content-Length"] = len(response.content)
-    return response
-
-
-@users_view_util.login_or_local_required
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-@users_view_util.monitor
-@vary_on_cookie
-def legacy_monitor(request, instrument):
-    """
-    For legacy instruments, show contents of old status page
-
-    :param instrument: instrument name
-    """
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    update_url = reverse("dasmon:get_update", args=[instrument])
-    legacy_update_url = reverse("dasmon:get_legacy_data", args=[instrument])
-    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
-    kvp = legacy_status.get_ops_status(instrument_id)
-    template_values = {
-        "instrument": instrument.upper(),
-        "breadcrumbs": breadcrumbs,
-        "update_url": update_url,
-        "legacy_update_url": legacy_update_url,
-        "key_value_pairs": kvp,
-    }
-    if len(kvp) == 0:
-        inst_url = legacy_status.get_legacy_url(instrument_id)
-        template_values["user_alert"] = ["Could not connect to <a href='%s'>%s</a>" % (inst_url, inst_url)]
-    for group in kvp:
-        for item in group["data"]:
-            if item["key"] in ["Proposal", "Detector_Rate", "Run", "Status"]:
-                template_values[item["key"]] = item["value"]
-    template_values = report_view_util.fill_template_values(request, **template_values)
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    template_values = view_util.fill_template_values(request, **template_values)
-
-    # Add most recent reduced data
-    last_run = template_values["last_run"]
-    plot_dict = report_view_util.get_plot_template_dict(last_run, instrument=instrument, run_id=last_run.run_number)
-    template_values.update(plot_dict)
-
-    return render(request, "dasmon/legacy_monitor.html", template_values)
-
-
-@users_view_util.login_or_local_required_401
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-def get_legacy_data(request, instrument):
-    """
-    Return the latest legacy status information
-    """
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    data_dict = legacy_status.get_ops_status(instrument_id)
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
     return response
 
 

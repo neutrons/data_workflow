@@ -31,10 +31,4 @@ urlpatterns = [
         views.acknowledge_signal,
         name="acknowledge_signal",
     ),
-    re_path(r"^(?P<instrument>[\w]+)/legacy/$", views.legacy_monitor, name="legacy_monitor"),
-    re_path(
-        r"^(?P<instrument>[\w]+)/legacy/update/$",
-        views.get_legacy_data,
-        name="get_legacy_data",
-    ),
 ]
