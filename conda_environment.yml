@@ -6,7 +6,6 @@ dependencies:
   - python=3.11
   - django=4.2
   - gunicorn
-  - httplib2
   - make
   - oauthlib
   - postgresql
