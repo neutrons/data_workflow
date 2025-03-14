@@ -19,14 +19,6 @@ reporting.dasmon.admin module
     :undoc-members:
     :show-inheritance:
 
-reporting.dasmon.legacy\_status module
---------------------------------------
-
-.. automodule:: reporting.dasmon.legacy_status
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 reporting.dasmon.models module
 ------------------------------
 

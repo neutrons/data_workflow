@@ -60,7 +60,7 @@ class TestWorkflow:
 
         cursor.execute("SELECT * from reduction_choice WHERE instrument_id = 3;")
         if cursor.fetchone() is None:
-            cursor.execute("SELECT * FROM reduction_reductionproperty WHERE key = 'grouping';")
+            cursor.execute("SELECT id, instrument_id FROM reduction_reductionproperty WHERE key = 'grouping';")
             props = cursor.fetchone()
             cursor.execute(
                 "INSERT INTO reduction_choice (instrument_id, property_id, description, value) VALUES(%s, %s, %s, %s)",

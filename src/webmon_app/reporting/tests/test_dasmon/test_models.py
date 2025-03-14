@@ -10,7 +10,6 @@ from reporting.dasmon.models import (
     StatusCache,
     ActiveInstrument,
     Signal,
-    LegacyURL,
     UserNotification,
 )
 
@@ -161,36 +160,6 @@ class SignalTest(TestCase):
     def test_timestamp(self):
         s = Signal.objects.get(id=1)
         self.assertTrue(isinstance(s.timestamp, datetime))
-
-
-class LegacyURLTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        instrument = Instrument.objects.create(name="testInst")
-        instrument.save()
-        LegacyURL.objects.create(
-            instrument_id=instrument,
-            url="testURL",
-            long_name="testDescription",
-        )
-
-    def test_url(self):
-        lu = LegacyURL.objects.get(id=1)
-        self.assertEqual(lu.url, "testURL")
-
-    def test_url_max_length(self):
-        lu = LegacyURL.objects.get(id=1)
-        max_len = lu._meta.get_field("url").max_length
-        self.assertEqual(max_len, 128)
-
-    def test_long_name(self):
-        lu = LegacyURL.objects.get(id=1)
-        self.assertEqual(lu.long_name, "testDescription")
-
-    def test_long_name_max_length(self):
-        lu = LegacyURL.objects.get(id=1)
-        max_len = lu._meta.get_field("long_name").max_length
-        self.assertEqual(max_len, 40)
 
 
 class UserNotificationTest(TestCase):

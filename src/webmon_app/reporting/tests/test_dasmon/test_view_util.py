@@ -407,7 +407,6 @@ class ViewUtilTest(TestCase):
         assert template["live_monitor_url"] == "/dasmon/testinst/"
         assert template["live_runs_url"] == "/dasmon/testinst/runs/"
         assert template["live_pv_url"] == "/pvmon/testinst/"
-        assert template["legacy_url"] == "/dasmon/testinst/legacy/"
         assert template["dasmon_url"] is None
         assert template["das_status"] == 0
         assert template["recording_status"] == 0

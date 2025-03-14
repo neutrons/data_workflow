@@ -3,7 +3,7 @@ requires = ["setuptools >= 42", "wheel", "toml", "versioningit"]
 build-backend = "setuptools.build_meta"
 
 [tool.check-wheel-contents]
-ignore = ["W002"]  # duplicate files
+ignore = ["W002", "W004"]  # duplicate files and can't import django migrations
 
 [tool.versioningit.vcs]
 method = "git"
