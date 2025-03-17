@@ -47,6 +47,16 @@ urlpatterns = [
         views.ipts_summary,
         name="ipts_summary",
     ),
+    re_path(
+        r"^(?P<instrument>[\w]+)/experiment/(?P<ipts>[\w\-\.]+)/datatables/$",
+        views.ipts_summary_datatables,
+        name="ipts_summary_datatables",
+    ),
+    re_path(
+        r"^(?P<instrument>[\w]+)/experiment/(?P<ipts>[\w\-\.]+)/run_list/$",
+        views.ipts_summary_run_list,
+        name="ipts_summary_run_list",
+    ),
     re_path(r"^(?P<instrument>[\w]+)/errors/$", views.live_errors, name="live_errors"),
     re_path(
         r"^(?P<instrument>[\w]+)/errors/update$",

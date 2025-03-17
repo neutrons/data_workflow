@@ -898,6 +898,44 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     return data_dict
 
 
+def get_run_list_datatables(instrument_id, ipts_id, offset=0, limit=10, order_by="created_on", reverse=True):
+    """
+    Return a list of runs for the given instrument and experiment handling the datatables server side processing"""
+    logger = logging.getLogger(LOGNAME)
+    run_list = []
+    logger.warning(
+        "get_run_list_datatables: instrument_id=%s, ipts_id=%s, offset=%s, limit=%s, order_by=%s, reverse=%s",
+        instrument_id,
+        ipts_id,
+        offset,
+        limit,
+        order_by,
+        reverse,
+    )
+
+    if ipts_id is not None:
+        run_list = DataRun.objects.filter(
+            instrument_id=instrument_id,
+            ipts_id=ipts_id,
+        )
+        count = run_list.count()
+        run_list = run_list.order_by(order_by)
+        if reverse:
+            run_list = run_list.reverse()
+        run_list = run_list[offset : limit + offset]  # noqa E203
+
+    elif instrument_id is not None:
+        run_list = (
+            DataRun.objects.filter(instrument_id=instrument_id)
+            .order_by(order_by)
+            .reverse()[offset : limit + offset]  # noqa E203
+        )
+    else:
+        run_list = DataRun.objects.order_by(order_by).reverse()[offset : limit + offset]  # noqa E203
+
+    return run_list, count
+
+
 def get_live_runs(timeframe=None, number_of_entries=10, instrument_id=None, as_html=True):
     """
     Get recent runs for all instruments.

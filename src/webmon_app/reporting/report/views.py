@@ -9,7 +9,7 @@ import sys
 import logging
 import json
 import datetime
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone, formats
@@ -427,6 +427,44 @@ def ipts_summary(request, instrument, ipts):
 
 
 @users_view_util.login_or_local_required
+def ipts_summary_datatables(request, instrument, ipts):
+    """
+    Experiment summary giving the list of runs
+
+    :param instrument: instrument name
+    :param ipts: experiment name
+    """
+
+    # Protect against lower-case requests
+    ipts = ipts.upper()
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    # Get experiment
+    ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
+
+    # Get data URL
+    update_url = reverse("report:ipts_summary_run_list", args=[instrument, ipts])
+
+    # Breadcrumbs
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse("report:instrument_summary", args=[instrument]),
+        instrument,
+    )
+    breadcrumbs += " &rsaquo; %s" % str(ipts_id).lower()
+
+    template_values = {
+        "instrument": instrument.upper(),
+        "ipts_number": ipts,
+        "breadcrumbs": breadcrumbs,
+        "update_url": update_url,
+    }
+    template_values = view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    return render(request, "report/ipts_summary_datatables.html", template_values)
+
+
+@users_view_util.login_or_local_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @vary_on_cookie
@@ -530,6 +568,48 @@ def get_experiment_update(request, instrument, ipts):
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
     return response
+
+
+@users_view_util.login_or_local_required_401
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+def ipts_summary_run_list(request, instrument, ipts):
+    """
+    Ajax call to get updates behind the scenes
+
+    :param instrument: instrument name
+    :param ipts: experiment name
+    """
+
+    column_to_field = {
+        "run": "run_number",
+        "timestamp": "created_on",
+    }
+
+    order_column_number = request.GET.get("order[0][column]", "0")
+    order_dir = request.GET.get("order[0][dir]", "desc")
+    order_column = request.GET.get(f"columns[{order_column_number}][data]", "run")
+    order_column = column_to_field.get(order_column, "run_number")
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    # Get experiment
+    ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
+
+    data = view_util.get_current_status(instrument_id)
+
+    run_list, count = dasmon_view_util.get_run_list_datatables(
+        instrument_id, ipts_id, offset, limit, order_column, order_dir == "desc"
+    )
+    data["data"] = view_util.get_run_list_dict(run_list)
+    data["recordsTotal"] = count
+    data["recordsFiltered"] = count
+    data["draw"] = draw
+
+    return JsonResponse(data)
 
 
 @users_view_util.login_or_local_required_401
