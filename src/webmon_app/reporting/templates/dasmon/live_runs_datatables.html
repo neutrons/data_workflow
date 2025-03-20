@@ -1,0 +1,91 @@
+{% extends "dasmon/live_monitor.html" %}
+{% load dasmon_tags %}
+
+{% block header %}
+<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
+<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
+<link rel="stylesheet" href="/static/thirdparty/datatables.min.css" crossorigin="anonymous" />
+<script type="text/javascript" src="/static/thirdparty/datatables.min.js" crossorigin="anonymous"></script>
+
+<script>
+  var table;
+
+  $(document).ready(function () {
+    table = $('#run_table').DataTable({
+      ajax: function (data, callback, settings) {
+        $.ajax({
+          url: '{{ update_url }}',
+          data: data,
+          success: function (json) {
+            update_from_ajax_data(json);
+            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}" + json.last_run + "/'>" + json.last_run + "</a></span>");
+            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}" + json.last_expt + "/'>" + json.last_expt + "</a></span>");
+            $('#info_run_time').replaceWith("<span id='info_run_time'>" + json.last_run_time + "</span>");
+
+            run_data = json.run_rate;
+            error_data = json.error_rate;
+            plot_combined_rates(run_data, error_data);
+            callback(json);
+          },
+          error: function (xhr, error, thrown) {
+            if (xhr.status == 401) {
+              new_alert("Your session expired. Please log in again");
+              show_alert();
+            }
+          }
+        });
+      },
+      serverSide: true,
+      order: [[0, "desc"]],
+      columns: [
+        { data: 'run' },
+        { data: 'timestamp' },
+        { data: 'status' },
+        { data: 'reduce_url' }
+      ],
+      searching: false,
+      ordering: false,
+    });
+  });
+
+  setInterval(function () {
+    table.ajax.reload(null, false);
+  }, 5000);
+
+</script>
+{% endblock %}
+
+{% block right_side_links %}
+{% if is_adara %}
+<span style="float:right">live monitoring:
+  <a href="{{ live_monitor_url }}">status</a> | <b>runs</b> | <a href="{{ live_pv_url }}">PVs</a>
+</span>
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+List of latest runs:<br><br>
+<div>
+  <table class="message_table" id="run_table">
+    <thead>
+      <tr>
+        <th style="min-width: 50px;">Run</th>
+        <th>Created on</th>
+        <th>Status</th>
+        {% if user.is_staff %}
+        <th style="min-width: 50px;">Reduce</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+<br>
+
+<div id="dialog_placeholder"></div>
+
+{% endblock %}

@@ -899,13 +899,32 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
 
 
 def get_run_list_ipts(instrument_id, ipts_id, offset, limit, order_by, reverse):
-
     run_list = DataRun.objects.filter(
         instrument_id=instrument_id,
         ipts_id=ipts_id,
     )
     count = run_list.count()
     run_list = run_list.order_by(order_by)
+    if reverse:
+        run_list = run_list.reverse()
+    run_list = run_list[offset : limit + offset]  # noqa E203
+    return run_list, count
+
+
+def get_run_list_instrument_newest(instrument_id, offset, limit):
+    timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
+
+    delta_time = datetime.timedelta(hours=timeframe)
+    oldest_time = timezone.now() - delta_time
+    run_list = (
+        DataRun.objects.filter(
+            instrument_id=instrument_id,
+            created_on__gte=oldest_time,
+        )
+        .order_by("created_on")
+        .reverse()
+    )
+    count = run_list.count()
     if reverse:
         run_list = run_list.reverse()
     run_list = run_list[offset : limit + offset]  # noqa E203

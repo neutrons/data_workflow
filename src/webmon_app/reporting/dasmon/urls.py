@@ -23,7 +23,9 @@ urlpatterns = [
     re_path(r"^notifications/", views.notifications, name="notifications"),
     re_path(r"^(?P<instrument>[\w]+)/$", views.live_monitor, name="live_monitor"),
     re_path(r"^(?P<instrument>[\w]+)/runs/$", views.live_runs, name="live_runs"),
+    re_path(r"^(?P<instrument>[\w]+)/runs/datatables/$", views.live_runs_datatables, name="live_runs_datatables"),
     re_path(r"^(?P<instrument>[\w]+)/update/$", views.get_update, name="get_update"),
+    re_path(r"^(?P<instrument>[\w]+)/update/datatables/$", views.get_update_datatables, name="get_update_datatables"),
     re_path(r"^(?P<instrument>[\w]+)/diagnostics/$", views.diagnostics, name="diagnostics"),
     re_path(
         r"^(?P<instrument>[\w]+)/signals/$",
