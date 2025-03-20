@@ -601,7 +601,7 @@ def ipts_summary_run_list(request, instrument, ipts):
 
     data = view_util.get_current_status(instrument_id)
 
-    run_list, count = dasmon_view_util.get_run_list_datatables(
+    run_list, count = dasmon_view_util.get_run_list_ipts(
         instrument_id, ipts_id, offset, limit, order_column, order_dir == "desc"
     )
     data["data"] = view_util.get_run_list_dict(run_list)

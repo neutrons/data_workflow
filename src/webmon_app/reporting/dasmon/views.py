@@ -4,7 +4,7 @@ Live monitoring
 """
 import json
 import logging
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone, formats
@@ -141,6 +141,31 @@ def run_summary(request):
     return render(request, "dasmon/run_summary.html", template_values)
 
 
+@users_view_util.login_or_local_required
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@users_view_util.monitor
+@vary_on_cookie
+def run_summary_datatables(request):
+    """
+    Dashboard view showing available instruments
+    """
+    global_status_url = reverse(settings.LANDING_VIEW, args=[])
+    base_instr_url = reverse("dasmon:live_monitor", args=["aaaa"])
+    base_instr_url = base_instr_url.replace("/aaaa", "")
+    base_run_url = reverse("report:instrument_summary", args=["aaaa"])
+    base_run_url = base_run_url.replace("/aaaa", "")
+
+    template_values = {
+        "run_list_url": reverse("dasmon:run_summary_update_datatables"),
+        "base_instrument_url": base_instr_url,
+        "base_run_url": base_run_url,
+        "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
+    }
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    return render(request, "dasmon/run_summary_datatables.html", template_values)
+
+
 @users_view_util.login_or_local_required_401
 def run_summary_update(request):
     """
@@ -149,10 +174,24 @@ def run_summary_update(request):
     # Recent run info
     data_dict = {}
     data_dict = view_util.get_live_runs_update(request, None, None, **data_dict)
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    response["Content-Length"] = len(response.content)
-    return response
+    return JsonResponse(data_dict)
+
+
+@users_view_util.login_or_local_required_401
+def run_summary_update_datatables(request):
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    run_list, count = view_util.get_run_list_newest(offset, limit)
+    data = {}
+    data["data"] = report_view_util.get_run_list_dict(run_list)
+    data["recordsTotal"] = count
+    data["recordsFiltered"] = count
+    data["draw"] = draw
+
+    return JsonResponse(data)
 
 
 @users_view_util.login_or_local_required
