@@ -284,6 +284,36 @@ def live_runs(request, instrument):
 
 
 @users_view_util.login_or_local_required
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@users_view_util.monitor
+@vary_on_cookie
+def live_runs_datatables(request, instrument):
+    """
+    Display the list of latest runs
+
+    :param instrument: instrument name
+    """
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
+    # Update URL
+    update_url = reverse("dasmon:get_update_datatables", args=[instrument])
+
+    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
+    template_values = {
+        "instrument": instrument.upper(),
+        "breadcrumbs": breadcrumbs,
+        "update_url": update_url,
+    }
+    template_values = report_view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    template_values = view_util.fill_template_values(request, **template_values)
+
+    return render(request, "dasmon/live_runs_datatables.html", template_values)
+
+
+@users_view_util.login_or_local_required
 @users_view_util.monitor
 def user_help(request):
     """
@@ -402,6 +432,44 @@ def get_update(request, instrument):
     response["Connection"] = "close"
     response["Content-Length"] = len(response.content)
     return response
+
+
+@users_view_util.login_or_local_required_401
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+def get_update_datatables(request, instrument):
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
+    # Get last experiment and last run
+    data_dict = report_view_util.get_current_status(instrument_id)
+    data_dict["variables"] = view_util.get_cached_variables(instrument_id, monitored_only=False)
+
+    localtime = timezone.now()
+    recording_status = {
+        "key": "recording_status",
+        "value": view_util.is_running(instrument_id),
+        "timestamp": formats.localize(localtime),
+    }
+    data_dict["variables"].append(recording_status)
+
+    # Get current DAS health status
+    das_status = view_util.get_system_health(instrument_id)
+    data_dict["das_status"] = das_status
+    data_dict["live_plot_data"] = view_util.get_live_variables(request, instrument_id)
+
+    run_list, count = view_util.get_run_list_instrument_newest(instrument_id, offset, limit)
+    data_dict["data"] = report_view_util.get_run_list_dict(run_list)
+    data_dict["recordsTotal"] = count
+    data_dict["recordsFiltered"] = count
+    data_dict["draw"] = draw
+
+    return JsonResponse(data_dict)
 
 
 @users_view_util.login_or_local_required_401
