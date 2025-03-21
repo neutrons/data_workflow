@@ -580,6 +580,7 @@ def ipts_summary_run_list(request, instrument, ipts):
     :param ipts: experiment name
     """
 
+    # map for sorting columns
     column_to_field = {
         "run": "run_number",
         "timestamp": "created_on",
@@ -594,6 +595,10 @@ def ipts_summary_run_list(request, instrument, ipts):
     offset = int(request.GET.get("start", 0))
     draw = int(request.GET.get("draw", 1))
 
+    run_search = request.GET.get("columns[0][search][value]", "")
+    date_search = request.GET.get("columns[1][search][value]", "")
+    status_search = request.GET.get("columns[2][search][value]", "")
+
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     # Get experiment
@@ -601,12 +606,20 @@ def ipts_summary_run_list(request, instrument, ipts):
 
     data = view_util.get_current_status(instrument_id)
 
-    run_list, count = dasmon_view_util.get_run_list_ipts(
-        instrument_id, ipts_id, offset, limit, order_column, order_dir == "desc"
+    run_list, count, filtered_count = dasmon_view_util.get_run_list_ipts(
+        instrument_id,
+        ipts_id,
+        offset,
+        limit,
+        order_column,
+        order_dir == "desc",
+        run_search,
+        date_search,
+        status_search,
     )
     data["data"] = view_util.get_run_list_dict(run_list)
     data["recordsTotal"] = count
-    data["recordsFiltered"] = count
+    data["recordsFiltered"] = filtered_count
     data["draw"] = draw
 
     return JsonResponse(data)

@@ -184,11 +184,18 @@ def run_summary_update_datatables(request):
     offset = int(request.GET.get("start", 0))
     draw = int(request.GET.get("draw", 1))
 
-    run_list, count = view_util.get_run_list_newest(offset, limit)
+    instrument_search = request.GET.get("columns[0][search][value]", "")
+    run_search = request.GET.get("columns[1][search][value]", "")
+    date_search = request.GET.get("columns[2][search][value]", "")
+    status_search = request.GET.get("columns[3][search][value]", "")
+
+    run_list, count, filtered_count = view_util.get_run_list_newest(
+        offset, limit, instrument_search, run_search, date_search, status_search
+    )
     data = {}
     data["data"] = report_view_util.get_run_list_dict(run_list)
     data["recordsTotal"] = count
-    data["recordsFiltered"] = count
+    data["recordsFiltered"] = filtered_count
     data["draw"] = draw
 
     return JsonResponse(data)
@@ -443,6 +450,10 @@ def get_update_datatables(request, instrument):
     offset = int(request.GET.get("start", 0))
     draw = int(request.GET.get("draw", 1))
 
+    run_search = request.GET.get("columns[0][search][value]", "")
+    date_search = request.GET.get("columns[1][search][value]", "")
+    status_search = request.GET.get("columns[2][search][value]", "")
+
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
@@ -463,10 +474,12 @@ def get_update_datatables(request, instrument):
     data_dict["das_status"] = das_status
     data_dict["live_plot_data"] = view_util.get_live_variables(request, instrument_id)
 
-    run_list, count = view_util.get_run_list_instrument_newest(instrument_id, offset, limit)
+    run_list, count, filtered_count = view_util.get_run_list_instrument_newest(
+        instrument_id, offset, limit, run_search, date_search, status_search
+    )
     data_dict["data"] = report_view_util.get_run_list_dict(run_list)
     data_dict["recordsTotal"] = count
-    data_dict["recordsFiltered"] = count
+    data_dict["recordsFiltered"] = filtered_count
     data_dict["draw"] = draw
 
     return JsonResponse(data_dict)

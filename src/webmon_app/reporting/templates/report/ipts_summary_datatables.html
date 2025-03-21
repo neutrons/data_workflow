@@ -4,6 +4,7 @@
 {% block header %}
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<script language="javascript" type="text/javascript" src="/static/column_search.js"></script>
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" href="/static/thirdparty/datatables.min.css" crossorigin="anonymous" />
 <script type="text/javascript" src="/static/thirdparty/datatables.min.js" crossorigin="anonymous"></script>
@@ -14,6 +15,11 @@
 
   $(document).ready(function () {
     table = $('#run_table').DataTable({
+      initComplete: function () {
+        this.api()
+          .columns()
+          .every(column_search);
+      },
       ajax: function (data, callback, settings) {
         $.ajax({
           url: '{{ update_url }}',
@@ -47,7 +53,9 @@
         "targets": 2,
         "orderable": false
       }],
-      searching: false,
+      layout: {
+        topEnd: null
+      }
     });
   });
 
@@ -90,6 +98,13 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br><br>
   </thead>
   <tbody>
   </tbody>
+  <tfoot>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </tfoot>
 </table>
 <br>
 
