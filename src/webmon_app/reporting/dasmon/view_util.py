@@ -898,20 +898,53 @@ def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
     return data_dict
 
 
-def get_run_list_ipts(instrument_id, ipts_id, offset, limit, order_by, reverse):
+def run_list_search(run_list, run_search, date_search, status_search, instrument_search=""):
+    if instrument_search:
+        run_list = run_list.filter(instrument_id__name=instrument_search.lower())
+
+    if run_search:
+        run_list = run_list.filter(run_number__icontains=run_search)
+
+    if date_search:
+        run_list = run_list.filter(created_on__icontains=date_search)
+
+    if status_search:
+        if status_search == "complete":
+            run_list = run_list.filter(workflowsummary__complete=True)
+        elif status_search == "acquiring":
+            run_list = run_list.exclude(runstatus__queue_id__name="POSTPROCESS.DATA_READY")
+        else:
+            run_list = run_list.exclude(workflowsummary__complete=True)
+            run_list = run_list.filter(runstatus__queue_id__name="POSTPROCESS.DATA_READY")
+
+            if status_search == "error":
+                run_list = run_list.filter(runstatus__error__isnull=False).distinct()
+            elif status_search == "incomplete":
+                run_list = run_list.exclude(runstatus__error__isnull=False)
+
+    return run_list
+
+
+def get_run_list_ipts(
+    instrument_id, ipts_id, offset, limit, order_by, reverse, run_search, date_search, status_search
+):
     run_list = DataRun.objects.filter(
         instrument_id=instrument_id,
         ipts_id=ipts_id,
     )
     count = run_list.count()
+
+    run_list = run_list_search(run_list, run_search, date_search, status_search)
+
+    filtered_count = run_list.count()
     run_list = run_list.order_by(order_by)
     if reverse:
         run_list = run_list.reverse()
     run_list = run_list[offset : limit + offset]  # noqa E203
-    return run_list, count
+    return run_list, count, filtered_count
 
 
-def get_run_list_instrument_newest(instrument_id, offset, limit):
+def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, date_search, status_search):
     timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
 
     delta_time = datetime.timedelta(hours=timeframe)
@@ -925,22 +958,29 @@ def get_run_list_instrument_newest(instrument_id, offset, limit):
         .reverse()
     )
     count = run_list.count()
-    if reverse:
-        run_list = run_list.reverse()
+
+    run_list = run_list_search(run_list, run_search, date_search, status_search)
+
+    filtered_count = run_list.count()
     run_list = run_list[offset : limit + offset]  # noqa E203
-    return run_list, count
+    return run_list, count, filtered_count
 
 
-def get_run_list_newest(offset, limit):
+def get_run_list_newest(offset, limit, instrument_search, run_search, date_search, status_search):
     timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
 
     delta_time = datetime.timedelta(hours=timeframe)
     oldest_time = timezone.now() - delta_time
     run_list = DataRun.objects.filter(created_on__gte=oldest_time).order_by("created_on").reverse()
     count = run_list.count()
+
+    run_list = run_list_search(run_list, run_search, date_search, status_search, instrument_search)
+
+    filtered_count = run_list.count()
+
     run_list = run_list[offset : limit + offset]  # noqa E203
 
-    return run_list, count
+    return run_list, count, filtered_count
 
 
 def get_live_runs(timeframe=None, number_of_entries=10, instrument_id=None, as_html=True):
