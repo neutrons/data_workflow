@@ -906,7 +906,8 @@ def run_list_search(run_list, run_search, date_search, status_search, instrument
         run_list = run_list.filter(run_number__icontains=run_search)
 
     if date_search:
-        run_list = run_list.filter(created_on__icontains=date_search)
+        date = timezone.make_aware(datetime.datetime.fromisoformat(date_search), timezone.get_current_timezone())
+        run_list = run_list.filter(created_on__gt=date, created_on__lt=date + datetime.timedelta(days=1))
 
     if status_search:
         if status_search == "complete":
