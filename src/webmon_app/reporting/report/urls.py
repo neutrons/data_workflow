@@ -73,4 +73,12 @@ urlpatterns = [
         views.get_error_update,
         name="get_error_update",
     ),
+    re_path(
+        r"^(?P<instrument>[\w]+)/errors/datatables/$", views.live_errors_datatables, name="live_errors_datatables"
+    ),
+    re_path(
+        r"^(?P<instrument>[\w]+)/errors/update/datatables/$",
+        views.get_error_update_datatables,
+        name="get_error_update_datatables",
+    ),
 ]

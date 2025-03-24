@@ -1,7 +1,6 @@
 {% extends "report/base_instrument.html" %}
 
-{% block title %}{{ instrument }} Experiments {% endblock %}
-
+{% block title %}{{ instrument }} Error Report {% endblock %}
 {% block header %}
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
@@ -13,7 +12,7 @@
   var table;
 
   $(document).ready(function () {
-    table = $('#expt_table').DataTable({
+    table = $('#error_table').DataTable({
       ajax: function (data, callback, settings) {
         $.ajax({
           url: '{{ update_url }}',
@@ -37,12 +36,14 @@
         });
       },
       serverSide: true,
-      order: [[2, "desc"]],
+      order: [[3, "desc"]],
       columns: [
         { data: 'experiment' },
-        { data: 'total' },
+        { data: 'run' },
+        { data: 'info' },
         { data: 'created_on' }
       ],
+      ordering: false,
       layout: {
         topEnd: null
       }
@@ -52,23 +53,29 @@
   setInterval(function () {
     table.ajax.reload(null, false);
   }, 10000);
+
 </script>
 {% endblock %}
 
-{% block banner %}{{ instrument }} Experiments {% endblock %}
+{% block banner %}{{ instrument }} Error Report {% endblock %}
+
 
 {% block content %}
-List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_url }}'>errors</a>){% endif %}<br><br>
-<table class="message_table" id="expt_table">
+List of {{ instrument }} errors in the last {{ time_period }} days {% if instrument_url %}(view <a
+  href='{{ instrument_url }}'>experiments</a>){% endif %}<br><br>
+<table class="message_table fixed_table" id="error_table">
   <thead>
     <tr>
-      <th style="width: 80px;">Experiment</th>
-      <th style="width: 50px;">No. of runs</th>
-      <th>Created on</th>
+      <th style="width: 70px; min-width: 70px;">Experiment</th>
+      <th style="width: 50px; min-width: 50px;">Run</th>
+      <th>Error</th>
+      <th style="width: 90px; min-width: 90px;">Time
+      </th>
     </tr>
   </thead>
   <tbody>
   </tbody>
 </table>
 <br>
+
 {% endblock %}

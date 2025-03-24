@@ -580,6 +580,39 @@ def live_errors(request, instrument):
     return render(request, "report/live_errors.html", template_values)
 
 
+@users_view_util.login_or_local_required
+@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@vary_on_cookie
+def live_errors_datatables(request, instrument):
+    """
+    Display the list of latest errors
+    """
+
+    # Instrument reporting URL
+    instrument_url = reverse("report:instrument_summary", args=[instrument])
+    update_url = reverse("report:get_error_update_datatables", args=[instrument])
+
+    # Breadcrumbs
+    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
+    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
+        reverse("report:instrument_summary", args=[instrument]),
+        instrument,
+    )
+    breadcrumbs += " &rsaquo; errors"
+
+    template_values = {
+        "instrument": instrument.upper(),
+        "breadcrumbs": breadcrumbs,
+        "instrument_url": instrument_url,
+        "update_url": update_url,
+        "time_period": 30,
+    }
+    template_values = view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    return render(request, "report/live_errors_datatables.html", template_values)
+
+
 @users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_experiment_update(request, instrument, ipts):
@@ -823,3 +856,79 @@ def get_error_update(request, instrument):
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
     return response
+
+
+@users_view_util.login_or_local_required_401
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+def get_error_update_datatables(request, instrument):
+    """
+    Ajax call to get updates behind the scenes
+
+    :param instrument: instrument name
+    :param ipts: experiment name
+    """
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
+    # Get last experiment and last run
+    data_dict = view_util.get_current_status(instrument_id)
+
+    time_period = 30
+    delta_time = datetime.timedelta(days=time_period)
+    oldest_time = timezone.now() - delta_time
+    error_query = (
+        Error.objects.filter(
+            run_status_id__created_on__gte=oldest_time,
+            run_status_id__run_id__instrument_id=instrument_id,
+        )
+        .order_by("run_status_id__created_on")
+        .reverse()
+    )
+
+    count = error_query.count()
+
+    error_query = error_query[offset : offset + limit]  # noqa E203
+
+    error_list = []
+    for err in error_query:
+        localtime = timezone.localtime(err.run_status_id.created_on)
+        error_list.append(
+            {
+                "experiment": str(
+                    "<a href='%s'>%s</a>"
+                    % (
+                        reverse(
+                            "report:ipts_summary",
+                            args=[
+                                instrument,
+                                err.run_status_id.run_id.ipts_id.expt_name,
+                            ],
+                        ),
+                        err.run_status_id.run_id.ipts_id.expt_name,
+                    )
+                ),
+                "run": str(
+                    "<a href='%s'>%s</a>"
+                    % (
+                        reverse(
+                            "report:detail",
+                            args=[instrument, err.run_status_id.run_id.run_number],
+                        ),
+                        err.run_status_id.run_id.run_number,
+                    )
+                ),
+                "info": str(err.description),
+                "created_on": formats.localize(localtime),
+            }
+        )
+
+    data_dict["data"] = error_list
+    data_dict["recordsTotal"] = count
+    data_dict["recordsFiltered"] = count
+    data_dict["draw"] = draw
+
+    return JsonResponse(data_dict)
