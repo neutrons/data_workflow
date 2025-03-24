@@ -4,58 +4,65 @@
 {% block header %}
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<script language="javascript" type="text/javascript" src="/static/column_search.js"></script>
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
-<link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
-<script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
+<link rel="stylesheet" href="/static/thirdparty/datatables.min.css" />
+<script type="text/javascript" src="/static/thirdparty/datatables.min.js"></script>
+
 
 <script>
-var records = {% autoescape off %}{{ run_list }}{% endautoescape %};
-var dynatable = null;
-var last_run_id = '{{ last_run.id }}';
-var run_data = {{ run_rate|safe }};
-var error_data = {{ error_rate|safe }};
+  var table;
 
-$(document).ready( function() {
-  $('#run_table').dynatable({ dataset: { records: records,
-                              perPageOptions: [50, 100, 500],
-                              perPageDefault: 50 },
-                              features: { pushState: false }
+  $(document).ready(function () {
+    table = $('#run_table').DataTable({
+      initComplete: function () {
+        this.api()
+          .columns()
+          .every(column_search);
+      },
+      ajax: function (data, callback, settings) {
+        $.ajax({
+          url: '{{ update_url }}',
+          data: data,
+          success: function (json) {
+            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}" + json.last_run + "/'>" + json.last_run + "</a></span>");
+            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}" + json.last_expt + "/'>" + json.last_expt + "</a></span>");
+            $('#info_run_time').replaceWith("<span id='info_run_time'>" + json.last_run_time + "</span>");
+
+            run_data = json.run_rate;
+            error_data = json.error_rate;
+            plot_combined_rates(run_data, error_data);
+            callback(json);
+          },
+          error: function (xhr, error, thrown) {
+            if (xhr.status == 401) {
+              new_alert("Your session expired. Please log in again");
+              show_alert();
+            }
+          }
+        });
+      },
+      serverSide: true,
+      order: [[0, "desc"]],
+      columns: [
+        { data: 'run' },
+        { data: 'timestamp' },
+        { data: 'status' }
+      ],
+      columnDefs: [{
+        "targets": 2,
+        "orderable": false
+      }],
+      layout: {
+        topEnd: null
+      }
+    });
   });
-  dynatable = $('#run_table').data('dynatable');
-  dynatable.sorts.add('run_id', -1)
-  dynatable.process();
-});
 
-function poll(){
-    $.ajax({ url: "{{ update_url }}?since="+last_run_id+"&complete_since="+{{ first_run_id }}, success: function(data){
-        if (data.refresh_needed.localeCompare('1')==0) {
-            for (var i=0;i<data.run_list.length;i++) {
-                records.push({'instrument_id': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/runs/'>"+data.run_list[i].instrument_id+"</a>",
-                    'run': "<a href='{{ base_run_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a>",
-                    'timestamp': data.run_list[i].timestamp,
-                    'run_id': data.run_list[i].run_id,
-                    'status': "<span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span>"});
-            }
-            last_run_id = data.last_run_id;
-        }
-        for (var i=0; i<data.status_list.length; i++) {
-            for (var j=0; j<records.length; j++) {
-                if (data.status_list[i].key == 'run_id_'+records[j].run_id)
-                  records[j].status = "<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>";
-            }
-        }
-        dynatable.settings.dataset.originalRecords = records;
-        dynatable.process();
-        $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
-        $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
-        $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
+  setInterval(function () {
+    table.ajax.reload(null, false);
+  }, 10000);
 
-        run_data = data.run_rate;
-        error_data = data.error_rate;
-        plot_combined_rates(run_data, error_data);
-    }, dataType: "json", timeout: 30000, cache: true,
-    statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
-};
 
 </script>
 {% endblock %}
@@ -65,41 +72,40 @@ function poll(){
 {% block summary %}
 
 <div class="summary_plots">
-    <div id="runs_per_hour"></div>
+  <div id="runs_per_hour"></div>
 </div>
 
 {% if last_run %}
-Last run: <span id='info_last_run'><a href='{{ base_run_url }}{{ last_run.run_number }}/'>{{ last_run.run_number }}</a></span>
-from <span id='info_last_expt'><a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a></span>
-created on <span id='info_run_time'>{{ last_run.created_on }}</span><br>
+Last run: <span id='info_last_run'></span>
+from <span id='info_last_expt'></span>
+created on <span id='info_run_time'></span><br>
 {% elif last_expt %}
 Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last_expt.expt_name|upper }}</a><br>
 {% endif %}
 <br>
 {% endblock %}
 
-{% block bodytop %}
-<script id="source" language="javascript" type="text/javascript">
-    setInterval(poll, 10000);
-</script>
-{% endblock %}
-
 {% block content %}
-List of {{ instrument }} runs for {{ ipts_number|upper }}:<br><br>
-      <table class="message_table" id="run_table">
-        <thead>
-          <tr>
-            <th data-dynatable-column="run" data-dynatable-sorts="run" style="min-width: 50px;">Run</th>
-            <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
-            <th data-dynatable-column="status">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-      <br>
 
-<script id="source" language="javascript" type="text/javascript">
-    plot_combined_rates(run_data, error_data);
-</script>
+List of {{ instrument }} runs for {{ ipts_number|upper }}:<br><br>
+<table class="message_table" id="run_table">
+  <thead>
+    <tr>
+      <th style="min-width: 50px;">Run</th>
+      <th>Created on</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </tfoot>
+</table>
+<br>
+
 {% endblock %}

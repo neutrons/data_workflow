@@ -7,7 +7,6 @@ Report views
 """
 import sys
 import logging
-import json
 import datetime
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -320,28 +319,6 @@ def instrument_summary(request, instrument):
 
     :param instrument: instrument name
     """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # Get list of IPTS
-    ipts = IPTS.objects.filter(instruments=instrument_id).order_by("created_on").reverse()
-    expt_list = []
-    for expt in ipts:
-        localtime = timezone.localtime(expt.created_on)
-        expt_list.append(
-            {
-                "experiment": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse("report:ipts_summary", args=[instrument, expt.expt_name]),
-                        expt.expt_name,
-                    )
-                ),
-                "total": expt.number_of_runs(),
-                "timestamp": expt.created_on.isoformat(),
-                "created_on": formats.localize(localtime),
-            }
-        )
 
     # Instrument error URL
     error_url = reverse("report:live_errors", args=[instrument])
@@ -349,12 +326,6 @@ def instrument_summary(request, instrument):
     # Update URL for live monitoring
     update_url = reverse("report:get_instrument_update", args=[instrument])
 
-    # Get the last IPTS created so that we can properly do the live update
-    if IPTS.objects.filter(instruments=instrument_id).count() > 0:
-        last_expt_created = IPTS.objects.filter(instruments=instrument_id).latest("id")
-    else:
-        last_expt_created = None
-
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (
         reverse(settings.LANDING_VIEW),
@@ -363,11 +334,9 @@ def instrument_summary(request, instrument):
 
     template_values = {
         "instrument": instrument.upper(),
-        "expt_list": expt_list,
         "breadcrumbs": breadcrumbs,
         "error_url": error_url,
         "update_url": update_url,
-        "last_expt_created": last_expt_created,
     }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
@@ -375,92 +344,7 @@ def instrument_summary(request, instrument):
 
 
 @users_view_util.login_or_local_required
-def instrument_summary_datatables(request, instrument):
-    """
-    Instrument summary page
-
-    :param instrument: instrument name
-    """
-
-    # Instrument error URL
-    error_url = reverse("report:live_errors", args=[instrument])
-
-    # Update URL for live monitoring
-    update_url = reverse("report:get_instrument_update_datatables", args=[instrument])
-
-    # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (
-        reverse(settings.LANDING_VIEW),
-        instrument.lower(),
-    )
-
-    template_values = {
-        "instrument": instrument.upper(),
-        "breadcrumbs": breadcrumbs,
-        "error_url": error_url,
-        "update_url": update_url,
-    }
-    template_values = view_util.fill_template_values(request, **template_values)
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "report/instrument_datatables.html", template_values)
-
-
-@users_view_util.login_or_local_required
 def ipts_summary(request, instrument, ipts):
-    """
-    Experiment summary giving the list of runs
-
-    :param instrument: instrument name
-    :param ipts: experiment name
-    """
-    # Protect against lower-case requests
-    ipts = ipts.upper()
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    # Get experiment
-    ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
-
-    # Get IPTS URL
-    ipts_url = reverse("report:ipts_summary", args=[instrument, ipts])
-    update_url = reverse("report:get_experiment_update", args=[instrument, ipts])
-
-    # Get the latest run and experiment so we can determine later
-    # whether the user should refresh the page
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    runs = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id).order_by("created_on")
-    run_list = view_util.get_run_list_dict(runs)
-
-    # Get the ID of the first displayed run so that we can update the
-    # status of runs that are displayed
-    first_run_id = 0
-    if len(runs) > 0:
-        first_run_id = runs[0].id
-
-    # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
-        reverse("report:instrument_summary", args=[instrument]),
-        instrument,
-    )
-    breadcrumbs += " &rsaquo; %s" % str(ipts_id).lower()
-
-    template_values = {
-        "instrument": instrument.upper(),
-        "ipts_number": ipts,
-        "run_list": run_list,
-        "breadcrumbs": breadcrumbs,
-        "ipts_url": ipts_url,
-        "update_url": update_url,
-        "first_run_id": first_run_id,
-    }
-    template_values = view_util.fill_template_values(request, **template_values)
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "report/ipts_summary.html", template_values)
-
-
-@users_view_util.login_or_local_required
-def ipts_summary_datatables(request, instrument, ipts):
     """
     Experiment summary giving the list of runs
 
@@ -476,7 +360,7 @@ def ipts_summary_datatables(request, instrument, ipts):
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
 
     # Get data URL
-    update_url = reverse("report:ipts_summary_run_list", args=[instrument, ipts])
+    update_url = reverse("report:get_experiment_update", args=[instrument, ipts])
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
@@ -494,7 +378,7 @@ def ipts_summary_datatables(request, instrument, ipts):
     }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "report/ipts_summary_datatables.html", template_values)
+    return render(request, "report/ipts_summary.html", template_values)
 
 
 @users_view_util.login_or_local_required
@@ -505,93 +389,10 @@ def live_errors(request, instrument):
     """
     Display the list of latest errors
     """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # TODO: let the user pick the timeframe for the errors.
-    # Pick 30 days for now.
-    time_period = 30
-    delta_time = datetime.timedelta(days=time_period)
-    oldest_time = timezone.now() - delta_time
-    error_query = Error.objects.filter(
-        run_status_id__created_on__gte=oldest_time,
-        run_status_id__run_id__instrument_id=instrument_id,
-    ).order_by("id")
-    last_error_id = 0
-    if len(error_query) > 0:
-        last_error_id = error_query[len(error_query) - 1].id
-    error_list = []
-    for err in error_query:
-        localtime = timezone.localtime(err.run_status_id.created_on)
-        error_list.append(
-            {
-                "experiment": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse(
-                            "report:ipts_summary",
-                            args=[
-                                instrument,
-                                err.run_status_id.run_id.ipts_id.expt_name,
-                            ],
-                        ),
-                        err.run_status_id.run_id.ipts_id.expt_name,
-                    )
-                ),
-                "run": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse(
-                            "report:detail",
-                            args=[instrument, err.run_status_id.run_id.run_number],
-                        ),
-                        err.run_status_id.run_id.run_number,
-                    )
-                ),
-                "info": str(err.description),
-                "timestamp": err.run_status_id.created_on.isoformat(),
-                "created_on": formats.localize(localtime),
-            }
-        )
 
     # Instrument reporting URL
     instrument_url = reverse("report:instrument_summary", args=[instrument])
     update_url = reverse("report:get_error_update", args=[instrument])
-
-    # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
-        reverse("report:instrument_summary", args=[instrument]),
-        instrument,
-    )
-    breadcrumbs += " &rsaquo; errors"
-
-    template_values = {
-        "instrument": instrument.upper(),
-        "error_list": error_list,
-        "last_error_id": last_error_id,
-        "breadcrumbs": breadcrumbs,
-        "instrument_url": instrument_url,
-        "update_url": update_url,
-        "time_period": time_period,
-    }
-    template_values = view_util.fill_template_values(request, **template_values)
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "report/live_errors.html", template_values)
-
-
-@users_view_util.login_or_local_required
-@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-@vary_on_cookie
-def live_errors_datatables(request, instrument):
-    """
-    Display the list of latest errors
-    """
-
-    # Instrument reporting URL
-    instrument_url = reverse("report:instrument_summary", args=[instrument])
-    update_url = reverse("report:get_error_update_datatables", args=[instrument])
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
@@ -610,35 +411,12 @@ def live_errors_datatables(request, instrument):
     }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "report/live_errors_datatables.html", template_values)
+    return render(request, "report/live_errors.html", template_values)
 
 
 @users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_experiment_update(request, instrument, ipts):
-    """
-    Ajax call to get updates behind the scenes
-
-    :param instrument: instrument name
-    :param ipts: experiment name
-    """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    # Get experiment
-    ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
-
-    # Get last experiment and last run
-    data_dict = view_util.get_current_status(instrument_id)
-    data_dict = dasmon_view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
-
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    return response
-
-
-@users_view_util.login_or_local_required_401
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-def ipts_summary_run_list(request, instrument, ipts):
     """
     Ajax call to get updates behind the scenes
 
@@ -694,51 +472,6 @@ def ipts_summary_run_list(request, instrument, ipts):
 @users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_instrument_update(request, instrument):
-    """
-    Ajax call to get updates behind the scenes
-
-    :param instrument: instrument name
-    """
-    since = request.GET.get("since", "0")
-    try:
-        since = int(since)
-        since_expt_id = get_object_or_404(IPTS, id=since)
-    except:  # noqa: E722
-        since = 0
-        since_expt_id = None
-
-    # Get the instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # Get last experiment and last run
-    data_dict = view_util.get_current_status(instrument_id)
-    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by("created_on")
-
-    update_list = []
-    if since_expt_id is not None and len(expt_list) > 0:
-        data_dict["last_expt_id"] = expt_list[0].id
-        for e in expt_list:
-            if since_expt_id.created_on < e.created_on:
-                localtime = timezone.localtime(e.created_on)
-                expt_dict = {
-                    "ipts": e.expt_name.upper(),
-                    "n_runs": e.number_of_runs(),
-                    "created_on": formats.localize(localtime),
-                    "timestamp": e.created_on.isoformat(),
-                    "ipts_id": e.id,
-                }
-                update_list.append(expt_dict)
-    data_dict["expt_list"] = update_list
-    data_dict["refresh_needed"] = "1" if len(update_list) > 0 else "0"
-
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    return response
-
-
-@users_view_util.login_or_local_required_401
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-def get_instrument_update_datatables(request, instrument):
     """
     Ajax call to get updates behind the scenes
 
@@ -809,58 +542,6 @@ def get_instrument_update_datatables(request, instrument):
 @users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_error_update(request, instrument):
-    """
-    Ajax call to get updates behind the scenes
-
-    :param instrument: instrument name
-    :param ipts: experiment name
-    """
-    since = request.GET.get("since", "0")
-    try:
-        since = int(since)
-        last_error_id = get_object_or_404(Error, id=since)
-    except:  # noqa: E722
-        last_error_id = None
-
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # Get last experiment and last run
-    data_dict = view_util.get_current_status(instrument_id)
-
-    err_list = []
-    if last_error_id is not None:
-        errors = Error.objects.filter(
-            run_status_id__run_id__instrument_id=instrument_id, id__gt=last_error_id.id
-        ).order_by("run_status_id__created_on")
-        if len(errors) > 0:
-            last_error_id_number = None
-            for e in errors:
-                if last_error_id_number is None:
-                    last_error_id_number = e.id
-
-                if last_error_id.run_status_id.created_on < e.run_status_id.created_on:
-                    localtime = timezone.localtime(e.run_status_id.created_on)
-                    err_dict = {
-                        "run": e.run_status_id.run_id.run_number,
-                        "ipts": e.run_status_id.run_id.ipts_id.expt_name,
-                        "description": e.description,
-                        "created_on": formats.localize(localtime),
-                        "timestamp": e.run_status_id.created_on.isoformat(),
-                        "error_id": e.id,
-                    }
-                    err_list.append(err_dict)
-            data_dict["last_error_id"] = last_error_id_number
-    data_dict["errors"] = err_list
-    data_dict["refresh_needed"] = "1" if len(err_list) > 0 else "0"
-
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    return response
-
-
-@users_view_util.login_or_local_required_401
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-def get_error_update_datatables(request, instrument):
     """
     Ajax call to get updates behind the scenes
 

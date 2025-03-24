@@ -12,19 +12,9 @@ urlpatterns = [
     re_path(r"^processing$", views.processing_admin, name="processing_admin"),
     re_path(r"^(?P<instrument>[\w]+)/$", views.instrument_summary, name="instrument_summary"),
     re_path(
-        r"^(?P<instrument>[\w]+)/datatables/$",
-        views.instrument_summary_datatables,
-        name="instrument_summary_datatables",
-    ),
-    re_path(
         r"^(?P<instrument>[\w]+)/update/$",
         views.get_instrument_update,
         name="get_instrument_update",
-    ),
-    re_path(
-        r"^(?P<instrument>[\w]+)/update/datatables/$",
-        views.get_instrument_update_datatables,
-        name="get_instrument_update_datatables",
     ),
     re_path(r"^(?P<instrument>[\w]+)/(?P<run_id>\d+)/$", views.detail, name="detail"),
     re_path(
@@ -57,28 +47,10 @@ urlpatterns = [
         views.ipts_summary,
         name="ipts_summary",
     ),
-    re_path(
-        r"^(?P<instrument>[\w]+)/experiment/(?P<ipts>[\w\-\.]+)/datatables/$",
-        views.ipts_summary_datatables,
-        name="ipts_summary_datatables",
-    ),
-    re_path(
-        r"^(?P<instrument>[\w]+)/experiment/(?P<ipts>[\w\-\.]+)/run_list/$",
-        views.ipts_summary_run_list,
-        name="ipts_summary_run_list",
-    ),
     re_path(r"^(?P<instrument>[\w]+)/errors/$", views.live_errors, name="live_errors"),
     re_path(
         r"^(?P<instrument>[\w]+)/errors/update$",
         views.get_error_update,
         name="get_error_update",
-    ),
-    re_path(
-        r"^(?P<instrument>[\w]+)/errors/datatables/$", views.live_errors_datatables, name="live_errors_datatables"
-    ),
-    re_path(
-        r"^(?P<instrument>[\w]+)/errors/update/datatables/$",
-        views.get_error_update_datatables,
-        name="get_error_update_datatables",
     ),
 ]

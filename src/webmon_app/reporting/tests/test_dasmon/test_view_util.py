@@ -3,16 +3,15 @@ from unittest import mock
 from django.test import TestCase
 
 import django
-from reporting import dasmon, report, users
+from reporting import dasmon, users
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils import timezone
 
-from reporting.report.models import Instrument, Information, RunStatus, StatusQueue, Error
+from reporting.report.models import Instrument, Information, RunStatus, StatusQueue
 from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable, Signal
 from workflow.database.report.models import DataRun
 from workflow.database.report.models import IPTS
-from workflow.database.report.models import WorkflowSummary
 
 
 # make flake8 happy
@@ -577,122 +576,6 @@ class ViewUtilTest(TestCase):
         #  'dasmon_listener_warning': False}
         assert dasmon_diag["status"] == 0
         assert dasmon_diag["dasmon_listener_warning"] is False
-
-    def test_get_live_runs_update(self):
-        from reporting.dasmon.view_util import get_live_runs_update
-
-        # make records
-        inst = Instrument.objects.create(name="testinst_liveruns")
-        inst.save()
-        ipts = IPTS.objects.create(expt_name="testexp_liveruns")
-        ipts.save()
-        for rn in range(4):
-            run = DataRun.objects.create(
-                run_number=rn,
-                ipts_id=ipts,
-                instrument_id=inst,
-                file=f"/tmp/test_{rn}.nxs",
-            )
-            run.save()
-            WorkflowSummary.objects.create(
-                run_id=run,
-                complete=True,
-                catalog_started=True,
-                cataloged=True,
-                reduction_needed=True,
-                reduction_started=True,
-                reduced=True,
-                reduction_cataloged=True,
-                reduction_catalog_started=True,
-            )
-        # mock HTTP request
-        request = mock.MagicMock()
-        request.GET.get.return_value = {"since": "0"}
-        # test
-        # NOTE:
-        # it is unclear how the complete_since entry is modified inside the
-        # DataRun table, therefore we cannot query the runs even if there are
-        # already in.
-        data_dict = get_live_runs_update(request, inst, ipts)
-        assert data_dict["refresh_needed"] == "0"
-
-    @mock.patch("reporting.report.view_util.get_run_list_dict")
-    def test_get_live_runs(self, mock_getRunListDict):
-        from reporting.dasmon.view_util import get_live_runs
-
-        # mock
-        report.view_util.get_run_list_dict = lambda x: x
-        # make inst
-        inst = Instrument.objects.create(name="testinst_getliveruns")
-        inst.save()
-        ipts = IPTS.objects.create(expt_name="testexp_getliveruns")
-        ipts.save()
-        for rn in range(4):
-            run = DataRun.objects.create(
-                run_number=rn,
-                ipts_id=ipts,
-                instrument_id=inst,
-                file=f"/tmp/test_{rn}.nxs",
-            )
-            run.save()
-            WorkflowSummary.objects.create(
-                run_id=run,
-                complete=True,
-                catalog_started=True,
-                cataloged=True,
-                reduction_needed=True,
-                reduction_started=True,
-                reduced=True,
-                reduction_cataloged=True,
-                reduction_catalog_started=True,
-            )
-        # test
-        rst = get_live_runs()
-        assert len(rst[0]) == 4
-
-    def test_get_run_list(self):
-        from reporting.dasmon.view_util import get_run_list
-
-        # make record
-        inst = Instrument.objects.create(name="testinst_getliveruns")
-        inst.save()
-        ipts = IPTS.objects.create(expt_name="testexp_getliveruns")
-        ipts.save()
-        runs = []
-        for rn in range(4):
-            run = DataRun.objects.create(
-                run_number=rn,
-                ipts_id=ipts,
-                instrument_id=inst,
-                file=f"/tmp/test_{rn}.nxs",
-            )
-            run.save()
-            runs.append(run)
-            WorkflowSummary.objects.create(
-                run_id=run,
-                complete=rn % 2 == 0,
-                catalog_started=True,
-                cataloged=True,
-                reduction_needed=True,
-                reduction_started=True,
-                reduced=True,
-                reduction_cataloged=True,
-                reduction_catalog_started=True,
-            ).save()
-            if rn == 3:
-                queue = StatusQueue(name="QUEUE")
-                queue.save()
-                rs = RunStatus(run_id=run, queue_id=queue)
-                rs.save()
-                Error(run_status_id=rs, description="test_error").save()
-
-        # test
-        run_list = get_run_list(runs)
-        assert len(run_list) == 4
-        expected_status = {0: "complete", 1: "incomplete", 2: "complete", 3: "error"}
-        for i, d in enumerate(run_list):
-            assert d["run"] == i
-            assert d["status"] == expected_status[i]
 
     def test_get_signals(self):
         from reporting.dasmon.view_util import get_signals

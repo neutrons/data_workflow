@@ -2,7 +2,6 @@
 """
 Live monitoring
 """
-import json
 import logging
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -84,10 +83,7 @@ def dashboard_update(request):
     }
     if "plots" in request.GET:
         data_dict["instrument_rates"] = view_util.get_dashboard_data()
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    response["Content-Length"] = len(response.content)
-    return response
+    return JsonResponse(data_dict)
 
 
 @users_view_util.login_or_local_required
@@ -128,11 +124,8 @@ def run_summary(request):
     base_run_url = reverse("report:instrument_summary", args=["aaaa"])
     base_run_url = base_run_url.replace("/aaaa", "")
 
-    runs, first_run, last_run = view_util.get_live_runs()
     template_values = {
-        "run_list": runs,
-        "first_run_id": first_run,
-        "last_run_id": last_run,
+        "run_list_url": reverse("dasmon:run_summary_update"),
         "base_instrument_url": base_instr_url,
         "base_run_url": base_run_url,
         "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
@@ -141,44 +134,8 @@ def run_summary(request):
     return render(request, "dasmon/run_summary.html", template_values)
 
 
-@users_view_util.login_or_local_required
-@cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-@users_view_util.monitor
-@vary_on_cookie
-def run_summary_datatables(request):
-    """
-    Dashboard view showing available instruments
-    """
-    global_status_url = reverse(settings.LANDING_VIEW, args=[])
-    base_instr_url = reverse("dasmon:live_monitor", args=["aaaa"])
-    base_instr_url = base_instr_url.replace("/aaaa", "")
-    base_run_url = reverse("report:instrument_summary", args=["aaaa"])
-    base_run_url = base_run_url.replace("/aaaa", "")
-
-    template_values = {
-        "run_list_url": reverse("dasmon:run_summary_update_datatables"),
-        "base_instrument_url": base_instr_url,
-        "base_run_url": base_run_url,
-        "breadcrumbs": "<a href='%s'>home</a> &rsaquo; dashboard" % global_status_url,
-    }
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "dasmon/run_summary_datatables.html", template_values)
-
-
 @users_view_util.login_or_local_required_401
 def run_summary_update(request):
-    """
-    Ajax call to get updates behind the scenes
-    """
-    # Recent run info
-    data_dict = {}
-    data_dict = view_util.get_live_runs_update(request, None, None, **data_dict)
-    return JsonResponse(data_dict)
-
-
-@users_view_util.login_or_local_required_401
-def run_summary_update_datatables(request):
 
     limit = int(request.GET.get("length", 10))
     offset = int(request.GET.get("start", 0))
@@ -252,72 +209,17 @@ def live_runs(request, instrument):
     # Update URL
     update_url = reverse("dasmon:get_update", args=[instrument])
 
-    timeframe = 12
-    if "days" in request.GET:
-        try:
-            timeframe = int(request.GET["days"]) * 24
-        except:  # noqa: E722
-            # If we can't cast to an integer, use default
-            pass
-    # The format query string allows us to return json
-    json_format = request.GET.get("format", "html") == "json"
-    run_list, first_run, last_run = view_util.get_live_runs(
-        instrument_id=instrument_id, timeframe=timeframe, as_html=not json_format
-    )
-
-    if json_format:
-        data_info = dict(runs=run_list, instrument=instrument.upper())
-        data_info = view_util.fill_template_values(request, **data_info)
-
-        response = HttpResponse(json.dumps(data_info), content_type="application/json")
-        response["Connection"] = "close"
-        response["Content-Length"] = len(response.content)
-        return response
-
     breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
     template_values = {
         "instrument": instrument.upper(),
         "breadcrumbs": breadcrumbs,
         "update_url": update_url,
-        "run_list": run_list,
-        "first_run_id": first_run,
-        "last_run_id": last_run,
     }
     template_values = report_view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
 
     return render(request, "dasmon/live_runs.html", template_values)
-
-
-@users_view_util.login_or_local_required
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-@users_view_util.monitor
-@vary_on_cookie
-def live_runs_datatables(request, instrument):
-    """
-    Display the list of latest runs
-
-    :param instrument: instrument name
-    """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # Update URL
-    update_url = reverse("dasmon:get_update_datatables", args=[instrument])
-
-    breadcrumbs = view_util.get_monitor_breadcrumbs(instrument_id)
-    template_values = {
-        "instrument": instrument.upper(),
-        "breadcrumbs": breadcrumbs,
-        "update_url": update_url,
-    }
-    template_values = report_view_util.fill_template_values(request, **template_values)
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    template_values = view_util.fill_template_values(request, **template_values)
-
-    return render(request, "dasmon/live_runs_datatables.html", template_values)
 
 
 @users_view_util.login_or_local_required
@@ -408,43 +310,6 @@ def diagnostics(request, instrument):
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 def get_update(request, instrument):
-    """
-    Ajax call to get updates behind the scenes
-
-    :param instrument: instrument name
-    """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # Get last experiment and last run
-    data_dict = report_view_util.get_current_status(instrument_id)
-    data_dict["variables"] = view_util.get_cached_variables(instrument_id, monitored_only=False)
-
-    localtime = timezone.now()
-    recording_status = {
-        "key": "recording_status",
-        "value": view_util.is_running(instrument_id),
-        "timestamp": formats.localize(localtime),
-    }
-    data_dict["variables"].append(recording_status)
-
-    # Get current DAS health status
-    das_status = view_util.get_system_health(instrument_id)
-    data_dict["das_status"] = das_status
-    data_dict["live_plot_data"] = view_util.get_live_variables(request, instrument_id)
-
-    # Recent run info
-    data_dict = view_util.get_live_runs_update(request, instrument_id, None, **data_dict)
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    response["Content-Length"] = len(response.content)
-    return response
-
-
-@users_view_util.login_or_local_required_401
-@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
-@cache_control(private=True)
-def get_update_datatables(request, instrument):
 
     limit = int(request.GET.get("length", 10))
     offset = int(request.GET.get("start", 0))
@@ -495,10 +360,7 @@ def summary_update(request):
         "instruments": view_util.get_instrument_status_summary(),
         "postprocess_status": view_util.get_system_health(),
     }
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    response["Content-Length"] = len(response.content)
-    return response
+    return JsonResponse(data_dict)
 
 
 @users_view_util.login_or_local_required_401
