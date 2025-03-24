@@ -17,6 +17,8 @@ from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db import models
+
 
 from reporting.dasmon.models import ActiveInstrument
 from reporting.report.models import DataRun, IPTS, Instrument, Error, RunStatus
@@ -373,6 +375,37 @@ def instrument_summary(request, instrument):
 
 
 @users_view_util.login_or_local_required
+def instrument_summary_datatables(request, instrument):
+    """
+    Instrument summary page
+
+    :param instrument: instrument name
+    """
+
+    # Instrument error URL
+    error_url = reverse("report:live_errors", args=[instrument])
+
+    # Update URL for live monitoring
+    update_url = reverse("report:get_instrument_update_datatables", args=[instrument])
+
+    # Breadcrumbs
+    breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (
+        reverse(settings.LANDING_VIEW),
+        instrument.lower(),
+    )
+
+    template_values = {
+        "instrument": instrument.upper(),
+        "breadcrumbs": breadcrumbs,
+        "error_url": error_url,
+        "update_url": update_url,
+    }
+    template_values = view_util.fill_template_values(request, **template_values)
+    template_values = users_view_util.fill_template_values(request, **template_values)
+    return render(request, "report/instrument_datatables.html", template_values)
+
+
+@users_view_util.login_or_local_required
 def ipts_summary(request, instrument, ipts):
     """
     Experiment summary giving the list of runs
@@ -668,6 +701,76 @@ def get_instrument_update(request, instrument):
     response = HttpResponse(json.dumps(data_dict), content_type="application/json")
     response["Connection"] = "close"
     return response
+
+
+@users_view_util.login_or_local_required_401
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+def get_instrument_update_datatables(request, instrument):
+    """
+    Ajax call to get updates behind the scenes
+
+    :param instrument: instrument name
+    """
+
+    # map for sorting columns
+    column_to_field = {
+        "experiment": "expt_name",
+        "created_on": "created_on",
+        "total": "number_of_runs",
+    }
+
+    order_column_number = request.GET.get("order[0][column]", "2")
+    order_dir = request.GET.get("order[0][dir]", "desc")
+    order_column = request.GET.get(f"columns[{order_column_number}][data]", "run")
+    order_column = column_to_field.get(order_column, "created_on")
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    # Get instrument
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
+    data_dict = view_util.get_current_status(instrument_id)
+
+    # Get list of IPTS
+    ipts = IPTS.objects.filter(instruments=instrument_id)
+
+    count = ipts.count()
+
+    # order by column
+    if order_column == "number_of_runs":
+        ipts = ipts.annotate(num_runs=models.Count("datarun")).order_by("num_runs")
+    else:
+        ipts = ipts.order_by(order_column)
+
+    if order_dir == "desc":
+        ipts = ipts.reverse()
+
+    ipts = ipts[offset : offset + limit]  # noqa E203
+    expt_list = []
+    for expt in ipts:
+        localtime = timezone.localtime(expt.created_on)
+        expt_list.append(
+            {
+                "experiment": str(
+                    "<a href='%s'>%s</a>"
+                    % (
+                        reverse("report:ipts_summary", args=[instrument, expt.expt_name]),
+                        expt.expt_name,
+                    )
+                ),
+                "total": expt.number_of_runs(),
+                "created_on": formats.localize(localtime),
+            }
+        )
+
+    data_dict["data"] = expt_list
+    data_dict["recordsTotal"] = count
+    data_dict["recordsFiltered"] = count
+    data_dict["draw"] = draw
+
+    return JsonResponse(data_dict)
 
 
 @users_view_util.login_or_local_required_401

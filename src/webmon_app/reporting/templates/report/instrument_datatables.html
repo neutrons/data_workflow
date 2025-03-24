@@ -1,11 +1,10 @@
-{% extends "dasmon/live_monitor.html" %}
-{% load dasmon_tags %}
+{% extends "report/base_instrument.html" %}
+
+{% block title %}{{ instrument }} Experiments {% endblock %}
 
 {% block header %}
-<script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
-<script language="javascript" type="text/javascript" src="/static/column_search.js"></script>
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" href="/static/thirdparty/datatables.min.css" />
 <script type="text/javascript" src="/static/thirdparty/datatables.min.js"></script>
@@ -14,7 +13,7 @@
   var table;
 
   $(document).ready(function () {
-    table = $('#run_table').DataTable({
+    table = $('#expt_table').DataTable({
       initComplete: function () {
         this.api()
           .columns()
@@ -25,7 +24,6 @@
           url: '{{ update_url }}',
           data: data,
           success: function (json) {
-            update_from_ajax_data(json);
             $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}" + json.last_run + "/'>" + json.last_run + "</a></span>");
             $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}" + json.last_expt + "/'>" + json.last_expt + "</a></span>");
             $('#info_run_time').replaceWith("<span id='info_run_time'>" + json.last_run_time + "</span>");
@@ -44,14 +42,12 @@
         });
       },
       serverSide: true,
-      order: [[0, "desc"]],
+      order: [[2, "desc"]],
       columns: [
-        { data: 'run' },
-        { data: 'timestamp' },
-        { data: 'status' },
-        { data: 'reduce_url' }
+        { data: 'experiment' },
+        { data: 'total' },
+        { data: 'created_on' }
       ],
-      ordering: false,
       layout: {
         topEnd: null
       }
@@ -60,47 +56,24 @@
 
   setInterval(function () {
     table.ajax.reload(null, false);
-  }, 5000);
-
+  }, 10000);
 </script>
 {% endblock %}
 
-{% block right_side_links %}
-{% if is_adara %}
-<span style="float:right">live monitoring:
-  <a href="{{ live_monitor_url }}">status</a> | <b>runs</b> | <a href="{{ live_pv_url }}">PVs</a>
-</span>
-{% endif %}
-{% endblock %}
-
+{% block banner %}{{ instrument }} Experiments {% endblock %}
 
 {% block content %}
-List of latest runs:<br><br>
-<div>
-  <table class="message_table" id="run_table">
-    <thead>
-      <tr>
-        <th style="min-width: 50px;">Run</th>
-        <th>Created on</th>
-        <th>Status</th>
-        {% if user.is_staff %}
-        <th style="min-width: 50px;">Reduce</th>
-        {% endif %}
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-    <tfoot>
-      <tr>
-        <th></th>
-        <th></th>
-        <th></th>
-      </tr>
-    </tfoot>
-  </table>
-</div>
+List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_url }}'>errors</a>){% endif %}<br><br>
+<table class="message_table" id="expt_table">
+  <thead>
+    <tr>
+      <th style="width: 80px;">Experiment</th>
+      <th style="width: 50px;">No. of runs</th>
+      <th>Created on</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
 <br>
-
-<div id="dialog_placeholder"></div>
-
 {% endblock %}
