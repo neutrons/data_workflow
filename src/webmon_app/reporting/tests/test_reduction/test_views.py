@@ -47,11 +47,6 @@ class TestView(TestCase):
     def setUp(self):
         self.assertTrue(self.client.login(username="user1", password="pw"))
 
-    def test_inst(self):
-        response = self.client.get(reverse("reduction:configuration", args=["inst"]))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "reduction/configuration.html")
-
     def test_arcs(self):
         # GET
         response = self.client.get(reverse("reduction:configuration", args=["arcs"]))

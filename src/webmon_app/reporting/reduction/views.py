@@ -8,7 +8,7 @@ Automated reduction configuration view
 import logging
 import json
 import datetime
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -45,47 +45,7 @@ def configuration(request, instrument):
     elif instrument.lower() == "ref_m":
         return configuration_ref_m(request, instrument)
 
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    props_list = ReductionProperty.objects.filter(instrument=instrument_id)
-    params_list = []
-    for item in props_list:
-        params_list.append(
-            {
-                "key": str(item.key),
-                "raw_value": str(item.value),
-                "value": "<form action='javascript:void(0);' onsubmit='update(this);'>"
-                + ("<input type='hidden' name='key' value='%s'>" % (str(item.key)))
-                + "<input title='Hit enter to apply changes to your local session'"
-                + " type='text' name='value' value='%s'></form>" % (str(item.value)),
-            }
-        )  # noqa: E501
-
-    last_action = datetime.datetime.now().isoformat()
-    action_list = dasmon_view_util.get_latest_updates(
-        instrument_id, message_channel=settings.SYSTEM_STATUS_PREFIX + "postprocessing"
-    )
-    if len(action_list) > 0:
-        last_action = action_list[len(action_list) - 1]["timestamp"]
-
-    # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; <a href='%s'>%s</a>" % (
-        reverse("report:instrument_summary", args=[instrument]),
-        instrument,
-    )
-    breadcrumbs += " &rsaquo; configuration"
-
-    template_values = {
-        "instrument": instrument.upper(),
-        "helpline": settings.HELPLINE_EMAIL,
-        "params_list": params_list,
-        "action_list": action_list,
-        "last_action_time": last_action,
-        "breadcrumbs": breadcrumbs,
-    }
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    template_values = dasmon_view_util.fill_template_values(request, **template_values)
-    return render(request, "reduction/configuration.html", template_values)
+    raise Http404("No instrument matches the given query.")
 
 
 @users_view_util.login_or_local_required
