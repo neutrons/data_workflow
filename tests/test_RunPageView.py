@@ -301,10 +301,10 @@ class TestRunPageView:
     def verifyLatestRun(self, r):
         self.assertHtml("""<div class="summary">List of latest runs:<br><br>""", r.text)
         self.assertHtml(
-            """<th data-dynatable-column="instrument_id" style="min-width: 50px;">Instr.</th>
-            <th data-dynatable-column="run" data-dynatable-no-sort="true" style="min-width: 50px;">Run</th>
-            <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
-            <th data-dynatable-column="status">Status</th>""",
+            """<th style="min-width: 50px;">Instr.</th>
+            <th style="min-width: 50px;">Run</th>
+            <th>Created on</th>
+            <th>Status</th>""",
             r.text,
         )
 

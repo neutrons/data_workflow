@@ -60,8 +60,8 @@ class TestSMSQueues:
         # wait a second while things run
         time.sleep(1)
 
-        # check IPTS page /report/arcs/experiment/IPTS-11111/ for acquiring
-        response = request_page("/report/arcs/experiment/IPTS-11111/", self.user, self.pwd)
+        # check IPTS page /report/arcs/experiment/IPTS-11111/update/ for acquiring
+        response = request_page("/report/arcs/experiment/IPTS-11111/update/", self.user, self.pwd)
         assert response.status_code == 200
         assert response.text.count("acquiring") == 2
 
@@ -82,7 +82,7 @@ class TestSMSQueues:
         )
         time.sleep(1)
 
-        # check IPTS page /report/arcs/experiment/IPTS-11111/ for acquiring
-        response = request_page("/report/arcs/experiment/IPTS-11111/", self.user, self.pwd)
+        # check IPTS page /report/arcs/experiment/IPTS-11111/update/ for acquiring
+        response = request_page("/report/arcs/experiment/IPTS-11111/update/", self.user, self.pwd)
         assert response.status_code == 200
         assert response.text.count("acquiring") == 1  # 101 is still acquiring but not 100

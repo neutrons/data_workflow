@@ -8,6 +8,8 @@ from .base import SECRET_KEY
 if not SECRET_KEY or SECRET_KEY == "UNSET_SECRET":
     raise RuntimeError("APP_SECRET is not set")
 
+FAST_PAGE_CACHE_TIMEOUT = 1
+
 GENERAL_USER_USERNAME = environ.get("GENERAL_USER_USERNAME", "GeneralUser")  # noqa: F405
 GENERAL_USER_PASSWORD = environ.get("GENERAL_USER_PASSWORD", "GeneralUser")  # noqa: F405
 
