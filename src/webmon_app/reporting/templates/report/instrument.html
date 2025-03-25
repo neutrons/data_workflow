@@ -59,11 +59,11 @@
 
 {% block content %}
 List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_url }}'>errors</a>){% endif %}<br><br>
-<table class="message_table" id="expt_table">
+<table class="message_table display compact" id="expt_table">
   <thead>
     <tr>
-      <th style="width: 80px;">Experiment</th>
-      <th style="width: 50px;">No. of runs</th>
+      <th>Experiment</th>
+      <th>No. of runs</th>
       <th>Created on</th>
     </tr>
   </thead>

@@ -301,8 +301,8 @@ class TestRunPageView:
     def verifyLatestRun(self, r):
         self.assertHtml("""<div class="summary">List of latest runs:<br><br>""", r.text)
         self.assertHtml(
-            """<th style="min-width: 50px;">Instr.</th>
-            <th style="min-width: 50px;">Run</th>
+            """<th>Instr.</th>
+            <th>Run</th>
             <th>Created on</th>
             <th>Status</th>""",
             r.text,

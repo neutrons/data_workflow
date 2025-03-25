@@ -63,14 +63,13 @@
 {% block content %}
 List of {{ instrument }} errors in the last {{ time_period }} days {% if instrument_url %}(view <a
   href='{{ instrument_url }}'>experiments</a>){% endif %}<br><br>
-<table class="message_table fixed_table" id="error_table">
+<table class="message_table display compact" id="error_table">
   <thead>
     <tr>
-      <th style="width: 70px; min-width: 70px;">Experiment</th>
-      <th style="width: 50px; min-width: 50px;">Run</th>
+      <th>Experiment</th>
+      <th>Run</th>
       <th>Error</th>
-      <th style="width: 90px; min-width: 90px;">Time
-      </th>
+      <th>Time</th>
     </tr>
   </thead>
   <tbody>

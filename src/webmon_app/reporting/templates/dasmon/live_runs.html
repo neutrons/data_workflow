@@ -77,14 +77,14 @@
 {% block content %}
 List of latest runs:<br><br>
 <div>
-  <table class="message_table" id="run_table">
+  <table class="message_table display compact" id="run_table">
     <thead>
       <tr>
-        <th style="min-width: 50px;">Run</th>
+        <th>Run</th>
         <th>Created on</th>
         <th>Status</th>
         {% if user.is_staff %}
-        <th style="min-width: 50px;">Reduce</th>
+        <th>Reduce</th>
         {% endif %}
       </tr>
     </thead>
