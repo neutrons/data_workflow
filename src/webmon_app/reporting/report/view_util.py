@@ -28,7 +28,7 @@ from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone, formats
 from django.conf import settings
-from django.db import connection, transaction
+from django.db import connection, transaction, models
 from django.core.cache import cache
 
 import reporting.dasmon.view_util as dasmon_view_util
@@ -726,3 +726,102 @@ def reduction_queue_sizes():
         queue_sizes.append(StatusQueueMessageCount.objects.filter(queue_id=q[0]).latest("created_on").to_dict())
 
     return queue_sizes
+
+
+def get_experiment_list(instrument_id, offset, limit, order_column, reverse_dir):
+    """
+    Get a list of experiments for a given instrument
+    """
+
+    # Get list of IPTS
+    ipts = IPTS.objects.filter(instruments=instrument_id)
+    instrument = str(instrument_id)
+
+    count = ipts.count()
+
+    # order by column
+    if order_column == "number_of_runs":
+        ipts = ipts.annotate(num_runs=models.Count("datarun")).order_by("num_runs")
+    else:
+        ipts = ipts.order_by(order_column)
+
+    if reverse_dir:
+        ipts = ipts.reverse()
+
+    ipts = ipts[offset : offset + limit]  # noqa E203
+    expt_list = []
+    for expt in ipts:
+        localtime = timezone.localtime(expt.created_on)
+        expt_list.append(
+            {
+                "experiment": str(
+                    "<a href='%s'>%s</a>"
+                    % (
+                        reverse("report:ipts_summary", args=[instrument, expt.expt_name]),
+                        expt.expt_name,
+                    )
+                ),
+                "total": expt.number_of_runs(),
+                "created_on": formats.localize(localtime),
+            }
+        )
+
+    return expt_list, count
+
+
+def get_error_list(instrument_id, offset, limit):
+    """
+    Get a list of errors for a given instrument in the last 30 days
+    """
+    instrument = str(instrument_id)
+
+    time_period = 30
+    delta_time = datetime.timedelta(days=time_period)
+    oldest_time = timezone.now() - delta_time
+    error_query = (
+        Error.objects.filter(
+            run_status_id__created_on__gte=oldest_time,
+            run_status_id__run_id__instrument_id=instrument_id,
+        )
+        .order_by("run_status_id__created_on")
+        .reverse()
+    )
+
+    count = error_query.count()
+
+    error_query = error_query[offset : offset + limit]  # noqa E203
+
+    error_list = []
+    for err in error_query:
+        localtime = timezone.localtime(err.run_status_id.created_on)
+        error_list.append(
+            {
+                "experiment": str(
+                    "<a href='%s'>%s</a>"
+                    % (
+                        reverse(
+                            "report:ipts_summary",
+                            args=[
+                                instrument,
+                                err.run_status_id.run_id.ipts_id.expt_name,
+                            ],
+                        ),
+                        err.run_status_id.run_id.ipts_id.expt_name,
+                    )
+                ),
+                "run": str(
+                    "<a href='%s'>%s</a>"
+                    % (
+                        reverse(
+                            "report:detail",
+                            args=[instrument, err.run_status_id.run_id.run_number],
+                        ),
+                        err.run_status_id.run_id.run_number,
+                    )
+                ),
+                "info": str(err.description),
+                "created_on": formats.localize(localtime),
+            }
+        )
+
+    return error_list, count

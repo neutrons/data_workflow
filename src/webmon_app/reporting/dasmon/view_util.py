@@ -810,6 +810,9 @@ def _red_message(msg):
 
 
 def run_list_search(run_list, run_search, date_search, status_search, instrument_search=""):
+    """
+    Search the run list based on the search parameters
+    """
     if instrument_search:
         run_list = run_list.filter(instrument_id__name=instrument_search.lower())
 
@@ -838,8 +841,11 @@ def run_list_search(run_list, run_search, date_search, status_search, instrument
 
 
 def get_run_list_ipts(
-    instrument_id, ipts_id, offset, limit, order_by, reverse, run_search, date_search, status_search
+    instrument_id, ipts_id, offset, limit, order_by, reverse_dir, run_search, date_search, status_search
 ):
+    """
+    Get the list of runs for a given instrument and IPTS
+    """
     run_list = DataRun.objects.filter(
         instrument_id=instrument_id,
         ipts_id=ipts_id,
@@ -847,16 +853,19 @@ def get_run_list_ipts(
     count = run_list.count()
 
     run_list = run_list_search(run_list, run_search, date_search, status_search)
-
     filtered_count = run_list.count()
+
     run_list = run_list.order_by(order_by)
-    if reverse:
+    if reverse_dir:
         run_list = run_list.reverse()
     run_list = run_list[offset : limit + offset]  # noqa E203
     return run_list, count, filtered_count
 
 
 def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, date_search, status_search):
+    """
+    Get the latest runs for a given instrument
+    """
     timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
 
     delta_time = datetime.timedelta(hours=timeframe)
@@ -872,13 +881,16 @@ def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, dat
     count = run_list.count()
 
     run_list = run_list_search(run_list, run_search, date_search, status_search)
-
     filtered_count = run_list.count()
+
     run_list = run_list[offset : limit + offset]  # noqa E203
     return run_list, count, filtered_count
 
 
 def get_run_list_newest(offset, limit, instrument_search, run_search, date_search, status_search):
+    """
+    Get the latest runs for all instruments
+    """
     timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
 
     delta_time = datetime.timedelta(hours=timeframe)
@@ -887,11 +899,9 @@ def get_run_list_newest(offset, limit, instrument_search, run_search, date_searc
     count = run_list.count()
 
     run_list = run_list_search(run_list, run_search, date_search, status_search, instrument_search)
-
     filtered_count = run_list.count()
 
     run_list = run_list[offset : limit + offset]  # noqa E203
-
     return run_list, count, filtered_count
 
 

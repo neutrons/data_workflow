@@ -1,6 +1,7 @@
 import pytest
 from unittest import mock
 from django.test import TestCase
+import datetime
 
 import django
 from reporting import dasmon, users
@@ -8,7 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.utils import timezone
 
-from reporting.report.models import Instrument, Information, RunStatus, StatusQueue
+from reporting.report.models import Instrument, Information, RunStatus, StatusQueue, Error, WorkflowSummary
 from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable, Signal
 from workflow.database.report.models import DataRun
 from workflow.database.report.models import IPTS
@@ -76,10 +77,48 @@ class ViewUtilTest(TestCase):
             timestamp=timezone.now(),
         )
 
+        ipts = IPTS.objects.create(expt_name="testexp")
+        ipts.save()
+        sq_DataReady = StatusQueue(name="POSTPROCESS.DATA_READY", is_workflow_input=True)
+        sq_DataReady.save()
+        for run_number in range(10):
+            run = DataRun.objects.create(
+                run_number=run_number,
+                ipts_id=ipts,
+                instrument_id=inst,
+                file=f"tmp/test_{run_number}.nxs",
+            )
+            run.save()
+            WorkflowSummary.objects.create(
+                run_id=run,
+                complete=run_number % 2 == 0,
+                catalog_started=True,
+                cataloged=True,
+                reduction_needed=False,
+                reduction_started=True,
+                reduced=True,
+                reduction_cataloged=True,
+                reduction_catalog_started=True,
+            )
+            if run_number > 4 or run_number % 2 == 0:
+                rs2 = RunStatus.objects.create(
+                    run_id=run,
+                    queue_id=sq_DataReady,
+                    message_id=f"msg: test_run_{run_number}",
+                )
+                rs2.save()
+
+                if run_number == 7:
+                    e = Error(run_status_id=rs2, description="test_error")
+                    e.save()
+
     @classmethod
     def tearDownClass(cls):
         Instrument.objects.all().delete()
         Parameter.objects.all().delete()
+        StatusQueue.objects.all().delete()
+        DataRun.objects.all().delete()
+        WorkflowSummary.objects.all().delete()
 
     def test_get_monitor_breadcrumbs(self):
         inst = Instrument.objects.get(name="testinst")
@@ -576,6 +615,232 @@ class ViewUtilTest(TestCase):
         #  'dasmon_listener_warning': False}
         assert dasmon_diag["status"] == 0
         assert dasmon_diag["dasmon_listener_warning"] is False
+
+    def test_get_run_list_ipts(self):
+        from reporting.dasmon.view_util import get_run_list_ipts
+
+        instrument_id = Instrument.objects.get(name="testinst")
+        ipts_id = IPTS.objects.get(expt_name="testexp")
+
+        # reversed should have run number 9 first
+        rst, count, filtered_count = get_run_list_ipts(instrument_id, ipts_id, 0, 10, "created_on", True, "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+
+        # not reversed should have run number 0 first
+        rst, count, filtered_count = get_run_list_ipts(instrument_id, ipts_id, 0, 10, "created_on", False, "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 0
+
+        # reversed should have run number 9 first
+        rst, count, filtered_count = get_run_list_ipts(instrument_id, ipts_id, 0, 10, "run_number", True, "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+
+        # not reversed should have run number 0 first
+        rst, count, filtered_count = get_run_list_ipts(instrument_id, ipts_id, 0, 10, "run_number", False, "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 0
+
+        # check searching and limits
+
+        # limit = 2
+        rst, count, filtered_count = get_run_list_ipts(instrument_id, ipts_id, 0, 2, "created_on", True, "", "", "")
+        assert filtered_count == 10
+        assert count == 10
+        assert rst[0].run_number == 9
+        assert len(rst) == 2
+
+        # run number
+        rst, count, filtered_count = get_run_list_ipts(instrument_id, ipts_id, 0, 10, "created_on", True, "2", "", "")
+        assert filtered_count == 1
+        assert count == 10
+        assert rst[0].run_number == 2
+
+        # date, old date should return nothing
+        rst, count, filtered_count = get_run_list_ipts(
+            instrument_id, ipts_id, 0, 10, "created_on", True, "", "1900-01-01", ""
+        )
+        assert filtered_count == 0
+        assert count == 10
+        assert len(rst) == 0
+
+        # date, todays date should return all
+        rst, count, filtered_count = get_run_list_ipts(
+            instrument_id, ipts_id, 0, 10, "created_on", True, "", str(datetime.date.today()), ""
+        )
+        assert filtered_count == 10
+        assert count == 10
+        assert rst[0].run_number == 9
+
+        # complete status
+        rst, count, filtered_count = get_run_list_ipts(
+            instrument_id, ipts_id, 0, 10, "created_on", True, "", "", "complete"
+        )
+        assert filtered_count == 5
+        assert count == 10
+        assert rst[0].run_number == 8
+
+        # error status
+        rst, count, filtered_count = get_run_list_ipts(
+            instrument_id, ipts_id, 0, 10, "created_on", True, "", "", "error"
+        )
+        assert filtered_count == 1
+        assert count == 10
+        assert rst[0].run_number == 7
+
+        # incomplete status
+        rst, count, filtered_count = get_run_list_ipts(
+            instrument_id, ipts_id, 0, 10, "created_on", True, "", "", "incomplete"
+        )
+        assert filtered_count == 2
+        assert count == 10
+        assert rst[0].run_number == 9
+
+        # acquiring status
+        rst, count, filtered_count = get_run_list_ipts(
+            instrument_id, ipts_id, 0, 10, "created_on", True, "", "", "acquiring"
+        )
+        assert filtered_count == 2
+        assert count == 10
+        assert rst[0].run_number == 3
+
+    def test_get_run_list_instrument_newest(self):
+        from reporting.dasmon.view_util import get_run_list_instrument_newest
+
+        instrument_id = Instrument.objects.get(name="testinst")
+
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+
+        # check searching and limits
+
+        # limit = 2
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 2, "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+        assert len(rst) == 2
+
+        # run number
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "2", "", "")
+        assert count == 10
+        assert filtered_count == 1
+        assert rst[0].run_number == 2
+
+        # date, old date should return nothing
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "", "1900-01-01", "")
+        assert count == 10
+        assert filtered_count == 0
+        assert len(rst) == 0
+
+        # date, todays date should return all
+        rst, count, filtered_count = get_run_list_instrument_newest(
+            instrument_id, 0, 10, "", str(datetime.date.today()), ""
+        )
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+
+        # complete status
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "", "", "complete")
+        assert count == 10
+        assert filtered_count == 5
+        assert rst[0].run_number == 8
+
+        # error status
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "", "", "error")
+        assert count == 10
+        assert filtered_count == 1
+        assert rst[0].run_number == 7
+
+        # incomplete status
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "", "", "incomplete")
+        assert count == 10
+        assert filtered_count == 2
+        assert rst[0].run_number == 9
+
+        # acquiring status
+        rst, count, filtered_count = get_run_list_instrument_newest(instrument_id, 0, 10, "", "", "acquiring")
+        assert count == 10
+        assert filtered_count == 2
+        assert rst[0].run_number == 3
+
+    def test_get_run_list_newest(self):
+        from reporting.dasmon.view_util import get_run_list_newest
+
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+        # check searching and limits
+
+        # limit = 2
+        rst, count, filtered_count = get_run_list_newest(0, 2, "", "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+        assert len(rst) == 2
+
+        # correct instrument
+        rst, count, filtered_count = get_run_list_newest(0, 10, "testinst", "", "", "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+
+        # wrong instrument
+        rst, count, filtered_count = get_run_list_newest(0, 10, "testinst_wrong", "", "", "")
+        assert count == 10
+        assert filtered_count == 0
+        assert len(rst) == 0
+
+        # run number
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "2", "", "")
+        assert count == 10
+        assert filtered_count == 1
+        assert rst[0].run_number == 2
+
+        # date, old date should return nothing
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "1900-01-01", "")
+        assert count == 10
+        assert filtered_count == 0
+        assert len(rst) == 0
+
+        # date, todays date should return all
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", str(datetime.date.today()), "")
+        assert count == 10
+        assert filtered_count == 10
+        assert rst[0].run_number == 9
+
+        # complete status
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "complete")
+        assert count == 10
+        assert filtered_count == 5
+        assert rst[0].run_number == 8
+
+        # error status
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "error")
+        assert count == 10
+        assert filtered_count == 1
+        assert rst[0].run_number == 7
+
+        # incomplete status
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "incomplete")
+        assert count == 10
+        assert filtered_count == 2
+        assert rst[0].run_number == 9
+
+        # acquiring status
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "acquiring")
+        assert count == 10
+        assert filtered_count == 2
+        assert rst[0].run_number == 3
 
     def test_get_signals(self):
         from reporting.dasmon.view_util import get_signals

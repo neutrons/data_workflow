@@ -11,16 +11,15 @@ import datetime
 from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.utils import timezone, formats
+from django.utils import timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db import models
 
 
 from reporting.dasmon.models import ActiveInstrument
-from reporting.report.models import DataRun, IPTS, Instrument, Error, RunStatus
+from reporting.report.models import DataRun, IPTS, Instrument, RunStatus
 from reporting.report.catalog import get_run_info
 from reporting.report.forms import ProcessingForm
 from . import view_util
@@ -499,37 +498,7 @@ def get_instrument_update(request, instrument):
 
     data_dict = view_util.get_current_status(instrument_id)
 
-    # Get list of IPTS
-    ipts = IPTS.objects.filter(instruments=instrument_id)
-
-    count = ipts.count()
-
-    # order by column
-    if order_column == "number_of_runs":
-        ipts = ipts.annotate(num_runs=models.Count("datarun")).order_by("num_runs")
-    else:
-        ipts = ipts.order_by(order_column)
-
-    if order_dir == "desc":
-        ipts = ipts.reverse()
-
-    ipts = ipts[offset : offset + limit]  # noqa E203
-    expt_list = []
-    for expt in ipts:
-        localtime = timezone.localtime(expt.created_on)
-        expt_list.append(
-            {
-                "experiment": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse("report:ipts_summary", args=[instrument, expt.expt_name]),
-                        expt.expt_name,
-                    )
-                ),
-                "total": expt.number_of_runs(),
-                "created_on": formats.localize(localtime),
-            }
-        )
+    expt_list, count = view_util.get_experiment_list(instrument_id, offset, limit, order_column, order_dir == "desc")
 
     data_dict["data"] = expt_list
     data_dict["recordsTotal"] = count
@@ -555,57 +524,9 @@ def get_error_update(request, instrument):
 
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
-    # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
 
-    time_period = 30
-    delta_time = datetime.timedelta(days=time_period)
-    oldest_time = timezone.now() - delta_time
-    error_query = (
-        Error.objects.filter(
-            run_status_id__created_on__gte=oldest_time,
-            run_status_id__run_id__instrument_id=instrument_id,
-        )
-        .order_by("run_status_id__created_on")
-        .reverse()
-    )
-
-    count = error_query.count()
-
-    error_query = error_query[offset : offset + limit]  # noqa E203
-
-    error_list = []
-    for err in error_query:
-        localtime = timezone.localtime(err.run_status_id.created_on)
-        error_list.append(
-            {
-                "experiment": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse(
-                            "report:ipts_summary",
-                            args=[
-                                instrument,
-                                err.run_status_id.run_id.ipts_id.expt_name,
-                            ],
-                        ),
-                        err.run_status_id.run_id.ipts_id.expt_name,
-                    )
-                ),
-                "run": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse(
-                            "report:detail",
-                            args=[instrument, err.run_status_id.run_id.run_number],
-                        ),
-                        err.run_status_id.run_id.run_number,
-                    )
-                ),
-                "info": str(err.description),
-                "created_on": formats.localize(localtime),
-            }
-        )
+    error_list, count = view_util.get_error_list(instrument_id, offset, limit)
 
     data_dict["data"] = error_list
     data_dict["recordsTotal"] = count
