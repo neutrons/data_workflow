@@ -198,10 +198,6 @@ class RunSummaryViewTest(TestCase):
     def test_list_run(self):
         response = self.client.get(reverse("dasmon:run_summary"))
         self.assertEqual(response.status_code, 200)
-        refstr_1 = "'first_run_id': 1"
-        refstr_2 = "'last_run_id': 4"
-        self.assertTrue(refstr_1 in str(response.context))
-        self.assertTrue(refstr_2 in str(response.context))
 
 
 class RunSummaryUpdateViewTest(TestCase):
@@ -396,14 +392,6 @@ class LiveRunsViewTest(TestCase):
         response = self.client.get(reverse("dasmon:live_runs", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         assert "test_instrument" in str(response.context)
-        # NOTE:
-        # The id will not start from 1 as Django will use larger
-        # int for new record even if the old record is purged, the only thing
-        # we can check is to make sure that the context has those entries.
-        refstr_1 = "first_run_id"
-        refstr_2 = "last_run_id"
-        self.assertTrue(refstr_1 in str(response.context))
-        self.assertTrue(refstr_2 in str(response.context))
 
 
 class UserHelpViewTest(TestCase):

@@ -5,7 +5,7 @@ Status monitor utilities to support 'dasmon' views
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information, Error
+from reporting.report.models import Instrument, DataRun, Information
 from reporting.dasmon.models import (
     Parameter,
     StatusVariable,
@@ -809,178 +809,123 @@ def _red_message(msg):
     return "<span class='red'><b>%s</b></span>" % str(msg)
 
 
-def get_live_runs_update(request, instrument_id, ipts_id, **data_dict):
+def run_list_search(run_list, run_search, date_search, status_search, instrument_search=""):
     """
-    Get updated information about the latest runs
-
-    :param request: HTTP request so we can get the 'since' parameter
-    :param instrument_id: Instrument model object
-    :param ipts_id: filter by experiment, if provided
-    :param data_dict: dictionary to populate
+    Search the run list based on the search parameters
     """
-    logger = logging.getLogger(LOGNAME)
-    # Get the last run ID that the client knows about
-    since_run_id = None
-    run_list = []
+    if instrument_search:
+        run_list = run_list.filter(instrument_id__name=instrument_search.lower())
 
-    if "since" in request.GET and "complete_since" in request.GET:
-        since = request.GET.get("since", "0")
+    if run_search:
+        run_list = run_list.filter(run_number__icontains=run_search)
+
+    if date_search:
+        date = timezone.make_aware(datetime.datetime.fromisoformat(date_search), timezone.get_current_timezone())
+        run_list = run_list.filter(created_on__gt=date, created_on__lt=date + datetime.timedelta(days=1))
+
+    if status_search:
+        if status_search == "complete":
+            run_list = run_list.filter(workflowsummary__complete=True)
+        elif status_search == "acquiring":
+            run_list = run_list.exclude(runstatus__queue_id__name="POSTPROCESS.DATA_READY")
+        else:
+            run_list = run_list.exclude(workflowsummary__complete=True)
+            run_list = run_list.filter(runstatus__queue_id__name="POSTPROCESS.DATA_READY")
+
+            if status_search == "error":
+                run_list = run_list.filter(runstatus__error__isnull=False).distinct()
+            elif status_search == "incomplete":
+                run_list = run_list.exclude(runstatus__error__isnull=False)
+
+    return run_list
+
+
+def get_run_list_ipts(
+    instrument_id, ipts_id, offset, limit, order_by, reverse_dir, run_search, date_search, status_search
+):
+    """
+    Get the list of runs for a given instrument and IPTS
+    """
+    run_list = DataRun.objects.filter(
+        instrument_id=instrument_id,
+        ipts_id=ipts_id,
+    )
+    count = run_list.count()
+
+    run_list = run_list_search(run_list, run_search, date_search, status_search)
+    filtered_count = run_list.count()
+
+    run_list = run_list.order_by(order_by)
+    if reverse_dir:
+        run_list = run_list.reverse()
+    run_list = run_list[offset : limit + offset]  # noqa E203
+    return run_list, count, filtered_count
+
+
+def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, date_search, status_search):
+    """
+    Get the latest runs for a given instrument
+    """
+    timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
+
+    delta_time = datetime.timedelta(hours=timeframe)
+    oldest_time = timezone.now() - delta_time
+    run_list = (
+        DataRun.objects.filter(
+            instrument_id=instrument_id,
+            created_on__gte=oldest_time,
+        )
+        .order_by("created_on")
+        .reverse()
+    )
+    if run_list.count() < 10:
+        # get timestamp for the run that is 10th from the end
         try:
-            since = int(since)
-            since_run_id = get_object_or_404(DataRun, id=since)
-        except:  # noqa: E722
-            since = 0
-
-        # Get the earliest run that the client knows about
-        complete_since = request.GET.get("complete_since", since)
-        try:
-            complete_since = int(complete_since)
-            # Get last experiment and last run
-            if ipts_id is not None:
-                run_list = (
-                    DataRun.objects.filter(
-                        instrument_id=instrument_id,
-                        ipts_id=ipts_id,
-                        id__gte=complete_since,
-                    )
-                    .order_by("created_on")
-                    .reverse()
-                )
-            elif instrument_id is not None:
-                run_list = (
-                    DataRun.objects.filter(instrument_id=instrument_id, id__gte=complete_since)
-                    .order_by("created_on")
-                    .reverse()
-                )
-            else:
-                run_list = DataRun.objects.filter(id__gte=complete_since).order_by("created_on").reverse()
-        except:  # noqa: E722
-            # Invalid value for complete_since
-            logger.exception("get_live_runs_update:")
-
-    status_list = []
-    update_list = []
-    if since_run_id is not None and len(run_list) > 0:
-        data_dict["last_run_id"] = run_list[0].id
-        run_status_text_dict = report_view_util.get_run_status_text_dict(run_list)
-        for r in run_list:
-            status = run_status_text_dict.get(r.id, "unknown")
-
-            run_dict = {
-                "key": "run_id_%s" % str(r.id),
-                "value": status,
-            }
-            status_list.append(run_dict)
-
-            if since_run_id.created_on < r.created_on:
-                try:
-                    localtime = timezone.localtime(r.created_on)
-                except:  # noqa: E722
-                    localtime = r.created_on
-                reduce_url = reverse(
-                    "report:submit_for_reduction",
-                    args=[str(r.instrument_id), r.run_number],
-                )
-                expt_dict = {
-                    "run": r.run_number,
-                    "timestamp": formats.localize(localtime),
-                    "last_error": status,
-                    "run_id": r.id,
-                    "reduce_url": ("<a id='reduce_%s' href='javascript:void(0);'" % r.run_number)
-                    + (' onClick=\'$.ajax({ url: "%s", cache: false });' % reduce_url)
-                    + (' $("#reduce_%s").remove();\'>reduce</a>' % r.run_number),  # noqa: E501
-                    "instrument_id": str(r.instrument_id),
-                }
-                update_list.append(expt_dict)
-    data_dict["run_list"] = update_list
-    data_dict["refresh_needed"] = "1" if len(update_list) > 0 else "0"
-    data_dict["status_list"] = status_list
-    return data_dict
-
-
-def get_live_runs(timeframe=None, number_of_entries=10, instrument_id=None, as_html=True):
-    """
-    Get recent runs for all instruments.
-    If no run is found in the last few hours (defined by the timeframe parameter),
-    we return the last few runs (defined by the number_of_entries parameter).
-
-    :param timeframe: number of hours going back from now, defining the period of time for the runs
-    :param number_of_entries: number of entries to return if we didn't find any run in the defined period
-    :param instrument_id: if provided, results will be limited to the given instrument
-    """
-    if timeframe is None:
-        timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
-    logger = logging.getLogger(LOGNAME)
-    run_list = []
-    first_run = 0
-    last_run = 0
-    try:
-        delta_time = datetime.timedelta(hours=timeframe)
-        oldest_time = timezone.now() - delta_time
-        if instrument_id is not None:
-            runs = (
-                DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=oldest_time)
+            run = DataRun.objects.filter(instrument_id=instrument_id).order_by("created_on").reverse()[9]
+        except IndexError:
+            # use all runs if there are less than 10
+            run_list = DataRun.objects.filter(instrument_id=instrument_id).order_by("created_on").reverse()
+        else:
+            run_list = (
+                DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=run.created_on)
                 .order_by("created_on")
                 .reverse()
             )
-        else:
-            runs = DataRun.objects.filter(created_on__gte=oldest_time).order_by("created_on").reverse()
-        if len(runs) == 0:
-            if instrument_id is not None:
-                runs = (
-                    DataRun.objects.filter(instrument_id=instrument_id)
-                    .order_by("created_on")
-                    .reverse()[:number_of_entries]
-                )
-            else:
-                runs = DataRun.objects.order_by("created_on").reverse()[:number_of_entries]
-        if len(runs) > 0:
-            first_run = runs[len(runs) - 1].id
-            last_run = runs[0].id
+    count = run_list.count()
 
-        # Create dictionary for each run
-        if as_html:
-            run_list = report_view_util.get_run_list_dict(runs)
-        else:
-            run_list = get_run_list(runs)
-    except:  # noqa: E722
-        logger.exception("get_live_runs:")
-    return run_list, first_run, last_run
+    run_list = run_list_search(run_list, run_search, date_search, status_search)
+    filtered_count = run_list.count()
+
+    run_list = run_list[offset : limit + offset]  # noqa E203
+    return run_list, count, filtered_count
 
 
-def get_run_list(run_list):
+def get_run_list_newest(offset, limit, instrument_search, run_search, date_search, status_search):
     """
-    Get a list of run object and transform it into a list of
-    dictionaries that can be used as a simple dictionary that
-    can be shipped as json.
-
-    :param run_list: list of run object (usually a QuerySet)
+    Get the latest runs for all instruments
     """
-    logger = logging.getLogger(LOGNAME)
-    run_dicts = []
+    timeframe = float(settings.LATEST_RUNS_TIME_RANGE_HOURS)
 
-    complete = dict(WorkflowSummary.objects.filter(run_id__in=run_list).values_list("run_id", "complete"))
-    errors = (
-        Error.objects.filter(run_status_id__run_id__in=run_list)
-        .values_list("run_status_id__run_id", flat=True)
-        .distinct()
-    )
-    try:
-        for r in run_list:
-            status = "incomplete"
-            if complete.get(r.id, False) is True:
-                status = "complete"
-            elif r.id in errors:
-                status = "error"
-            # workaround for timezone issue
-            try:
-                _t = timezone.localtime(r.created_on).ctime()
-            except:  # noqa: E722
-                _t = r.created_on.ctime()
-            run_dicts.append(dict(run=r.run_number, timestamp=_t, status=status))
-    except:  # noqa: E722
-        logger.exception("dasmon.view_util.get_run_list:")
-    return run_dicts
+    delta_time = datetime.timedelta(hours=timeframe)
+    oldest_time = timezone.now() - delta_time
+    run_list = DataRun.objects.filter(created_on__gte=oldest_time).order_by("created_on").reverse()
+    if run_list.count() < 10:
+        # get timestamp for the run that is 10th from the end
+        try:
+            run = DataRun.objects.order_by("created_on").reverse()[9]
+        except IndexError:
+            # use all runs if there are less than 10
+            run_list = DataRun.objects.order_by("created_on").reverse()
+        else:
+            run_list = DataRun.objects.filter(created_on__gte=run.created_on).order_by("created_on").reverse()
+
+    count = run_list.count()
+
+    run_list = run_list_search(run_list, run_search, date_search, status_search, instrument_search)
+    filtered_count = run_list.count()
+
+    run_list = run_list[offset : limit + offset]  # noqa E203
+    return run_list, count, filtered_count
 
 
 class SignalEntry:

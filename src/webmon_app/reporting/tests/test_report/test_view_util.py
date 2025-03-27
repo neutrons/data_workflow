@@ -20,8 +20,13 @@ class ViewUtilTest(TestCase):
     def setUpTestData(cls):
         inst = Instrument.objects.create(name="test_instrument")
         inst.save()
-        ipts = IPTS.objects.create(expt_name="test_exp")
+        ipts = IPTS.objects.create(expt_name="test_exp1")
+        ipts.instruments.add(inst)
         ipts.save()
+        ipts2 = IPTS.objects.create(expt_name="test_exp2")
+        ipts2.instruments.add(inst)
+        ipts2.save()
+
         sq = StatusQueue(name="test", is_workflow_input=True)
         sq.save()
         sq_DataReady = StatusQueue(name="POSTPROCESS.DATA_READY", is_workflow_input=True)
@@ -69,7 +74,8 @@ class ViewUtilTest(TestCase):
     @classmethod
     def tearDownClass(cls):
         Instrument.objects.get(name="test_instrument").delete()
-        IPTS.objects.get(expt_name="test_exp").delete()
+        IPTS.objects.get(expt_name="test_exp1").delete()
+        IPTS.objects.get(expt_name="test_exp2").delete()
         StatusQueue.objects.all().delete()
         DataRun.objects.all().delete()
         WorkflowSummary.objects.all().delete()
@@ -224,7 +230,7 @@ class ViewUtilTest(TestCase):
         rst = get_current_status(inst)
         self.assertTrue("run_rate" in rst.keys())
         self.assertTrue("error_rate" in rst.keys())
-        self.assertEqual(rst["last_expt"], "TEST_EXP")
+        self.assertEqual(rst["last_expt"], "TEST_EXP1")
 
     def test_is_acquisition_complete(self):
         from reporting.report.view_util import is_acquisition_complete
@@ -409,6 +415,45 @@ class ViewUtilTest(TestCase):
         assert queue_size_list[0]["message_count"] == 12
         assert queue_size_list[1]["queue"] == "TEST_QUEUE2"
         assert queue_size_list[1]["message_count"] == 42
+
+    def test_get_experiment_list(self):
+        from reporting.report.view_util import get_experiment_list
+
+        inst = Instrument.objects.get(name="test_instrument")
+
+        rst, count = get_experiment_list(inst, 0, 10, "created_on", True)
+        self.assertEqual(count, 2)
+        self.assertTrue("test_exp2" in rst[0]["experiment"])
+        self.assertTrue("test_exp1" in rst[1]["experiment"])
+        self.assertEqual(rst[0]["total"], 0)
+        self.assertEqual(rst[1]["total"], 9)
+
+        # not reversed
+        rst, count = get_experiment_list(inst, 0, 10, "created_on", False)
+        self.assertEqual(count, 2)
+        self.assertTrue("test_exp1" in rst[0]["experiment"])
+        self.assertTrue("test_exp2" in rst[1]["experiment"])
+
+        # sort by number of runs
+        rst, count = get_experiment_list(inst, 0, 10, "number_of_runs", True)
+        self.assertEqual(count, 2)
+        self.assertTrue("test_exp1" in rst[0]["experiment"])
+        self.assertTrue("test_exp2" in rst[1]["experiment"])
+        rst, count = get_experiment_list(inst, 0, 10, "number_of_runs", False)
+        self.assertEqual(count, 2)
+        self.assertTrue("test_exp2" in rst[0]["experiment"])
+        self.assertTrue("test_exp1" in rst[1]["experiment"])
+
+    def test_get_error_list(self):
+        from reporting.report.view_util import get_error_list
+
+        inst = Instrument.objects.get(name="test_instrument")
+        rst, count = get_error_list(inst, 0, 10)
+        self.assertEqual(count, 1)
+        self.assertEqual(len(rst), 1)
+        self.assertEqual(rst[0]["info"], "test_error")
+        self.assertTrue("test_instrument/experiment/test_exp1" in rst[0]["experiment"])
+        self.assertTrue("test_instrument/7" in rst[0]["run"])
 
 
 if __name__ == "__main__":

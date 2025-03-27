@@ -7,19 +7,19 @@ Report views
 """
 import sys
 import logging
-import json
 import datetime
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.utils import timezone, formats
+from django.utils import timezone
 from django.views.decorators.cache import cache_page, cache_control
 from django.views.decorators.vary import vary_on_cookie
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
+
 from reporting.dasmon.models import ActiveInstrument
-from reporting.report.models import DataRun, IPTS, Instrument, Error, RunStatus
+from reporting.report.models import DataRun, IPTS, Instrument, RunStatus
 from reporting.report.catalog import get_run_info
 from reporting.report.forms import ProcessingForm
 from . import view_util
@@ -318,40 +318,12 @@ def instrument_summary(request, instrument):
 
     :param instrument: instrument name
     """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # Get list of IPTS
-    ipts = IPTS.objects.filter(instruments=instrument_id).order_by("created_on").reverse()
-    expt_list = []
-    for expt in ipts:
-        localtime = timezone.localtime(expt.created_on)
-        expt_list.append(
-            {
-                "experiment": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse("report:ipts_summary", args=[instrument, expt.expt_name]),
-                        expt.expt_name,
-                    )
-                ),
-                "total": expt.number_of_runs(),
-                "timestamp": expt.created_on.isoformat(),
-                "created_on": formats.localize(localtime),
-            }
-        )
 
     # Instrument error URL
     error_url = reverse("report:live_errors", args=[instrument])
 
     # Update URL for live monitoring
     update_url = reverse("report:get_instrument_update", args=[instrument])
-
-    # Get the last IPTS created so that we can properly do the live update
-    if IPTS.objects.filter(instruments=instrument_id).count() > 0:
-        last_expt_created = IPTS.objects.filter(instruments=instrument_id).latest("id")
-    else:
-        last_expt_created = None
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a> &rsaquo; %s" % (
@@ -361,11 +333,9 @@ def instrument_summary(request, instrument):
 
     template_values = {
         "instrument": instrument.upper(),
-        "expt_list": expt_list,
         "breadcrumbs": breadcrumbs,
         "error_url": error_url,
         "update_url": update_url,
-        "last_expt_created": last_expt_created,
     }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
@@ -380,6 +350,7 @@ def ipts_summary(request, instrument, ipts):
     :param instrument: instrument name
     :param ipts: experiment name
     """
+
     # Protect against lower-case requests
     ipts = ipts.upper()
     # Get instrument
@@ -387,22 +358,8 @@ def ipts_summary(request, instrument, ipts):
     # Get experiment
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
 
-    # Get IPTS URL
-    ipts_url = reverse("report:ipts_summary", args=[instrument, ipts])
+    # Get data URL
     update_url = reverse("report:get_experiment_update", args=[instrument, ipts])
-
-    # Get the latest run and experiment so we can determine later
-    # whether the user should refresh the page
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    runs = DataRun.objects.filter(instrument_id=instrument_id, ipts_id=ipts_id).order_by("created_on")
-    run_list = view_util.get_run_list_dict(runs)
-
-    # Get the ID of the first displayed run so that we can update the
-    # status of runs that are displayed
-    first_run_id = 0
-    if len(runs) > 0:
-        first_run_id = runs[0].id
 
     # Breadcrumbs
     breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
@@ -415,11 +372,8 @@ def ipts_summary(request, instrument, ipts):
     template_values = {
         "instrument": instrument.upper(),
         "ipts_number": ipts,
-        "run_list": run_list,
         "breadcrumbs": breadcrumbs,
-        "ipts_url": ipts_url,
         "update_url": update_url,
-        "first_run_id": first_run_id,
     }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
@@ -434,54 +388,6 @@ def live_errors(request, instrument):
     """
     Display the list of latest errors
     """
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-
-    # TODO: let the user pick the timeframe for the errors.
-    # Pick 30 days for now.
-    time_period = 30
-    delta_time = datetime.timedelta(days=time_period)
-    oldest_time = timezone.now() - delta_time
-    error_query = Error.objects.filter(
-        run_status_id__created_on__gte=oldest_time,
-        run_status_id__run_id__instrument_id=instrument_id,
-    ).order_by("id")
-    last_error_id = 0
-    if len(error_query) > 0:
-        last_error_id = error_query[len(error_query) - 1].id
-    error_list = []
-    for err in error_query:
-        localtime = timezone.localtime(err.run_status_id.created_on)
-        error_list.append(
-            {
-                "experiment": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse(
-                            "report:ipts_summary",
-                            args=[
-                                instrument,
-                                err.run_status_id.run_id.ipts_id.expt_name,
-                            ],
-                        ),
-                        err.run_status_id.run_id.ipts_id.expt_name,
-                    )
-                ),
-                "run": str(
-                    "<a href='%s'>%s</a>"
-                    % (
-                        reverse(
-                            "report:detail",
-                            args=[instrument, err.run_status_id.run_id.run_number],
-                        ),
-                        err.run_status_id.run_id.run_number,
-                    )
-                ),
-                "info": str(err.description),
-                "timestamp": err.run_status_id.created_on.isoformat(),
-                "created_on": formats.localize(localtime),
-            }
-        )
 
     # Instrument reporting URL
     instrument_url = reverse("report:instrument_summary", args=[instrument])
@@ -497,12 +403,10 @@ def live_errors(request, instrument):
 
     template_values = {
         "instrument": instrument.upper(),
-        "error_list": error_list,
-        "last_error_id": last_error_id,
         "breadcrumbs": breadcrumbs,
         "instrument_url": instrument_url,
         "update_url": update_url,
-        "time_period": time_period,
+        "time_period": 30,
     }
     template_values = view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
@@ -518,18 +422,50 @@ def get_experiment_update(request, instrument, ipts):
     :param instrument: instrument name
     :param ipts: experiment name
     """
+
+    # map for sorting columns
+    column_to_field = {
+        "run": "run_number",
+        "timestamp": "created_on",
+    }
+
+    order_column_number = request.GET.get("order[0][column]", "0")
+    order_dir = request.GET.get("order[0][dir]", "desc")
+    order_column = request.GET.get(f"columns[{order_column_number}][data]", "run")
+    order_column = column_to_field.get(order_column, "run_number")
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    run_search = request.GET.get("columns[0][search][value]", "")
+    date_search = request.GET.get("columns[1][search][value]", "")
+    status_search = request.GET.get("columns[2][search][value]", "")
+
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
     # Get experiment
     ipts_id = get_object_or_404(IPTS, expt_name=ipts, instruments=instrument_id)
 
-    # Get last experiment and last run
-    data_dict = view_util.get_current_status(instrument_id)
-    data_dict = dasmon_view_util.get_live_runs_update(request, instrument_id, ipts_id, **data_dict)
+    data = view_util.get_current_status(instrument_id)
 
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    return response
+    run_list, count, filtered_count = dasmon_view_util.get_run_list_ipts(
+        instrument_id,
+        ipts_id,
+        offset,
+        limit,
+        order_column,
+        order_dir == "desc",
+        run_search,
+        date_search,
+        status_search,
+    )
+    data["data"] = view_util.get_run_list_dict(run_list)
+    data["recordsTotal"] = count
+    data["recordsFiltered"] = filtered_count
+    data["draw"] = draw
+
+    return JsonResponse(data)
 
 
 @users_view_util.login_or_local_required_401
@@ -540,41 +476,36 @@ def get_instrument_update(request, instrument):
 
     :param instrument: instrument name
     """
-    since = request.GET.get("since", "0")
-    try:
-        since = int(since)
-        since_expt_id = get_object_or_404(IPTS, id=since)
-    except:  # noqa: E722
-        since = 0
-        since_expt_id = None
 
-    # Get the instrument
+    # map for sorting columns
+    column_to_field = {
+        "experiment": "expt_name",
+        "created_on": "created_on",
+        "total": "number_of_runs",
+    }
+
+    order_column_number = request.GET.get("order[0][column]", "2")
+    order_dir = request.GET.get("order[0][dir]", "desc")
+    order_column = request.GET.get(f"columns[{order_column_number}][data]", "run")
+    order_column = column_to_field.get(order_column, "created_on")
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
+
+    # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
-    # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
-    expt_list = IPTS.objects.filter(instruments=instrument_id, id__gt=since).order_by("created_on")
 
-    update_list = []
-    if since_expt_id is not None and len(expt_list) > 0:
-        data_dict["last_expt_id"] = expt_list[0].id
-        for e in expt_list:
-            if since_expt_id.created_on < e.created_on:
-                localtime = timezone.localtime(e.created_on)
-                expt_dict = {
-                    "ipts": e.expt_name.upper(),
-                    "n_runs": e.number_of_runs(),
-                    "created_on": formats.localize(localtime),
-                    "timestamp": e.created_on.isoformat(),
-                    "ipts_id": e.id,
-                }
-                update_list.append(expt_dict)
-    data_dict["expt_list"] = update_list
-    data_dict["refresh_needed"] = "1" if len(update_list) > 0 else "0"
+    expt_list, count = view_util.get_experiment_list(instrument_id, offset, limit, order_column, order_dir == "desc")
 
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    return response
+    data_dict["data"] = expt_list
+    data_dict["recordsTotal"] = count
+    data_dict["recordsFiltered"] = count
+    data_dict["draw"] = draw
+
+    return JsonResponse(data_dict)
 
 
 @users_view_util.login_or_local_required_401
@@ -586,44 +517,20 @@ def get_error_update(request, instrument):
     :param instrument: instrument name
     :param ipts: experiment name
     """
-    since = request.GET.get("since", "0")
-    try:
-        since = int(since)
-        last_error_id = get_object_or_404(Error, id=since)
-    except:  # noqa: E722
-        last_error_id = None
+
+    limit = int(request.GET.get("length", 10))
+    offset = int(request.GET.get("start", 0))
+    draw = int(request.GET.get("draw", 1))
 
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
-    # Get last experiment and last run
     data_dict = view_util.get_current_status(instrument_id)
 
-    err_list = []
-    if last_error_id is not None:
-        errors = Error.objects.filter(
-            run_status_id__run_id__instrument_id=instrument_id, id__gt=last_error_id.id
-        ).order_by("run_status_id__created_on")
-        if len(errors) > 0:
-            last_error_id_number = None
-            for e in errors:
-                if last_error_id_number is None:
-                    last_error_id_number = e.id
+    error_list, count = view_util.get_error_list(instrument_id, offset, limit)
 
-                if last_error_id.run_status_id.created_on < e.run_status_id.created_on:
-                    localtime = timezone.localtime(e.run_status_id.created_on)
-                    err_dict = {
-                        "run": e.run_status_id.run_id.run_number,
-                        "ipts": e.run_status_id.run_id.ipts_id.expt_name,
-                        "description": e.description,
-                        "created_on": formats.localize(localtime),
-                        "timestamp": e.run_status_id.created_on.isoformat(),
-                        "error_id": e.id,
-                    }
-                    err_list.append(err_dict)
-            data_dict["last_error_id"] = last_error_id_number
-    data_dict["errors"] = err_list
-    data_dict["refresh_needed"] = "1" if len(err_list) > 0 else "0"
+    data_dict["data"] = error_list
+    data_dict["recordsTotal"] = count
+    data_dict["recordsFiltered"] = count
+    data_dict["draw"] = draw
 
-    response = HttpResponse(json.dumps(data_dict), content_type="application/json")
-    response["Connection"] = "close"
-    return response
+    return JsonResponse(data_dict)

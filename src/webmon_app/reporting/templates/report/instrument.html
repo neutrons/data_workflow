@@ -6,78 +6,71 @@
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
-<link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
-<script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
+<link rel="stylesheet" href="/static/thirdparty/datatables.min.css" />
+<script type="text/javascript" src="/static/thirdparty/datatables.min.js"></script>
+<link rel="stylesheet" href="/static/datatables.css">
 
 <script>
-var records = {% autoescape off %}{{ expt_list }}{% endautoescape %};
-var dynatable = null;
-    var last_expt_id = '{{ last_expt_created.id }}';
-    var run_data = {{ run_rate|safe }};
-    var error_data = {{ error_rate|safe }};
+  var table;
 
-    $(document).ready( function() {
-      $('#expt_table').dynatable({ dataset: { records: records,
-                                  perPageOptions: [25, 50, 100],
-                                  perPageDefault: 25 },
-                                  features: { pushState: false }
-      });
-      dynatable = $('#expt_table').data('dynatable');
-      dynatable.sorts.add('timestamp', -1)
-      dynatable.process();
-    });
+  $(document).ready(function () {
+    table = $('#expt_table').DataTable({
+      ajax: function (data, callback, settings) {
+        $.ajax({
+          url: '{{ update_url }}',
+          data: data,
+          success: function (json) {
+            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}" + json.last_run + "/'>" + json.last_run + "</a></span>");
+            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}" + json.last_expt + "/'>" + json.last_expt + "</a></span>");
+            $('#info_run_time').replaceWith("<span id='info_run_time'>" + json.last_run_time + "</span>");
 
-    function poll(){
-        $.ajax({ url: "{{ update_url }}?since="+last_expt_id, success: function(data) {
-            if (data.refresh_needed.localeCompare('1')==0) {
-                for (var i=0;i<data.expt_list.length;i++) {
-                  records.push({'experiment': "<a href='{{ base_ipts_url }}"+data.expt_list[i].ipts+"/'>"+data.expt_list[i].ipts+"</a>",
-                                'total': data.expt_list[i].n_runs,
-                                'created_on': data.expt_list[i].created_on,
-                                'timestamp': data.expt_list[i].timestamp
-                                });
-                }
-                last_expt_id = data.last_expt_id;
-            }
-            dynatable.settings.dataset.originalRecords = records;
-            dynatable.process();
-
-            $('#info_last_run').replaceWith("<span id='info_last_run'><a href='{{ base_run_url }}"+data.last_run+"/'>"+data.last_run+"</a></span>");
-            $('#info_last_expt').replaceWith("<span id='info_last_expt'><a href='{{ base_ipts_url }}"+data.last_expt+"/'>"+data.last_expt+"</a></span>");
-            $('#info_run_time').replaceWith("<span id='info_run_time'>"+data.last_run_time+"</span>");
-
-            run_data = data.run_rate;
-            error_data = data.error_rate;
+            run_data = json.run_rate;
+            error_data = json.error_rate;
             plot_combined_rates(run_data, error_data);
-        }, dataType: "json", timeout: 30000, cache: true,
-        statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
-    };
+            callback(json);
+          },
+          error: function (xhr, error, thrown) {
+            if (xhr.status == 401) {
+              new_alert("Your session expired. Please log in again");
+              show_alert();
+            }
+          }
+        });
+      },
+      serverSide: true,
+      order: [[2, "desc"]],
+      columns: [
+        { data: 'experiment' },
+        { data: 'total' },
+        { data: 'created_on' }
+      ],
+      lengthMenu: [25, 50, 100],
+      layout: {
+        topEnd: null
+      }
+    });
+  });
+
+  setInterval(function () {
+    table.ajax.reload(null, false);
+  }, 10000);
 </script>
 {% endblock %}
 
 {% block banner %}{{ instrument }} Experiments {% endblock %}
 
-{% block bodytop %}
-<script id="source" language="javascript" type="text/javascript">
-    setInterval(poll, 10000);
-</script>
-{% endblock %}
-
 {% block content %}
 List of {{ instrument }} experiments {% if error_url %}(view <a href='{{ error_url }}'>errors</a>){% endif %}<br><br>
-<table class="message_table" id="expt_table">
+<table class="display compact" id="expt_table">
   <thead>
     <tr>
-      <th data-dynatable-column="experiment" style="width: 80px;">Experiment</th>
-      <th data-dynatable-column="total" style="width: 50px;">No. of runs</th>
-      <th data-dynatable-column="created_on" data-dynatable-sorts="timestamp">Created on</th>
+      <th>Experiment</th>
+      <th>No. of runs</th>
+      <th>Created on</th>
     </tr>
   </thead>
   <tbody>
   </tbody>
 </table>
 <br>
-<script id="source" language="javascript" type="text/javascript">
-	plot_combined_rates(run_data, error_data);
-</script>
 {% endblock %}

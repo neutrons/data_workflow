@@ -3,106 +3,79 @@
 
 {% block title %}Latest Runs{% endblock %}
 {% block header %}
-<script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
-<script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
-<link rel="stylesheet" media="all" href="/static/bar_chart.css" />
-<link rel="stylesheet" media="all" href="/static/thirdparty/dynatable/jquery.dynatable.css" />
-<script type='text/javascript' src='/static/thirdparty/dynatable/jquery.dynatable.js'></script>
+<script language="javascript" type="text/javascript" src="/static/column_search.js"></script>
+<link rel="stylesheet" href="/static/thirdparty/datatables.min.css" />
+<script type="text/javascript" src="/static/thirdparty/datatables.min.js"></script>
+<link rel="stylesheet" href="/static/datatables.css">
 
 <script>
-var records = {% autoescape off %}{{ run_list }}{% endautoescape %};
-var dynatable = null;
+  var table;
 
-$(document).ready( function() {
-  $('#run_table').dynatable({ dataset: { records: records,
-                              perPageOptions: [50, 100, 500, 1000],
-                              perPageDefault: 500 },
-                              features: { pushState: false }
+  $(document).ready(function () {
+    table = $('#run_table').DataTable({
+      initComplete: function () {
+        this.api()
+          .columns()
+          .every(column_search);
+      },
+      ajax: '{{ run_list_url }}',
+      serverSide: true,
+      order: [[0, "desc"]],
+      columns: [
+        { data: 'instrument_id' },
+        { data: 'run' },
+        { data: 'timestamp' },
+        { data: 'status' }
+      ],
+      lengthMenu: [25, 50, 100, 500, 1000],
+      ordering: false,
+      layout: {
+        topEnd: null
+      }
+    });
   });
-  dynatable = $('#run_table').data('dynatable');
-  dynatable.sorts.add('run_id', -1)
-  dynatable.process();
-  $('#search-status').change( function() {
-    var value = $(this).val();
-    if (value === "") {
-      dynatable.queries.remove("search");
-    } else {
-      dynatable.queries.add("search",value);
-    }
-    dynatable.process();
-  });
-});
 
-var last_run_id = '{{ last_run_id }}';
+  setInterval(function () {
+    table.ajax.reload(null, false);
+  }, 10000);
 
-function poll(){
-    $.ajax({ url: "{% url 'dasmon:run_summary_update' %}?since="+last_run_id+"&complete_since="+{{ first_run_id }}, success: function(data){
-        if (data.refresh_needed.localeCompare('1')==0){
-            for (var i=0;i<data.run_list.length;i++) {
-                if (!$('#run_id_'+data.run_list[i].run_id).length) {
-                  records.push({'instrument_id': "<a href='{{ base_instrument_url }}"+data.run_list[i].instrument_id+"/runs/'>"+data.run_list[i].instrument_id+"</a>",
-                                'run': "<a href='{{ base_run_url }}"+data.run_list[i].instrument_id+"/"+data.run_list[i].run+"/'>"+data.run_list[i].run+"</a>",
-                                'timestamp': data.run_list[i].timestamp,
-                                'run_id': data.run_list[i].run_id,
-                                'status': "<span id='run_id_"+data.run_list[i].run_id+"'class='red'>incomplete</span>"});
-                }
-            }
-            last_run_id = data.last_run_id;
-        }
-        for (var i=0; i<data.status_list.length; i++) {
-            for (var j=0; j<records.length; j++) {
-              if (data.status_list[i].key == 'run_id_'+records[j].run_id)
-                records[j].status = "<span id='"+data.status_list[i].key+"'>"+data.status_list[i].value+"</span>";
-            }
-        }
-        dynatable.settings.dataset.originalRecords = records;
-        dynatable.process();
-    }, dataType: "json", timeout: 30000, cache: true,
-    statusCode: { 401: function() { new_alert("Your session expired. Please log in again"); show_alert(); }}});
-};
 
 </script>
 {% endblock %}
 
 {% block banner %}Latest Runs{% endblock %}
 
-{% block bodytop %}
-<script id="source" language="javascript" type="text/javascript">
-    setInterval(poll, 10000);
-</script>
-{% endblock %}
-
 {% block right_side_links %}
-    <span style="float:right">
-    <a href="{% url 'dasmon:dashboard' %}">dashboard</a> | <a href="{% url 'dasmon:dashboard_complete' %}">extended dashboard</a> | <b>latest runs</b>
-    </span>
+<span style="float:right">
+  <a href="{% url 'dasmon:dashboard' %}">dashboard</a> | <a href="{% url 'dasmon:dashboard_complete' %}">extended
+    dashboard</a> | <b>latest runs</b>
+</span>
 {% endblock %}
 
 {% block summary %}
-  List of latest runs:<br><br>
-  <div style="float: right; margin-left:15px;">
-    Status: <select id="search-status" name="status">
-      <option></option>
-      <option>acquiring</option>
-      <option>complete</option>
-      <option>incomplete</option>
-      <option>error</option>
-    </select>
-  </div>
-  <div>
-  <table class="message_table" id="run_table">
+List of latest runs:<br><br>
+<div>
+  <table class="display compact" id="run_table">
     <thead>
       <tr>
-        <th data-dynatable-column="instrument_id" style="min-width: 50px;">Instr.</th>
-        <th data-dynatable-column="run" data-dynatable-no-sort="true" style="min-width: 50px;">Run</th>
-        <th data-dynatable-column="timestamp" data-dynatable-sorts="run_id">Created on</th>
-        <th data-dynatable-column="status">Status</th>
+        <th>Instr.</th>
+        <th>Run</th>
+        <th>Created on</th>
+        <th>Status</th>
       </tr>
     </thead>
     <tbody>
     </tbody>
+    <tfoot>
+      <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+      </tr>
+    </tfoot>
   </table>
-  </div>
-  <br>
+</div>
+<br>
 {% endblock %}
 {% block nocontent %}{% endblock %}
