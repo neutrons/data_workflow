@@ -20,6 +20,14 @@ In addition, several beamlines can open a setup page for auto-reduction (click o
    :alt: ARCS auto-reduction example
 
 The exact view is instrument specific.
+
+.. note::
+   **REF_M Vertical Mode** – The Magnetism Reflectometer (REF_M) instrument now
+   includes a *Vertical* geometry mode as of version 3.3.0. When selecting
+   vertical geometry in the auto-reduction setup page, runs are cataloged and
+   processed with the same workflow as other REF_M runs. Any additional parameters
+   specific to vertical geometry will be clearly labeled in the setup page.
+
 Modifying the configuration page will generate a new auto-reduction script.
 There is a ``reduction_INSTRUMENT.py`` template file.
 In several places in the file the variables on this page are inserted, and the file is saved as ``/SNS/INSTRUMENT/shared/autoreduce/reduce_INSTRUMENT.py``.

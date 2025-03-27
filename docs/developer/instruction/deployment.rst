@@ -115,3 +115,17 @@ You need to make sure the following variables match:
 * ``DATABASE_*`` in **web-monitor**, **workflow-mgr** and **testfixtures**, and **POSTGRES_*** in database
 * ``ICAT_USER`` and ``ICAT_PASS`` in **web-monitor**, **workflow-mgr**, **catalog** and **testfixtures**, and **amqbroker** (``icat_activemq.xml``) and **autoreducer** (``post_processing.conf``)
 * ``WORKFLOW_USER`` and ``WORKFLOW_PASS`` in **workflow-mgr** and in **amqbroker** (``icat_activemq.xml``)
+
+Upgrading to version 3.3.0
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As of **data_workflow** v3.3.0, a new management command is included to create
+additional database indexes for performance improvements. After applying the usual
+database migrations for v3.3.0, run the following command within your web-monitor
+container or virtual environment:
+
+   python manage.py add_indices
+
+This ensures all new indexes are properly created, allowing faster queries in the
+reporting system. Failing to run this command might result in degraded performance
+or incomplete schema upgrades.
