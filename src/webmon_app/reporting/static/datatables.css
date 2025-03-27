@@ -1,0 +1,5 @@
+table.dataTable.compact tbody td {
+    font-size: 11px;
+    padding-top: 2px;
+    padding-bottom: 1px;
+}

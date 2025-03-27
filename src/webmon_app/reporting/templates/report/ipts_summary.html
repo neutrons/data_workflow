@@ -8,7 +8,7 @@
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" href="/static/thirdparty/datatables.min.css" />
 <script type="text/javascript" src="/static/thirdparty/datatables.min.js"></script>
-
+<link rel="stylesheet" href="/static/datatables.css">
 
 <script>
   var table;
@@ -88,7 +88,7 @@ Last experiment: <a href='{{ base_ipts_url }}{{ last_expt.expt_name }}/'>{{ last
 {% block content %}
 
 List of {{ instrument }} runs for {{ ipts_number|upper }}:<br><br>
-<table class="message_table display compact" id="run_table">
+<table class="display compact" id="run_table">
   <thead>
     <tr>
       <th>Run</th>
