@@ -878,6 +878,19 @@ def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, dat
         .order_by("created_on")
         .reverse()
     )
+    if run_list.count() < 10:
+        # get timestamp for the run that is 10th from the end
+        try:
+            run = DataRun.objects.filter(instrument_id=instrument_id).order_by("created_on").reverse()[9]
+        except IndexError:
+            # use all runs if there are less than 10
+            run_list = DataRun.objects.filter(instrument_id=instrument_id).order_by("created_on").reverse()
+        else:
+            run_list = (
+                DataRun.objects.filter(instrument_id=instrument_id, created_on__gte=run.created_on)
+                .order_by("created_on")
+                .reverse()
+            )
     count = run_list.count()
 
     run_list = run_list_search(run_list, run_search, date_search, status_search)
@@ -896,6 +909,16 @@ def get_run_list_newest(offset, limit, instrument_search, run_search, date_searc
     delta_time = datetime.timedelta(hours=timeframe)
     oldest_time = timezone.now() - delta_time
     run_list = DataRun.objects.filter(created_on__gte=oldest_time).order_by("created_on").reverse()
+    if run_list.count() < 10:
+        # get timestamp for the run that is 10th from the end
+        try:
+            run = DataRun.objects.order_by("created_on").reverse()[9]
+        except IndexError:
+            # use all runs if there are less than 10
+            run_list = DataRun.objects.order_by("created_on").reverse()
+        else:
+            run_list = DataRun.objects.filter(created_on__gte=run.created_on).order_by("created_on").reverse()
+
     count = run_list.count()
 
     run_list = run_list_search(run_list, run_search, date_search, status_search, instrument_search)
