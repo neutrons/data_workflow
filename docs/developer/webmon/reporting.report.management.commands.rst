@@ -40,7 +40,7 @@ reporting and monitoring queries.
     :undoc-members:
     :show-inheritance:
 
-    
+
 Module contents
 ---------------
 

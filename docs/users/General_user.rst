@@ -17,7 +17,7 @@ more information, and plots (if set up that way by the instrument scientist/CIS)
    :alt: general user view example
 
 At the bottom of the page there is a table describing the processing status of the
-particular data file. 
+particular data file.
 
 For example, runs that are actively collecting data will display a status of
 *“Acquiring”*. Once acquisition finishes, the run may move to a *“Processing”*
