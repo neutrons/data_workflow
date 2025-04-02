@@ -19,10 +19,6 @@ more information, and plots (if set up that way by the instrument scientist/CIS)
 At the bottom of the page there is a table describing the processing status of the
 particular data file.
 
-For example, runs that are actively collecting data will display a status of
-*“Acquiring”*. Once acquisition finishes, the run may move to a *“Processing”*
-status, and finally show *“Complete”* once processing is done.
-
 Any error messages will show up in red. Please communicate with your local
 contact about any such occurrences.
 

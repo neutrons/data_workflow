@@ -6,11 +6,6 @@
 Welcome to Web Monitor's documentation!
 =====================================================
 
-.. note::
-   **Important for version 3.3.0**: The legacy *Dashboard* interface has been removed.
-   All monitoring and post-processing features are now accessed through the main
-   Web Monitor interface described throughout this documentation.
-
 .. include:: ../README.rst
 
 .. toctree::

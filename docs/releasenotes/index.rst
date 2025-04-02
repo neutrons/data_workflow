@@ -14,8 +14,6 @@ We are excited to announce the **v3.3.0** release, which brings a few notable ch
 - **New Management Command**: A new `add_indices` command was introduced to create additional
   database indexes, improving performance for reporting queries. Be sure to run it after
   updating to v3.3.0.
-- **Updated Run Status**: Runs currently being acquired are labeled *“Acquiring”* (instead of the
-  older “Running”). This clarifies the data-collection state at a glance.
 - **Various Internal Improvements**: This release includes several performance enhancements
   and dependency bumps. Notably, the JavaScript build tool was upgraded (Grunt 1.4.1 → 1.5.3),
   and caching mechanisms were optimized to reduce load on the database.

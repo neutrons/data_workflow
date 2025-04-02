@@ -26,6 +26,10 @@ experiment, together with the processing status.
    :align: center
    :alt: example view of run list viewed as guest user
 
+For example, runs that are actively collecting data will display a status of
+*“Acquiring”*. Once acquisition finishes, the run may move to a *“Processing”*
+status, and finally show *“Complete”* once processing is done.
+
 In addition, there is a list of process variables (PVs). These are a list of sample
 environment and instrument parameter logs.
 If one clicks on a PV link, it will show the history of that PV in the last 15 minutes or 2 hours.
