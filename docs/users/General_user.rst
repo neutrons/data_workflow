@@ -17,7 +17,9 @@ more information, and plots (if set up that way by the instrument scientist/CIS)
    :alt: general user view example
 
 At the bottom of the page there is a table describing the processing status of the
-particular data file. Any error messages will show up in red. Please communicate with your local
+particular data file.
+
+Any error messages will show up in red. Please communicate with your local
 contact about any such occurrences.
 
 .. image:: images/example_data_table.png

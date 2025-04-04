@@ -28,6 +28,18 @@ reporting.report.management.commands.ensure\_adminuser module
     :undoc-members:
     :show-inheritance:
 
+reporting.report.management.commands.add_indices module
+-------------------------------------------------------
+
+The **add_indices** management command creates additional database
+indexes introduced in version 3.3.0, improving performance for
+reporting and monitoring queries.
+
+.. automodule:: reporting.report.management.commands.add_indices
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

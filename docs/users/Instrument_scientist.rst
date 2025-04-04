@@ -20,6 +20,7 @@ In addition, several beamlines can open a setup page for auto-reduction (click o
    :alt: ARCS auto-reduction example
 
 The exact view is instrument specific.
+
 Modifying the configuration page will generate a new auto-reduction script.
 There is a ``reduction_INSTRUMENT.py`` template file.
 In several places in the file the variables on this page are inserted, and the file is saved as ``/SNS/INSTRUMENT/shared/autoreduce/reduce_INSTRUMENT.py``.
