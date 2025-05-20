@@ -5,6 +5,14 @@
 {% block banner %}{{ instrument }} Configuration {% endblock %}
 
 {% block header %}
+<style>
+.help_line {
+    display: block;
+    font-size: 14px;
+    color: #555;
+    margin-top: 2px;
+}
+</style>
 <script>
   var action_records = {% autoescape off %}{{ action_list }}{% endautoescape %};
   var default_requested = 0;
@@ -111,14 +119,13 @@ otherwise DANGLE will be used."><strong>Use SANGLE</strong></span>
     <!-- Automated ROI options -->
     <tr>
         <td>
+            <div class='help_line'>
+                Automated ROI: Once a peak ROI is chosen for each peak—whether automatically
+                extracted from the metadata in the events file or manually specified using the fields below—the
+                application will fit a peak shape to refine the ROI boundaries.
+            </div>
             {{ options_form.fit_peak_in_roi }}
-            <span title="Once the reflected peak ROI is selected for each peak below,
-you can try to fine tune this ROI by fitting for a peak within that
-region and updating the ROI [both center and width] according to the
-location found. Check the box if you want to find a peak within the
-ROI and redefine the ROI afterwards.">
-                <strong>Automated ROI</strong>
-            </span>
+            <strong>Automated ROI</strong>
         </td>
     </tr>
 
@@ -143,10 +150,12 @@ ROI and redefine the ROI afterwards.">
     <!-- Force peak ROI options -->
       <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force peak ROI: ignore metadata <b>ROI1</b> stored in the logs
+                of the event file by defining your own <i>min</i> and <i>max</i> peak ranges
+            </div>
             {{ options_form.force_peak }}
-            <span title="You can choose to replace the ROI in the data by your own range.
-Check the following box if you want to define your own ROI and
-use it for peak selection."><strong>Force peak ROI</strong></span>
+            <span></span><strong>Force peak ROI</strong></span>
             <label class='short_label' for='peak_min'>Pixel<sub>min</sub></label>
             {{ options_form.peak_min }}
             <label class='short_label' for='peak_max'>Pixel<sub>max</sub></label>
@@ -154,25 +163,29 @@ use it for peak selection."><strong>Force peak ROI</strong></span>
         </td>
     </tr>
 
-    <!-- Second ROI options -->
+    <!-- Use background ROI options -->
     <tr>
         <td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck.id_for_label }}');">
+            <div class='help_line'>
+                Use background: use metadata <b>ROI2</b> stored in the logs of the event file
+                to automatically choose a <i>min</i> and <i>max</i> pixel region defining the background
+            </div>
             {{ options_form.use_roi_bck }}
-            <span title="A second ROI is available in the data file and can be used to define the background.
-Check the following box if you want to use the 2nd ROI for your background,
-otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
+            <span><strong>Use background</strong></span>
         </td>
     </tr>
 
     <!-- Force background ROI options -->
     <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force background ROI: ignore metadata <b>ROI2</b>
+                and instead choose your own <i>min</i> and <i>max</i> pixel regions defining the background
+            </div>
             <span onclick="toggle_roi_bck('#{{ options_form.force_background.id_for_label }}');">
                 {{ options_form.force_background }}
             </span>
-            <span title="You can choose to replace the 2nd ROI in the data by your own range.
-Check the following box if you want to define your own 2nd ROI and use it for background selection.
-The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
+            <span><strong>Force background ROI</strong></span>
             <label class='short_label' for='bck_min'>Bck<sub>min</sub></label>
             {{ options_form.bck_min }}
             <label class='short_label'  for='bck_max'>Bck<sub>max</sub></label>
@@ -183,24 +196,29 @@ The option to use the 2nd ROI has to be turned ON to use this option."><strong>F
     <!-- Side background options -->
     <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Use side background: ignore metadata <b>ROI2</b>
+                and instead choose a region on each side of the reflected peak to estimate the background.
+            </div>
             <span onclick="toggle_roi_bck('#{{ options_form.use_side_bck.id_for_label }}');">
                 {{ options_form.use_side_bck }}
             </span>
-            <span title="As an alternative to using the 2nd ROI,  you can use a region around
-the reflected peak to estimate the background. Check the following box
-if you want to use the region on each side of the peak to estimate your background.">
+            <span>
                 <strong>Use side background</strong>
             </span>
             <label class='long_label' for='bck_width'>Pixels on each side</label> {{ options_form.bck_width }}
         </td>
     </tr>
 
-    <!-- Force low-res ROI options -->
+    <!-- Force vertical ROI options -->
       <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force vertical ROI: ignore metadata <b>ROI1</b> and choose your own
+                <i>min</i> and <i>max</i> peak ranges along the vertical (Y-axis)
+            </div>
             {{ options_form.force_low_res }}
-            <span title="Override the vertical (Y-Pixel) range in the sample logs with your own range.
-Check the following box if you want to define your own range and use it for peak selection.">
+            <span>
                 <strong>Force vertical ROI</strong></span>
             <label class='short_label' for='low_res_min'>Pixel<sub>min</sub></label>
             {{ options_form.low_res_min }}
@@ -221,10 +239,12 @@ Check the following box if you want to define your own range and use it for peak
     <!-- Force peak ROI options -->
       <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force peak ROI: ignore metadata <b>ROI3</b> stored in the logs
+                of the event file by defining your own <i>min</i> and <i>max</i> peak ranges
+            </div>
             {{ options_form.force_peak_s2 }}
-            <span title="You can choose to replace the ROI in the data by your own range.
-Check the following box if you want to define your own ROI and
-use it for peak selection."><strong>Force peak ROI</strong></span>
+            <span><strong>Force peak ROI</strong></span>
             <label class='short_label' for='peak_min_s2'>Pixel<sub>min</sub></label>
             {{ options_form.peak_min_s2 }}
             <label class='short_label' for='peak_max_s2'>Pixel<sub>max</sub></label>
@@ -232,25 +252,29 @@ use it for peak selection."><strong>Force peak ROI</strong></span>
         </td>
     </tr>
 
-    <!-- Second ROI options -->
+    <!-- Use background ROI options -->
     <tr>
         <td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck_s2.id_for_label }}');">
+            <div class='help_line'>
+                Use background: use metadata <b>ROI4</b> stored in the logs of the event file
+                to automatically choose a <i>min</i> and <i>max</i> pixel region defining the background
+            </div>
             {{ options_form.use_roi_bck_s2 }}
-            <span title="A second ROI is available in the data file and can be used to define the background.
-Check the following box if you want to use the 2nd ROI for your background,
-otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
+            <span><strong>Use background</strong></span>
         </td>
     </tr>
 
     <!-- Force background ROI options -->
     <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force background ROI: ignore metadata <b>ROI4</b>
+                and instead choose your own <i>min</i> and <i>max</i> pixel regions defining the background
+            </div>
             <span onclick="toggle_roi_bck('#{{ options_form.force_background_s2.id_for_label }}');">
                 {{ options_form.force_background_s2 }}
             </span>
-            <span title="You can choose to replace the 2nd ROI in the data by your own range.
-Check the following box if you want to define your own 2nd ROI and use it for background selection.
-The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
+            <span><strong>Force background ROI</strong></span>
             <label class='short_label' for='bck_min_s2'>Bck<sub>min</sub></label>
             {{ options_form.bck_min_s2 }}
             <label class='short_label' for='bck_max_s2'>Bck<sub>max</sub></label>
@@ -261,24 +285,29 @@ The option to use the 2nd ROI has to be turned ON to use this option."><strong>F
     <!-- Side background options -->
     <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Use side background: ignore metadata <b>ROI4</b>
+                and instead choose a region on each side of the reflected peak to estimate the background.
+            </div>
             <span onclick="toggle_roi_bck('#{{ options_form.use_side_bck_s2.id_for_label }}');">
                 {{ options_form.use_side_bck_s2 }}
             </span>
-            <span title="As an alternative to using the 2nd ROI,  you can use a region around
-the reflected peak to estimate the background. Check the following box
-if you want to use the region on each side of the peak to estimate your background.">
+            <span>
                 <strong>Use side background</strong>
             </span>
             <label class='long_label' for='bck_width_s2'>Pixels on each side</label> {{ options_form.bck_width_s2 }}
         </td>
     </tr>
 
-    <!-- Force low-res ROI options -->
+    <!-- Force vertical ROI options -->
       <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force vertical ROI: ignore metadata <b>ROI5</b> and choose your own
+                <i>min</i> and <i>max</i> peak ranges along the vertical (Y-axis)
+            </div>
             {{ options_form.force_low_res_s2 }}
-            <span title="Override the vertical (Y-Pixel) range in the sample logs with your own range.
-Check the following box if you want to define your own range and use it for peak selection.">
+            <span>
                 <strong>Force vertical ROI</strong></span>
             <label class='short_label' for='low_res_min_s2'>Pixel<sub>min</sub></label>
             {{ options_form.low_res_min_s2 }}
@@ -300,10 +329,12 @@ Check the following box if you want to define your own range and use it for peak
     <!-- Force peak ROI options -->
       <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force peak ROI: ignore metadata <b>ROI5</b> stored in the logs
+                of the event file by defining your own <i>min</i> and <i>max</i> peak ranges
+            </div>
             {{ options_form.force_peak_s3 }}
-            <span title="You can choose to replace the ROI in the data by your own range.
-Check the following box if you want to define your own ROI and
-use it for peak selection."><strong>Force peak ROI</strong></span>
+            <span><strong>Force peak ROI</strong></span>
             <label class='short_label' for='peak_min_s3'>Pixel<sub>min</sub></label>
             {{ options_form.peak_min_s3 }}
             <label class='short_label' for='peak_max_s3'>Pixel<sub>max</sub></label>
@@ -311,25 +342,29 @@ use it for peak selection."><strong>Force peak ROI</strong></span>
         </td>
     </tr>
 
-    <!-- Second ROI options -->
+    <!-- Use background ROI options -->
     <tr>
         <td onclick="toggle_roi_bck('#{{ options_form.use_roi_bck_s3.id_for_label }}');">
+            <div class='help_line'>
+                Use background: use metadata <b>ROI6</b> stored in the logs of the event file
+                to automatically choose a <i>min</i> and <i>max</i> pixel region defining the background
+            </div>
             {{ options_form.use_roi_bck_s3 }}
-            <span title="A second ROI is available in the data file and can be used to define the background.
-Check the following box if you want to use the 2nd ROI for your background,
-otherwise a default region will be used."><strong>Use 2nd ROI</strong></span>
+            <span><strong>Use background</strong></span>
         </td>
     </tr>
 
     <!-- Force background ROI options -->
     <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force background ROI: ignore metadata <b>ROI6</b>
+                and instead choose your own <i>min</i> and <i>max</i> pixel regions defining the background
+            </div>
             <span onclick="toggle_roi_bck('#{{ options_form.force_background_s3.id_for_label }}');">
                 {{ options_form.force_background_s3 }}
             </span>
-            <span title="You can choose to replace the 2nd ROI in the data by your own range.
-Check the following box if you want to define your own 2nd ROI and use it for background selection.
-The option to use the 2nd ROI has to be turned ON to use this option."><strong>Force background ROI</strong></span>
+            <span><strong>Force background ROI</strong></span>
             <label class='short_label' for='bck_min_s3'>Bck<sub>min</sub></label>
             {{ options_form.bck_min_s3 }}
             <label class='short_label' for='bck_max_s3'>Bck<sub>max</sub></label>
@@ -340,24 +375,30 @@ The option to use the 2nd ROI has to be turned ON to use this option."><strong>F
     <!-- Side background options -->
     <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Use side background: ignore metadata <b>ROI6</b>
+                and instead choose a region on each side of the reflected peak to estimate the background.
+            </div>
+
             <span onclick="toggle_roi_bck('#{{ options_form.use_side_bck_s3.id_for_label }}');">
                 {{ options_form.use_side_bck_s3 }}
             </span>
-            <span title="As an alternative to using the 2nd ROI,  you can use a region around
-the reflected peak to estimate the background. Check the following box
-if you want to use the region on each side of the peak to estimate your background.">
+            <span>
                 <strong>Use side background</strong>
             </span>
             <label class='long_label' for='bck_width_s3'>Pixels on each side</label> {{ options_form.bck_width_s3 }}
         </td>
     </tr>
 
-    <!-- Force low-res ROI options -->
+    <!-- Force vertical ROI options -->
       <tr class='tiny_input'>
         <td>
+            <div class='help_line'>
+                Force vertical ROI: ignore metadata <b>ROI3</b> and choose your own
+                <i>min</i> and <i>max</i> peak ranges along the vertical (Y-axis)
+            </div>
             {{ options_form.force_low_res_s3 }}
-            <span title="Override the vertical (Y-Pixel) range in the sample logs with your own range.
-Check the following box if you want to define your own range and use it for peak selection.">
+            <span>
                 <strong>Force vertical ROI</strong></span>
             <label class='short_label' for='low_res_min_s3'>Pixel<sub>min</sub></label>
             {{ options_form.low_res_min_s3 }}
