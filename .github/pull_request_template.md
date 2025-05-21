@@ -12,7 +12,7 @@ Check all that apply:
 - Links to IBM EWM items:
 - Links to related issues or pull requests:
 
-# Manual test for the reviewer
+# :warning: Manual test for the reviewer
 (Instructions for testing here)
 
 # Check list for the reviewer
