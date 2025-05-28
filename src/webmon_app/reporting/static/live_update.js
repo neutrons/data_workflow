@@ -10,8 +10,8 @@ function update_from_ajax_data(data){
         if (data.variables[i].key=='count_rate')
             $('#count_rate_top').replaceWith("<span id='count_rate_top'>"+data.variables[i].value+"</span>");
 
-        $('#'+data.variables[i].key).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
-        $('#'+data.variables[i].key+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
+        $('#'+$.escapeSelector(data.variables[i].key)).replaceWith("<span id='"+data.variables[i].key+"'>"+data.variables[i].value+"</span>");
+        $('#'+$.escapeSelector(data.variables[i].key)+'_timestamp').replaceWith("<span id='"+data.variables[i].key+"_timestamp'>"+data.variables[i].timestamp+"</span>");
     }
     $('#workflow_status').replaceWith("<li class='status_"+data.das_status.workflow+"' id='workflow_status'>Workflow</li>");
 }
