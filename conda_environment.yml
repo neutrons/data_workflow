@@ -8,7 +8,6 @@ dependencies:
   - gunicorn
   - make
   - oauthlib
-  - postgresql
   - psycopg2-binary=2.9.3
   - psutil
   - python-ldap>=3.1
