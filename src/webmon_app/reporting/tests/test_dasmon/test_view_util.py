@@ -1,19 +1,17 @@
-import pytest
-from unittest import mock
-from django.test import TestCase
 import datetime
+from unittest import mock
 
 import django
-from reporting import dasmon, users
+import pytest
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.test import TestCase
 from django.utils import timezone
+from workflow.database.report.models import IPTS, DataRun
 
-from reporting.report.models import Instrument, Information, RunStatus, StatusQueue, Error, WorkflowSummary
-from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable, Signal
-from workflow.database.report.models import DataRun
-from workflow.database.report.models import IPTS
-
+from reporting import dasmon, users
+from reporting.dasmon.models import ActiveInstrument, Parameter, Signal, StatusCache, StatusVariable
+from reporting.report.models import Error, Information, Instrument, RunStatus, StatusQueue, WorkflowSummary
 
 # make flake8 happy
 _ = [django, dasmon, users]

@@ -1,7 +1,8 @@
-import pytest
-from unittest import mock
-import pyoncat
 import datetime
+from unittest import mock
+
+import pyoncat
+import pytest
 
 _ = [pyoncat]
 

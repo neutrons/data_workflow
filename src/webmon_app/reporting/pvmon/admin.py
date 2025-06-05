@@ -1,6 +1,8 @@
-from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable
-from django.contrib import admin
 import datetime
+
+from django.contrib import admin
+
+from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVString, PVStringCache
 
 
 class PVAdmin(admin.ModelAdmin):

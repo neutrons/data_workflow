@@ -2,8 +2,11 @@
 """
 ActiveMQ listener class for the workflow manager
 """
-import stomp
+
 import logging
+
+import stomp
+
 from . import states
 
 

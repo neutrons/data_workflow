@@ -5,13 +5,16 @@ Forms for auto-reduction configuration
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2014 Oak Ridge National Laboratory
 """
-import re
+
 import logging
+import re
+
 from django import forms
 from django.core.exceptions import ValidationError
-from reporting.report.models import Instrument
-from reporting.reduction.models import ReductionProperty, Choice
+
 import reporting.reduction.view_util
+from reporting.reduction.models import Choice, ReductionProperty
+from reporting.report.models import Instrument
 
 
 def _get_choices(instrument):

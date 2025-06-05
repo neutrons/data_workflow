@@ -6,6 +6,7 @@ ONcat is an online data catalog used internally at ORNL.
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2018 Oak Ridge National Laboratory
 """
+
 import logging
 
 try:
@@ -13,6 +14,7 @@ try:
 except:  # noqa: E722
     logging.error("No ONCat")
 import datetime
+
 from django.conf import settings
 
 

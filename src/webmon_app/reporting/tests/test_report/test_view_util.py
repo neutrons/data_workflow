@@ -1,18 +1,20 @@
-import pytest
+import json
 from unittest import mock
+
+import pytest
 from django.test import TestCase
 
-from reporting.report.models import Instrument
-from reporting.report.models import DataRun
-from reporting.report.models import RunStatus
-from reporting.report.models import IPTS
-from reporting.report.models import StatusQueue
-from reporting.report.models import Task
-from reporting.report.models import WorkflowSummary
-from reporting.report.models import StatusQueueMessageCount
-from reporting.report.models import Error
-
-import json
+from reporting.report.models import (
+    IPTS,
+    DataRun,
+    Error,
+    Instrument,
+    RunStatus,
+    StatusQueue,
+    StatusQueueMessageCount,
+    Task,
+    WorkflowSummary,
+)
 
 
 class ViewUtilTest(TestCase):
@@ -306,9 +308,7 @@ class ViewUtilTest(TestCase):
             {"margin": {"b": 40, "l": 40, "r": 0, "t": 0},
             "xaxis": {"title": {"text": "d-spacing (A)"}},
             "yaxis": {"title": {"text": "Counts per microAmp.hour"}}},
-            {"responsive": true})</script>""".replace(
-            "\n", ""
-        )
+            {"responsive": true})</script>""".replace("\n", "")
         rst = extract_ascii_from_div(html_data, trace_id=1)
         refval = "1.09844 32.9007 0 0\n1.09932 33.8835 0 0\n1.1002 34.963 0 0\n"
         self.assertEqual(rst, refval)
