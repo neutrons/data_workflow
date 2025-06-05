@@ -2,11 +2,12 @@
 Example of a simple non-listening producer
 """
 
-import stomp
+import argparse
 import json
 import time
-import argparse
-from workflow.settings import BROKERS, ICAT_USER, ICAT_PASSCODE
+
+import stomp
+from workflow.settings import BROKERS, ICAT_PASSCODE, ICAT_USER
 
 
 def send(destination, message, persistent="true"):

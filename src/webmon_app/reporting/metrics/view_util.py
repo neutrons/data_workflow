@@ -1,10 +1,11 @@
-from reporting.report.models import Instrument, DataRun, WorkflowSummary, Information
-from reporting.dasmon.models import Parameter, StatusCache, ActiveInstrument
-from reporting.report.view_util import is_acquisition_complete
-from reporting.dasmon.view_util import is_running
 from django.conf import settings
-from django.utils import timezone
 from django.db.models import Q
+from django.utils import timezone
+
+from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache
+from reporting.dasmon.view_util import is_running
+from reporting.report.models import DataRun, Information, Instrument, WorkflowSummary
+from reporting.report.view_util import is_acquisition_complete
 
 
 def postprocessing_diagnostics():

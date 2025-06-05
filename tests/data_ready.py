@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import stomp
 import json
+
+import stomp
 
 brokers = [("localhost", 61613)]
 icat_user = "icat"

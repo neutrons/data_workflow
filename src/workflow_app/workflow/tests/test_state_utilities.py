@@ -1,5 +1,6 @@
 import pytest
 from django.test import TestCase
+
 import workflow
 
 _ = [workflow]

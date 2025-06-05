@@ -2,18 +2,18 @@
 """
 AMQ test client
 """
-import sys
-import time
-import stomp
-import json
-import settings
-from settings import BROKERS as amq_brokers
-from settings import AMQ_USER
-from settings import AMQ_PWD
-from settings import QUEUES as amq_queues
 
+import json
 import logging
 import logging.handlers
+import sys
+import time
+
+import settings
+import stomp
+from settings import AMQ_PWD, AMQ_USER
+from settings import BROKERS as amq_brokers
+from settings import QUEUES as amq_queues
 
 logging.getLogger().setLevel(logging.WARN)
 # Formatter
@@ -189,7 +189,7 @@ class Client(object):
                         last_heartbeat = time.time()
                         # Send ping request
                         if hasattr(settings, "PING_TOPIC"):
-                            from settings import PING_TOPIC, ACK_TOPIC
+                            from settings import ACK_TOPIC, PING_TOPIC
 
                             payload = {
                                 "reply_to": ACK_TOPIC,

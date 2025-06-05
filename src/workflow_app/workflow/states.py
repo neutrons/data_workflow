@@ -5,16 +5,15 @@ To add an action for a specific queue, add a StateAction class
 with the name of the queue in lower-case, replacing periods with underscores.
 """
 
-from .state_utilities import logged_action
-from .settings import POSTPROCESS_ERROR, CATALOG_DATA_READY
-from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY
-from .database import transactions
-
 import importlib
 import inspect
 import json
 import logging
 import re
+
+from .database import transactions
+from .settings import CATALOG_DATA_READY, POSTPROCESS_ERROR, REDUCTION_CATALOG_DATA_READY, REDUCTION_DATA_READY
+from .state_utilities import logged_action
 
 
 class StateAction:

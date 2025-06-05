@@ -1,8 +1,9 @@
-import psycopg2.errors as pge
-import psycopg2
 import argparse
 import os
 import unittest
+
+import psycopg2
+import psycopg2.errors as pge
 
 
 class TestSetInstrumentPVs(unittest.TestCase):

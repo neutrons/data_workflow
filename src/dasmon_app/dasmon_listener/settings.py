@@ -1,7 +1,8 @@
 # Django settings for reporting_app project.
-import os  # noqa: F401
-import django  # noqa: F401
 import json
+import os  # noqa: F401
+
+import django  # noqa: F401
 
 DATABASES = {
     "default": {

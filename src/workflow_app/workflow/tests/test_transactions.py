@@ -1,13 +1,13 @@
-import pytest
 import json
 
+import pytest
 from django.test import TestCase
 
 from workflow.database import transactions
 from workflow.database.report.models import (
+    IPTS,
     DataRun,
     Instrument,
-    IPTS,
     RunStatus,
     StatusQueue,
     Task,

@@ -147,7 +147,7 @@ function mustachetemplates(i){
       //     "sub_menu": false
       //   }]
       // }
-    }
+    };
     plots[i].tplt_menu = '<ul>' +
       '<li class="has-sub"><a href="#/" class="[[options.class]]">[[options.name]]</a>' +
         '<ul class="[[options.list]]">' +
@@ -243,7 +243,7 @@ function mustachetemplates(i){
       "left": 0,
       "width": 0,
       "height": 0
-    }
+    };
     plots[i].tplt_backdrop = "<div class='backdrop' style='top:[[top]]; left:[[left]];" +
       "width:[[width]]px; height:[[height]]px;'></div>";
     plots[i].tplt_modal = "<div class='modal-window [[name]]_modal' name='[[name]]'" +
@@ -380,4 +380,4 @@ $(function(){
 	  mustachetemplates(i);
   }
 
-})
+});

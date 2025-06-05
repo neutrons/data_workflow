@@ -1,8 +1,8 @@
-from dasmon_listener.amq_consumer import Listener, Client, store_and_cache_
-
 import unittest.mock as mock
-from django.test import TestCase
+
 import pytest
+from dasmon_listener.amq_consumer import Client, Listener, store_and_cache_
+from django.test import TestCase
 
 values = {"test_key": "test_value"}
 

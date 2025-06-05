@@ -1,7 +1,8 @@
 """Test the status acquiring appears when a SMS message is received and before the data is ready"""
 
-import time
 import json
+import time
+
 import tests.utils.db as db_utils
 
 

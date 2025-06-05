@@ -1,15 +1,18 @@
+from django.contrib import admin
+
 from reporting.report.models import (
-    DataRun,
-    StatusQueue,
-    StatusQueueMessageCount,
-    RunStatus,
-    WorkflowSummary,
     IPTS,
+    DataRun,
+    Error,
+    Information,
     Instrument,
     InstrumentStatus,
+    RunStatus,
+    StatusQueue,
+    StatusQueueMessageCount,
+    Task,
+    WorkflowSummary,
 )
-from reporting.report.models import Information, Error, Task
-from django.contrib import admin
 
 
 def reduction_not_needed(modeladmin, request, queryset):

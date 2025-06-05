@@ -1,7 +1,8 @@
 # flake8: noqa: F401
+from pathlib import Path
+
 from django.core.management.base import BaseCommand
 from django.db import connection
-from pathlib import Path
 
 # from report/sql/indices.sql
 report_indices = Path(__file__).resolve(strict=True).parent.parent.parent / "sql" / "indices.sql"

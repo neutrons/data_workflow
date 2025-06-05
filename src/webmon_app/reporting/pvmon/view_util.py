@@ -5,12 +5,15 @@ Utilities to compile the PVs stored in the web monitor DB.
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2014 Oak Ridge National Laboratory
 """
-from reporting.pvmon.models import PVName, PV, PVCache, PVStringCache
-from django.utils import timezone, formats
-from django.conf import settings
+
 import datetime
 import logging
 import time
+
+from django.conf import settings
+from django.utils import formats, timezone
+
+from reporting.pvmon.models import PV, PVCache, PVName, PVStringCache
 
 
 def get_live_variables(request, instrument_id, key_id=None):

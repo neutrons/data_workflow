@@ -1,9 +1,11 @@
 from unittest import mock
-from django.test import TestCase
+
 from django.contrib.auth.models import User
-from reporting.report.models import Instrument
-from reporting.reduction.models import ReductionProperty, PropertyDefault
+from django.test import TestCase
+
 from reporting.reduction import view_util
+from reporting.reduction.models import PropertyDefault, ReductionProperty
+from reporting.report.models import Instrument
 
 
 class TestViewUtil(TestCase):

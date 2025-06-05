@@ -44,8 +44,8 @@ function plot_1d(raw_data, anchor, options) {
     x = d3.scale.linear().range([0, mod_psize.width]);
     y = log_scale ? d3.scale.log().range([mod_psize.height, 0]).nice() : d3.scale.linear().range([mod_psize.height, 0]);
 
-    y_min = d3.min(data, function(d) { return d[1]; }) // for a better display of a constant function
-    y_max = d3.max(data, function(d) { return d[1]; })
+    y_min = d3.min(data, function(d) { return d[1]; }); // for a better display of a constant function
+    y_max = d3.max(data, function(d) { return d[1]; });
 
     x.domain(d3.extent(data, function(d) { return d[0]; }));
     if ( y_min === y_max ){
@@ -82,7 +82,7 @@ function plot_1d(raw_data, anchor, options) {
     svg.append("g").attr("class", "x axis")
                    .attr("transform", "translate(0," + mod_psize.height + ")")
                    .call(xAxisMinor);
-    svg.append("g").attr("class", "y axis").call(yAxis)
+    svg.append("g").attr("class", "y axis").call(yAxis);
 
     // Create X axis label
     svg.append("text")
@@ -118,13 +118,13 @@ function plot_1d(raw_data, anchor, options) {
             .call(xAxis
                 .tickSize(-mod_psize.height, 0, 0)
                 .tickFormat("")
-            )
+            );
         yGrid = svg.append("g")
             .attr("class", "grid")
             .call(yAxis
                 .tickSize(-mod_psize.width, 0, 0)
                 .tickFormat("")
-            )
+            );
     }
     else if (grid == false && typeof xGrid !== 'undefined' && typeof yGrid !== 'undefined'){
         // If grid checkbox is unchecked and a grid already exists, remove grid

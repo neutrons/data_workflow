@@ -1,7 +1,8 @@
 from django.test import TestCase
+
 from reporting.reduction import forms
+from reporting.reduction.models import Choice, ReductionProperty
 from reporting.report.models import Instrument
-from reporting.reduction.models import ReductionProperty, Choice
 
 
 class TestREF_MForm(TestCase):
@@ -57,9 +58,7 @@ class TestREF_MForm(TestCase):
 
     def test_empty_form(self):
         form = forms.ReductionConfigurationREF_MForm({})
-        self.assertFalse(
-            form.is_valid()
-        )  # empty instantiated form invalid because fields like `peak_min` are required
+        self.assertFalse(form.is_valid())  # empty instantiated form invalid because fields like `peak_min` are required
         self.assertEqual(len(form.to_template()), len(self.default_test_fields) - 1)  # `skip_quicknxs` missing
         for key in self.default_test_fields:
             self.assertTrue(key in form.fields)

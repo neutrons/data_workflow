@@ -1,6 +1,7 @@
+import time
+
 import psycopg2
 import requests
-import time
 from django.conf import settings
 from dotenv import dotenv_values
 

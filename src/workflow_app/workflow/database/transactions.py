@@ -2,30 +2,29 @@
 """
 Perform DB transactions
 """
-import os
+
 import json
 import logging
+import os
 
 # The workflow modules must be on the python path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "workflow.database.settings")
 import django  # noqa: E402
 
 django.setup()
-from workflow.database.report.models import (  # noqa: E402
-    DataRun,
-    RunStatus,
-    StatusQueue,
-    WorkflowSummary,
-)  # noqa: E402
-from workflow.database.report.models import (  # noqa: E402
+from django.db import transaction  # noqa: E402
+
+from workflow.database.report.models import (  # noqa: E402  # noqa: E402
     IPTS,
-    Instrument,
+    DataRun,
     Error,
     Information,
+    Instrument,
+    RunStatus,
+    StatusQueue,
     Task,
-)  # noqa: E402
-
-from django.db import transaction  # noqa: E402
+    WorkflowSummary,
+)  # noqa: E402  # noqa: E402
 
 
 @transaction.atomic

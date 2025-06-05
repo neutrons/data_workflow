@@ -17,7 +17,7 @@ function column_search() {
               // Create data picker element
               let input = document.createElement('input');
               input.type = 'date';
-              input.id = 'date-search'
+              input.id = 'date-search';
 
               column.footer().replaceChildren(input);
 

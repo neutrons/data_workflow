@@ -37,7 +37,7 @@ function appfunctions(i){
       var w = $("#" + this.anchor).width();
       var h = $("#" + this.anchor).height();
       this.graph_modal(offset, w, h, label);
-    }
+    };
 
     //
     // Adds console item (zoom % or region bounds)
@@ -47,7 +47,7 @@ function appfunctions(i){
       var html;
       $("." + this.anchor + " .console-item").each(function() {
           $(this).remove(); // Remove previous console item
-        })
+        });
         // If user chooses Select Region mode, change console item
       if (id == "snap_bounds" && $("." + this.anchor + " ." + id).length == 0) {
         html = Mustache.render(this.tplt_console_region, this.data_console_item);
@@ -58,7 +58,7 @@ function appfunctions(i){
       }
       // Append console item to console bar
       $("." + self.anchor + ".user-console").append(html);
-    }
+    };
     // Page loads with zoom console item by default
     plots[i].add_console_item("zoom");
 
@@ -80,7 +80,7 @@ function appfunctions(i){
       this.graph_sidebar(offset, w, h, "select_region");
       // Make new region active
       this.change_region(null);
-    }
+    };
 
     //
     // Changes active region (either when user
@@ -144,7 +144,7 @@ function appfunctions(i){
         $("." + self.anchor + " ." + region_shortname).css("pointer-events", "all");
         $("." + self.anchor + " ." + region_shortname).appendTo("#" + self.anchor + "_svg");
       }
-    }
+    };
 
     //
     // Removes region
@@ -203,7 +203,7 @@ function appfunctions(i){
         this.data_region.info_table = [];
         $("." + this.anchor + " .pan_and_zoom").trigger("click");
       }
-    }
+    };
 
     //
     // Remove all regions and go back to Pan and Zoom mode
@@ -221,7 +221,7 @@ function appfunctions(i){
       this.data_region.info_table = [];
       // Turn on Pan and Zoom mode
       $("." + this.anchor + " .pan_and_zoom").trigger("click");
-    }
+    };
 
     //
     // Creates modal objects
@@ -270,7 +270,7 @@ function appfunctions(i){
       $("." + this.anchor + " .modal-window").html(sect_html);
       // Make color picker interactive
       this.activate_spectrum();
-    }
+    };
 
     //
     // Creates sidebar
@@ -290,7 +290,7 @@ function appfunctions(i){
       $("." + this.anchor + ".main").prepend(html);
       // Append sidebar contents
       $("." + this.anchor + " .sidebar").html(sect_html);
-    }
+    };
 
     //
     // Creates backdrop (for modal)
@@ -302,7 +302,7 @@ function appfunctions(i){
       this.data_objs.width = w;
       this.data_objs.height = h;
       return Mustache.render(this.tplt_backdrop, this.data_objs);
-    }
+    };
 
     //
     // Creates modal
@@ -315,7 +315,7 @@ function appfunctions(i){
       this.data_objs.width = w / 2;
       this.data_objs.height = h / 2 + 10;
       return Mustache.render(this.tplt_modal, this.data_objs);
-    }
+    };
 
     //
     // Creates sidebar
@@ -327,7 +327,7 @@ function appfunctions(i){
       this.data_objs.width = w / 4;
       this.data_objs.height = h - 1;
       return Mustache.render(this.tplt_sidebar, this.data_objs);
-    }
+    };
 
     //
     // Adds functionality to buttons in modal
@@ -344,7 +344,7 @@ function appfunctions(i){
       else { // change label (x_label, y_label, title)
         this.change_label(change_id, modal_id);
       }
-    }
+    };
 
     //
     // Changes labels (x-axis, y-axis, title labels)
@@ -353,17 +353,17 @@ function appfunctions(i){
       // Get user input from textbox
       var val = $("." + this.anchor + " ." + modal_id).children(".modal-content").children("input").val();
       if (change_id == "x_label") {
-        this.plot_options.x_label = val
+        this.plot_options.x_label = val;
       }
       else if (change_id == "y_label") {
-        this.plot_options.y_label = val
+        this.plot_options.y_label = val;
       }
       else if (change_id == "title") {
-        this.plot_options.title = val
+        this.plot_options.title = val;
       }
       // Change label text
       $("." + this.anchor + " ." + change_id).text(val);
-    }
+    };
 
     //
     // Makes the color picker interactive
@@ -380,7 +380,7 @@ function appfunctions(i){
           $("." + self.anchor + " .color_val").attr("value", color.toHexString());
         }
       });
-    }
+    };
 
     // function encode_as_img_and_link(){
     //  // Add some critical information
@@ -401,11 +401,11 @@ function appfunctions(i){
     // Saves svg (plot and labels) as PNG file
     //
     plots[i].export_png = function() {
-      var filename = plots[i].name + ".png"
+      var filename = plots[i].name + ".png";
       saveSvgAsPng(document.getElementById(this.anchor + "_svg"), filename, {
         scale: 2
       });
-    }
+    };
 
     function saveAs(uri, filename) {
         var link = document.createElement('a');
@@ -436,7 +436,7 @@ function appfunctions(i){
         svg_link = uri;
       });
       saveAs(svg_link, filename);
-    }
+    };
 
     //
     // Saves data as TXT file
@@ -453,7 +453,7 @@ function appfunctions(i){
         txt_link = txt_link + line + '%0A'; // add newline character
       }
       saveAs(txt_link, filename);
-    }
+    };
 
     // plots[i].export_pdf = function() {
     //   var svg_link = "";
@@ -580,20 +580,20 @@ function event_handlers(self, i) {
   // When user clicks on the Add [region] button, call add_region function
   $(document).on('click', "." + self.anchor + " .link_add_region", function() {
     plots[i].add_region();
-  })
+  });
 
   // When user clicks on the X button to remove region, call remove_region
   // function
   $(document).on('click', "." + self.anchor + " .link_remove_region", function() {
     var region_id = $(this).parent().prev().prev().attr("name");
     plots[i].remove_region(region_id);
-  })
+  });
 
   // When user clicks on Remove All button to remove all regions, call
   // remove_all_regions
   $(document).on('click', "." + self.anchor + " .link_remove_all_regions", function() {
     plots[i].remove_all_regions();
-  })
+  });
 
   // When user presses the Enter key on the keyboard to change the
   // x-axis, y-axis, or title labels, trigger the Submit button
@@ -711,7 +711,7 @@ function event_handlers(self, i) {
       self.data_region.info_table.length = 0;
       self.remove_all_regions();
     }
-    plots[i].toggle_pan_and_zoom(pan_bool)
+    plots[i].toggle_pan_and_zoom(pan_bool);
     plots[i].clear_brush();
     $("." + anchor + " .sidebar").remove();
     // Reset regions data
@@ -727,7 +727,7 @@ function event_handlers(self, i) {
 
   $(document).on("click", "." + anchor + " .zoom_100", function(){
     plots[i].zoom_reset();
-  })
+  });
 
   // When user clicks on Select Region mode,
   $(document).on("click", "." + anchor + " .select_region", function(){
@@ -765,7 +765,7 @@ function event_handlers(self, i) {
     var w = $("#" + anchor).width();
     var h = $("#" + anchor).height();
     self.graph_modal(offset, w, h, "topics");
-  })
+  });
 
   // When user clicks on Help > About, open About modal,
   $(document).on("click", "." + anchor + " .about", function(){
@@ -773,7 +773,7 @@ function event_handlers(self, i) {
     var w = $("#" + anchor).width();
     var h = $("#" + anchor).height();
     self.graph_modal(offset, w, h, "about");
-  })
+  });
 
   // When user clicks on x-Axis label in submenu, open modal,
   $(document).on("click", "." + anchor + " .x_axis_label", function(){

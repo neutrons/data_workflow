@@ -1,14 +1,16 @@
-from reporting.dasmon.models import (
-    StatusVariable,
-    Parameter,
-    StatusCache,
-    ActiveInstrument,
-    Signal,
-    UserNotification,
-)
-from django.contrib import admin
 import datetime
 import logging
+
+from django.contrib import admin
+
+from reporting.dasmon.models import (
+    ActiveInstrument,
+    Parameter,
+    Signal,
+    StatusCache,
+    StatusVariable,
+    UserNotification,
+)
 
 
 class StatusVariableAdmin(admin.ModelAdmin):

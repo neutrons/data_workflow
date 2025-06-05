@@ -1,12 +1,13 @@
+import unittest.mock as mock
+
+from django.test import TestCase
+
 from workflow.database.report.models import (
     DataRun,
-    InstrumentManager,
     DataRunManager,
+    InstrumentManager,
     WorkflowSummary,
 )
-
-import unittest.mock as mock
-from django.test import TestCase
 
 
 class TestModelsInstrumentManager(TestCase):

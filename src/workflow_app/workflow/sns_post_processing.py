@@ -3,17 +3,19 @@
 """
 Workflow manager process
 """
-import os
-import sys
+
 import argparse
 import logging
+import os
+import sys
 from multiprocessing import Process
+
 from workflow.amq_client import Client
 from workflow.amq_listener import Listener
 
 from .daemon import Daemon  # noqa: F401
 from .database import transactions  # noqa: F401
-from .settings import LOGGING_LEVEL, BROKERS, WKFLOW_USER, WKFLOW_PASSCODE
+from .settings import BROKERS, LOGGING_LEVEL, WKFLOW_PASSCODE, WKFLOW_USER
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)

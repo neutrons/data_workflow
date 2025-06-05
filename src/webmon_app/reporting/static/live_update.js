@@ -1,7 +1,7 @@
 function global_system_status_update(data, i){
     var content = "<span id='"+data.instruments[i].name+"_recording_status' class='entry_element'>"+data.instruments[i].recording_status+"</span>";
     $('#'+data.instruments[i].name+'_recording_status').replaceWith(content);
-    return content
+    return content;
 }
 
 function update_from_ajax_data(data){
@@ -128,7 +128,7 @@ function MonitorPlot(element_id, nid, option){
 		// plot options here!
 		log_scale: false,
 		psize: {width: 485, height: 250}
-	}
+	};
 	this.pop_monitor_plot = function(){
 		// Create dialog box for plot and call poll
 		if ($("#" + this.dialog_name).length === 0){
@@ -175,7 +175,7 @@ function MonitorPlot(element_id, nid, option){
 			$("#" + this.dialog_name).parent().css("z-index", hi_z);
 		}
 		poll();
-	}
+	};
 	// Uncomment the following block if adding global options capability
 	//this.submenu = '<div id="' + this.dialog_name +
 	//               '_submenu" class="submenu"><a id="local_options_link" ' +
@@ -228,30 +228,30 @@ function MonitorPlot(element_id, nid, option){
 		}
 		// Remove the following block if adding global options capability
 		else if ($("#local_options_" + this.dialog_name).length > 0){
-			Plots[nid].close_l_opt("local_options_" + this.dialog_name)
+			Plots[nid].close_l_opt("local_options_" + this.dialog_name);
 		}
-	}
+	};
 	this.set_linear_scale = function(){
-		this.plot_options.log_scale = false
-		poll()
-	}
+		this.plot_options.log_scale = false;
+		poll();
+	};
 	this.set_log_scale = function(){
-		this.plot_options.log_scale = true
-		poll()
-	}
+		this.plot_options.log_scale = true;
+		poll();
+	};
 	this.close_l_opt = function(){
 		// Close local options bar
 		var cur_height = $(this.dialog_win).height();
 		var new_height = cur_height - 100;
 		this.dialog_win.css("height", new_height);
 		$("#local_options_" + this.dialog_name).remove();
-	}
+	};
 }
 
 function dialog_resize(event, ui, nid, s){
 	var adj_size = {width: $(s).width()-25, height: $(s).height()-80};
 	Plots[nid].plot_options.psize = adj_size;
-	plot_1d(Plots[nid].plotted_data, Plots[nid].plot_id, Plots[nid].plot_options)
+	plot_1d(Plots[nid].plotted_data, Plots[nid].plot_id, Plots[nid].plot_options);
 }
 
 

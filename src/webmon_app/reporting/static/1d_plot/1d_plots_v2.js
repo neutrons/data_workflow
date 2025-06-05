@@ -68,7 +68,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
   //
   this.need_error_bars = function() {
     if (raw_data[0].length >= 3) data_error_bars = true;
-  }
+  };
 
   //
   // Get log scale flags from plot_options and draw plot scale
@@ -87,7 +87,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       d3.scale
       .linear()
       .range([plot_size.height, 0]);
-  }
+  };
 
   //
   // Get domain of raw_data
@@ -95,10 +95,10 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
   this.get_domain = function() {
     y_min = d3.min(data, function(d) {
         return d[1];
-      }) // for a better display of a constant function
+      }); // for a better display of a constant function
     y_max = d3.max(data, function(d) {
       return d[1];
-    })
+    });
     x.domain(d3.extent(data, function(d) {
       return d[0];
     }));
@@ -107,7 +107,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     } else {
       y.domain([y_min, y_max]);
     }
-  }
+  };
 
   //
   // Format values on axes
@@ -147,7 +147,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
         .ticks(4, formatter)
         .tickSize(-plot_size.width);
     }
-  }
+  };
 
   //
   // Create axis values and tick marks
@@ -160,7 +160,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     yAxisItems = svg.append("g")
                           .attr("class", "y axis")
                           .call(yAxis);
-  }
+  };
 
   //
   // On zoom action, scale data points and line such that the paths
@@ -178,7 +178,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .attr("r", (path_stroke_width / scale_factor) * (parseFloat(2) / parseFloat(3)));
     d3.selectAll("#" + self.anchor + " .focus")
       .attr("r", (path_stroke_width / scale_factor) * (parseFloat(2) / parseFloat(3)) * 5);
-  }
+  };
 
   //
   // Zoom and pan function for data path, point, error bar (if applicable),
@@ -206,7 +206,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     self.toggle_grid();
     self.scale_objects();
     d3.select("." + self.anchor + " .console-input.zoom").html(parseInt(self.scale_val * 100) + "%");
-  }
+  };
 
   //
   // Applies listener on user scroll and calls zm() the zoom function
@@ -217,7 +217,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .y(y);
     self.zoom = self.zoom_setup
       .on("zoom", self.zm);
-  }
+  };
 
   //
 	// Resets zoom to 100% and translates back to origin
@@ -246,7 +246,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     self.toggle_grid();
     self.scale_objects();
     d3.select("." + self.anchor + " .console-input.zoom").html(parseInt(self.scale_val * 100) + "%");
-  }
+  };
 
   //
   // Toggles display of grid
@@ -261,7 +261,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       d3.select("#" + self.anchor + " .y.axis").selectAll(".tick line").remove();
       d3.select("#" + self.anchor + " .x.axis").selectAll(".tick line").remove();
     }
-  }
+  };
 
   //
   // Create svg element and add axis items
@@ -279,7 +279,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     self.main_plot = svg.append("g").attr("class", "main_plot");
     self.axis_items();
-  }
+  };
 
   //
   // Initialize brush variables for region mode
@@ -288,7 +288,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     self.d0 = null; // brush value left
     self.d1 = null; // brush value right
     self.last_brush = 0;
-  }
+  };
 
   //
   // Handles drawing of region
@@ -359,7 +359,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       $(s).children(".brush-label").attr("x", x(self.d0) + 3).attr("y", 12);
       self.d0 = null;
       self.d1 = null;
-    }
+    };
     d3.select("." + self.anchor + " .default_1d")
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -424,7 +424,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       idx = i-1;
     }
     return [val, idx];
-  }
+  };
 
   //
   // Create clipping reference for zoom element
@@ -441,7 +441,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .attr("height", plot_size.height);
     // Reference to clip object
     self.main_plot.attr("clip-path", "url(#clip)");
-  }
+  };
 
   //
   // Create text objects (x-axis, y-axis, title labels)
@@ -506,7 +506,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .attr("font-size", "16px")
       .style("text-anchor", text_anchor)
       .text(self.plot_options.title);
-  }
+  };
 
   //
   // Interpolate data points to draw line graph
@@ -529,7 +529,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .attr("stroke", color)
       .attr("stroke-width", path_stroke_width)
       .style("opacity", opacity);
-  }
+  };
 
   //
   // Create data points in graph
@@ -542,7 +542,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     points = self.data_points.selectAll("#" + anchor + " circle")
       .data(data)
       .enter();
-  }
+  };
 
   //
   // Make data points interactive by adding a hidden larger circle to
@@ -567,7 +567,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .style("fill", "white")
       .style("fill-opacity", "0")
       .style("stroke", color)
-      .style("stroke-width", 1 / self.scale_val)
+      .style("stroke-width", 1 / self.scale_val);
 
     // Little points
     little_pt = points.append('circle')
@@ -647,7 +647,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
         .attr("stroke-width", path_stroke_width / 2)
         .attr("stroke", color);
     }
-  }
+  };
 
   //
   // When Pan and Zoom mode is selected, call the zoom function and
@@ -672,7 +672,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
         .attr("height", plot_size.height)
         .call(self.zoom);
     }
-  }
+  };
 
   //
   // Enable d3 brush for regions mode
@@ -683,7 +683,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .call(brush)
       .selectAll("rect")
       .attr("height", plot_size.height);
-  }
+  };
 
   //
   // Check if regions are predetermined and Region Mode is allowed
@@ -693,26 +693,26 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
     if (self.plot_options.predetermined_region.length > 0 && self.plot_options.allow_region_mode == true) {
       self.predetermined_regions_flag = true;
     }
-  }
+  };
 
   //
   // Remove region
   //
   this.clear_brush = function() {
     d3.selectAll("." + this.anchor + " .brush").remove();
-  }
+  };
 
   //
   // Assign color
   //
   this.change_color = function() {
-    d3.select("#" + self.anchor + " path").attr("stroke", self.plot_options.color)
+    d3.select("#" + self.anchor + " path").attr("stroke", self.plot_options.color);
     self.circle_ol.style("fill-opacity", "0").style("stroke", self.plot_options.color);
     d3.select("#" + self.anchor + " .circle_ol").style("stroke", self.plot_options.color);
     d3.selectAll("#" + self.anchor + " .datapt").style("fill", self.plot_options.color);
     d3.selectAll("#" + self.anchor + " .error_bar").style("stroke", self.plot_options.color);
     little_pt.style("fill", self.plot_options.color);
-  }
+  };
 
   //
   // Get data values on hover event
@@ -728,7 +728,7 @@ function Plot_1d(raw_data, anchor, plot_options, name) {
       .on("mouseout", function(d) {
         mouseout(d);
       });
-  }
+  };
 
   //
   // Show data values and outline when mouse neters data point

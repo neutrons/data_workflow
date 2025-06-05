@@ -1,6 +1,8 @@
+from unittest import mock
+
 import pytest
 from django.test import TestCase
-from unittest import mock
+
 import workflow
 
 _ = [workflow]
@@ -15,7 +17,6 @@ class FakeTestClass:
 
 
 class StateActionTest(TestCase):
-
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self.caplog = caplog
