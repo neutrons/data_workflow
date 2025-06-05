@@ -578,7 +578,7 @@ def postprocessing_diagnostics(timeout=None):
                                         "msg": f"Last msg: {last_status.run_status_id}",
                                     }
                                 )
-                            except:
+                            except:  # noqa: E722
                                 pass
                     except:  # noqa: E722
                         nodes.append(

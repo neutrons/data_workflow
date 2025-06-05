@@ -3,7 +3,7 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["ASYNC","E", "F", "I", "UP032", "W"]
-ignore = ["E402", "E722", "F405"]
+ignore = ["E402", "F405"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src/", "src/dasmon_app", "src/webmon_app", "src/workflow_app"]

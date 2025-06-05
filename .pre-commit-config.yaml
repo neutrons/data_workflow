@@ -11,6 +11,7 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: debug-statements
+        exclude: '\.template$|tests/data/'
       - id: requirements-txt-fixer
       - id: check-merge-conflict
       - id: end-of-file-fixer
@@ -23,3 +24,9 @@ repos:
         exclude: '\.template$|tests/data/'
       - id: ruff-format
         exclude: '\.template$|tests/data/'
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.28.0
+    hooks:
+      - id: eslint
+        args: [--fix, --exit-on-fatal-error, --no-config-lookup]
+        exclude: 'src/webmon_app/reporting/static/thirdparty/'

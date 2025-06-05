@@ -50,7 +50,7 @@ function MonthlyGraph(run_data, anchor, type){
             w = svg_w - 40;
             h = svg_h - 30;
             padding = {left: 15, right: 0, top: 10, bottom: 0};
-            trans = {w: 25, h: 5}
+            trans = {w: 25, h: 5};
             x_ticks = 10;
             y_ticks_div = 2;
             xts = 2;
@@ -63,7 +63,7 @@ function MonthlyGraph(run_data, anchor, type){
             w = svg_w - 25;
             h = svg_h - 10;
             padding = {left: 0, right: 2, top: 4, bottom: 0};
-            trans = {w: 25, h: 5}
+            trans = {w: 25, h: 5};
             x_ticks = 0;
             y_ticks_div;
             xts = 1;
@@ -75,7 +75,7 @@ function MonthlyGraph(run_data, anchor, type){
     }
     // Calculate bar height factor
     function calcBarHeightFactor(){
-        max_val = d3.max(formatted_runs_data, function(d){return d[1]});
+        max_val = d3.max(formatted_runs_data, function(d){return d[1];});
         if (max_val === 0) max_val = 1;
         max_val = max_val * 1.1; // buffer for nice look
         barHeightFactor = (h) / max_val;
@@ -154,7 +154,7 @@ function MonthlyGraph(run_data, anchor, type){
                           .call(yAxisMinor
                             .tickSize(-w + barPadding, 0, 0)
                             .tickFormat("")
-                          )
+                          );
 
     // Create run bars
     var runs = barsContainer.append("g")
@@ -168,7 +168,7 @@ function MonthlyGraph(run_data, anchor, type){
                 return w - ((i+1) * barWidth); // start from the right
             })
             .attr("y", function(d, i){
-                return h - (d[1] * barHeightFactor)
+                return h - (d[1] * barHeightFactor);
             })
             .attr("width", barWidth - barPadding)
             .attr("height", function(d, i){
