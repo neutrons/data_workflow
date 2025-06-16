@@ -8,7 +8,6 @@ class TestREF_MForm(TestCase):
     default_test_fields = {
         "skip_quicknxs": False,
         # Options for all peaks in the run
-        "plot_in_2D": False,
         "use_const_q": False,
         "q_step": -0.02,
         "use_sangle": True,
@@ -68,7 +67,6 @@ class TestREF_MForm(TestCase):
             form.to_template(),
             {
                 # Options for all peaks in the run
-                "plot_in_2D": "False",
                 "use_const_q": "False",
                 "q_step": "None",
                 "use_sangle": "False",
