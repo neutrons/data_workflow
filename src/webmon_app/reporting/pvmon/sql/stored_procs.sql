@@ -189,10 +189,9 @@ BEGIN
         SELECT id INTO n_pv_id FROM pvmon_pvname WHERE name = n_pv_name;
         IF n_pv_id IS NOT NULL THEN
             INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name)
-              SELECT pvmon_pv.instrument_id, pvmon_pv.name_id, ''
-              FROM pvmon_pv
-              WHERE pvmon_pv.instrument_id=n_instrument AND pvmon_pv.name_id = n_pv_id
-              LIMIT 1;
+              SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, ''
+              FROM pvmon_pvcache
+              WHERE pvmon_pvcache.instrument_id=n_instrument AND pvmon_pvcache.name_id = n_pv_id;
         END IF;
     END LOOP;
     SELECT count(*)
