@@ -191,7 +191,12 @@ BEGIN
             INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name)
               SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, ''
               FROM pvmon_pvcache
-              WHERE pvmon_pvcache.instrument_id=n_instrument AND pvmon_pvcache.name_id = n_pv_id;
+              WHERE pvmon_pvcache.instrument_id = n_instrument AND pvmon_pvcache.name_id = n_pv_id
+              UNION
+              SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, ''
+              FROM pvmon_pvstringcache
+              WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id
+              LIMIT 1;
         END IF;
     END LOOP;
     SELECT count(*)
