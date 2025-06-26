@@ -25,7 +25,7 @@ else:
 
 from . import settings  # noqa: E402
 from .settings import (
-    IMAGE_PURGE_TIMEOUT,  # noqa: E402
+    CACHE_PURGE_TIMEOUT,  # noqa: E402
     INSTALLATION_DIR,  # noqa: E402
     MIN_NOTIFICATION_LEVEL,  # noqa: E402
     PURGE_TIMEOUT,  # noqa: E402
@@ -627,20 +627,19 @@ class Client:
 
                     # Remove old PVMON entries: first, the float values
                     PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
-                    old_entries = PVCache.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
+                    old_entries = PVCache.objects.filter(
+                        update_time__lte=time.time() - CACHE_PURGE_TIMEOUT * 24 * 60 * 60
+                    )
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old PVMON entries: second, the string values
                     old_entries = PVStringCache.objects.filter(
-                        update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
+                        update_time__lte=time.time() - CACHE_PURGE_TIMEOUT * 24 * 60 * 60
                     )
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
-                    # Remove old images
-                    delta_time = datetime.timedelta(days=IMAGE_PURGE_TIMEOUT)
-                    cutoff = timezone.now() - delta_time
                 time.sleep(waiting_period)
                 try:
                     if time.time() - last_heartbeat > HEARTBEAT_DELAY:
