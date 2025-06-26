@@ -53,21 +53,6 @@ class PVCache(models.Model):
         verbose_name_plural = "PV cache"
 
 
-class PVString(models.Model):
-    """
-    Table holding string values
-    """
-
-    instrument = models.ForeignKey(Instrument, null=True, on_delete=models.CASCADE)
-    name = models.ForeignKey(PVName, on_delete=models.CASCADE)
-    value = models.TextField()
-    status = models.IntegerField()
-    update_time = models.IntegerField()
-
-    class Meta:
-        verbose_name_plural = "PV strings"
-
-
 class PVStringCache(models.Model):
     """
     Table holding the latest string values

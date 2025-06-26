@@ -2,7 +2,7 @@ import datetime
 
 from django.contrib import admin
 
-from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVString, PVStringCache
+from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
 
 
 class PVAdmin(admin.ModelAdmin):
@@ -35,6 +35,5 @@ class MonitoredVariableAdmin(admin.ModelAdmin):
 admin.site.register(PVName, PVNameAdmin)
 admin.site.register(PV, PVAdmin)
 admin.site.register(PVCache, PVAdmin)
-admin.site.register(PVString, PVAdmin)
 admin.site.register(PVStringCache, PVAdmin)
 admin.site.register(MonitoredVariable, MonitoredVariableAdmin)

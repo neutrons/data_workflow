@@ -48,7 +48,6 @@ from reporting.pvmon.models import (  # noqa: E402
     PV,
     MonitoredVariable,
     PVCache,
-    PVString,
     PVStringCache,
 )  # noqa: E402
 from workflow.database.report.models import Instrument  # noqa: E402
@@ -633,7 +632,6 @@ class Client:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old PVMON entries: second, the string values
-                    PVString.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
                     old_entries = PVStringCache.objects.filter(
                         update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
                     )
