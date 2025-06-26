@@ -62,7 +62,7 @@ class TestSetInstrumentPVs(unittest.TestCase):
         for each in stringpv_ids:
             cursor.execute(
                 "INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, update_time)"
-                "VALUES (%s, %s, 0.0, 0, 0);",
+                "VALUES (%s, %s, 'test_string_value', 0, 0);",
                 [inst_id, each],
             )
             clean_pv_ids.append((inst_id[0], each[0]))
