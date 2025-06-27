@@ -195,8 +195,7 @@ BEGIN
               UNION
               SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, ''
               FROM pvmon_pvstringcache
-              WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id
-              LIMIT 1;
+              WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id;
         END IF;
     END LOOP;
     SELECT count(*)
