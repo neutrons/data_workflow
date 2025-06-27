@@ -57,6 +57,9 @@ services:
       dockerfile: Dockerfile.dasmon
     env_file:
       - .env
+    environment:
+      - PURGE_TIMEOUT=0.1
+      - CACHE_PURGE_TIMEOUT=0.5
     command: /usr/bin/docker-entrypoint.sh
     healthcheck:
       test: ["CMD", "dasmon_listener", "status"]

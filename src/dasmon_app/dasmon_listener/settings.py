@@ -49,8 +49,8 @@ FROM_EMAIL = ""
 
 INSTALLATION_DIR = "/var/www/workflow/app"
 
-PURGE_TIMEOUT = 0.5  # days
-CACHE_PURGE_TIMEOUT = 180
+PURGE_TIMEOUT = float(os.environ.get("PURGE_TIMEOUT", 0.5))  # days
+CACHE_PURGE_TIMEOUT = float(os.environ.get("CACHE_PURGE_TIMEOUT", 180))  # days
 
 MIN_NOTIFICATION_LEVEL = 3
 
