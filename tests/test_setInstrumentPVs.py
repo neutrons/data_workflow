@@ -39,6 +39,7 @@ class TestSetInstrumentPVs(unittest.TestCase):
     def insert_test_data(cls):
         instrument = "inst1"
         pvs = ["pv1", "pv2", "pv3"]
+        string_pvs = ["stringPV1", "stringPV2"]
         clean_pv_ids = []
         cursor = cls.conn.cursor()
         cursor.execute("INSERT INTO report_instrument (name) VALUES (%s);", (instrument,))
@@ -50,7 +51,19 @@ class TestSetInstrumentPVs(unittest.TestCase):
         pv_ids = cursor.fetchall()
         for each in pv_ids:
             cursor.execute(
-                "INSERT INTO pvmon_pv (instrument_id, name_id, value, status, update_time) VALUES (%s, %s, 0.0, 0, 0);",
+                "INSERT INTO pvmon_pvcache (instrument_id, name_id, value, status, update_time) "
+                "VALUES (%s, %s, 0.0, 0, 0);",
+                [inst_id, each],
+            )
+            clean_pv_ids.append((inst_id[0], each[0]))
+        for pv in string_pvs:
+            cursor.execute("INSERT INTO pvmon_pvname (name, monitored) VALUES (%s, 't');", (pv,))
+        cursor.execute("SELECT id FROM pvmon_pvname where name = ANY(%s);", (string_pvs,))
+        stringpv_ids = cursor.fetchall()
+        for each in stringpv_ids:
+            cursor.execute(
+                "INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, update_time)"
+                "VALUES (%s, %s, 'test_string_value', 0, 0);",
                 [inst_id, each],
             )
             clean_pv_ids.append((inst_id[0], each[0]))
@@ -62,8 +75,8 @@ class TestSetInstrumentPVs(unittest.TestCase):
 
     def test_monitor_some(self):
         test_instrument = "inst1"
-        test_pvs = ["pv1", "pv2"]
-        expected_values = [self.ids[0], self.ids[1]]
+        test_pvs = ["pv1", "pv2", "stringPV1"]
+        expected_values = [self.ids[0], self.ids[1], self.ids[3]]
 
         cursor = self.conn.cursor()
         cursor.execute("SELECT setInstrumentPVs(%s::character varying, ARRAY[%s])", (test_instrument, test_pvs))
@@ -73,7 +86,7 @@ class TestSetInstrumentPVs(unittest.TestCase):
 
     def test_monitor_all(self):
         test_instrument = "inst1"
-        test_pvs = ["pv1", "pv2", "pv3"]
+        test_pvs = ["pv1", "pv2", "pv3", "stringPV1", "stringPV2"]
         expected_values = self.ids
 
         cursor = self.conn.cursor()
@@ -96,8 +109,8 @@ class TestSetInstrumentPVs(unittest.TestCase):
 
     def test_monitor_pv_does_not_exist(self):
         test_instrument = "inst1"
-        test_pvs = ["pv1", "pv3", "pv5"]
-        expected_values = [self.ids[0], self.ids[2]]
+        test_pvs = ["pv1", "pv3", "pv5", "stringPV1", "stringPV3"]
+        expected_values = [self.ids[0], self.ids[2], self.ids[3]]
 
         cursor = self.conn.cursor()
 

@@ -153,7 +153,6 @@ class TestView(TestCase):
             data={
                 "button_choice": "submit",
                 # Options for all samples in the run
-                "plot_in_2D": True,
                 "use_const_q": False,
                 "q_step": -0.02,
                 "use_sangle": True,

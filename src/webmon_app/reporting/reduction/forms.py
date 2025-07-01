@@ -307,7 +307,6 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     skip_quicknxs = forms.BooleanField(required=False, initial=False)
 
     # Options for all peaks in the run
-    plot_in_2D = forms.BooleanField(required=False, initial=False)
     use_const_q = forms.BooleanField(required=False, initial=False)
     q_step = forms.FloatField(required=False, initial=-0.02)
     use_sangle = forms.BooleanField(required=False, initial=True)
@@ -361,7 +360,6 @@ class ReductionConfigurationREF_MForm(BaseReductionConfigurationForm):
     # List of fields are used in the template
     _template_list = [
         # Options for all peaks in the run
-        "plot_in_2D",
         "use_const_q",
         "q_step",
         "use_sangle",

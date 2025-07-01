@@ -47,7 +47,6 @@ def reduction_user_options():
     r"""Collects all values defined by the user in https://monitor.sns.gov/reduction/ref_m/"""
     # Options common to all peaks:
     kwargs_common = dict(
-        plot_2d=_as_bool(${plot_in_2D}),
         const_q_binning=_as_bool(${use_const_q}),
         q_step=float(${q_step}),
         use_sangle = _as_bool(${use_sangle}),
