@@ -1,7 +1,7 @@
 import pytest
 from django.test import TestCase
 
-from reporting.pvmon.models import PVName, PV, PVCache, PVString, PVStringCache, MonitoredVariable, Instrument
+from reporting.pvmon.models import PV, Instrument, MonitoredVariable, PVCache, PVName, PVString, PVStringCache
 
 
 class PVNameTest(TestCase):

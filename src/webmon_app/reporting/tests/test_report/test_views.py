@@ -1,18 +1,15 @@
-import pytest
 from unittest import mock
-from django.test import TestCase
-from django.urls import reverse
+
+import pytest
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
-
-from reporting.dasmon.models import ActiveInstrument
-from reporting.report.models import DataRun
-from reporting.report.models import IPTS
-from reporting.report.models import Instrument
-from reporting.report.models import RunStatus
+from django.test import TestCase
+from django.urls import reverse
 from workflow.database.report.models import StatusQueue
 
 from reporting import report
+from reporting.dasmon.models import ActiveInstrument
+from reporting.report.models import IPTS, DataRun, Instrument, RunStatus
 
 _ = [report]
 

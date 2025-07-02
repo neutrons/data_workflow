@@ -5,27 +5,29 @@ Report views
 @author: M. Doucet, Oak Ridge National Laboratory
 @copyright: 2014-2015 Oak Ridge National Laboratory
 """
-import sys
-import logging
+
 import datetime
-from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
-from django.utils import timezone
-from django.views.decorators.cache import cache_page, cache_control
-from django.views.decorators.vary import vary_on_cookie
+import logging
+import sys
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.cache import cache_control, cache_page
+from django.views.decorators.vary import vary_on_cookie
 
-
-from reporting.dasmon.models import ActiveInstrument
-from reporting.report.models import DataRun, IPTS, Instrument, RunStatus
-from reporting.report.catalog import get_run_info
-from reporting.report.forms import ProcessingForm
-from . import view_util
-import reporting.users.view_util as users_view_util
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
+import reporting.users.view_util as users_view_util
+from reporting.dasmon.models import ActiveInstrument
+from reporting.report.catalog import get_run_info
+from reporting.report.forms import ProcessingForm
+from reporting.report.models import IPTS, DataRun, Instrument, RunStatus
+
+from . import view_util
 
 
 @login_required

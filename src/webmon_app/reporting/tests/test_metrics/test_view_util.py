@@ -1,12 +1,9 @@
-from django.test import TestCase
-
 from django.conf import settings
+from django.test import TestCase
 from django.utils import timezone
-
-from reporting.report.models import Instrument, Information, RunStatus, StatusQueue, WorkflowSummary, Error
 from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache
-from workflow.database.report.models import DataRun
-from workflow.database.report.models import IPTS
+from reporting.report.models import Error, Information, Instrument, RunStatus, StatusQueue, WorkflowSummary
+from workflow.database.report.models import IPTS, DataRun
 
 
 class ViewUtilTest(TestCase):

@@ -17,9 +17,7 @@ def get_status_queue_id(db_connection, queue_name):
     queue_id = cursor.fetchone()
 
     if queue_id is None:
-        cursor.execute(
-            "INSERT INTO report_statusqueue (name, is_workflow_input) VALUES (%s, %s);", (queue_name, False)
-        )
+        cursor.execute("INSERT INTO report_statusqueue (name, is_workflow_input) VALUES (%s, %s);", (queue_name, False))
         cursor.execute("SELECT id FROM report_statusqueue where name = %s;", (queue_name,))
         queue_id = cursor.fetchone()
     cursor.close()
@@ -54,8 +52,7 @@ def clear_previous_runstatus(db_connection, run_id):
     cursor = db_connection.cursor()
     # delete run from tables report_information, report_error and report_runstatus
     cursor.execute(
-        "DELETE FROM report_error WHERE run_status_id_id IN (SELECT id FROM report_runstatus "
-        "WHERE run_id_id = %s);",
+        "DELETE FROM report_error WHERE run_status_id_id IN (SELECT id FROM report_runstatus WHERE run_id_id = %s);",
         run_id,
     )
     cursor.execute(

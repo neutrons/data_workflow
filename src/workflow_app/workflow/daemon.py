@@ -3,12 +3,14 @@
 Code taken from:
 http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
 """
-import sys
-import os
-import time
+
 import atexit
-from signal import SIGTERM
 import logging
+import os
+import sys
+import time
+from signal import SIGTERM
+
 import psutil
 
 

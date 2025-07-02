@@ -1,11 +1,11 @@
 import pytest
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
 from django.utils import timezone
+from workflow.database.report.models import IPTS, DataRun, WorkflowSummary
 
-from reporting.dasmon.models import Instrument, ActiveInstrument, Signal
-from workflow.database.report.models import DataRun, IPTS, WorkflowSummary
+from reporting.dasmon.models import ActiveInstrument, Instrument, Signal
 
 
 class DashboardViewTest(TestCase):

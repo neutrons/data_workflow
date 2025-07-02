@@ -1,12 +1,13 @@
 # Django settings for reporting_app project.
 import json
-import ldap
 from collections import defaultdict
-from django_auth_ldap.config import LDAPSearch, PosixGroupType
-from django.core.exceptions import ImproperlyConfigured
 from os import environ
 from pathlib import Path
+
 import django
+import ldap
+from django.core.exceptions import ImproperlyConfigured
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
 
 def validate_ldap_settings(server_uri, user_dn_template):

@@ -56,7 +56,7 @@ function BarGraph(run_data, error_data, anchor, type){
             w = svg_w - 40;
             h = svg_h - 30;
             padding = {left: 15, right: 0, top: 10, bottom: 0};
-            trans = {w: 25, h: 5}
+            trans = {w: 25, h: 5};
             x_ticks = 12;
             y_ticks_div = 2;
             xts = 3;
@@ -71,7 +71,7 @@ function BarGraph(run_data, error_data, anchor, type){
             w = svg_w - 25;
             h = svg_h - 10;
             padding = {left: 0, right: 2, top: 4, bottom: 0};
-            trans = {w: 25, h: 5}
+            trans = {w: 25, h: 5};
             x_ticks = 0;
             y_ticks_div;
             xts = 1;
@@ -163,7 +163,7 @@ function BarGraph(run_data, error_data, anchor, type){
                           .call(yAxisMinor
                             .tickSize(-w + barPadding, 0, 0)
                             .tickFormat("")
-                          )
+                          );
 
     // Create run bars
     var runs = barsContainer.append("g")
@@ -177,7 +177,7 @@ function BarGraph(run_data, error_data, anchor, type){
                 return w - ((i+1) * barWidth); // start from the right
             })
             .attr("y", function(d){
-                return h - (d * barHeightFactor)
+                return h - (d * barHeightFactor);
             })
             .attr("width", barWidth - barPadding)
             .attr("height", function(d){

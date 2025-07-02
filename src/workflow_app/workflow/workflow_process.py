@@ -2,17 +2,22 @@
 Actual process that each data run must go through.
 """
 
+import datetime
 import json
 import logging
-import datetime
 
-from .database import transactions
 from django.utils.timezone import utc
 
-from workflow.database.report.models import WorkflowSummary, RunStatus
+from workflow.database.report.models import RunStatus, WorkflowSummary
+
+from .database import transactions
+from .settings import (  # noqa: F401  # noqa: F401
+    CATALOG_DATA_READY,
+    POSTPROCESS_INFO,
+    REDUCTION_CATALOG_DATA_READY,
+    REDUCTION_DATA_READY,
+)
 from .states import StateAction  # noqa: F401
-from .settings import POSTPROCESS_INFO, CATALOG_DATA_READY  # noqa: F401
-from .settings import REDUCTION_DATA_READY, REDUCTION_CATALOG_DATA_READY  # noqa: F401
 
 
 class WorkflowProcess(StateAction):

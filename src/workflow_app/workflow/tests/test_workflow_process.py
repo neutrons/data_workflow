@@ -1,13 +1,11 @@
-import pytest
 from unittest import mock
+
+import pytest
 from django.test import TestCase
-from reporting.report.models import DataRun
-from reporting.report.models import IPTS
-from reporting.report.models import Instrument
-from reporting.report.models import RunStatus
-from workflow.database.report.models import StatusQueue
-from workflow.database.report.models import WorkflowSummary
+from reporting.report.models import IPTS, DataRun, Instrument, RunStatus
+
 import workflow
+from workflow.database.report.models import StatusQueue, WorkflowSummary
 
 _ = [workflow]
 

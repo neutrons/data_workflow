@@ -11,19 +11,22 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: debug-statements
-        exclude: '\.template$'
+        exclude: '\.template$|tests/data/'
       - id: requirements-txt-fixer
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: sort-simple-yaml
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
     hooks:
-      - id: black
-        args: ['--line-length=119']
-        exclude: '\.template$'
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        exclude: '\.template$|tests/data/'
+      - id: ruff-format
+        exclude: '\.template$|tests/data/'
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.28.0
     hooks:
-    - id: flake8
-      exclude: '\.template$'
+      - id: eslint
+        args: [--fix, --exit-on-fatal-error, --no-config-lookup]
+        exclude: 'src/webmon_app/reporting/static/thirdparty/'

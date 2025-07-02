@@ -5,26 +5,28 @@ Status monitor utilities to support 'dasmon' views
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-from reporting.report.models import Instrument, DataRun, Information
-from reporting.dasmon.models import (
-    Parameter,
-    StatusVariable,
-    StatusCache,
-    ActiveInstrument,
-    Signal,
-)
-from reporting.pvmon.models import PVCache, PVStringCache, MonitoredVariable
-from django.shortcuts import get_object_or_404
-from django.urls import reverse
-from django.utils import timezone, formats
-from django.contrib.auth.models import Group
-from django.conf import settings
 import datetime
 import logging
 import time
-import reporting.report.view_util as report_view_util
+
+from django.conf import settings
+from django.contrib.auth.models import Group
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.utils import formats, timezone
+
 import reporting.pvmon.view_util as pvmon_view_util
+import reporting.report.view_util as report_view_util
 import reporting.users.view_util as users_view_util
+from reporting.dasmon.models import (
+    ActiveInstrument,
+    Parameter,
+    Signal,
+    StatusCache,
+    StatusVariable,
+)
+from reporting.pvmon.models import MonitoredVariable, PVCache, PVStringCache
+from reporting.report.models import DataRun, Information, Instrument
 
 LOGNAME = "dasmon:view_util"
 
@@ -61,7 +63,6 @@ def get_cached_variables(instrument_id, monitored_only=False):
     key_value_pairs = []
     keys_used = set()
     for kvp in parameter_values:
-
         if kvp.key_id in keys_used:
             # only used the first value for each key, will be ordered newest first
             continue
@@ -310,9 +311,7 @@ def get_live_variables(request, instrument_id):
         try:
             data_list = []
             key_id = Parameter.objects.get(name=key)
-            values = StatusVariable.objects.filter(
-                instrument_id=instrument_id, key_id=key_id, timestamp__gte=two_hours
-            )
+            values = StatusVariable.objects.filter(instrument_id=instrument_id, key_id=key_id, timestamp__gte=two_hours)
             if len(values) > 0:
                 values = values.order_by(settings.DASMON_SQL_SORT).reverse()
             # If you don't have any values for the past 2 hours, just show
@@ -463,9 +462,7 @@ def workflow_diagnostics(timeout=None):
     process_list = []
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "workflowmgr_pid")
-        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by(
-            "-timestamp"
-        )
+        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by("-timestamp")
         pid_list = []
         for item in last_values:
             if item.value not in pid_list:
@@ -477,9 +474,7 @@ def workflow_diagnostics(timeout=None):
     dasmon_listener_list = []
     try:
         key_id = Parameter.objects.get(name=settings.SYSTEM_STATUS_PREFIX + "dasmon_listener_pid")
-        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by(
-            "-timestamp"
-        )
+        last_values = StatusVariable.objects.filter(instrument_id=common_services, key_id=key_id).order_by("-timestamp")
         pid_list = []
         for item in last_values:
             if item.value not in pid_list:
@@ -554,7 +549,8 @@ def postprocessing_diagnostics(timeout=None):
                             nodes.append(
                                 {
                                     "node": item.name[
-                                        len(settings.SYSTEM_STATUS_PREFIX) : len(item.name) - 4  # noqa E203
+                                        len(settings.SYSTEM_STATUS_PREFIX) : len(item.name)
+                                        - 4  # noqa E203
                                     ],
                                     "time": timezone.localtime(last_value.timestamp),
                                     "msg": f"PID: {last_value.value}",
@@ -582,7 +578,7 @@ def postprocessing_diagnostics(timeout=None):
                                         "msg": f"Last msg: {last_status.run_status_id}",
                                     }
                                 )
-                            except:
+                            except:  # noqa: E722
                                 pass
                     except:  # noqa: E722
                         nodes.append(
@@ -779,9 +775,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
         dasmon_conditions.append("The web monitor has not heard from DASMON in a long time: no data available")
 
     if slow_status and slow_pvs and slow_amq:
-        dasmon_conditions.append(
-            "DASMON may be down:  %s" % _red_message("ask Linux Support or DAS to restart DASMON")
-        )
+        dasmon_conditions.append("DASMON may be down:  %s" % _red_message("ask Linux Support or DAS to restart DASMON"))
 
     if slow_pvs and not slow_status and not slow_amq:
         dasmon_conditions.append("DASMON is up but not writing to the DB: check pvsd")
@@ -1169,9 +1163,7 @@ def get_instruments_for_user(request):
     # Get the full list of instruments
     instrument_list = []
     for instrument_id in Instrument.objects.all().order_by("name"):
-        if not ActiveInstrument.objects.is_alive(instrument_id) or not ActiveInstrument.objects.is_adara(
-            instrument_id
-        ):
+        if not ActiveInstrument.objects.is_alive(instrument_id) or not ActiveInstrument.objects.is_adara(instrument_id):
             continue
         instrument_name = str(instrument_id).upper()
 

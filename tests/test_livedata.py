@@ -1,6 +1,6 @@
-import time
-import os
 import hashlib
+import os
+import time
 
 import psycopg2
 import requests

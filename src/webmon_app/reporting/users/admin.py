@@ -1,10 +1,12 @@
-from reporting.users.models import PageView, DeveloperNode, SiteNotification
+import logging
+import socket
+
+from django.conf import settings  # noqa: F401
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-import socket
-from django.conf import settings  # noqa: F401
-import logging
+
+from reporting.users.models import DeveloperNode, PageView, SiteNotification
 
 
 class NonDeveloperUsers(admin.SimpleListFilter):
