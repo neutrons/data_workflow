@@ -595,7 +595,7 @@ class Client:
             self._connection.stop()
         self._connection = None
 
-    def listen_and_wait(self, waiting_period=1.0):
+    def listen_and_wait(self, waiting_period=1.0, repeat=True):
         """
         Listen for the next message from the brokers.
         This method will simply return once the connection is
@@ -603,7 +603,6 @@ class Client:
 
         :param waiting_period: sleep time between connection to a broker
         """
-
         # Retrieve the Parameter object for our own heartbeat
         try:
             pid_key_id = Parameter.objects.get(name="system_dasmon_listener_pid")
@@ -665,6 +664,10 @@ class Client:
             except:  # noqa: E722
                 logging.exception("Problem connecting to AMQ broker")
                 time.sleep(5.0)
+
+            # for testing purposes, we can break out of the loop
+            if not repeat:
+                break
 
     def send(self, destination, message, persistent="false"):
         """
