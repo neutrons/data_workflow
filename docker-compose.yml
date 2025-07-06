@@ -57,7 +57,6 @@ services:
       dockerfile: Dockerfile.dasmon
     env_file:
       - .env
-    command: /usr/bin/docker-entrypoint.sh
     healthcheck:
       test: ["CMD", "dasmon_listener", "status"]
     depends_on:
@@ -72,7 +71,6 @@ services:
       dockerfile: Dockerfile.workflow
     env_file:
       - .env
-    command: /usr/bin/docker-entrypoint.sh
     healthcheck:
       test: ["CMD", "workflowmgr", "status"]
     depends_on:
