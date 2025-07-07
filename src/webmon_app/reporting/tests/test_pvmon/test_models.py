@@ -1,7 +1,7 @@
 import pytest
 from django.test import TestCase
 
-from reporting.pvmon.models import PV, Instrument, MonitoredVariable, PVCache, PVName, PVString, PVStringCache
+from reporting.pvmon.models import PV, Instrument, MonitoredVariable, PVCache, PVName, PVStringCache
 
 
 class PVNameTest(TestCase):
@@ -80,39 +80,6 @@ class PVCacheTest(TestCase):
 
     def test_update_time(self):
         pv = PVCache.objects.get(id=1)
-        self.assertEqual(pv.update_time, 1)
-
-
-class PVStringTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        instrument = Instrument.objects.create(name="testInst")
-        instrument.save()
-        pvname = PVName.objects.create(name="testPV")
-        pvname.save()
-        PVString.objects.create(
-            instrument=instrument,
-            name=pvname,
-            value="test",
-            status=0,
-            update_time=1,
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        Instrument.objects.get(name="testInst").delete()
-        PVName.objects.get(name="testPV").delete()
-
-    def test_value(self):
-        pv = PVString.objects.get(id=1)
-        self.assertEqual(pv.value, "test")
-
-    def test_status(self):
-        pv = PVString.objects.get(id=1)
-        self.assertEqual(pv.status, 0)
-
-    def test_update_time(self):
-        pv = PVString.objects.get(id=1)
         self.assertEqual(pv.update_time, 1)
 
 

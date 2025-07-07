@@ -1,8 +1,11 @@
+import time
 import unittest.mock as mock
 
 import pytest
 from dasmon_listener.amq_consumer import Client, Listener, store_and_cache_
 from django.test import TestCase
+from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
+from reporting.report.models import Instrument
 
 values = {"test_key": "test_value"}
 
@@ -15,9 +18,8 @@ class TestAMQConsumer(TestCase):
                 return listener
 
     def get_client(self):
-        with mock.patch("workflow.database.report.models.Instrument.objects") as instrumentMock:  # noqa: F841
-            client = Client(None, None, None)
-            return client
+        client = Client(None, None, None)
+        return client
 
     @mock.patch("reporting.dasmon.models.Parameter.save")
     def test_retrieve_parameter_no_exist(self, parametereSaveMock):
@@ -192,14 +194,96 @@ class TestAMQConsumer(TestCase):
         jsonLoadsMock.assert_called()
         storeAncCacheMock.assert_called()
 
-    @mock.patch("dasmon_listener.amq_consumer.Parameter.objects.get")
-    def test_listen_and_wait(self, parameterMock):
+    def test_listen_and_wait(self):
         client = self.get_client()  # noqa: F841
+        client._connection = mock.MagicMock()
+        client._connection.is_connected = mock.MagicMock(return_value=True)
 
-    #   client.listen_and_wait()
-    #   need to either refactor the code such that testable parts are
-    #   in functions or not use a while true loop,
-    #   else its kinda hard to test
+        inst = Instrument.objects.create(name="testinst")
+        inst.save()
+        pvname1 = PVName.objects.create(name="testpv1")
+        pvname1.save()
+        pvname2 = PVName.objects.create(name="testpv2")
+        pvname2.save()
+        stringpvname1 = PVName.objects.create(name="teststringpv1")
+        stringpvname1.save()
+        stringpvname2 = PVName.objects.create(name="teststringpv2")
+        stringpvname2.save()
+
+        really_old = int(time.time() - 60 * 60 * 24 * 365)  # 1 year old
+
+        # This PV should not be purged because it is not old enough
+        PV.objects.create(
+            instrument=inst,
+            name=pvname1,
+            value=1.0,
+            status=0,
+            update_time=int(time.time()),
+        )
+        # This PV should be purged because it is old enough
+        PV.objects.create(
+            instrument=inst,
+            name=pvname1,
+            value=2.0,
+            status=0,
+            update_time=really_old,
+        )
+        # This PVCache should not be purged because it is a MonitoredVariable
+        PVCache.objects.create(
+            instrument=inst,
+            name=pvname1,
+            value=1.0,
+            status=0,
+            update_time=really_old,
+        )
+        MonitoredVariable.objects.create(
+            instrument=inst,
+            pv_name=pvname1,
+            rule_name="",
+        )
+        # This PVCache should be purged because it is old enough and not a MonitoredVariable
+        PVCache.objects.create(
+            instrument=inst,
+            name=pvname2,
+            value=1.0,
+            status=0,
+            update_time=really_old,
+        )
+
+        # This PVStringCache should not be purged because it is a MonitoredVariable
+        PVStringCache.objects.create(
+            instrument=inst,
+            name=stringpvname1,
+            value="test",
+            status=0,
+            update_time=really_old,
+        )
+        MonitoredVariable.objects.create(
+            instrument=inst,
+            pv_name=stringpvname1,
+            rule_name="",
+        )
+        # This PVStringCache should be purged because it is old enough and not a Mon
+        PVStringCache.objects.create(
+            instrument=inst,
+            name=stringpvname2,
+            value="test",
+            status=0,
+            update_time=really_old,
+        )
+
+        assert PV.objects.count() == 2
+        assert PVCache.objects.count() == 2
+        assert PVStringCache.objects.count() == 2
+
+        client.listen_and_wait(repeat=False)
+
+        assert PV.objects.count() == 1  # 1 PV should have been purged
+        assert PVCache.objects.count() == 1  # 1 PVCache should have been purged
+        assert PVCache.objects.first().name == pvname1  # PVName should be the same as the MonitoredVariable
+
+        assert PVStringCache.objects.count() == 1  # 1 PVStringCache should have been purged
+        assert PVStringCache.objects.first().name == stringpvname1  # PVName should be the same as the MonitoredVariable
 
     def test_store_and_cache_not_monitored(self):
         instrument_id = mock.MagicMock()

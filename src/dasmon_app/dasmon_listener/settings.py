@@ -49,8 +49,11 @@ FROM_EMAIL = ""
 
 INSTALLATION_DIR = "/var/www/workflow/app"
 
-PURGE_TIMEOUT = 0.5  # days
-IMAGE_PURGE_TIMEOUT = 360
+# number of days after which status variable and PV records are deleted from the database
+PURGE_TIMEOUT = float(os.environ.get("PURGE_TIMEOUT", 0.5))
+# number of days after which cached PV (i.e. the latest PV value) records are deleted from the database,
+# if the PV is not a monitored PV
+CACHE_PURGE_TIMEOUT = float(os.environ.get("CACHE_PURGE_TIMEOUT", 180))
 
 MIN_NOTIFICATION_LEVEL = 3
 

@@ -25,7 +25,7 @@ else:
 
 from . import settings  # noqa: E402
 from .settings import (
-    IMAGE_PURGE_TIMEOUT,  # noqa: E402
+    CACHE_PURGE_TIMEOUT,  # noqa: E402
     INSTALLATION_DIR,  # noqa: E402
     MIN_NOTIFICATION_LEVEL,  # noqa: E402
     PURGE_TIMEOUT,  # noqa: E402
@@ -48,7 +48,6 @@ from reporting.pvmon.models import (  # noqa: E402
     PV,
     MonitoredVariable,
     PVCache,
-    PVString,
     PVStringCache,
 )  # noqa: E402
 from workflow.database.report.models import Instrument  # noqa: E402
@@ -596,7 +595,7 @@ class Client:
             self._connection.stop()
         self._connection = None
 
-    def listen_and_wait(self, waiting_period=1.0):
+    def listen_and_wait(self, waiting_period=1.0, repeat=True):
         """
         Listen for the next message from the brokers.
         This method will simply return once the connection is
@@ -604,7 +603,6 @@ class Client:
 
         :param waiting_period: sleep time between connection to a broker
         """
-
         # Retrieve the Parameter object for our own heartbeat
         try:
             pid_key_id = Parameter.objects.get(name="system_dasmon_listener_pid")
@@ -628,21 +626,19 @@ class Client:
 
                     # Remove old PVMON entries: first, the float values
                     PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
-                    old_entries = PVCache.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60)
-                    for item in old_entries:
-                        if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
-                            item.delete()
-                    # Remove old PVMON entries: second, the string values
-                    PVString.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
-                    old_entries = PVStringCache.objects.filter(
-                        update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60
+                    old_entries = PVCache.objects.filter(
+                        update_time__lte=time.time() - CACHE_PURGE_TIMEOUT * 24 * 60 * 60
                     )
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
-                    # Remove old images
-                    delta_time = datetime.timedelta(days=IMAGE_PURGE_TIMEOUT)
-                    cutoff = timezone.now() - delta_time
+                    # Remove old PVMON entries: second, the string values
+                    old_entries = PVStringCache.objects.filter(
+                        update_time__lte=time.time() - CACHE_PURGE_TIMEOUT * 24 * 60 * 60
+                    )
+                    for item in old_entries:
+                        if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
+                            item.delete()
                 time.sleep(waiting_period)
                 try:
                     if time.time() - last_heartbeat > HEARTBEAT_DELAY:
@@ -668,6 +664,10 @@ class Client:
             except:  # noqa: E722
                 logging.exception("Problem connecting to AMQ broker")
                 time.sleep(5.0)
+
+            # for testing purposes, we can break out of the loop
+            if not repeat:
+                break
 
     def send(self, destination, message, persistent="false"):
         """
