@@ -134,9 +134,6 @@ BEGIN
     FROM report_instrument
     INTO n_instrument
     WHERE report_instrument.name = lower(instrument);
-  -- Add the entry for the new value
-  INSERT INTO pvmon_pvstring (instrument_id, name_id, value, status, update_time)
-    VALUES (n_instrument, n_id, new_value, status, new_time);
   -- Cache the latest values
   SELECT COUNT(*)
     FROM pvmon_pvstringcache

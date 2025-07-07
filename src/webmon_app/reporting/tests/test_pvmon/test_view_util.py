@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 from django.test import TestCase
 
-from reporting.pvmon.models import PV, PVCache, PVName, PVString, PVStringCache
+from reporting.pvmon.models import PV, PVCache, PVName, PVStringCache
 from reporting.report.models import Instrument
 
 
@@ -29,13 +29,6 @@ class ViewUtilTest(TestCase):
                     instrument=inst,
                     name=pvn,
                     value=i_pv * dt,
-                    status=0,
-                    update_time=update_time,
-                ).save()
-                PVString.objects.create(
-                    instrument=inst,
-                    name=pvn,
-                    value=f"pv{i_pv}_dt{dt}",
                     status=0,
                     update_time=update_time,
                 ).save()

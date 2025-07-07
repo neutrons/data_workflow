@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVString, PVStringCache
+from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
 from reporting.report.models import Instrument
 
 
@@ -28,13 +28,6 @@ class PVMonitorViewTest(TestCase):
             instrument=inst,
             name=pvname,
             value=1.0,
-            status=0,
-            update_time=int(time.time()),
-        )
-        PVString.objects.create(
-            instrument=inst,
-            name=pvname,
-            value="test",
             status=0,
             update_time=int(time.time()),
         )
@@ -107,13 +100,6 @@ class GetUpdateViewTest(TestCase):
             status=0,
             update_time=int(time.time()),
         )
-        PVString.objects.create(
-            instrument=inst,
-            name=pvname,
-            value="test",
-            status=0,
-            update_time=int(time.time()),
-        )
         PVStringCache.objects.create(
             instrument=inst,
             name=pvname,
@@ -153,9 +139,6 @@ class GetUpdateViewTest(TestCase):
         pvcache = PVCache.objects.get(instrument=inst, name=pvname)
         pvcache.value = 2.0
         pvcache.save()
-        pvstring = PVString.objects.get(instrument=inst, name=pvname)
-        pvstring.value = "test2"
-        pvstring.save()
         pvstringcache = PVStringCache.objects.get(instrument=inst, name=pvname)
         pvstringcache.value = "test2"
         pvstringcache.save()
