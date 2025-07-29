@@ -43,14 +43,10 @@ jobs:
           LDAP_DOMAIN_COMPONENT: .
     - name: Wait for everything to start up
       run: sleep 66
-    - name: Test with pytest
+    - name: Run system tests
       run: |
-        conda activate webmon
-        python -m pytest tests -k "not (test_plotly_v5_plot_publishing_and_display or test_plotly_v6_plot_publishing_and_display or test_plot_without_version_metadata_uses_default or test_autoreducer_v5_generates_correct_metadata or test_autoreducer_himem_v6_generates_correct_metadata or TestLiveData or TestPlotlyVersions or test_reduction_request_livedata)"
-      env:
-          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
-          LDAP_SERVER_URI: .
-          LDAP_DOMAIN_COMPONENT: .
-          LIVE_PLOT_SECRET_KEY: secretKey
-    - name: Stand down docker containers
-      run: docker compose down
+        docker-compose exec webmon bash -c "conda activate webmon && pytest tests/"
+    - name: stop containers
+      if: ${{ always() }}
+      run: |
+        docker compose down
