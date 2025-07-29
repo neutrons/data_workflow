@@ -45,7 +45,7 @@ jobs:
       run: sleep 66
     - name: Run system tests
       run: |
-        docker-compose exec webmon bash -c "conda activate webmon && pytest tests/"
+        docker compose exec webmon pytest tests/
     - name: stop containers
       if: ${{ always() }}
       run: |

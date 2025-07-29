@@ -23,6 +23,7 @@ dependencies:
   - beautifulsoup4
   - pip
   - python-dotenv
+  - lxml
   - pip:
     - django-auth-ldap==5.1.0
   - pytest
