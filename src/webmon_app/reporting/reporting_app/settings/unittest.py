@@ -24,6 +24,12 @@ del CACHES  # noqa: F821
 GENERAL_USER_USERNAME = environ.get("GENERAL_USER_USERNAME", "GeneralUser")  # noqa: F405
 GENERAL_USER_PASSWORD = environ.get("GENERAL_USER_PASSWORD", "GeneralUser")  # noqa: F405
 
+# For testing, unset the LIVE_PLOT_SECRET_KEY so generate_key returns None
+try:
+    del LIVE_PLOT_SECRET_KEY  # noqa: F821
+except NameError:
+    pass
+
 # This overrides the default and disables ldap
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 if "django_auth_ldap" in INSTALLED_APPS:

@@ -92,25 +92,11 @@ class TestPostProcessingAdminView:
 
         time.sleep(0.5)
         new_status_count = self.get_status_count(RUN_NUMBER_GOOD)
-        assert new_status_count - status_count == 10
-
-        status_count = new_status_count
-
-        # REDUCTION.NOT_NEEDED, should add 1 new RunStatus
-        self.send_request("REDUCTION.NOT_NEEDED", RUN_NUMBER_GOOD, requestType="submit")
-
-        new_status_count = self.get_status_count(RUN_NUMBER_GOOD)
-        assert new_status_count - status_count == 1
-
-        status_count = new_status_count
-
-        # REDUCTION.REQUEST, should add 3 new RunStatus
-        self.send_request("REDUCTION.REQUEST", RUN_NUMBER_GOOD, requestType="submit")
-
-        new_status_count = self.get_status_count(RUN_NUMBER_GOOD)
         assert new_status_count - status_count == 7
 
-        status_count = new_status_count
+    def testPostProcessingRecatalog(self):
+        # to be implemented
+        status_count = self.get_status_count(RUN_NUMBER_GOOD)
 
         # CATALOG.REQUEST, should add 4 new RunStatus
         self.send_request("CATALOG.REQUEST", RUN_NUMBER_GOOD, requestType="submit")

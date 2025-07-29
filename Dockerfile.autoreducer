@@ -1,9 +1,9 @@
-FROM registry.access.redhat.com/ubi9/ubi
+FROM almalinux:9
 
 # install various dependencies
 RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 RUN dnf updateinfo
-RUN dnf install -y procps-ng python3-numpy # pgrep is used for health check, numpy for high memory test
+RUN dnf install -y procps-ng python3-numpy python3-pip
 
 # Inspection tools
 RUN dnf install -y vim
@@ -20,6 +20,31 @@ COPY ${CONFIG_FILE} /etc/autoreduce/post_processing.conf
 
 # install postprocessing
 RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.4.3/postprocessing-3.4.3-1.el9.noarch.rpm
+
+# Install dependencies
+ARG PLOTLY_VERSION=5
+RUN pip3 install beautifulsoup4 requests setuptools wheel numpy urllib3
+
+# Install git for pip to clone repositories
+RUN dnf install -y git
+
+# Install the plot_publisher package dependencies
+RUN pip3 install requests beautifulsoup4
+
+# Install plot_publisher from GitHub (modernize-codebase-v0.2.0 branch with Python 3.9 support)
+RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@modernize-codebase-v0.2.0
+
+# Copy SSL certificate for livedata server communication
+COPY nginx/nginx.crt /etc/ssl/certs/nginx.crt
+
+# Install specific plotly version based on build arg
+RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
+        pip3 install plotly==5.17.0; \
+    elif [ "$PLOTLY_VERSION" = "6" ]; then \
+        pip3 install plotly==6.0.0; \
+    else \
+        pip3 install plotly==5.17.0; \
+    fi
 
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz

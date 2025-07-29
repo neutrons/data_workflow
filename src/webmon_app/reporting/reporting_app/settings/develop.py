@@ -11,4 +11,8 @@ AUTH_LDAP_GLOBAL_OPTIONS = {ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER}
 FAST_PAGE_CACHE_TIMEOUT = 0
 SLOW_PAGE_CACHE_TIMEOUT = 0
 
+# Test user credentials
+GENERAL_USER_USERNAME = environ.get("GENERAL_USER_USERNAME", "GeneralUser")  # noqa: F405
+GENERAL_USER_PASSWORD = environ.get("GENERAL_USER_PASSWORD", "GeneralUser")  # noqa: F405
+
 validate_ldap_settings(server_uri=AUTH_LDAP_SERVER_URI, user_dn_template=AUTH_LDAP_USER_DN_TEMPLATE)  # noqa: F405

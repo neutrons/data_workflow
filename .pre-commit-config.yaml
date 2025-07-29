@@ -9,6 +9,7 @@ repos:
       - id: check-docstring-first
       - id: check-json
       - id: check-added-large-files
+        exclude: 'src/webmon_app/reporting/static/thirdparty/'
       - id: check-yaml
       - id: debug-statements
         exclude: '\.template$|tests/data/'

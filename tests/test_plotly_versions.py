@@ -1,0 +1,106 @@
+import os
+import time
+
+import psycopg2
+import requests
+
+LIVEDATA_TEST_URL = "https://172.16.238.222"
+WEBMON_TEST_URL = "http://nginx"
+
+
+class TestPlotlyVersions:
+    @classmethod
+    def setup_class(cls):
+        """Clean the database before running tests"""
+        conn = psycopg2.connect(
+            database=os.environ.get("DATABASE_NAME", "workflow"),
+            user=os.environ.get("DATABASE_USER", "workflow"),
+            password=os.environ.get("DATABASE_PASS", "workflow"),
+            port=os.environ.get("DATABASE_PORT", 5422),
+            host=os.environ.get("DATABASE_HOST", "db"),
+        )
+        cur = conn.cursor()
+        cur.execute("DELETE FROM plots_plotdata")
+        cur.execute("DELETE FROM plots_datarun")
+        cur.execute("DELETE FROM plots_instrument")
+        conn.commit()
+        conn.close()
+
+    def get_session(self):
+        URL = WEBMON_TEST_URL + "/users/login"
+        client = requests.session()
+
+        # Retrieve the CSRF token first
+        client.get(URL)  # sets the cookie
+        csrftoken = client.cookies["csrftoken"]
+
+        login_data = dict(username="workflow", password="workflow", csrfmiddlewaretoken=csrftoken)
+        response = client.post(URL, data=login_data)
+        assert response.status_code == 200
+        return client
+
+    def send_request(self, task, run_number, requestType):
+        client = self.get_session()
+        data = dict(
+            csrfmiddlewaretoken=client.cookies["csrftoken"],
+            task=task,
+            runs=str(run_number),
+            requestType=requestType,
+        )
+        url = WEBMON_TEST_URL + "/report/arcs/submit_post_process/"
+        response = client.post(url, data=data)
+        return response
+
+    def test_publish_versions(self):
+        """Test that plots are published with the correct plotlyjs-version attributes."""
+
+        # Trigger reduction for ARCS (using autoreducer with Plotly v5)
+        run_number_arcs = 214583
+        response = self.send_request("reduction", run_number_arcs, "live_data")
+        assert response.status_code == 200, f"ARCS reduction request failed: {response.status_code}"
+
+        # Wait for processing
+        time.sleep(30)
+
+        # Check that ARCS plot has plotlyjs-version="5"
+        plot_url = f"{LIVEDATA_TEST_URL}/files/arcs/IPTS-27800/shared/autoreduce/reduction_log/{run_number_arcs}/arcs_{run_number_arcs}_1d.html"  # noqa: E501
+        plot_response = requests.get(plot_url, verify=False)
+        assert plot_response.status_code == 200, f"Failed to fetch ARCS plot: {plot_response.status_code}"
+        assert 'plotlyjs-version="5"' in plot_response.text, "ARCS plot should have plotlyjs-version='5'"
+
+        # Trigger reduction for REF_L (using autoreducer_himem with Plotly v6)
+        run_number_ref_l = 299096
+        response = self.send_request("reduction", run_number_ref_l, "live_data")
+        assert response.status_code == 200, f"REF_L reduction request failed: {response.status_code}"
+
+        # Wait for processing
+        time.sleep(30)
+
+        # Check that REF_L plot has plotlyjs-version="6"
+        plot_url = f"{LIVEDATA_TEST_URL}/files/ref_l/IPTS-33077/shared/autoreduce/reduction_log/{run_number_ref_l}/ref_l_{run_number_ref_l}_1d.html"  # noqa: E501
+        plot_response = requests.get(plot_url, verify=False)
+        assert plot_response.status_code == 200, f"Failed to fetch REF_L plot: {plot_response.status_code}"
+        assert 'plotlyjs-version="6"' in plot_response.text, "REF_L plot should have plotlyjs-version='6'"
+
+    def test_display_versions(self):
+        """Test that the run report pages load the correct plotly.js versions."""
+
+        # Get authenticated session
+        client = self.get_session()
+
+        # Test ARCS run report page (should load plotly-5.x.x.min.js)
+        arcs_url = f"{WEBMON_TEST_URL}/report/arcs/214583/"
+        response = client.get(arcs_url)
+        assert response.status_code == 200, f"Failed to load ARCS run page: {response.status_code}"
+
+        # Check if the page contains evidence of dynamic plotly loading infrastructure
+        # We check for the function that loads plotly scripts dynamically
+        assert "loadPlotlyScriptAndRender" in response.text, "Page should contain dynamic plotly loading infrastructure"
+
+        # Test REF_L run report page (should load plotly-6.x.x.min.js)
+        ref_l_url = f"{WEBMON_TEST_URL}/report/ref_l/299096/"
+        response = client.get(ref_l_url)
+        assert response.status_code == 200, f"Failed to load REF_L run page: {response.status_code}"
+
+        # Check if the page contains evidence of dynamic plotly loading infrastructure
+        assert "loadPlotlyScriptAndRender" in response.text, "Page should contain dynamic plotly loading infrastructure"

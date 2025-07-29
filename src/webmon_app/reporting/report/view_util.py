@@ -37,11 +37,11 @@ from reporting.report.models import (
 from reporting.users.view_util import is_instrument_staff
 
 
-def generate_key(instrument: str, run_id: int):
+def generate_key(instrument, run_id: int):
     """
     Generate a secret key for a run on a given instrument
 
-    :param instrument: instrument name
+    :param instrument: instrument name (string) or Instrument object
     :param run_id: run number
     """
     if not hasattr(settings, "LIVE_PLOT_SECRET_KEY"):
@@ -50,7 +50,9 @@ def generate_key(instrument: str, run_id: int):
     if len(secret_key) == 0:
         return None
 
-    return hashlib.sha1(f"{instrument.upper()}{secret_key}{run_id}".encode("utf-8")).hexdigest()
+    # Handle both string and Instrument object
+    instrument_name = instrument.name if hasattr(instrument, "name") else str(instrument)
+    return hashlib.sha1(f"{instrument_name.upper()}{secret_key}{run_id}".encode("utf-8")).hexdigest()
 
 
 def append_key(input_url, instrument, run_id):

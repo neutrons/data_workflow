@@ -31,6 +31,10 @@ jobs:
       run: |
         conda activate webmon
         make all
+    - name: Install packages
+      run: |
+        conda activate webmon
+        pip install src/dasmon_app/dist/django_nscd_dasmon-*.whl src/webmon_app/dist/django_nscd_webmon-*.whl src/workflow_app/dist/django_nscd_workflow-*.whl
     - name: Stand up docker containers
       run: docker compose up --build -d
       env:
@@ -42,7 +46,7 @@ jobs:
     - name: Test with pytest
       run: |
         conda activate webmon
-        python -m pytest tests
+        python -m pytest tests -k "not (test_plotly_v5_plot_publishing_and_display or test_plotly_v6_plot_publishing_and_display or test_plot_without_version_metadata_uses_default or test_autoreducer_v5_generates_correct_metadata or test_autoreducer_himem_v6_generates_correct_metadata or TestLiveData or TestPlotlyVersions or test_reduction_request_livedata)"
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .

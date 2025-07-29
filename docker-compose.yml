@@ -29,6 +29,7 @@ services:
       - web-static:/var/www/workflow/static/
       # add in folder to be picked up by update-ca-certificates in docker entrypoint
       - ./nginx/nginx.crt:/usr/local/share/ca-certificates/nginx.crt
+      - ./tests:/usr/src/webmon/tests
     env_file:
       - .env
       - .env.ci
@@ -124,11 +125,21 @@ services:
       dockerfile: Dockerfile.autoreducer
       args:
         CONFIG_FILE: ./tests/configuration/post_process_consumer.conf
+        PLOTLY_VERSION: "5"
     hostname: autoreducer
+    environment:
+      - PLOTLY_VERSION=5
+      - SSL_CERT_FILE=/etc/ssl/certs/nginx.crt
+      - PYTHONHTTPSVERIFY=0
+      - CURL_CA_BUNDLE=""
     healthcheck:
       test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
       activemq:
+        condition: service_healthy
+      livedata:
+        condition: service_healthy
+      nginx:
         condition: service_healthy
 
   autoreducer_himem:
@@ -137,11 +148,21 @@ services:
       dockerfile: Dockerfile.autoreducer
       args:
         CONFIG_FILE: ./tests/configuration/post_process_consumer.himem.conf
+        PLOTLY_VERSION: "6"
     hostname: autoreducer.himem
+    environment:
+      - PLOTLY_VERSION=6
+      - SSL_CERT_FILE=/etc/ssl/certs/nginx.crt
+      - PYTHONHTTPSVERIFY=0
+      - CURL_CA_BUNDLE=""
     healthcheck:
       test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
       activemq:
+        condition: service_healthy
+      livedata:
+        condition: service_healthy
+      nginx:
         condition: service_healthy
 
   # Generator of AMQ messages and VP updates
