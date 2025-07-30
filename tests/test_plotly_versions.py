@@ -5,6 +5,7 @@ import sys
 import time
 
 import psycopg2
+import pytest
 import requests
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "utils"))
@@ -49,7 +50,7 @@ class TestPlotlyVersions:
         client.get(URL)  # sets the cookie
         csrftoken = client.cookies["csrftoken"]
 
-        login_data = dict(username="workflow", password="workflow", csrfmiddlewaretoken=csrftoken)
+        login_data = dict(username="InstrumentScientist", password="InstrumentScientist", csrfmiddlewaretoken=csrftoken)
         response = client.post(URL, data=login_data)
         assert response.status_code == 200
         return client
@@ -69,6 +70,7 @@ class TestPlotlyVersions:
         response = client.post(url, data=data)
         return response
 
+    @pytest.mark.skip(reason="Integration test requires full autoreduction pipeline to generate plot files")
     def test_publish_versions(self):
         """Test that plots are published with the correct plotlyjs-version attributes."""
 
