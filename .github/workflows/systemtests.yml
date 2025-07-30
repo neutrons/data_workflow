@@ -47,7 +47,7 @@ jobs:
       run: sleep 66
     - name: Run system tests
       run: |
-        docker compose exec webmon pytest tests/
+        docker compose exec -e DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest -e LDAP_SERVER_URI=. -e LDAP_DOMAIN_COMPONENT=. -e CATALOG_URL="" -e CATALOG_API_TOKEN="" webmon pytest tests/
     - name: Stop containers
       if: ${{ always() }}
       run: |
