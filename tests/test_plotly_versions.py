@@ -16,8 +16,8 @@ class TestPlotlyVersions:
             database=os.environ.get("DATABASE_NAME", "workflow"),
             user=os.environ.get("DATABASE_USER", "workflow"),
             password=os.environ.get("DATABASE_PASS", "workflow"),
-            port=os.environ.get("DATABASE_PORT", 5422),
-            host=os.environ.get("DATABASE_HOST", "db"),
+            port=os.environ.get("DATABASE_PORT", 5432),
+            host=os.environ.get("DATABASE_HOST", "localhost"),
         )
         cur = conn.cursor()
         cur.execute("DELETE FROM plots_plotdata")
