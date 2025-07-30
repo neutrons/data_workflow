@@ -44,6 +44,7 @@ jobs:
         conda activate webmon
         python -m pytest tests
       env:
+          PYTHONPATH: "src:src/dasmon_app:src/webmon_app:src/workflow_app"
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
           LDAP_DOMAIN_COMPONENT: .
