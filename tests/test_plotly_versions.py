@@ -5,7 +5,7 @@ import psycopg2
 import requests
 
 LIVEDATA_TEST_URL = "https://172.16.238.222"
-WEBMON_TEST_URL = "http://nginx"
+WEBMON_TEST_URL = "http://localhost"
 
 
 class TestPlotlyVersions:
