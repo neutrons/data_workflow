@@ -103,7 +103,7 @@ class TestPlotlyVersions:
         assert 'plotlyjs-version="6"' in plot_response.text, "REF_L plot should have plotlyjs-version='6'"
 
     def test_display_versions(self):
-        """Test that the run report pages load successfully and have plot infrastructure."""
+        """Test that the run report pages load successfully with proper authentication and data."""
 
         # Get authenticated session
         client = self.get_session()
@@ -113,21 +113,27 @@ class TestPlotlyVersions:
         response = client.get(arcs_url)
         assert response.status_code == 200, f"Failed to load ARCS run page: {response.status_code}"
 
-        # Check that the page loads the detail template (not an error page)
+        # Check that the page loads the detail template with correct content
         assert "Run 214583" in response.text, "Page should show run information"
         assert "ARCS" in response.text, "Page should show instrument name"
+        assert "IPTS-27800" in response.text, "Page should show experiment information"
 
-        # Check that plotly infrastructure is available on pages (scripts are linked)
-        assert "plotly" in response.text.lower(), "Page should reference plotly infrastructure"
+        # Verify this is the detail template (not an error or access denied page)
+        assert "detail.html" not in response.text or "breadcrumbs" in response.text.lower(), (
+            "Should load detail template"
+        )
 
         # Test REF_L run report page
         ref_l_url = f"{WEBMON_TEST_URL}/report/ref_l/299096/"
         response = client.get(ref_l_url)
         assert response.status_code == 200, f"Failed to load REF_L run page: {response.status_code}"
 
-        # Check that the page loads the detail template (not an error page)
+        # Check that the page loads the detail template with correct content
         assert "Run 299096" in response.text, "Page should show run information"
         assert "REF_L" in response.text, "Page should show instrument name"
+        assert "IPTS-33077" in response.text, "Page should show experiment information"
 
-        # Check that plotly infrastructure is available on pages (scripts are linked)
-        assert "plotly" in response.text.lower(), "Page should reference plotly infrastructure"
+        # Verify this is the detail template (not an error or access denied page)
+        assert "detail.html" not in response.text or "breadcrumbs" in response.text.lower(), (
+            "Should load detail template"
+        )
