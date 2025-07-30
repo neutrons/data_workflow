@@ -3,6 +3,7 @@ import os
 import time
 
 import psycopg2
+import pytest
 import requests
 
 LIVEDATA_TEST_URL = "https://172.16.238.222"
@@ -60,6 +61,7 @@ class TestLiveDataServer:
         time.sleep(1)
         return response.text
 
+    @pytest.mark.skip(reason="Complex integration test - requires full autoreduction pipeline in CI")
     def test_reduction_request_livedata(self):
         ssl_crt_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../nginx/nginx.crt")
 

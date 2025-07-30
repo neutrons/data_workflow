@@ -1,8 +1,14 @@
 import os
+
+# Import the utility function for creating test data
+import sys
 import time
 
 import psycopg2
 import requests
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "utils"))
+from db import add_instrument_data_run
 
 LIVEDATA_TEST_URL = "https://172.16.238.222"
 WEBMON_TEST_URL = "http://localhost"
@@ -11,7 +17,7 @@ WEBMON_TEST_URL = "http://localhost"
 class TestPlotlyVersions:
     @classmethod
     def setup_class(cls):
-        """Clean the database before running tests"""
+        """Clean the database and create test data"""
         conn = psycopg2.connect(
             database=os.environ.get("DATABASE_NAME", "workflow"),
             user=os.environ.get("DATABASE_USER", "workflow"),
@@ -20,10 +26,19 @@ class TestPlotlyVersions:
             host=os.environ.get("DATABASE_HOST", "localhost"),
         )
         cur = conn.cursor()
+
+        # Clean up previous test data
         cur.execute("DELETE FROM plots_plotdata")
         cur.execute("DELETE FROM plots_datarun")
         cur.execute("DELETE FROM plots_instrument")
         conn.commit()
+
+        # Create test data for ARCS run 214583
+        add_instrument_data_run(conn, "arcs", "IPTS-27800", 214583)
+
+        # Create test data for REF_L run 299096
+        add_instrument_data_run(conn, "ref_l", "IPTS-33077", 299096)
+
         conn.close()
 
     def get_session(self):
@@ -43,11 +58,14 @@ class TestPlotlyVersions:
         client = self.get_session()
         data = dict(
             csrfmiddlewaretoken=client.cookies["csrftoken"],
+            instrument="arcs",
+            experiment="IPTS-27800",
+            run_list=str(run_number),
+            create_as_needed="on",
             task=task,
-            runs=str(run_number),
-            requestType=requestType,
+            button_choice=requestType,
         )
-        url = WEBMON_TEST_URL + "/report/arcs/submit_post_process/"
+        url = WEBMON_TEST_URL + "/report/processing"
         response = client.post(url, data=data)
         return response
 
