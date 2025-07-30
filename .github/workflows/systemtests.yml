@@ -41,12 +41,14 @@ jobs:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
           LDAP_DOMAIN_COMPONENT: .
+          CATALOG_URL: ""
+          CATALOG_API_TOKEN: ""
     - name: Wait for everything to start up
       run: sleep 66
     - name: Run system tests
       run: |
         docker compose exec webmon pytest tests/
-    - name: stop containers
+    - name: Stop containers
       if: ${{ always() }}
       run: |
         docker compose down
