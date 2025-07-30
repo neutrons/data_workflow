@@ -31,24 +31,22 @@ jobs:
       run: |
         conda activate webmon
         make all
-    - name: Install packages
-      run: |
-        conda activate webmon
-        pip install src/dasmon_app/dist/django_nscd_dasmon-*.whl src/webmon_app/dist/django_nscd_webmon-*.whl src/workflow_app/dist/django_nscd_workflow-*.whl
     - name: Stand up docker containers
       run: docker compose up --build -d
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
           LDAP_DOMAIN_COMPONENT: .
-          CATALOG_URL: ""
-          CATALOG_API_TOKEN: ""
     - name: Wait for everything to start up
       run: sleep 66
-    - name: Run system tests
+    - name: Test with pytest
       run: |
-        docker compose exec -e DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest -e LDAP_SERVER_URI=. -e LDAP_DOMAIN_COMPONENT=. -e CATALOG_URL="" -e CATALOG_API_TOKEN="" webmon pytest tests/
-    - name: Stop containers
-      if: ${{ always() }}
-      run: |
-        docker compose down
+        conda activate webmon
+        python -m pytest tests
+      env:
+          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
+          LDAP_SERVER_URI: .
+          LDAP_DOMAIN_COMPONENT: .
+          LIVE_PLOT_SECRET_KEY: secretKey
+    - name: Stand down docker containers
+      run: docker compose down
