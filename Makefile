@@ -130,7 +130,7 @@ ssl/clean:  ## delete the self-signed ssl certificates for livedata server
 	rm -f nginx/nginx.crt nginx/nginx.key
 
 nginx/nginx.crt nginx/nginx.key:
-	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 --config nginx/san.cnf
+	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 -addext "basicConstraints=CA:TRUE" --config nginx/san.cnf
 
 localdev/up:  ## create images and start containers for local development. Doesn't update python wheels, though.
 	docker compose --file docker-compose.yml up --build

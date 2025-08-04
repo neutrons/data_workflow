@@ -34,8 +34,8 @@ RUN pip3 install requests beautifulsoup4
 # Install plot_publisher from GitHub (modernize-codebase-v0.2.0 branch with Python 3.9 support)
 RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@modernize-codebase-v0.2.0
 
-# Copy SSL certificate for livedata server communication
-COPY nginx/nginx.crt /etc/ssl/certs/nginx.crt
+# Updating certificates to add self-signed certificate for local testing
+RUN update-ca-trust
 
 # Install specific plotly version based on build arg
 RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
@@ -65,4 +65,4 @@ RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
     chmod +x /usr/bin/run_postprocessing
 
 # start the service
-CMD run_postprocessing
+CMD ["run_postprocessing"]

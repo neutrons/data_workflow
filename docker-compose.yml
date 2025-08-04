@@ -126,12 +126,13 @@ services:
       args:
         CONFIG_FILE: ./tests/configuration/post_process_consumer.conf
         PLOTLY_VERSION: "5"
+    volumes:
+      # add in RHEL9 certs folder to be picked up by update-ca-trust in docker entrypoint
+      - ./nginx/nginx.crt:/etc/pki/ca-trust/source/anchors/nginx.crt
     hostname: autoreducer
     environment:
       - PLOTLY_VERSION=5
-      - SSL_CERT_FILE=/etc/ssl/certs/nginx.crt
-      - PYTHONHTTPSVERIFY=0
-      - CURL_CA_BUNDLE=""
+      - REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
     healthcheck:
       test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
@@ -149,12 +150,13 @@ services:
       args:
         CONFIG_FILE: ./tests/configuration/post_process_consumer.himem.conf
         PLOTLY_VERSION: "6"
+    volumes:
+      # add in RHEL9 certs folder to be picked up by update-ca-trust in docker entrypoint
+      - ./nginx/nginx.crt:/etc/pki/ca-trust/source/anchors/nginx.crt
     hostname: autoreducer.himem
     environment:
       - PLOTLY_VERSION=6
-      - SSL_CERT_FILE=/etc/ssl/certs/nginx.crt
-      - PYTHONHTTPSVERIFY=0
-      - CURL_CA_BUNDLE=""
+      - REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
     healthcheck:
       test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
