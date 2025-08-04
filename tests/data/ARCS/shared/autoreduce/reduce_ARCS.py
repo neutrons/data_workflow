@@ -41,7 +41,7 @@ def create_plotly_plot(filename):
         time = datetime.isoformat(datetime.now())
         hostname = socket.gethostname()
 
-        return f"""<div id="arcs-plot" class="plotly-graph-div" style="height:400px; width:100%;" plotlyjs-version="fallback">
+        return f"""<div id="arcs-plot" class="plotly-graph-div" style="height:400px; width:100%;" data-plotlyjs-version="fallback">
             <div style="text-align: center; padding: 50px;">
                 <h3>ARCS Fallback Plot</h3>
                 <p><strong>Filename:</strong> {filename}</p>

@@ -82,11 +82,11 @@ class TestPlotlyVersions:
         # Wait for processing
         time.sleep(30)
 
-        # Check that ARCS plot has plotlyjs-version="5"
+        # Check that ARCS plot has data-plotlyjs-version="5"
         plot_url = f"{LIVEDATA_TEST_URL}/files/arcs/IPTS-27800/shared/autoreduce/reduction_log/{run_number_arcs}/arcs_{run_number_arcs}_1d.html"  # noqa: E501
         plot_response = requests.get(plot_url, verify=False)
         assert plot_response.status_code == 200, f"Failed to fetch ARCS plot: {plot_response.status_code}"
-        assert 'plotlyjs-version="5"' in plot_response.text, "ARCS plot should have plotlyjs-version='5'"
+        assert 'data-plotlyjs-version="5"' in plot_response.text, "ARCS plot should have data-plotlyjs-version='5'"
 
         # Trigger reduction for REF_L (using autoreducer_himem with Plotly v6)
         run_number_ref_l = 299096
@@ -96,11 +96,11 @@ class TestPlotlyVersions:
         # Wait for processing
         time.sleep(30)
 
-        # Check that REF_L plot has plotlyjs-version="6"
+        # Check that REF_L plot has data-plotlyjs-version="6"
         plot_url = f"{LIVEDATA_TEST_URL}/files/ref_l/IPTS-33077/shared/autoreduce/reduction_log/{run_number_ref_l}/ref_l_{run_number_ref_l}_1d.html"  # noqa: E501
         plot_response = requests.get(plot_url, verify=False)
         assert plot_response.status_code == 200, f"Failed to fetch REF_L plot: {plot_response.status_code}"
-        assert 'plotlyjs-version="6"' in plot_response.text, "REF_L plot should have plotlyjs-version='6'"
+        assert 'data-plotlyjs-version="6"' in plot_response.text, "REF_L plot should have data-plotlyjs-version='6'"
 
     @pytest.mark.skip(reason="Temporarily skipped due to CI caching issue - will re-enable after cache clear")
     def test_display_versions(self):
