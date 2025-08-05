@@ -28,3 +28,4 @@ dependencies:
     - django-auth-ldap==5.1.0
   - pytest
   - pytest-django
+  - click!=8.2.2
