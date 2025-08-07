@@ -14,49 +14,6 @@ class TestAutoreducerQueues:
     IPTS = "IPTS-1234"
     run_number = 12345
 
-    def set_reduction_request_queue(self, conn, queue_name):
-        """create the task to send REDUCTION.REQUEST to the provided queue"""
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT id FROM report_instrument where name = %s;", (self.instrument,))
-        inst_id = cursor.fetchone()[0]
-
-        queue_id = db_utils.get_status_queue_id(conn, queue_name)
-        success_queue_id = db_utils.get_status_queue_id(conn, "REDUCTION.COMPLETE")
-        reduction_request_queue_id = db_utils.get_status_queue_id(conn, "REDUCTION.REQUEST")
-
-        cursor.execute(
-            "SELECT id FROM report_task where instrument_id_id = %s AND input_queue_id_id = %s;",
-            (inst_id, reduction_request_queue_id),
-        )
-        task_id = cursor.fetchone()
-
-        if task_id is None:
-            cursor.execute(
-                "INSERT INTO report_task (instrument_id_id, input_queue_id_id) VALUES (%s, %s)",
-                (inst_id, reduction_request_queue_id),
-            )
-            cursor.execute(
-                "SELECT id FROM report_task where instrument_id_id = %s AND input_queue_id_id = %s;",
-                (inst_id, reduction_request_queue_id),
-            )
-            task_id = cursor.fetchone()
-            conn.commit()
-
-        task_id = task_id[0]
-
-        cursor.execute("DELETE FROM report_task_task_queue_ids WHERE task_id = %s", (task_id,))
-        cursor.execute("DELETE FROM report_task_success_queue_ids WHERE task_id = %s", (task_id,))
-
-        cursor.execute(
-            "INSERT INTO report_task_task_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)", (task_id, queue_id)
-        )
-        cursor.execute(
-            "INSERT INTO report_task_success_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)",
-            (task_id, success_queue_id),
-        )
-        conn.commit()
-
     def get_autoreducer_hostname(self, conn, run_id):
         """return the hostname that executed the task that is stored in the report information"""
         cursor = conn.cursor()
@@ -72,7 +29,7 @@ class TestAutoreducerQueues:
         run_id = db_utils.add_instrument_data_run(db_connection, self.instrument, self.IPTS, self.run_number)
         db_utils.clear_previous_runstatus(db_connection, run_id)
 
-        self.set_reduction_request_queue(db_connection, "REDUCTION.DATA_READY")
+        db_utils.set_reduction_request_queue(db_connection, "vulcan", "REDUCTION.DATA_READY")
 
         # login and send reduction request
         response = request_page("/report/vulcan/12345/reduce/", self.user, self.pwd)
@@ -94,7 +51,7 @@ class TestAutoreducerQueues:
         run_id = db_utils.add_instrument_data_run(db_connection, self.instrument, self.IPTS, self.run_number)
         db_utils.clear_previous_runstatus(db_connection, run_id)
 
-        self.set_reduction_request_queue(db_connection, "REDUCTION.HIMEM.DATA_READY")
+        db_utils.set_reduction_request_queue(db_connection, "vulcan", "REDUCTION.HIMEM.DATA_READY")
         # login and send reduction request
         response = request_page("/report/vulcan/12345/reduce/", self.user, self.pwd)
         assert response.status_code == 200

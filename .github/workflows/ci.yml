@@ -27,12 +27,6 @@ jobs:
         conda env create --file conda_environment.yml --quiet
         conda activate webmon
         conda env update --file conda_development.yml --quiet
-    - name: Install packages in editable mode
-      run: |
-        conda activate webmon
-        pip install -e src/workflow_app/
-        pip install -e src/dasmon_app/
-        pip install -e src/webmon_app/
     - name: Test with pytest
       run: |
         conda activate webmon

@@ -1,22 +1,22 @@
 import os
 
 # Import the utility function for creating test data
-import sys
 import time
 
 import psycopg2
 import requests
 
 from .test_livedata import generate_key
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "utils"))
-from db import add_instrument_data_run
+from .utils.db import add_instrument_data_run, set_reduction_request_queue
 
 LIVEDATA_TEST_URL = "https://172.16.238.222"
 WEBMON_TEST_URL = "http://localhost"
 
 
 class TestPlotlyVersions:
+    user = "InstrumentScientist"
+    pwd = "InstrumentScientist"
+
     @classmethod
     def setup_class(cls):
         """Clean the database and create test data"""
@@ -56,27 +56,12 @@ class TestPlotlyVersions:
         assert response.status_code == 200
         return client
 
-    def send_request(self, task, run_number, requestType, instrument, IPTS):
-        client = self.get_session()
-        data = dict(
-            csrfmiddlewaretoken=client.cookies["csrftoken"],
-            instrument=instrument,
-            experiment=IPTS,
-            run_list=run_number,
-            create_as_needed="on",
-            task=task,
-            button_choice=requestType,
-        )
-        url = WEBMON_TEST_URL + "/report/processing"
-        response = client.post(url, data=data)
-        return response
-
-    def test_publish_versions(self):
+    def test_publish_versions(self, db_connection, request_page):
         """Test that plots are published with the correct plotlyjs-version attributes."""
 
         # Trigger reduction for ARCS (using autoreducer with Plotly v5)
         run_number_arcs = 214583
-        response = self.send_request("POSTPROCESS.DATA_READY", run_number_arcs, "submit", "arcs", "IPTS-27800")
+        response = request_page(f"/report/arcs/{run_number_arcs}/reduce/", self.user, self.pwd)
         assert response.status_code == 200, f"ARCS reduction request failed: {response.status_code}"
 
         # Wait for processing
@@ -87,11 +72,13 @@ class TestPlotlyVersions:
         plot_url = f"{LIVEDATA_TEST_URL}/plots/arcs/{run_number_arcs}/update/html/?key={key}"
         plot_response = requests.get(plot_url, verify=False)
         assert plot_response.status_code == 200, f"Failed to fetch ARCS plot: {plot_response.status_code}"
-        assert 'plotlyjs-version="5' in plot_response.text, "ARCS plot should have plotlyjs-version='5'"
+        assert "ARCS Test Plot - Run 214583" in plot_response.text
+        assert 'plotlyjs-version="5.17.0' in plot_response.text, "ARCS plot should have plotlyjs-version='5'"
 
         # Trigger reduction for REF_L (using autoreducer_himem with Plotly v6)
+        set_reduction_request_queue(db_connection, "ref_l", "REDUCTION.HIMEM.DATA_READY")
         run_number_ref_l = 214746
-        response = self.send_request("POSTPROCESS.DATA_READY", run_number_ref_l, "submit", "ref_l", "IPTS-33077")
+        response = request_page(f"/report/ref_l/{run_number_ref_l}/reduce/", self.user, self.pwd)
         assert response.status_code == 200, f"REF_L reduction request failed: {response.status_code}"
 
         # Wait for processing
@@ -102,9 +89,8 @@ class TestPlotlyVersions:
         plot_url = f"{LIVEDATA_TEST_URL}/plots/ref_l/{run_number_ref_l}/update/html/?key={key}"
         plot_response = requests.get(plot_url, verify=False)
         assert plot_response.status_code == 200, f"Failed to fetch REF_L plot: {plot_response.status_code}"
-
-        # TODO fix this
-        # assert 'plotlyjs-version="6' in plot_response.text, "REF_L plot should have plotlyjs-version='6'"
+        assert "REF_L Test Plot with Dynamic Plotly Loading" in plot_response.text
+        assert 'plotlyjs-version="6.0.0' in plot_response.text, "REF_L plot should have plotlyjs-version='6'"
 
     def test_display_versions(self):
         """Test that the run report pages load successfully with proper authentication and data."""
