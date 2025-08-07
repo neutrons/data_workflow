@@ -132,7 +132,6 @@ services:
     hostname: autoreducer
     environment:
       - PLOTLY_VERSION=5
-      - REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
     healthcheck:
       test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:
@@ -156,7 +155,6 @@ services:
     hostname: autoreducer.himem
     environment:
       - PLOTLY_VERSION=6
-      - REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
     healthcheck:
       test: ["CMD", "pgrep", "queueProcessor"]
     depends_on:

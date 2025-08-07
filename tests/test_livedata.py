@@ -3,7 +3,6 @@ import os
 import time
 
 import psycopg2
-import pytest
 import requests
 
 LIVEDATA_TEST_URL = "https://172.16.238.222"
@@ -61,7 +60,6 @@ class TestLiveDataServer:
         time.sleep(1)
         return response.text
 
-    @pytest.mark.skip(reason="Complex integration test - requires full autoreduction pipeline in CI")
     def test_reduction_request_livedata(self):
         ssl_crt_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../nginx/nginx.crt")
 
@@ -82,9 +80,7 @@ class TestLiveDataServer:
             verify=ssl_crt_filename,
         )
         assert response.status_code == 200
-        assert "Example Plot Data" in response.text
-        assert "Filename: /SNS/ARCS/IPTS-27800/nexus/ARCS_214583.nxs.h5" in response.text
-        assert "Hostname: autoreducer" in response.text
+        assert "ARCS Test Plot - Run 214583" in response.text
 
         # now verify that the run report page is templated correctly
         client = self.get_session()
