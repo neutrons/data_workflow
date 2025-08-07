@@ -92,7 +92,7 @@ class TestPostProcessingAdminView:
 
         time.sleep(0.5)
         new_status_count = self.get_status_count(RUN_NUMBER_GOOD)
-        assert new_status_count - status_count == 7
+        assert new_status_count - status_count == 10
 
     def testPostProcessingRecatalog(self):
         # to be implemented
