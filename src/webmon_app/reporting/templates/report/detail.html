@@ -107,11 +107,11 @@
                     var plotGraphDiv = tempDiv.find('div.plotly-graph-div');
                     var requiredVersion = null;
 
-                    if (plotGraphDiv.length > 0 && plotGraphDiv.attr('data-plotlyjs-version')) {
-                        requiredVersion = String(plotGraphDiv.attr('data-plotlyjs-version'));
-                        console.log("Extracted 'data-plotlyjs-version' from plot div:", requiredVersion);
+                    if (plotGraphDiv.length > 0 && plotGraphDiv.attr('plotlyjs-version')) {
+                        requiredVersion = String(plotGraphDiv.attr('plotlyjs-version'));
+                        console.log("Extracted 'plotlyjs-version' from plot div:", requiredVersion);
                     } else {
-                        console.log("No 'data-plotlyjs-version' attribute found on the main plot div. Will use default.");
+                        console.log("No 'plotlyjs-version' attribute found on the main plot div. Will use default.");
                         requiredVersion = defaultPlotlyVersion;
                     }
 

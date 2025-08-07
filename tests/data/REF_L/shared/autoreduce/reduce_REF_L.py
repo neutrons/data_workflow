@@ -36,7 +36,7 @@ def create_plotly_plot():
         print(f"Warning: Could not import required libraries: {e}")
         # Fallback to simple HTML if plot_publisher is not available
         return """
-        <div id="fallback-plot" class="plotly-graph-div" style="height:400px; width:100%;" data-plotlyjs-version="fallback">
+        <div id="fallback-plot" class="plotly-graph-div" style="height:400px; width:100%;" plotlyjs-version="fallback">
             <div style="text-align: center; padding: 100px;">
                 <h3>REF_L Fallback Plot</h3>
                 <p>This is a fallback plot when plot_publisher is not available.</p>

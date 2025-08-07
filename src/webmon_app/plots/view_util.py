@@ -7,8 +7,8 @@ def get_plotly_js(plot_data):
     if plot_data:
         soup = BeautifulSoup(plot_data, "html.parser")
         plotly_div = soup.find("div", class_="plotly-graph-div")
-        if plotly_div and "data-plotlyjs-version" in plotly_div.attrs:
-            version = str(plotly_div["data-plotlyjs-version"])
+        if plotly_div and "plotlyjs-version" in plotly_div.attrs:
+            version = str(plotly_div["plotlyjs-version"])
 
     # Determine which plotly script to load
     if version.startswith("2."):

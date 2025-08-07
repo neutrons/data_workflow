@@ -67,7 +67,7 @@ class TestPlotlyVersions:
         # Wait for processing
         time.sleep(3)
 
-        # Check that ARCS plot has data-plotlyjs-version="5"
+        # Check that ARCS plot has plotlyjs-version="5"
         key = generate_key("arcs", run_number_arcs)
         plot_url = f"{LIVEDATA_TEST_URL}/plots/arcs/{run_number_arcs}/update/html/?key={key}"
         plot_response = requests.get(plot_url, verify=False)
@@ -84,7 +84,7 @@ class TestPlotlyVersions:
         # Wait for processing
         time.sleep(3)
 
-        # Check that REF_L plot has data-plotlyjs-version="6"
+        # Check that REF_L plot has plotlyjs-version="6"
         key = generate_key("ref_l", run_number_ref_l)
         plot_url = f"{LIVEDATA_TEST_URL}/plots/ref_l/{run_number_ref_l}/update/html/?key={key}"
         plot_response = requests.get(plot_url, verify=False)
