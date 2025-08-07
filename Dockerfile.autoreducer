@@ -34,9 +34,6 @@ RUN pip3 install requests beautifulsoup4
 # Install plot_publisher from GitHub (modernize-codebase-v0.2.0 branch with Python 3.9 support)
 RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@modernize-codebase-v0.2.0
 
-# Updating certificates to add self-signed certificate for local testing
-RUN update-ca-trust
-
 # Install specific plotly version based on build arg
 RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
         pip3 install plotly==5.17.0; \
@@ -58,7 +55,9 @@ RUN touch /opt/postprocessing/scripts/oncat_ingest.py && \
     touch /opt/postprocessing/scripts/oncat_reduced_ingest.py
 
 # create startup script
+# add updating certificates to add self-signed certificate for local testing
 RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
+    echo "update-ca-trust" >> /usr/bin/run_postprocessing && \
     echo "/opt/postprocessing/queueProcessor.py &" >> /usr/bin/run_postprocessing && \
     echo "sleep 1" >> /usr/bin/run_postprocessing && \
     echo "tail -F /opt/postprocessing/log/postprocessing.log" >> /usr/bin/run_postprocessing && \
