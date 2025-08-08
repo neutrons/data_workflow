@@ -9,8 +9,6 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-latest
-    env:
-      DJANGO_SETTINGS_MODULE: 'reporting.reporting_app.settings.unittest'
     steps:
     - uses: actions/checkout@v4
     - name: Setup pixi
