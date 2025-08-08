@@ -32,3 +32,6 @@ _build/
 # Self-signed certificates
 nginx/nginx.crt
 nginx/nginx.key
+# pixi environments
+.pixi/*
+!.pixi/config.toml

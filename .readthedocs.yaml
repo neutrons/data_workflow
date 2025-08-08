@@ -1,14 +1,21 @@
 version: 2
 
 build:
-  os: ubuntu-20.04
+  os: "ubuntu-24.04"
   tools:
-    python: "mambaforge-4.10"
+    python: "3.11"
+  jobs:
+    create_environment:
+      - asdf plugin add pixi
+      - asdf install pixi latest
+      - asdf global pixi latest
+    install:
+      - pixi install
+    build:
+      html:
+        - pixi run sphinx-build -T -b html docs $READTHEDOCS_OUTPUT/html
 
 sphinx:
   builder: html
   configuration: docs/conf.py
   fail_on_warning: true
-
-conda:
-  environment: conda_environment.yml

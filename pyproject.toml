@@ -11,3 +11,48 @@ pythonpath = ["src/", "src/dasmon_app", "src/webmon_app", "src/workflow_app"]
 [tool.coverage.run]
 source = ["src"]
 omit = ["*/tests/*"]
+
+[tool.pixi.dependencies]
+python = "==3.11"
+django = "=4.2"
+python-ldap = ">=3.1"
+"stomp.py" = "8.*"
+psutil = "*"
+django-health-check = "*"
+pyoncat = "*"
+versioningit = ">=3.2.0"
+psycopg2-binary = "==2.9.3"
+
+[tool.pixi.pypi-dependencies]
+django-auth-ldap = "==5.1.0"
+
+[tool.pixi.workspace]
+name = "data_workflow"
+channels = ["conda-forge", "oncat"]
+platforms = ["linux-64"]
+
+[tool.pixi.tasks]
+unittests = "python -m pytest src"
+unittests-with-coverage = "python -m pytest --cov --cov-report=xml --cov-report=term src"
+
+[tool.pixi.environments]
+default = { features = [
+  "dev",
+  "docs",
+  "test",
+], solve-group = "default" }
+docs = { features = ["docs"]}
+test = { features = ["test"]}
+
+[tool.pixi.feature.dev.dependencies]
+pre-commit = ">=4.2.0"
+
+[tool.pixi.feature.test.dependencies]
+pytest = ">=8.4.1"
+pytest-django = "*"
+pytest-cov = "*"
+
+[tool.pixi.feature.docs.dependencies]
+sphinx = ">=8"
+sphinx_rtd_theme = ">=3.0.1"
+sphinxcontrib-mermaid = "*"
