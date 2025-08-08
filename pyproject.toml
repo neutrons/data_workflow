@@ -32,8 +32,8 @@ channels = ["conda-forge", "oncat"]
 platforms = ["linux-64"]
 
 [tool.pixi.tasks]
-unittests = "python -m pytest src"
-unittests-with-coverage = "python -m pytest --cov --cov-report=xml --cov-report=term src"
+unittests = { cmd = "python -m pytest src", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.unittest" } }
+unittests-with-coverage = { cmd = "python -m pytest --cov --cov-report=xml --cov-report=term src", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.unittest" } }
 
 [tool.pixi.environments]
 default = { features = [
