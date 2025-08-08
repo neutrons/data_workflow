@@ -9,34 +9,23 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
+    env:
+      DJANGO_SETTINGS_MODULE: 'reporting.reporting_app.settings.unittest'
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+    - name: Setup pixi
+      uses: prefix-dev/setup-pixi@v0.8.14
       with:
-        auto-update-conda: true
-    - name: Setup libmamba solver
-      run: |
-        conda install -n base conda-libmamba-solver
-        conda config --set solver libmamba
-    - name: Install requirements
-      run: |
-        # --quiet should turn off progress bars to make logs more readable
-        conda env create --file conda_environment.yml --quiet
-        conda activate webmon
-        conda env update --file conda_development.yml --quiet
+        environments: >-
+          test
+          docs
+        activate-environment: test
     - name: Test with pytest
-      run: |
-        conda activate webmon
-        export DJANGO_SETTINGS_MODULE='reporting.reporting_app.settings.unittest'
-        python -m pytest --cov --cov-report=xml --cov-report=term src
+      run: pixi run unittests-with-coverage
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Build documentation
       run: |
-        conda activate webmon
-        cd docs && make html
+        cd docs && pixi run -e docs make html
