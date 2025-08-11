@@ -22,6 +22,12 @@ django-health-check = "*"
 pyoncat = "*"
 versioningit = ">=3.2.0"
 psycopg2-binary = "==2.9.3"
+python-build = "*"
+wheel = "*"
+check-wheel-contents = "*"
+make = "*"
+python-dotenv = "*"
+lxml = "*"
 
 [tool.pixi.pypi-dependencies]
 django-auth-ldap = "==5.1.0"
@@ -34,6 +40,7 @@ platforms = ["linux-64"]
 [tool.pixi.tasks]
 unittests = { cmd = "python -m pytest src", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.unittest" } }
 unittests-with-coverage = { cmd = "python -m pytest --cov --cov-report=xml --cov-report=term src", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.unittest" } }
+systemtests = { cmd = "python -m pytest tests", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.envtest", LDAP_SERVER_URI = ".", LDAP_DOMAIN_COMPONENT = ".", LIVE_PLOT_SECRET_KEY = "secretKey"} }
 
 [tool.pixi.environments]
 default = { features = [

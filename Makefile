@@ -52,21 +52,21 @@ check: ## Check python dependencies
 
 wheel/dasmon: ## create or update python wheel for service "dasmon". Clean up build/ first
 	cd src/dasmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
-	cd src/dasmon_app && python -m build --no-isolation --wheel
+	cd src/dasmon_app && pixi run python -m build --no-isolation --wheel
 	# verify it is correct
-	cd src/dasmon_app && check-wheel-contents dist/$(ls dist | grep django_nscd_dasmon)
+	cd src/dasmon_app && pixi run check-wheel-contents dist/django_nscd_dasmon-*.whl
 
 wheel/webmon: ## create or update python wheel for service "webmon". Clean up build/ first
 	cd src/webmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
-	cd src/webmon_app && python -m build --no-isolation --wheel
+	cd src/webmon_app && pixi run python -m build --no-isolation --wheel
 	# verify it is correct - ignoring duplicate file check
-	cd src/webmon_app && check-wheel-contents dist/$(ls dist | grep django_nscd_webmon)
+	cd src/webmon_app && pixi run check-wheel-contents dist/django_nscd_webmon-*.whl
 
 wheel/workflow: ## create or update python wheel for service "workflow". Clean up build/ first
 	cd src/workflow_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
-	cd src/workflow_app && python -m build --no-isolation --wheel
+	cd src/workflow_app && pixi run python -m build --no-isolation --wheel
 	# verify it is correct
-	cd src/workflow_app && check-wheel-contents dist/$(ls dist | grep django_nscd_workflow)
+	cd src/workflow_app && pixi run check-wheel-contents dist/django_nscd_workflow-*.whl
 
 wheel/all:  wheel/clean wheel/dasmon wheel/webmon wheel/workflow ## create python wheels for all services. Clean up build/ first
 
