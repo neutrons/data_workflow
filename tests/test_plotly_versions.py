@@ -73,7 +73,9 @@ class TestPlotlyVersions:
         plot_response = requests.get(plot_url, verify=False)
         assert plot_response.status_code == 200, f"Failed to fetch ARCS plot: {plot_response.status_code}"
         assert "ARCS Test Plot - Run 214583" in plot_response.text
-        assert 'plotlyjs-version="5.17.0' in plot_response.text, "ARCS plot should have plotlyjs-version='5'"
+        assert 'plotlyjs-version="2.' in plot_response.text, (
+            "ARCS plot should have plotlyjs-version 2.x (from plotly 5.17.0)"
+        )
 
         # Trigger reduction for REF_L (using autoreducer_himem with Plotly v6)
         set_reduction_request_queue(db_connection, "ref_l", "REDUCTION.HIMEM.DATA_READY")
@@ -90,7 +92,9 @@ class TestPlotlyVersions:
         plot_response = requests.get(plot_url, verify=False)
         assert plot_response.status_code == 200, f"Failed to fetch REF_L plot: {plot_response.status_code}"
         assert "REF_L Test Plot with Dynamic Plotly Loading" in plot_response.text
-        assert 'plotlyjs-version="6.0.0' in plot_response.text, "REF_L plot should have plotlyjs-version='6'"
+        assert 'plotlyjs-version="3.' in plot_response.text, (
+            "REF_L plot should have plotlyjs-version 3.x (from plotly 6.0.0)"
+        )
 
     def test_display_versions(self):
         """Test that the run report pages load successfully with proper authentication and data."""
