@@ -28,6 +28,8 @@ check-wheel-contents = "*"
 make = "*"
 python-dotenv = "*"
 lxml = "*"
+pip = "*"
+gunicorn = "*"
 
 [tool.pixi.pypi-dependencies]
 django-auth-ldap = "==5.1.0"

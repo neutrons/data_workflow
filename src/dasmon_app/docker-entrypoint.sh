@@ -14,5 +14,5 @@ make install/dasmonlistener
 # start up things and echo the logs
 cd /var/log
 sleep 20
-/opt/conda/bin/dasmon_listener start
+dasmon_listener start
 tail -F /var/log/dasmon_listener.log

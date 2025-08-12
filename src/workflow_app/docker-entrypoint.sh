@@ -14,5 +14,5 @@ make install/workflow
 # start up things and echo the logs
 cd /var/log
 sleep 20
-/opt/conda/bin/workflowmgr start
+workflowmgr start
 tail -F /var/log/workflow.log
