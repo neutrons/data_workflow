@@ -2,7 +2,7 @@ FROM ghcr.io/prefix-dev/pixi:0.50.2-bookworm-slim
 
 COPY pixi.lock .
 COPY pyproject.toml .
-RUN pixi install --locked
+RUN pixi install --locked -e workflow
 
 WORKDIR /usr/src/data_workflow
 
@@ -13,4 +13,4 @@ COPY ./Makefile .
 # move the entry-point into the volume
 COPY ./src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
-CMD ["pixi", "run", "/usr/bin/docker-entrypoint.sh"]
+CMD ["pixi", "run", "-e", "workflow", "/usr/bin/docker-entrypoint.sh"]

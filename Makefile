@@ -4,9 +4,9 @@ PYTHON_VERSION:=3.11
 # these are defined here because I couldn't figure out how to evaluate the commands
 # during target execution rather then when make parses the file
 # this is found by `find /opt/conda/ -name manage.py | grep reporting`
-MANAGE_PY_WEBMON=/.pixi/envs/default/lib/python$(PYTHON_VERSION)/site-packages/reporting/manage.py
+MANAGE_PY_WEBMON=/.pixi/envs/webmon/lib/python$(PYTHON_VERSION)/site-packages/reporting/manage.py
 # this is found by `find /opt/conda -name db_init.json`
-REPORT_DB_INIT=/.pixi/envs/default/lib/python$(PYTHON_VERSION)/site-packages/reporting/fixtures/db_init.json
+REPORT_DB_INIT=/.pixi/envs/webmon/lib/python$(PYTHON_VERSION)/site-packages/reporting/fixtures/db_init.json
 # command to run docker compose. change this to be what you have installed
 # this can be overriden on the command line
 # DOCKER_COMPOSE="docker compose" make startdev

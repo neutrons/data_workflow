@@ -2,7 +2,7 @@ FROM ghcr.io/prefix-dev/pixi:0.50.2-bookworm-slim
 
 COPY pixi.lock .
 COPY pyproject.toml .
-RUN pixi install --locked
+RUN pixi install --locked -e dasmon
 
 WORKDIR /usr/src/data_workflow
 
@@ -15,4 +15,4 @@ COPY ./Makefile .
 # move the entry-point into the volume
 COPY ./src/dasmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
-CMD ["pixi", "run", "/usr/bin/docker-entrypoint.sh"]
+CMD ["pixi", "run", "-e", "dasmon", "/usr/bin/docker-entrypoint.sh"]
