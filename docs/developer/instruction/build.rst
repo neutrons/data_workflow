@@ -30,7 +30,7 @@ which can be roughly divided into *local* and *remote* environments.
 A settings is selected by specifying variable ``DJANGO_SETTINGS_MODULE``
 
 **Local Environments:**
-    * ``reporting.reporting_app.settings.unittest`` for running outside of docker, in the conda environment
+    * ``reporting.reporting_app.settings.unittest`` for running outside of docker, in the pixi environment
     * ``reporting.reporting_app.settings.develop`` for local docker containers.
       This can be connected to production ldap server in a read only mode and will ignore TLS errors.
     * ``reporting.reporting_app.settings.envtest`` for running system tests with docker images.
@@ -54,23 +54,12 @@ Running unit tests
 ------------------
 
 The unit tests exist next to the code it is testing.
-They are run inside a conda environment and pointing at the correct directory with the configuration inside the root-level ``setup.cfg``.
-Replace ``conda`` with ``mamba`` for the faster dependency resolver.
+They are run inside a pixi environment and pointing at the correct directory with the configuration inside the root-level ``setup.cfg``.
 This is based on what is run in `.github/workflow/ci.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/ci.yml>`_
 
 .. code-block:: shell
 
-   make create/conda  # substitute with "create/mamba" when using mamba
-   conda activate webmon
-   DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.unittest \
-      python -m pytest src
-
-If the environment already exists, ``conda_environment.yml`` can be used to update it as well.
-
-.. code-block:: shell
-
-   conda activate webmon
-   conda env update --file conda_development.yml
+   pixi run unittests
 
 Running system tests
 --------------------
@@ -88,7 +77,7 @@ Once started tests can be run via
 
 .. code-block:: shell
 
-   LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest python -m pytest tests
+   pixi run systemtests
 
 Building a local deployment
 ---------------------------
@@ -138,7 +127,6 @@ After setting the environment variables, run the following ``make`` targets in t
 
 .. code-block:: shell
 
-   make create/conda # or "make create/mamba" for mamba, to create the webmon conda environment
    make all  # create: python packages for dasmon, webmon, and workflow; fake SNS data; self-signed SSL certificates
    make localdev/up  # build all the services
 
@@ -190,7 +178,6 @@ Uploading a database dump
 Make target ``localdev/dbup`` contains the shell command to load the
 database dump and start the service. Assuming that:
 
-- we started the ``webmon`` Conda environment
 - the full path to the dump file  is ``./database_dump_file.sql``:
 - the current working directory is the root of the source tree (containing file ``.env``):
 

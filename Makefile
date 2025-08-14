@@ -3,9 +3,9 @@ PYTHON_VERSION:=3.11
 
 # these are defined here because I couldn't figure out how to evaluate the commands
 # during target execution rather then when make parses the file
-# this is found by `find /opt/conda/ -name manage.py | grep reporting`
+# this is found by `find / -name manage.py | grep reporting`
 MANAGE_PY_WEBMON=/.pixi/envs/webmon/lib/python$(PYTHON_VERSION)/site-packages/reporting/manage.py
-# this is found by `find /opt/conda -name db_init.json`
+# this is found by `find / -name db_init.json`
 REPORT_DB_INIT=/.pixi/envs/webmon/lib/python$(PYTHON_VERSION)/site-packages/reporting/fixtures/db_init.json
 # command to run docker compose. change this to be what you have installed
 # this can be overriden on the command line
@@ -19,21 +19,11 @@ help:
 
 all: wheel/all SNSdata.tar.gz ssl  ## creates: all python wheels; fake SNS data; SSL self-signed certificates
 
-create/conda:  ## create conda environment "webmon" with file conda_environment.yml
-	conda env create --name webmon --file conda_environment.yml
-	conda env update --name webmon --file conda_development.yml
-
-create/mamba:  ## create conda environment "webmon" with file conda_environment.yml using mamba
-	conda env create --name webmon python=$(PYTHON_VERSION)
-	conda install --name base -c conda-forge mamba
-	mamba env update --name webmon --file conda_environment.yml
-	mamba env update --name webmon --file conda_development.yml
-
 docker/pruneall: ## stop and force remove all containers, images and volumes
 	docker system prune --force --all --volumes
 
-docs:  ## create HTML docs under docs/_build/html/. Requires activation of "webmon" conda environment
-	@cd docs && make html SPHINXOPTS="-W --keep-going -n" && echo -e "##########\n DOCS point your browser to file://$$(pwd)/_build/html/index.html\n##########"
+docs:  ## create HTML docs under docs/_build/html/.
+	@cd docs && pixi run make html SPHINXOPTS="-W --keep-going -n" && echo -e "##########\n DOCS point your browser to file://$$(pwd)/_build/html/index.html\n##########"
 
 check: ## Check python dependencies
 	########################################################################
@@ -44,7 +34,6 @@ check: ## Check python dependencies
 	########################################################################
 	# Check dependencies
 	which python
-	echo CONDA_PREFIX=${CONDA_PREFIX}
 
 	@python -c "import django" || echo "\nERROR: Django is not installed: www.djangoproject.com\n"
 	@python -c "import psycopg2" || echo "\nWARNING: psycopg2 is not installed: http://initd.org/psycopg\n"
@@ -152,8 +141,6 @@ clean: wheel/clean ssl/clean ## deletes: all python wheels; fake SNS data; SSL s
 
 # targets that don't create actual files
 .PHONY: check
-.PHONY: create/conda
-.PHONY: create/mamba
 .PHONY: configure/webmon
 .PHONY: docker/pruneall
 .PHONY: docs

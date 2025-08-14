@@ -14,7 +14,6 @@ from mr_reduction.mr_reduction import ReductionProcess
 from mr_reduction.web_report import upload_html_report
 
 warnings.simplefilter('ignore')
-CONDA_ENV = 'mr_reduction'
 
 
 class ContextFilter(logging.Filter):
