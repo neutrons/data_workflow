@@ -65,7 +65,6 @@ wheel/webmon: ## create or update python wheel for service "webmon". Clean up bu
 wheel/workflow: ## create or update python wheel for service "workflow". Clean up build/ first
 	cd src/workflow_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/workflow_app && python -m build --no-isolation --wheel
-	cd src/workflow_app && echo dist/django_nscd_workflow-*.whl
 	# verify it is correct
 	cd src/workflow_app && check-wheel-contents dist/$(ls dist | grep django_nscd_workflow)
 

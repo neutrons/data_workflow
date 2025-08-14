@@ -28,11 +28,8 @@ RUN pip3 install beautifulsoup4 requests setuptools wheel numpy urllib3
 # Install git for pip to clone repositories
 RUN dnf install -y git
 
-# Install the plot_publisher package dependencies
-RUN pip3 install requests beautifulsoup4
-
-# Install plot_publisher from GitHub (modernize-codebase-v0.2.0 branch with Python 3.9 support)
-RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@modernize-codebase-v0.2.0
+# Install plot_publisher from GitHub (main branch)
+RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@main
 
 # Install specific plotly version based on build arg
 RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
