@@ -28,7 +28,7 @@ jobs:
 
       - name: Create tag version
         id: tag
-        run: echo "tag=$(versioningit src/webmon_app)" >> $GITHUB_OUTPUT
+        run: echo "tag=$(pixi run versioningit src/webmon_app)" >> $GITHUB_OUTPUT
 
       - name: Create latest tag version
         id: latest_tag
