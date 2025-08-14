@@ -66,5 +66,5 @@ Start at the Developer's documentation. This requires building the docs:
 
 .. code-block:: bash
 
-   $ make create/conda
+   $ pixi shell
    $ make docs

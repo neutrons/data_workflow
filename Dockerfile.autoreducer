@@ -18,6 +18,13 @@ RUN mkdir -p /opt/postprocessing/log/
 ARG CONFIG_FILE=tests/configuration/post_process_consumer.conf
 COPY ${CONFIG_FILE} /etc/autoreduce/post_processing.conf
 
+# install the fake test data
+ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
+COPY SNSdata.tar.gz ${DATA_TARBALL}
+RUN ls ${DATA_TARBALL}
+RUN mkdir /SNS
+RUN cd /SNS && tar xzf ${DATA_TARBALL}
+
 # install postprocessing
 RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.4.3/postprocessing-3.4.3-1.el9.noarch.rpm
 
@@ -39,13 +46,6 @@ RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
     else \
         pip3 install plotly==5.17.0; \
     fi
-
-# install the fake test data
-ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
-COPY SNSdata.tar.gz ${DATA_TARBALL}
-RUN ls ${DATA_TARBALL}
-RUN mkdir /SNS
-RUN cd /SNS && tar xzf ${DATA_TARBALL}
 
 # add fake ONCat ingest scripts
 RUN touch /opt/postprocessing/scripts/oncat_ingest.py && \

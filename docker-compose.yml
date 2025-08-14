@@ -62,7 +62,7 @@ services:
       - PURGE_TIMEOUT=0.1
       - CACHE_PURGE_TIMEOUT=0.5
     healthcheck:
-      test: ["CMD", "dasmon_listener", "status"]
+      test: ["CMD", "pixi", "run", "-e", "dasmon", "dasmon_listener", "status"]
     depends_on:
       activemq:
         condition: service_healthy
@@ -76,7 +76,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD", "workflowmgr", "status"]
+      test: ["CMD", "pixi", "run", "-e", "workflow", "workflowmgr", "status"]
     depends_on:
       activemq:
         condition: service_healthy

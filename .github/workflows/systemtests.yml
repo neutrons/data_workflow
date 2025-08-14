@@ -9,30 +9,16 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+    - name: Setup pixi
+      uses: prefix-dev/setup-pixi@v0.9.0
       with:
-        auto-update-conda: true
-    - name: Setup libmamba solver
-      run: |
-        conda install -n base conda-libmamba-solver
-        conda config --set solver libmamba
-    - name: Install requirements
-      run: |
-        # --quiet should turn off progress bars to make logs more readable
-        conda env create --file conda_environment.yml --quiet
-        conda activate webmon
-        conda env update --file conda_development.yml --quiet
+        environments: test
     - name: Build requirements
-      run: |
-        conda activate webmon
-        make all
+      run:  make all
     - name: Stand up docker containers
-      run: docker compose up --build -d
+      run: docker compose up --build --wait --wait-timeout 300
       env:
           DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
           LDAP_SERVER_URI: .
@@ -40,13 +26,6 @@ jobs:
     - name: Wait for everything to start up
       run: sleep 66
     - name: Test with pytest
-      run: |
-        conda activate webmon
-        python -m pytest tests
-      env:
-          DJANGO_SETTINGS_MODULE: reporting.reporting_app.settings.envtest
-          LDAP_SERVER_URI: .
-          LDAP_DOMAIN_COMPONENT: .
-          LIVE_PLOT_SECRET_KEY: secretKey
+      run: pixi run systemtests
     - name: Stand down docker containers
       run: docker compose down

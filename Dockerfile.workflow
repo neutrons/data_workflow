@@ -1,10 +1,8 @@
-FROM continuumio/miniconda3:4.12.0
+FROM ghcr.io/prefix-dev/pixi:0.50.2-bookworm-slim
 
-# Inspection tools
-RUN apt-get update && apt-get install -y vim emacs
-
-COPY conda_environment.yml .
-RUN conda env update --name base --file conda_environment.yml
+COPY pixi.lock .
+COPY pyproject.toml .
+RUN pixi install --locked -e workflow
 
 WORKDIR /usr/src/data_workflow
 
@@ -15,4 +13,4 @@ COPY ./Makefile .
 # move the entry-point into the volume
 COPY ./src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+CMD ["pixi", "run", "-e", "workflow", "/usr/bin/docker-entrypoint.sh"]
