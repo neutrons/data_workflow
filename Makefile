@@ -54,19 +54,19 @@ wheel/dasmon: ## create or update python wheel for service "dasmon". Clean up bu
 	cd src/dasmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/dasmon_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	cd src/dasmon_app && check-wheel-contents dist/django_nscd_dasmon-*.whl
+	cd src/dasmon_app && check-wheel-contents dist/$(ls dist | grep django_nscd_dasmon)
 
 wheel/webmon: ## create or update python wheel for service "webmon". Clean up build/ first
 	cd src/webmon_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/webmon_app && python -m build --no-isolation --wheel
 	# verify it is correct - ignoring duplicate file check
-	cd src/webmon_app && check-wheel-contents dist/django_nscd_webmon-*.whl
+	cd src/webmon_app && check-wheel-contents dist/$(ls dist | grep django_nscd_webmon)
 
 wheel/workflow: ## create or update python wheel for service "workflow". Clean up build/ first
 	cd src/workflow_app && if [ -d "build" ]; then chmod u+rwx -R build && rm -rf build/;fi
 	cd src/workflow_app && python -m build --no-isolation --wheel
 	# verify it is correct
-	cd src/workflow_app && check-wheel-contents dist/django_nscd_workflow-*.whl
+	cd src/workflow_app && check-wheel-contents dist/$(ls dist | grep django_nscd_workflow)
 
 wheel/all:  wheel/clean wheel/dasmon wheel/webmon wheel/workflow ## create python wheels for all services. Clean up build/ first
 
@@ -130,7 +130,7 @@ ssl/clean:  ## delete the self-signed ssl certificates for livedata server
 	rm -f nginx/nginx.crt nginx/nginx.key
 
 nginx/nginx.crt nginx/nginx.key:
-	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 --config nginx/san.cnf
+	openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 -addext "basicConstraints=CA:TRUE" --config nginx/san.cnf
 
 localdev/up:  ## create images and start containers for local development. Doesn't update python wheels, though.
 	docker compose --file docker-compose.yml up --build

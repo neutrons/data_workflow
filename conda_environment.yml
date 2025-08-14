@@ -17,9 +17,11 @@ dependencies:
   - urllib3
   - versioningit
   - pyoncat
-  - sphinx_rtd_theme=1.2.*  # readthedocs use this env file, and we need to install this theme here
+  - sphinx_rtd_theme=1.2.*
   - sphinxcontrib-mermaid
   - django-health-check
+  - beautifulsoup4
   - pip
   - pip:
     - django-auth-ldap==5.1.0
+  - click!=8.2.2

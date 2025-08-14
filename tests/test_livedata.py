@@ -80,9 +80,7 @@ class TestLiveDataServer:
             verify=ssl_crt_filename,
         )
         assert response.status_code == 200
-        assert "Example Plot Data" in response.text
-        assert "Filename: /SNS/ARCS/IPTS-27800/nexus/ARCS_214583.nxs.h5" in response.text
-        assert "Hostname: autoreducer" in response.text
+        assert "ARCS Test Plot - Run 214583" in response.text
 
         # now verify that the run report page is templated correctly
         client = self.get_session()

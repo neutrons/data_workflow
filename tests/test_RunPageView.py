@@ -239,10 +239,10 @@ class TestRunPageView:
     def testInstrumentScientistReductionButtonsExist(self, instrument_scientist):
         assert instrument_scientist.status_code == 200
         r = instrument_scientist
-        self.assertHtml("""<a href='javascript:void(0);' onClick="confirm('catalog');">catalog</a>""", r.text)
-        self.assertHtml("""<a href='javascript:void(0);' onClick="confirm('reduce');">reduction</a>""", r.text)
+        self.assertHtml("""<a href='javascript:void(0);' onClick="confirmDialog('catalog');">catalog</a>""", r.text)
+        self.assertHtml("""<a href='javascript:void(0);' onClick="confirmDialog('reduce');">reduction</a>""", r.text)
         self.assertHtml(
-            """<a href='javascript:void(0);' onClick="confirm('postprocess');">all post-processing</a>""", r.text
+            """<a href='javascript:void(0);' onClick="confirmDialog('postprocess');">all post-processing</a>""", r.text
         )
         self.assertHtml("""<a href='/reduction/arcs/'>setup</a>""", r.text)
 

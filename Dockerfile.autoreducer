@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi9/ubi
 # install various dependencies
 RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 RUN dnf updateinfo
-RUN dnf install -y procps-ng python3-numpy # pgrep is used for health check, numpy for high memory test
+RUN dnf install -y procps-ng python3-numpy python3-pip
 
 # Inspection tools
 RUN dnf install -y vim
@@ -21,6 +21,25 @@ COPY ${CONFIG_FILE} /etc/autoreduce/post_processing.conf
 # install postprocessing
 RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v3.4.3/postprocessing-3.4.3-1.el9.noarch.rpm
 
+# Install dependencies
+ARG PLOTLY_VERSION=5
+RUN pip3 install beautifulsoup4 requests setuptools wheel numpy urllib3
+
+# Install git for pip to clone repositories
+RUN dnf install -y git
+
+# Install plot_publisher from GitHub (main branch)
+RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@main
+
+# Install specific plotly version based on build arg
+RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
+        pip3 install plotly==5.17.0; \
+    elif [ "$PLOTLY_VERSION" = "6" ]; then \
+        pip3 install plotly==6.0.0; \
+    else \
+        pip3 install plotly==5.17.0; \
+    fi
+
 # install the fake test data
 ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
 COPY SNSdata.tar.gz ${DATA_TARBALL}
@@ -33,11 +52,13 @@ RUN touch /opt/postprocessing/scripts/oncat_ingest.py && \
     touch /opt/postprocessing/scripts/oncat_reduced_ingest.py
 
 # create startup script
+# add updating certificates to add self-signed certificate for local testing
 RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
+    echo "update-ca-trust" >> /usr/bin/run_postprocessing && \
     echo "/opt/postprocessing/queueProcessor.py &" >> /usr/bin/run_postprocessing && \
     echo "sleep 1" >> /usr/bin/run_postprocessing && \
     echo "tail -F /opt/postprocessing/log/postprocessing.log" >> /usr/bin/run_postprocessing && \
     chmod +x /usr/bin/run_postprocessing
 
 # start the service
-CMD run_postprocessing
+CMD ["run_postprocessing"]

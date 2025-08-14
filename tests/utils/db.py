@@ -146,3 +146,47 @@ def check_error_msg_contains(conn, run_id, error_msg):
     result = cursor.fetchone() is not None
     cursor.close()
     return result
+
+
+def set_reduction_request_queue(conn, instrument, queue_name):
+    """create the task to send REDUCTION.REQUEST to the provided queue"""
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM report_instrument where name = %s;", (instrument,))
+    inst_id = cursor.fetchone()[0]
+
+    queue_id = get_status_queue_id(conn, queue_name)
+    success_queue_id = get_status_queue_id(conn, "REDUCTION.COMPLETE")
+    reduction_request_queue_id = get_status_queue_id(conn, "REDUCTION.REQUEST")
+
+    cursor.execute(
+        "SELECT id FROM report_task where instrument_id_id = %s AND input_queue_id_id = %s;",
+        (inst_id, reduction_request_queue_id),
+    )
+    task_id = cursor.fetchone()
+
+    if task_id is None:
+        cursor.execute(
+            "INSERT INTO report_task (instrument_id_id, input_queue_id_id) VALUES (%s, %s)",
+            (inst_id, reduction_request_queue_id),
+        )
+        cursor.execute(
+            "SELECT id FROM report_task where instrument_id_id = %s AND input_queue_id_id = %s;",
+            (inst_id, reduction_request_queue_id),
+        )
+        task_id = cursor.fetchone()
+        conn.commit()
+
+    task_id = task_id[0]
+
+    cursor.execute("DELETE FROM report_task_task_queue_ids WHERE task_id = %s", (task_id,))
+    cursor.execute("DELETE FROM report_task_success_queue_ids WHERE task_id = %s", (task_id,))
+
+    cursor.execute(
+        "INSERT INTO report_task_task_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)", (task_id, queue_id)
+    )
+    cursor.execute(
+        "INSERT INTO report_task_success_queue_ids (task_id, statusqueue_id) VALUES (%s, %s)",
+        (task_id, success_queue_id),
+    )
+    conn.commit()
