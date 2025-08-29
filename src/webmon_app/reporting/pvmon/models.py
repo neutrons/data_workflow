@@ -32,7 +32,7 @@ class PV(models.Model):
     name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.FloatField()
     status = models.IntegerField()
-    update_time = models.IntegerField()
+    timestamp = models.DateTimeField(null=True)
 
     class Meta:
         verbose_name_plural = "PVs"
@@ -47,7 +47,7 @@ class PVCache(models.Model):
     name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.FloatField()
     status = models.IntegerField()
-    update_time = models.IntegerField()
+    timestamp = models.DateTimeField(null=True)
 
     class Meta:
         verbose_name_plural = "PV cache"
@@ -62,7 +62,7 @@ class PVStringCache(models.Model):
     name = models.ForeignKey(PVName, on_delete=models.CASCADE)
     value = models.TextField()
     status = models.IntegerField()
-    update_time = models.IntegerField()
+    timestamp = models.DateTimeField(null=True)
 
     class Meta:
         verbose_name_plural = "PV string cache"
