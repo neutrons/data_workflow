@@ -708,11 +708,9 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     last_pv_time = datetime.datetime(2000, 1, 1, 0, 1).replace(tzinfo=timezone.get_current_timezone())
     last_pv_timestamp = 0
     try:
-        latest = PVCache.objects.filter(instrument=instrument_id).latest("update_time")
-        last_pv_time = datetime.datetime.fromtimestamp(latest.update_time).replace(
-            tzinfo=timezone.get_current_timezone()
-        )
-        last_pv_timestamp = latest.update_time
+        latest = PVCache.objects.filter(instrument=instrument_id).latest("timestamp")
+        last_pv_time = timezone.localtime(latest.timestamp)
+        last_pv_timestamp = last_pv_time.total_seconds()
     except:  # noqa: E722
         # No data available, keep defaults
         logger.exception("dasmon_diagnostics:")
@@ -975,12 +973,12 @@ def get_signals(instrument_id):
                 latests = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
                 if len(latests) == 0:
                     latests = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
-                latest = latests.latest("update_time")
+                latest = latests.latest("datetime")
                 if isinstance(latest.value, float):
                     value = "%g" % latest.value
                 else:
                     value = "%s" % latest.value
-                localtime = datetime.datetime.fromtimestamp(latest.update_time).replace(tzinfo=timezone.utc)
+                localtime = timezone.localtime(latest.timestamp)
                 timestamp = formats.localize(localtime)
             except:  # noqa: E722
                 value = "No data available"

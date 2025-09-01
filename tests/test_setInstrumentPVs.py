@@ -51,8 +51,8 @@ class TestSetInstrumentPVs(unittest.TestCase):
         pv_ids = cursor.fetchall()
         for each in pv_ids:
             cursor.execute(
-                "INSERT INTO pvmon_pvcache (instrument_id, name_id, value, status, update_time) "
-                "VALUES (%s, %s, 0.0, 0, 0);",
+                "INSERT INTO pvmon_pvcache (instrument_id, name_id, value, status, timestamp) "
+                "VALUES (%s, %s, 0.0, 0, '2025-08-28 14:30:00');",
                 [inst_id, each],
             )
             clean_pv_ids.append((inst_id[0], each[0]))
@@ -62,8 +62,8 @@ class TestSetInstrumentPVs(unittest.TestCase):
         stringpv_ids = cursor.fetchall()
         for each in stringpv_ids:
             cursor.execute(
-                "INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, update_time)"
-                "VALUES (%s, %s, 'test_string_value', 0, 0);",
+                "INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, timestamp)"
+                "VALUES (%s, %s, 'test_string_value', 0, '2025-08-28 14:30:00');",
                 [inst_id, each],
             )
             clean_pv_ids.append((inst_id[0], each[0]))

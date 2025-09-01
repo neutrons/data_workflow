@@ -1,9 +1,8 @@
-import time
-
 import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
 from reporting.report.models import Instrument
@@ -17,26 +16,14 @@ class PVMonitorViewTest(TestCase):
         inst.save()
         pvname = PVName.objects.create(name="testpv")
         pvname.save()
-        PV.objects.create(
-            instrument=inst,
-            name=pvname,
-            value=1.0,
-            status=0,
-            update_time=int(time.time()),
-        )
-        PVCache.objects.create(
-            instrument=inst,
-            name=pvname,
-            value=1.0,
-            status=0,
-            update_time=int(time.time()),
-        )
+        PV.objects.create(instrument=inst, name=pvname, value=1.0, status=0, timestamp=timezone.now())
+        PVCache.objects.create(instrument=inst, name=pvname, value=1.0, status=0, timestamp=timezone.now())
         PVStringCache.objects.create(
             instrument=inst,
             name=pvname,
             value="test",
             status=0,
-            update_time=int(time.time()),
+            timestamp=timezone.now(),
         )
         MonitoredVariable.objects.create(
             instrument=inst,
@@ -86,27 +73,9 @@ class GetUpdateViewTest(TestCase):
         inst.save()
         pvname = PVName.objects.create(name="testpv")
         pvname.save()
-        PV.objects.create(
-            instrument=inst,
-            name=pvname,
-            value=1.0,
-            status=0,
-            update_time=int(time.time()),
-        )
-        PVCache.objects.create(
-            instrument=inst,
-            name=pvname,
-            value=1.0,
-            status=0,
-            update_time=int(time.time()),
-        )
-        PVStringCache.objects.create(
-            instrument=inst,
-            name=pvname,
-            value="test",
-            status=0,
-            update_time=int(time.time()),
-        )
+        PV.objects.create(instrument=inst, name=pvname, value=1.0, status=0, timestamp=timezone.now())
+        PVCache.objects.create(instrument=inst, name=pvname, value=1.0, status=0, timestamp=timezone.now())
+        PVStringCache.objects.create(instrument=inst, name=pvname, value="test", status=0, timestamp=timezone.now())
         MonitoredVariable.objects.create(
             instrument=inst,
             pv_name=pvname,

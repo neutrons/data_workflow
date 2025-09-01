@@ -1,9 +1,9 @@
-import time
 import unittest.mock as mock
 
 import pytest
 from dasmon_listener.amq_consumer import Client, Listener, store_and_cache_
 from django.test import TestCase
+from django.utils import timezone
 from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
 from reporting.report.models import Instrument
 
@@ -210,7 +210,7 @@ class TestAMQConsumer(TestCase):
         stringpvname2 = PVName.objects.create(name="teststringpv2")
         stringpvname2.save()
 
-        really_old = int(time.time() - 60 * 60 * 24 * 365)  # 1 year old
+        really_old = timezone.now() - timezone.timedelta(days=365)  # 1 year old
 
         # This PV should not be purged because it is not old enough
         PV.objects.create(
@@ -218,7 +218,7 @@ class TestAMQConsumer(TestCase):
             name=pvname1,
             value=1.0,
             status=0,
-            update_time=int(time.time()),
+            timestamp=timezone.now(),
         )
         # This PV should be purged because it is old enough
         PV.objects.create(
@@ -226,7 +226,7 @@ class TestAMQConsumer(TestCase):
             name=pvname1,
             value=2.0,
             status=0,
-            update_time=really_old,
+            timestamp=really_old,
         )
         # This PVCache should not be purged because it is a MonitoredVariable
         PVCache.objects.create(
@@ -234,7 +234,7 @@ class TestAMQConsumer(TestCase):
             name=pvname1,
             value=1.0,
             status=0,
-            update_time=really_old,
+            timestamp=really_old,
         )
         MonitoredVariable.objects.create(
             instrument=inst,
@@ -247,7 +247,7 @@ class TestAMQConsumer(TestCase):
             name=pvname2,
             value=1.0,
             status=0,
-            update_time=really_old,
+            timestamp=really_old,
         )
 
         # This PVStringCache should not be purged because it is a MonitoredVariable
@@ -256,7 +256,7 @@ class TestAMQConsumer(TestCase):
             name=stringpvname1,
             value="test",
             status=0,
-            update_time=really_old,
+            timestamp=really_old,
         )
         MonitoredVariable.objects.create(
             instrument=inst,
@@ -269,7 +269,7 @@ class TestAMQConsumer(TestCase):
             name=stringpvname2,
             value="test",
             status=0,
-            update_time=really_old,
+            timestamp=really_old,
         )
 
         assert PV.objects.count() == 2

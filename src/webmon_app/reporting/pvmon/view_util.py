@@ -6,9 +6,7 @@ Utilities to compile the PVs stored in the web monitor DB.
 @copyright: 2014 Oak Ridge National Laboratory
 """
 
-import datetime
 import logging
-import time
 
 from django.conf import settings
 from django.utils import formats, timezone
@@ -59,31 +57,31 @@ def get_live_variables(request, instrument_id, key_id=None):
         plot_timeframe = settings.PVMON_PLOT_TIME_RANGE
 
     data_dict = []
-    now = time.time()
-    two_hours = now - plot_timeframe
+    now = timezone.now()
+    two_hours = now - timezone.timedelta(seconds=plot_timeframe)
     for key_id in live_keys:
         key = str(key_id.name)
         try:
             data_list = []
-            values = PV.objects.filter(instrument_id=instrument_id, name=key_id, update_time__gte=two_hours)
+            values = PV.objects.filter(instrument_id=instrument_id, name=key_id, timestamp=two_hours)
             if len(values) > 0:
-                values = values.order_by("update_time").reverse()
+                values = values.order_by("timestamp").reverse()
             # If you don't have any values for the past 2 hours, just show
             # the latest values up to 20
             if len(values) < 2:
                 values = PV.objects.filter(instrument_id=instrument_id, name=key_id)
                 if len(values) > 0:
-                    values = values.order_by("update_time").reverse()
+                    values = values.order_by("timestamp").reverse()
                 else:
                     latest_entry = PVCache.objects.filter(instrument=instrument_id, name=key_id)
                     if len(latest_entry) > 0:
-                        latest_entry = latest_entry.latest("update_time")
-                        delta_t = now - latest_entry.update_time
+                        latest_entry = latest_entry.latest("timestamp")
+                        delta_t = now - latest_entry.timestamp
                         data_dict.append(
                             [
                                 key,
                                 [
-                                    [-delta_t / 60.0, latest_entry.value],
+                                    [-delta_t.total_seconds() / 60.0, latest_entry.value],
                                     [0, latest_entry.value],
                                 ],
                             ]
@@ -95,8 +93,8 @@ def get_live_variables(request, instrument_id, key_id=None):
                     values = values[: settings.PVMON_NUMBER_OF_OLD_PTS]
 
             for v in values:
-                delta_t = now - v.update_time
-                data_list.append([-delta_t / 60.0, v.value])
+                delta_t = now - v.timestamp
+                data_list.append([-delta_t.total_seconds() / 60.0, v.value])
             data_dict.append([key, data_list])
         except:  # noqa: E722
             # Could not find data for this key
@@ -118,7 +116,7 @@ def get_cached_variables(instrument_id, monitored_only=False):
         """
         for kvp in queryset:
             if kvp.name.monitored or monitored_only is False:
-                localtime = datetime.datetime.fromtimestamp(kvp.update_time).replace(tzinfo=timezone.utc)
+                localtime = timezone.localtime(kvp.timestamp)
                 if isinstance(kvp.value, (int, float)):
                     string_value = "%g" % kvp.value
                 else:

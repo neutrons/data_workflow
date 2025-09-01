@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from django.test import TestCase
 
@@ -29,7 +31,7 @@ class PVTest(TestCase):
             name=pvname,
             value=1.0,
             status=0,
-            update_time=1,
+            timestamp=datetime.fromisoformat("2011-11-04T00:05:23Z"),
         )
 
     @classmethod
@@ -45,9 +47,9 @@ class PVTest(TestCase):
         pv = PV.objects.get(id=1)
         self.assertEqual(pv.status, 0)
 
-    def test_update_time(self):
+    def test_timestamp(self):
         pv = PV.objects.get(id=1)
-        self.assertEqual(pv.update_time, 1)
+        self.assertEqual(pv.timestamp, datetime.fromisoformat("2011-11-04T00:05:23Z"))
 
 
 class PVCacheTest(TestCase):
@@ -62,7 +64,7 @@ class PVCacheTest(TestCase):
             name=pvname,
             value=1.0,
             status=0,
-            update_time=1,
+            timestamp=datetime.fromisoformat("2011-11-04T00:05:23Z"),
         )
 
     @classmethod
@@ -78,9 +80,9 @@ class PVCacheTest(TestCase):
         pv = PVCache.objects.get(id=1)
         self.assertEqual(pv.status, 0)
 
-    def test_update_time(self):
+    def test_timestamp(self):
         pv = PVCache.objects.get(id=1)
-        self.assertEqual(pv.update_time, 1)
+        self.assertEqual(pv.timestamp, datetime.fromisoformat("2011-11-04T00:05:23Z"))
 
 
 class PVStringCacheTest(TestCase):
@@ -95,7 +97,7 @@ class PVStringCacheTest(TestCase):
             name=pvname,
             value="test",
             status=0,
-            update_time=1,
+            timestamp=datetime.fromisoformat("2011-11-04T00:05:23Z"),
         )
 
     @classmethod
@@ -111,9 +113,9 @@ class PVStringCacheTest(TestCase):
         pv = PVStringCache.objects.get(id=1)
         self.assertEqual(pv.status, 0)
 
-    def test_update_time(self):
+    def test_timestamp(self):
         pv = PVStringCache.objects.get(id=1)
-        self.assertEqual(pv.update_time, 1)
+        self.assertEqual(pv.timestamp, datetime.fromisoformat("2011-11-04T00:05:23Z"))
 
 
 class MonitoredVariableTest(TestCase):
