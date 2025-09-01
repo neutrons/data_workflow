@@ -63,7 +63,7 @@ def get_live_variables(request, instrument_id, key_id=None):
         key = str(key_id.name)
         try:
             data_list = []
-            values = PV.objects.filter(instrument_id=instrument_id, name=key_id, timestamp=two_hours)
+            values = PV.objects.filter(instrument_id=instrument_id, name=key_id, timestamp__gte=two_hours)
             if len(values) > 0:
                 values = values.order_by("timestamp").reverse()
             # If you don't have any values for the past 2 hours, just show

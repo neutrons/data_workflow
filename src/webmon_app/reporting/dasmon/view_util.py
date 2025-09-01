@@ -973,7 +973,7 @@ def get_signals(instrument_id):
                 latests = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
                 if len(latests) == 0:
                     latests = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
-                latest = latests.latest("datetime")
+                latest = latests.latest("timestamp")
                 if isinstance(latest.value, float):
                     value = "%g" % latest.value
                 else:
