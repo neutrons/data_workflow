@@ -11,6 +11,7 @@ from workflow.database.report.models import IPTS, DataRun
 
 from reporting import dasmon, users
 from reporting.dasmon.models import ActiveInstrument, Parameter, Signal, StatusCache, StatusVariable
+from reporting.pvmon.models import MonitoredVariable, PVCache, PVName, PVStringCache
 from reporting.report.models import Error, Information, Instrument, RunStatus, StatusQueue, WorkflowSummary
 
 # make flake8 happy
@@ -583,6 +584,9 @@ class ViewUtilTest(TestCase):
         name_para = settings.SYSTEM_STATUS_PREFIX + "dasmon"
         para = Parameter.objects.create(name=name_para)
         para.save()
+
+        time_now = timezone.now()
+
         ActiveInstrument.objects.create(
             instrument_id=inst,
             is_alive=True,
@@ -599,8 +603,19 @@ class ViewUtilTest(TestCase):
             instrument_id=inst,
             key_id=para,
             value=0,
-            timestamp=timezone.now(),
+            timestamp=time_now,
         )
+
+        pvname = PVName.objects.create(name="testpv")
+        pvname.save()
+        PVCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value=42,
+            status=0,
+            timestamp=time_now,
+        )
+
         # test
         dasmon_diag = dasmon_diagnostics(inst)
         # print(dasmon_diag)
@@ -613,6 +628,7 @@ class ViewUtilTest(TestCase):
         #  'dasmon_listener_warning': False}
         assert dasmon_diag["status"] == 0
         assert dasmon_diag["dasmon_listener_warning"] is False
+        assert dasmon_diag["pv_time"] == time_now
 
     def test_get_run_list_ipts(self):
         from reporting.dasmon.view_util import get_run_list_ipts
@@ -934,11 +950,30 @@ class ViewUtilTest(TestCase):
                 timestamp=timezone.now(),
             )
             sig.save()
+
+        pvname = PVName.objects.create(name="testpv")
+        pvname.save()
+        PVStringCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value="test",
+            status=0,
+            timestamp=timezone.now(),
+        )
+        MonitoredVariable.objects.create(
+            instrument=inst,
+            pv_name=pvname,
+            rule_name="",
+        )
         # test
         sig_list = get_signals(inst)
         for i, me in enumerate(sig_list):
-            assert me.name == f"sig_{i}"
-            assert f"msg_{i}" in me.status
+            if i == 4:
+                assert str(me.name) == "testpv"
+                assert me.status == "test"
+            else:
+                assert me.name == f"sig_{i}"
+                assert f"msg_{i}" in me.status
 
     def test_get_instrument_status_summary(self):
         from reporting.dasmon.view_util import get_instrument_status_summary

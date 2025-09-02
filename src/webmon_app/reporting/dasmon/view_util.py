@@ -710,7 +710,7 @@ def dasmon_diagnostics(instrument_id, timeout=None):
     try:
         latest = PVCache.objects.filter(instrument=instrument_id).latest("timestamp")
         last_pv_time = timezone.localtime(latest.timestamp)
-        last_pv_timestamp = last_pv_time.total_seconds()
+        last_pv_timestamp = last_pv_time.timestamp()
     except:  # noqa: E722
         # No data available, keep defaults
         logger.exception("dasmon_diagnostics:")
