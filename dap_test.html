@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DAP Implementation Test</title>
+
+<!-- Digital Analytics Program (DAP) -->
+<script type="text/javascript">
+(function() {
+    var dapScript = document.createElement('script');
+    dapScript.id = '_fed_an_ua_tag';
+    dapScript.async = true;
+    dapScript.type = 'text/javascript';
+    dapScript.src = 'https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=DOE&subagency=BES&sitetopic=science&siteplatform=drupal';
+
+    dapScript.onerror = function() {
+        console.log('DAP analytics script failed to load - continuing without analytics');
+        document.getElementById('dap-status').innerHTML = '<span style="color: orange;">⚠ DAP failed to load (expected on isolated networks)</span>';
+    };
+
+    dapScript.onload = function() {
+        console.log('DAP analytics script loaded successfully');
+        document.getElementById('dap-status').innerHTML = '<span style="color: green;">✓ DAP loaded successfully</span>';
+    };
+
+    document.head.appendChild(dapScript);
+})();
+</script>
+
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; }
+.test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+.status { font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>DAP Implementation Test Page</h1>
+
+<div class="test-section">
+    <h2>Digital Analytics Program (DAP) Status</h2>
+    <p id="dap-status" class="status">⏳ Loading DAP script...</p>
+    <p><small>This tests the same DAP implementation used in the WebMon base template.</small></p>
+</div>
+
+<div class="test-section">
+    <h2>Implementation Details</h2>
+    <ul>
+        <li><strong>Script ID:</strong> _fed_an_ua_tag</li>
+        <li><strong>Agency:</strong> DOE (Department of Energy)</li>
+        <li><strong>Subagency:</strong> BES (Basic Energy Sciences)</li>
+        <li><strong>Site Topic:</strong> science</li>
+        <li><strong>Site Platform:</strong> drupal</li>
+        <li><strong>Loading Method:</strong> Dynamic injection with error handling</li>
+    </ul>
+</div>
+
+<div class="test-section">
+    <h2>Browser Console Output</h2>
+    <p>Open your browser's developer console (F12) to see DAP loading messages.</p>
+    <p>Expected messages:</p>
+    <ul>
+        <li>✓ Success: "DAP analytics script loaded successfully"</li>
+        <li>⚠ Network isolation: "DAP analytics script failed to load - continuing without analytics"</li>
+    </ul>
+</div>
+
+<script>
+// Additional test to check if DAP script element was created
+setTimeout(function() {
+    var dapScript = document.getElementById('_fed_an_ua_tag');
+    if (dapScript) {
+        console.log('✓ DAP script element found in DOM');
+        console.log('  - Script src:', dapScript.src);
+        console.log('  - Script async:', dapScript.async);
+    } else {
+        console.log('✗ DAP script element not found in DOM');
+    }
+}, 1000);
+</script>
+
+</body>
+</html>
