@@ -2,6 +2,7 @@
 Test for Digital Analytics Program (DAP) implementation
 """
 
+import os
 import re
 
 import pytest
@@ -11,10 +12,32 @@ import requests
 class TestDAPImplementation:
     """Test cases for Digital Analytics Program integration"""
 
+    def _get_base_template_path(self):
+        """Get the path to the base template relative to the current working directory"""
+        # Find the base template file relative to the project root
+        possible_paths = [
+            "src/webmon_app/reporting/templates/base.html",  # Standard structure
+            "../src/webmon_app/reporting/templates/base.html",  # If running from tests dir
+        ]
+
+        for path in possible_paths:
+            if os.path.exists(path):
+                return path
+
+        # If not found, try to construct from current file location
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        template_path = os.path.join(project_root, "src", "webmon_app", "reporting", "templates", "base.html")
+
+        if os.path.exists(template_path):
+            return template_path
+
+        raise AssertionError("Base template file not found - DAP implementation may not be present")
+
     def test_dap_script_in_base_template(self):
         """Test that the DAP script is present in the base template"""
         # Read the base template file
-        base_template_path = "/home/dzj/data_workflow/src/webmon_app/reporting/templates/base.html"
+        base_template_path = self._get_base_template_path()
         with open(base_template_path, "r") as f:
             template_content = f.read()
 
@@ -27,7 +50,7 @@ class TestDAPImplementation:
 
     def test_dap_script_has_error_handling(self):
         """Test that the DAP script includes proper error handling"""
-        base_template_path = "/home/dzj/data_workflow/src/webmon_app/reporting/templates/base.html"
+        base_template_path = self._get_base_template_path()
         with open(base_template_path, "r") as f:
             template_content = f.read()
 
@@ -38,7 +61,7 @@ class TestDAPImplementation:
 
     def test_dap_script_structure(self):
         """Test that the DAP script has proper structure"""
-        base_template_path = "/home/dzj/data_workflow/src/webmon_app/reporting/templates/base.html"
+        base_template_path = self._get_base_template_path()
         with open(base_template_path, "r") as f:
             template_content = f.read()
 
@@ -54,6 +77,28 @@ class TestDAPImplementation:
 
 class TestDAPIntegrationLive:
     """Integration tests for DAP functionality (requires running server)"""
+
+    def _get_base_template_path(self):
+        """Get the path to the base template relative to the current working directory"""
+        # Find the base template file relative to the project root
+        possible_paths = [
+            "src/webmon_app/reporting/templates/base.html",  # Standard structure
+            "../src/webmon_app/reporting/templates/base.html",  # If running from tests dir
+        ]
+
+        for path in possible_paths:
+            if os.path.exists(path):
+                return path
+
+        # If not found, try to construct from current file location
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        template_path = os.path.join(project_root, "src", "webmon_app", "reporting", "templates", "base.html")
+
+        if os.path.exists(template_path):
+            return template_path
+
+        raise AssertionError("Base template file not found - DAP implementation may not be present")
 
     @pytest.fixture
     def webmon_url(self):
@@ -78,7 +123,7 @@ class TestDAPIntegrationLive:
 
     def test_dap_parameters_configuration(self):
         """Test that DAP parameters are correctly configured for DOE/BES"""
-        base_template_path = "/home/dzj/data_workflow/src/webmon_app/reporting/templates/base.html"
+        base_template_path = self._get_base_template_path()
         with open(base_template_path, "r") as f:
             template_content = f.read()
 
