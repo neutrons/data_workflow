@@ -7,21 +7,24 @@ import logging
 import logging.handlers
 import sys
 
+import psutil
+
 # Set log level
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("stomp.py").setLevel(logging.WARNING)
 
 # Formatter
 ft = logging.Formatter("%(asctime)-15s %(message)s")
+# Create a stream handler for stdout
+sh = logging.StreamHandler()
+sh.setLevel(logging.INFO)
+sh.setFormatter(ft)
+logging.getLogger().addHandler(sh)
 # Create a log file handler
 fh = logging.handlers.TimedRotatingFileHandler("dasmon_listener.log", when="midnight", backupCount=15)
 fh.setLevel(logging.INFO)
 fh.setFormatter(ft)
 logging.getLogger().addHandler(fh)
-
-
-# Daemon imports
-from workflow.daemon import Daemon  # noqa: E402
 
 from .amq_consumer import Client, Listener  # noqa: E402
 from .settings import (
@@ -32,18 +35,21 @@ from .settings import (
 )
 
 
-class DasMonListenerDaemon(Daemon):
-    """
-    DASMON listener daemon
-    """
+def start():
+    c = Client(BROKERS, AMQ_USER, AMQ_PWD, QUEUES, "dasmon_listener")
+    c.set_listener(Listener())  # Processes incoming messages from the ActiveMQ broker
+    c.listen_and_wait(0.01)
 
-    def run(self):
-        """
-        Run the dasmon listener daemon
-        """
-        c = Client(BROKERS, AMQ_USER, AMQ_PWD, QUEUES, "dasmon_listener")
-        c.set_listener(Listener())  # Processes incoming messages from the ActiveMQ broker
-        c.listen_and_wait(0.01)
+
+def status():
+    # check if running by checking for a process with the name dasmon_listener
+    for proc in psutil.process_iter():
+        if proc.name() == "dasmon_listener":
+            logging.info("dasmon_listener is running with PID %d", proc.pid)
+            sys.exit(0)
+
+    logging.error("dasmon_listener is not running")
+    sys.exit(1)
 
 
 def run():
@@ -53,24 +59,13 @@ def run():
     parser = argparse.ArgumentParser(description="DASMON listener")
     subparsers = parser.add_subparsers(dest="command", help="available sub-commands")
     subparsers.add_parser("start", help="Start daemon [-h for help]")
-    subparsers.add_parser("restart", help="Restart daemon [-h for help]")
-    subparsers.add_parser("stop", help="Stop daemon")
     subparsers.add_parser("status", help="Show running status of daemon")
     namespace = parser.parse_args()
 
-    # Start the daemon
-    daemon = DasMonListenerDaemon("/tmp/dasmon_listener.pid", stdout=None, stderr=None)
-
     if namespace.command == "start":
-        daemon.start()
-    elif namespace.command == "stop":
-        daemon.stop()
-    elif namespace.command == "restart":
-        daemon.restart()
+        start()
     elif namespace.command == "status":
-        daemon.status()
-
-    sys.exit(0)
+        status()
 
 
 if __name__ == "__main__":
