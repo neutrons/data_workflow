@@ -36,7 +36,7 @@ logging.getLogger().addHandler(fh)
 
 def start(check_frequency, workflow_recovery, flexible_tasks):
     """
-    Run the workflow manager daemon
+    Run the workflow manager
     """
     auto_ack = True
     if check_frequency is None:
@@ -107,10 +107,8 @@ def run():
     parser = argparse.ArgumentParser(description="SNS data workflow manager")
     subparsers = parser.add_subparsers(dest="command", help="available sub-commands")
 
-    subparsers.add_parser("start", help="Start daemon [-h for help]", parents=[start_parser])
-    subparsers.add_parser("restart", help="Restart daemon [-h for help]", parents=[start_parser])
-    subparsers.add_parser("stop", help="Stop daemon")
-    subparsers.add_parser("status", help="Show running status of daemon")
+    subparsers.add_parser("start", help="Start workflowmgr [-h for help]", parents=[start_parser])
+    subparsers.add_parser("status", help="Show running status of workflowmgr")
     subparsers.add_parser("dump", help="Dump task SQL")
     parser_task = subparsers.add_parser("add_task", help="Add task definition [-h for help]")
     parser_task.add_argument(

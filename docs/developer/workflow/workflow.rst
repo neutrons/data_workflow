@@ -27,14 +27,6 @@ workflow.amq\_listener module
     :undoc-members:
     :show-inheritance:
 
-workflow.daemon module
-----------------------
-
-.. automodule:: workflow.daemon
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 workflow.sns\_post\_processing module
 -------------------------------------
 

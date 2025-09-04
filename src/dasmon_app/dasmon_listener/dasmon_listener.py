@@ -1,5 +1,5 @@
 """
-DASMON listener daemon
+DASMON listener
 """
 
 import argparse
@@ -58,8 +58,8 @@ def run():
     """
     parser = argparse.ArgumentParser(description="DASMON listener")
     subparsers = parser.add_subparsers(dest="command", help="available sub-commands")
-    subparsers.add_parser("start", help="Start daemon [-h for help]")
-    subparsers.add_parser("status", help="Show running status of daemon")
+    subparsers.add_parser("start", help="Start dasmon listener [-h for help]")
+    subparsers.add_parser("status", help="Show running status of dasmon listener")
     namespace = parser.parse_args()
 
     if namespace.command == "start":
