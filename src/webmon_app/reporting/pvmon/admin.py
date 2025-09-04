@@ -1,5 +1,3 @@
-import datetime
-
 from django.contrib import admin
 
 from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
@@ -13,14 +11,8 @@ class PVAdmin(admin.ModelAdmin):
         "name",
         "value",
         "status",
-        "update_time",
-        "get_timestamp",
+        "timestamp",
     )
-
-    def get_timestamp(self, pv):
-        return datetime.datetime.fromtimestamp(pv.update_time)
-
-    get_timestamp.short_description = "Time"
 
 
 class PVNameAdmin(admin.ModelAdmin):

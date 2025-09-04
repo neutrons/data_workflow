@@ -1,4 +1,4 @@
-FROM ghcr.io/prefix-dev/pixi:0.50.2-bookworm-slim
+FROM ghcr.io/prefix-dev/pixi:0.53.0-bookworm-slim
 
 COPY pixi.lock .
 COPY pyproject.toml .

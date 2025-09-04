@@ -4,4 +4,4 @@
 CREATE INDEX IF NOT EXISTS pvmon_pv_time_key
   ON pvmon_pv
   USING btree
-  (instrument_id , name_id , update_time );
+  (instrument_id , name_id , timestamp );

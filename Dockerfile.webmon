@@ -1,6 +1,6 @@
-FROM ghcr.io/prefix-dev/pixi:0.50.2-jammy
+FROM ghcr.io/prefix-dev/pixi:0.53.0-bookworm-slim
 
-RUN apt update && apt install -y ca-certificates wget
+RUN apt update && apt install -y ca-certificates wget tzdata
 
 COPY pixi.lock .
 COPY pyproject.toml .

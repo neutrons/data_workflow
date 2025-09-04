@@ -625,17 +625,14 @@ class Client:
                     # StatusCache.objects.filter(timestamp__lte=cutoff).delete()
 
                     # Remove old PVMON entries: first, the float values
-                    PV.objects.filter(update_time__lte=time.time() - PURGE_TIMEOUT * 24 * 60 * 60).delete()
-                    old_entries = PVCache.objects.filter(
-                        update_time__lte=time.time() - CACHE_PURGE_TIMEOUT * 24 * 60 * 60
-                    )
+                    PV.objects.filter(timestamp__lte=cutoff).delete()
+                    cache_cutoff = timezone.now() - datetime.timedelta(days=CACHE_PURGE_TIMEOUT)
+                    old_entries = PVCache.objects.filter(timestamp__lte=cache_cutoff)
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
                     # Remove old PVMON entries: second, the string values
-                    old_entries = PVStringCache.objects.filter(
-                        update_time__lte=time.time() - CACHE_PURGE_TIMEOUT * 24 * 60 * 60
-                    )
+                    old_entries = PVStringCache.objects.filter(timestamp__lte=cache_cutoff)
                     for item in old_entries:
                         if len(MonitoredVariable.objects.filter(instrument=item.instrument, pv_name=item.name)) == 0:
                             item.delete()
