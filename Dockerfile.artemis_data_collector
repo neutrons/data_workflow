@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install requests psycopg[binary]
+
+# Create application directory
+WORKDIR /app
+
+# Copy the artemis data collector code
+COPY src/artemis_data_collector/ /app/artemis_data_collector/
+
+# Set Python path
+ENV PYTHONPATH=/app
+
+# Create entry point
+RUN echo '#!/usr/bin/env python3\nfrom artemis_data_collector.artemis_data_collector import main\nimport sys\nsys.exit(main())' > /app/artemis_data_collector_entry.py
+RUN chmod +x /app/artemis_data_collector_entry.py
+
+CMD ["python", "/app/artemis_data_collector_entry.py"]

@@ -139,6 +139,18 @@ localdev/dbup:  ## dbdumpfile=database_dump_file.sql DATABASE_PASS=$(dotenv get 
 clean: wheel/clean ssl/clean ## deletes: all python wheels; fake SNS data; SSL self-signed certificates
 	rm -f SNSdata.tar.gz
 
+artemis/test:  ## run unit tests for artemis data collector failover functionality
+	@echo "Running Artemis Data Collector failover tests..."
+	./run_artemis_tests.sh
+
+artemis/demo:  ## run demo of artemis failover functionality
+	@echo "Running Artemis Data Collector failover demo..."
+	python demo_artemis_failover.py
+
+artemis/build:  ## build the artemis data collector docker image
+	@echo "Building Artemis Data Collector Docker image..."
+	$(DOCKER_COMPOSE) build artemis_data_collector
+
 # targets that don't create actual files
 .PHONY: check
 .PHONY: configure/webmon
@@ -158,3 +170,6 @@ clean: wheel/clean ssl/clean ## deletes: all python wheels; fake SNS data; SSL s
 .PHONY: wheel/workflow
 .PHONY: wheel/all
 .PHONY: wheel/clean
+.PHONY: artemis/test
+.PHONY: artemis/demo
+.PHONY: artemis/build

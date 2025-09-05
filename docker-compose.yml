@@ -206,12 +206,15 @@ services:
 
   artemis_data_collector:
     restart: always
-    image: ghcr.io/neutrons/artemis_data_collector/artemis_data_collector:latest-prod
+    build:
+      context: .
+      dockerfile: Dockerfile.artemis_data_collector
     env_file:
       - .env
     environment:
       INTERVAL: 60
       ARTEMIS_URL: http://activemq:8161
+      ARTEMIS_FAILOVER_URL: ${ARTEMIS_FAILOVER_URL:-}
       ARTEMIS_USER: artemis
       ARTEMIS_PASSWORD: artemis
       ARTEMIS_BROKER_NAME: Artemis-Broker
