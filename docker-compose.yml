@@ -29,7 +29,6 @@ services:
       - web-static:/var/www/workflow/static/
       # add in folder to be picked up by update-ca-certificates in docker entrypoint
       - ./nginx/nginx.crt:/usr/local/share/ca-certificates/nginx.crt
-      - ./tests:/usr/src/webmon/tests
     env_file:
       - .env
       - .env.ci

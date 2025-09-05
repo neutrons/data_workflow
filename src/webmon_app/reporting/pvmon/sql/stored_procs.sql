@@ -8,10 +8,10 @@ $BODY$DECLARE
 n_count numeric;
 n_id bigint;
 new_value double precision;
-new_time bigint;
+new_time timestamp;
 BEGIN
 new_value := value;
-new_time := update_time;
+new_time := to_timestamp(update_time);
 -- Create the parameter name entry if it doesn't already exist
 SELECT COUNT(*)
     FROM pvmon_pvname
@@ -26,19 +26,19 @@ SELECT id
     INTO n_id
     WHERE pvmon_pvname.name = pv_name;
 -- Add the entry for the new value
-INSERT INTO pvmon_pv (name_id, value, status, update_time)
-    VALUES (n_id, new_value, status, update_time);
+INSERT INTO pvmon_pv (name_id, value, status, timestamp)
+    VALUES (n_id, new_value, status, new_time);
 -- Cache the latest values
 SELECT COUNT(*)
     FROM pvmon_pvcache
     INTO n_count
     WHERE pvmon_pvcache.name_id = n_id;
 IF n_count = 0 THEN
-    INSERT INTO pvmon_pvcache (name_id, value, status, update_time)
-    VALUES (n_id, value, status, update_time);
+    INSERT INTO pvmon_pvcache (name_id, value, status, timestamp)
+    VALUES (n_id, value, status, new_time);
 ELSE
     UPDATE pvmon_pvcache
-    SET value=new_value, update_time=new_time
+    SET value=new_value, timestamp=new_time
     WHERE name_id = n_id;
 END IF;
 END;$BODY$
@@ -57,10 +57,10 @@ n_count  numeric;
 n_id bigint;
 n_instrument bigint;
 new_value double precision;
-new_time bigint;
+new_time timestamp;
 BEGIN
 new_value := value;
-new_time := update_time;
+new_time := to_timestamp(update_time);
 -- Create the parameter name entry if it doesn't already exist
 SELECT COUNT(*)
     FROM pvmon_pvname
@@ -80,7 +80,7 @@ SELECT id
     INTO n_instrument
     WHERE report_instrument.name = lower(instrument);
 -- Add the entry for the new value
-INSERT INTO pvmon_pv (instrument_id, name_id, value, status, update_time)
+INSERT INTO pvmon_pv (instrument_id, name_id, value, status, timestamp)
     VALUES (n_instrument, n_id, new_value, status, new_time);
 -- Cache the latest values
 SELECT COUNT(*)
@@ -88,11 +88,11 @@ SELECT COUNT(*)
     INTO n_count
     WHERE pvmon_pvcache.instrument_id=n_instrument AND pvmon_pvcache.name_id = n_id;
 IF n_count = 0 THEN
-    INSERT INTO pvmon_pvcache (instrument_id, name_id, value, status, update_time)
+    INSERT INTO pvmon_pvcache (instrument_id, name_id, value, status, timestamp)
     VALUES (n_instrument, n_id, new_value, status, new_time);
 ELSE
     UPDATE pvmon_pvcache
-    SET value=new_value, update_time=new_time
+    SET value=new_value, timestamp=new_time
     WHERE name_id = n_id AND instrument_id = n_instrument;
 END IF;
 END;
@@ -112,10 +112,10 @@ DECLARE
   n_id bigint;
   n_instrument bigint;
   new_value character varying;
-  new_time bigint;
+  new_time timestamp;
 BEGIN
   new_value := value;
-  new_time := update_time;
+  new_time := to_timestamp(update_time);
   -- Create the parameter name entry if it doesn't already exist
   SELECT COUNT(*)
     FROM pvmon_pvname
@@ -140,11 +140,11 @@ BEGIN
     INTO n_count
     WHERE pvmon_pvstringcache.instrument_id=n_instrument AND pvmon_pvstringcache.name_id = n_id;
   IF n_count = 0 THEN
-    INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, update_time)
+    INSERT INTO pvmon_pvstringcache (instrument_id, name_id, value, status, timestamp)
       VALUES (n_instrument, n_id, new_value, status, new_time);
   ELSE
     UPDATE pvmon_pvstringcache
-      SET value=new_value, update_time=new_time
+      SET value=new_value, timestamp=new_time
       WHERE name_id = n_id AND instrument_id = n_instrument;
   END IF;
 END;

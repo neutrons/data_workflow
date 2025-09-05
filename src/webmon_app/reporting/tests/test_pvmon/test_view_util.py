@@ -1,8 +1,8 @@
-import time
 from unittest import mock
 
 import pytest
 from django.test import TestCase
+from django.utils import timezone
 
 from reporting.pvmon.models import PV, PVCache, PVName, PVStringCache
 from reporting.report.models import Instrument
@@ -11,7 +11,7 @@ from reporting.report.models import Instrument
 class ViewUtilTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        update_time = int(time.time())
+        timestamp = timezone.now()
         inst = Instrument.objects.create(name="testinst_pvmon")
         inst.save()
         for i_pv in range(4):
@@ -23,21 +23,21 @@ class ViewUtilTest(TestCase):
                     name=pvn,
                     value=i_pv * dt,
                     status=0,
-                    update_time=update_time,
+                    timestamp=timestamp,
                 ).save()
                 PVCache.objects.create(
                     instrument=inst,
                     name=pvn,
                     value=i_pv * dt,
                     status=0,
-                    update_time=update_time,
+                    timestamp=timestamp,
                 ).save()
                 PVStringCache.objects.create(
                     instrument=inst,
                     name=pvn,
                     value=f"pv{i_pv}_dt{dt}",
                     status=0,
-                    update_time=update_time,
+                    timestamp=timestamp,
                 ).save()
 
         # add data to test for PV with same name by different capitalization
@@ -48,7 +48,7 @@ class ViewUtilTest(TestCase):
             name=sampletemp,
             value=100,
             status=0,
-            update_time=update_time,
+            timestamp=timestamp,
         ).save()
 
         SampleTemp = PVName.objects.create(name="SampleTemp")
@@ -58,7 +58,7 @@ class ViewUtilTest(TestCase):
             name=SampleTemp,
             value=300,
             status=0,
-            update_time=update_time,
+            timestamp=timestamp,
         ).save()
 
     @classmethod
