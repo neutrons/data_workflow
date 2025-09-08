@@ -139,9 +139,13 @@ localdev/dbup:  ## dbdumpfile=database_dump_file.sql DATABASE_PASS=$(dotenv get 
 clean: wheel/clean ssl/clean ## deletes: all python wheels; fake SNS data; SSL self-signed certificates
 	rm -f SNSdata.tar.gz
 
-artemis/test:  ## run unit tests for artemis data collector failover functionality
-	@echo "Running Artemis Data Collector failover tests..."
-	./run_artemis_tests.sh
+test:  ## run all unit tests including artemis data collector failover functionality
+	@echo "Running all unit tests..."
+	pixi run unittests
+
+test/coverage:  ## run all unit tests with coverage reporting
+	@echo "Running all unit tests with coverage..."
+	pixi run unittests-with-coverage
 
 artemis/demo:  ## run demo of artemis failover functionality
 	@echo "Running Artemis Data Collector failover demo..."
@@ -170,6 +174,7 @@ artemis/build:  ## build the artemis data collector docker image
 .PHONY: wheel/workflow
 .PHONY: wheel/all
 .PHONY: wheel/clean
-.PHONY: artemis/test
+.PHONY: test
+.PHONY: test/coverage
 .PHONY: artemis/demo
 .PHONY: artemis/build
