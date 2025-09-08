@@ -23,6 +23,8 @@ psycopg2-binary = "==2.9.3"
 
 [tool.pixi.pypi-dependencies]
 django-auth-ldap = "==5.1.0"
+# Add psycopg for Artemis Data Collector tests
+psycopg = { version = "*", extras = ["binary"] }
 
 [tool.pixi.workspace]
 name = "data_workflow"
