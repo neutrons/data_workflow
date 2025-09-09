@@ -6,6 +6,8 @@ Workflow manager process
 
 import argparse
 import logging
+import logging.handlers
+import os
 import sys
 
 import psutil
@@ -65,11 +67,14 @@ def start(check_frequency, workflow_recovery, flexible_tasks):
 
 def status():
     # check if running by checking for a process with the name workflowmgr
-    for proc in psutil.process_iter():
-        if proc.name() == "workflowmgr":
-            logging.info("workflowmgr is running with PID %d", proc.pid)
+    me = os.getpid()
+    for proc in psutil.process_iter(attrs=["pid", "cmdline"]):
+        if proc.info["pid"] == me:
+            continue
+        cmd = " ".join(proc.info.get("cmdline") or [])
+        if ("workflowmgr" in cmd or "sns_post_processing" in cmd) and "start" in cmd:
+            logging.info("workflowmgr is running with PID %d", proc.info["pid"])
             sys.exit(0)
-
     logging.error("workflowmgr is not running")
     sys.exit(1)
 
@@ -165,7 +170,6 @@ def run():
         sys.exit(0)
 
     if namespace.command == "start":
-        print(namespace.check_frequency, namespace.recover, not namespace.flexible_tasks)
         start(namespace.check_frequency, namespace.recover, not namespace.flexible_tasks)
     elif namespace.command == "status":
         status()

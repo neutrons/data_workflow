@@ -5,6 +5,7 @@ DASMON listener
 import argparse
 import logging
 import logging.handlers
+import os
 import sys
 
 import psutil
@@ -43,11 +44,14 @@ def start():
 
 def status():
     # check if running by checking for a process with the name dasmon_listener
-    for proc in psutil.process_iter():
-        if proc.name() == "dasmon_listener":
-            logging.info("dasmon_listener is running with PID %d", proc.pid)
+    me = os.getpid()
+    for proc in psutil.process_iter(attrs=["pid", "cmdline"]):
+        if proc.info["pid"] == me:
+            continue
+        cmd = " ".join(proc.info.get("cmdline") or [])
+        if "dasmon_listener" in cmd and "start" in cmd:
+            logging.info("dasmon_listener is running with PID %d", proc.info["pid"])
             sys.exit(0)
-
     logging.error("dasmon_listener is not running")
     sys.exit(1)
 
