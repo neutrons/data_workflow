@@ -197,11 +197,11 @@ BEGIN
 
             IF n_count = 0 THEN
                 INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name, created, updated)
-                  SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, '', NOW(), NOW()
+                  SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                   FROM pvmon_pvcache
                   WHERE pvmon_pvcache.instrument_id = n_instrument AND pvmon_pvcache.name_id = n_pv_id
                   UNION
-                  SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, '', NOW(), NOW()
+                  SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                   FROM pvmon_pvstringcache
                   WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id;
             END IF;
