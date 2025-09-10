@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("pvmon", "0002_delete_pvstring"),
+        ("pvmon", "0003_pv_timestamp_pvcache_timestamp_and_more"),
     ]
 
     operations = [
