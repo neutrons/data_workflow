@@ -196,12 +196,12 @@ BEGIN
             WHERE instrument_id = n_instrument AND pv_name_id = n_pv_id;
 
             IF n_count = 0 THEN
-                INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name)
-                  SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, ''
+                INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name, created, updated)
+                  SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, '', NOW(), NOW()
                   FROM pvmon_pvcache
                   WHERE pvmon_pvcache.instrument_id = n_instrument AND pvmon_pvcache.name_id = n_pv_id
                   UNION
-                  SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, ''
+                  SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, '', NOW(), NOW()
                   FROM pvmon_pvstringcache
                   WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id;
             END IF;
@@ -212,8 +212,8 @@ BEGIN
       FROM pvmon_monitoredvariable
       WHERE instrument_id = n_instrument;
     IF n_count = 0 THEN
-      INSERT INTO pvmon_monitoredvariable (instrument_id, rule_name)
-      VALUES (n_instrument, '');
+      INSERT INTO pvmon_monitoredvariable (instrument_id, rule_name, created, updated)
+      VALUES (n_instrument, '', NOW(), NOW());
     END IF;
 END;
 $$ LANGUAGE plpgsql VOLATILE
