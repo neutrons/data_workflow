@@ -175,29 +175,42 @@ BEGIN
         RAISE EXCEPTION 'Instrument % does not exist', instrument;
     END IF;
 
-    -- Delete the existing monitored variables for this instrument
+    -- Delete monitored variables for this instrument that are NOT in the input list
     DELETE
     FROM pvmon_monitoredvariable
-    WHERE instrument_id = n_instrument;
+    WHERE instrument_id = n_instrument
+    AND pv_name_id NOT IN (
+        SELECT id
+        FROM pvmon_pvname
+        WHERE name = ANY(pvs)
+    );
 
     -- Insert the new monitored variables without duplicates
     FOREACH n_pv_name IN ARRAY pvs
     LOOP
         SELECT id INTO n_pv_id FROM pvmon_pvname WHERE name = n_pv_name;
         IF n_pv_id IS NOT NULL THEN
-            INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name)
-              SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, ''
-              FROM pvmon_pvcache
-              WHERE pvmon_pvcache.instrument_id = n_instrument AND pvmon_pvcache.name_id = n_pv_id
-              UNION
-              SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, ''
-              FROM pvmon_pvstringcache
-              WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id;
+            -- Only insert if not already present
+            SELECT COUNT(*) INTO n_count
+            FROM pvmon_monitoredvariable
+            WHERE instrument_id = n_instrument AND pv_name_id = n_pv_id;
+
+            IF n_count = 0 THEN
+                INSERT INTO pvmon_monitoredvariable (instrument_id, pv_name_id, rule_name)
+                  SELECT pvmon_pvcache.instrument_id, pvmon_pvcache.name_id, ''
+                  FROM pvmon_pvcache
+                  WHERE pvmon_pvcache.instrument_id = n_instrument AND pvmon_pvcache.name_id = n_pv_id
+                  UNION
+                  SELECT pvmon_pvstringcache.instrument_id, pvmon_pvstringcache.name_id, ''
+                  FROM pvmon_pvstringcache
+                  WHERE pvmon_pvstringcache.instrument_id = n_instrument AND pvmon_pvstringcache.name_id = n_pv_id;
+            END IF;
         END IF;
     END LOOP;
     SELECT count(*)
       INTO n_count
-      FROM pvmon_monitoredvariable;
+      FROM pvmon_monitoredvariable
+      WHERE instrument_id = n_instrument;
     IF n_count = 0 THEN
       INSERT INTO pvmon_monitoredvariable (instrument_id, rule_name)
       VALUES (n_instrument, '');
