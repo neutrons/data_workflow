@@ -12,10 +12,10 @@ dasmon\_listener.amq\_consumer module
     :undoc-members:
     :show-inheritance:
 
-dasmon\_listener.listener\_daemon module
+dasmon\_listener.dasmon\_listener module
 ----------------------------------------
 
-.. automodule:: dasmon_listener.listener_daemon
+.. automodule:: dasmon_listener.dasmon_listener
     :members:
     :undoc-members:
     :show-inheritance:

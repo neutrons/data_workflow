@@ -15,4 +15,3 @@ make install/workflow
 cd /var/log
 sleep 20
 workflowmgr start
-tail -F /var/log/workflow.log
