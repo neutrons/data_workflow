@@ -68,6 +68,7 @@ class DashboardViewTest(TestCase):
         self.assertIn("dap.digitalgov.gov/Universal-Federated-Analytics-Min.js", response_content)
         self.assertIn("agency=DOE", response_content)
         self.assertIn("subagency=BES", response_content)
+        self.assertIn("sitetopic=science", response_content)
 
         # Check that error handling is present
         self.assertIn("onerror", response_content)
