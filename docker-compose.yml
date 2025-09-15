@@ -224,6 +224,11 @@ services:
       activemq:
         condition: service_healthy
 
+  oncat:
+    build:
+      context: .
+      dockerfile: Dockerfile.oncat
+
   autoheal:
     restart: always
     image: willfarrell/autoheal
