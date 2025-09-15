@@ -25,8 +25,12 @@ RUN ls ${DATA_TARBALL}
 RUN mkdir /SNS
 RUN cd /SNS && tar xzf ${DATA_TARBALL}
 
+# install pyoncat
+COPY tests/python3-pyoncat-2.1-1.noarch.rpm /tmp/
+RUN dnf install -y /tmp/python3-pyoncat-2.1-1.noarch.rpm
+
 # install postprocessing
-RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v4.0.0/postprocessing-4.0.0-1.el9.noarch.rpm
+RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v4.1.0/postprocessing-4.1.0-1.el9.noarch.rpm
 
 # Install dependencies
 ARG PLOTLY_VERSION=5
@@ -40,16 +44,12 @@ RUN pip3 install git+https://github.com/neutrons/plot_publisher.git@main
 
 # Install specific plotly version based on build arg
 RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
-        pip3 install plotly==5.17.0; \
+    pip3 install plotly==5.17.0; \
     elif [ "$PLOTLY_VERSION" = "6" ]; then \
-        pip3 install plotly==6.0.0; \
+    pip3 install plotly==6.0.0; \
     else \
-        pip3 install plotly==5.17.0; \
+    pip3 install plotly==5.17.0; \
     fi
-
-# add fake ONCat ingest scripts
-RUN touch /opt/postprocessing/scripts/oncat_ingest.py && \
-    touch /opt/postprocessing/scripts/oncat_reduced_ingest.py
 
 # create startup script
 # add updating certificates to add self-signed certificate for local testing
