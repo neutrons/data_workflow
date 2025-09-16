@@ -27,7 +27,7 @@ It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listene
 Workflow Manager
 ----------------
 
-Data workflow manager based on  ActiveMQ
+Data workflow manager based on ActiveMQ
 
 The database abstraction is done through django.db and the communication layer is done using stomp.
 
