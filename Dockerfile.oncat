@@ -1,0 +1,5 @@
+FROM python:3-alpine
+COPY tests/oncat_server.py .
+RUN mkdir -p /SNS/ARCS/IPTS-27800/nexus && \
+    touch /SNS/ARCS/IPTS-27800/nexus/ARCS_214583.nxs.h5
+CMD ["python", "oncat_server.py"]
