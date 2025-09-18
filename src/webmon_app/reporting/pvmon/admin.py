@@ -21,7 +21,8 @@ class PVNameAdmin(admin.ModelAdmin):
 
 
 class MonitoredVariableAdmin(admin.ModelAdmin):
-    list_display = ("id", "instrument", "pv_name", "rule_name")
+    list_display = ("id", "instrument", "pv_name", "rule_name", "created", "updated")
+    readonly_fields = ("created", "updated")
 
 
 admin.site.register(PVName, PVNameAdmin)

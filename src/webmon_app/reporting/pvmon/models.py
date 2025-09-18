@@ -77,3 +77,5 @@ class MonitoredVariable(models.Model):
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     pv_name = models.ForeignKey(PVName, null=True, blank=True, on_delete=models.CASCADE)
     rule_name = models.CharField(max_length=50, default="", blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
