@@ -213,7 +213,7 @@ BEGIN
       WHERE instrument_id = n_instrument;
     IF n_count = 0 THEN
       INSERT INTO pvmon_monitoredvariable (instrument_id, rule_name, created, updated)
-      VALUES (n_instrument, '', NOW(), NOW());
+      VALUES (n_instrument, '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
     END IF;
 END;
 $$ LANGUAGE plpgsql VOLATILE
