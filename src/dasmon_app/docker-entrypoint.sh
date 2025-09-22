@@ -15,4 +15,3 @@ make install/dasmonlistener
 cd /var/log
 sleep 20
 dasmon_listener start
-tail -F /var/log/dasmon_listener.log

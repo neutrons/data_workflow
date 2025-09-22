@@ -54,6 +54,26 @@ class DashboardViewTest(TestCase):
         #       content is to cast it to a string
         self.assertTrue("test_instrument" in str(response.context))
 
+    def test_dap_script_present_in_template(self):
+        """Test that the Digital Analytics Program (DAP) script is present in the rendered template"""
+        response = self.client.get(reverse("dasmon:dashboard"))
+        self.assertEqual(response.status_code, 200)
+
+        # Convert response content to string for searching
+        response_content = response.content.decode("utf-8")
+
+        # Check that DAP script elements are present in the rendered template
+        self.assertIn("Digital Analytics Program (DAP)", response_content)
+        self.assertIn("_fed_an_ua_tag", response_content)
+        self.assertIn("dap.digitalgov.gov/Universal-Federated-Analytics-Min.js", response_content)
+        self.assertIn("agency=DOE", response_content)
+        self.assertIn("subagency=BES", response_content)
+        self.assertIn("sitetopic=science", response_content)
+
+        # Check that error handling is present
+        self.assertIn("onerror", response_content)
+        self.assertIn("DAP analytics script failed to load", response_content)
+
 
 class DashboardSimpleViewTest(TestCase):
     # NOTE: DashboardSimple is an update of DashboardView

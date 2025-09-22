@@ -6,6 +6,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Data Processing Report{% endblock %}</title>
 
+<!-- Digital Analytics Program (DAP) -->
+<script type="text/javascript">
+(function() {
+    var dapScript = document.createElement('script');
+    dapScript.id = '_fed_an_ua_tag';
+    dapScript.async = true;
+    dapScript.type = 'text/javascript';
+    dapScript.src = 'https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=DOE&subagency=BES&sitetopic=science';
+
+    dapScript.onerror = function() {
+        console.log('DAP analytics script failed to load - continuing without analytics');
+    };
+
+    document.head.appendChild(dapScript);
+})();
+</script>
+
 <link rel="stylesheet" href="/static/reporting_layout.css" type="text/css" title="no title" charset="utf-8">
 <link rel="stylesheet" href="/static/reporting_layout_print.css" type="text/css" media="print" title="no title" charset="utf-8">
 <link rel="stylesheet" href="/static/thirdparty/jquery-ui-1.14.1/jquery-ui.css" type="text/css" title="no title" charset="utf-8">

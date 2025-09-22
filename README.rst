@@ -46,7 +46,7 @@ Look at the ``docker-compose.yml`` to see how to configure and run it.
 
 DASMON listener
 ---------------
-DB logging daemon.
+DB logging.
 
 The DASMON listener watches for DASMON message sent to ActiveMQ and logs them.
 See the ``src/dasmon_app/dasmon_listener/README.md`` file for more details.
