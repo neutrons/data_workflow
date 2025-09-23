@@ -11,12 +11,16 @@ Anyone can see a list of instruments
    :align: center
    :alt: guest user view example
 
-When clicking on any instrument one can see the status of the instrument
+When clicking on any instrument one can see the status of the instrument. The status page shows a
+list of *monitored variables*. The sample logs to display can be configured in CSS (the frontend
+interface for the instrument control), see instructions
+`here <https://powder.ornl.gov/general_aspects/data_acquire/monitor.html>`_.
 
 .. image:: images/example_instrument_status_guest_user.png
    :width: 100%
    :align: center
    :alt: guest user view of instrument status example
+|
 
 In the top right hand side, there are links to see the runs in the current
 experiment, together with the processing status.
