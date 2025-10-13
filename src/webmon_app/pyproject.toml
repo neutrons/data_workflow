@@ -7,12 +7,11 @@ name = "django-nscd-webmon"
 description = "Common models for nscd web monitor"
 dynamic = ["version"]
 requires-python = ">=3.10"
-license = {text = "GNU LGPL"}
+license = "LGPL-3.0-or-later"
 authors = [
     {name = "NScD Oak Ridge National Laboratory", email = "ndav@email.ornl.gov"}
 ]
 classifiers = [
-    "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
