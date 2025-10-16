@@ -29,6 +29,9 @@ workflowmgr = "workflow.sns_post_processing:run"
 [project.optional-dependencies]
 tests = ["pytest"]
 
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["workflow.tests*"]

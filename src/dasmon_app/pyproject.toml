@@ -30,8 +30,11 @@ reduction_update = "dasmon_listener.reduction_script_update:run"
 [project.optional-dependencies]
 tests = ["pytest"]
 
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.packages.find]
-exclude = ["workflow.tests"]
+exclude = ["dasmon_listener.tests*"]
 
 [tool.versioningit.vcs]
 method = "git"

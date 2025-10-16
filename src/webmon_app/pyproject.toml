@@ -30,7 +30,10 @@ tests = ["pytest"]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-exclude = ["reporting.tests", "reporting.tests.*"]
+exclude = ["reporting.tests*"]
+
+[tool.setuptools.exclude-package-data]
+reporting = ["reporting.tests", "reporting.tests.*"]
 
 [tool.setuptools.package-data]
 reporting = [
