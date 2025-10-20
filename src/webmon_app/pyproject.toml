@@ -8,9 +8,6 @@ description = "Common models for nscd web monitor"
 dynamic = ["version"]
 requires-python = ">=3.10"
 license = "LGPL-3.0-or-later"
-authors = [
-    {name = "NScD Oak Ridge National Laboratory", email = "ndav@email.ornl.gov"}
-]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -20,9 +17,6 @@ classifiers = [
     "Topic :: System :: Networking",
 ]
 
-[project.urls]
-Homepage = "http://neutrons.github.com/"
-
 [project.optional-dependencies]
 tests = ["pytest"]
 
@@ -30,10 +24,7 @@ tests = ["pytest"]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-exclude = ["reporting.tests*"]
-
-[tool.setuptools.exclude-package-data]
-reporting = ["reporting.tests", "reporting.tests.*"]
+exclude = ["tests*"]
 
 [tool.setuptools.package-data]
 reporting = [

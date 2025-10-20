@@ -8,9 +8,6 @@ description = "SNS data workflow manager"
 dynamic = ["version"]
 requires-python = ">=3.10"
 license = "LGPL-3.0-or-later"
-authors = [
-    {name = "NScD Oak Ridge National Laboratory", email = "ndav@email.ornl.gov"}
-]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -19,9 +16,6 @@ classifiers = [
     "Topic :: System :: Distributed Computing",
     "Topic :: System :: Networking",
 ]
-
-[project.urls]
-Homepage = "http://neutrons.github.com/"
 
 [project.scripts]
 workflowmgr = "workflow.sns_post_processing:run"
