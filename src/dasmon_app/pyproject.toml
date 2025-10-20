@@ -19,7 +19,9 @@ classifiers = [
 
 [project.scripts]
 dasmon_listener = "dasmon_listener.dasmon_listener:run"
-reduction_update = "dasmon_listener.reduction_script_update:run"
+# Note: reduction_update entry point commented out - module dasmon_listener.reduction_script_update does not exist
+# Uncomment when module is implemented:
+# reduction_update = "dasmon_listener.reduction_script_update:run"
 
 [project.optional-dependencies]
 tests = ["pytest"]
