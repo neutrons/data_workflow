@@ -2,6 +2,36 @@
 requires = ["setuptools >= 42", "wheel", "toml", "versioningit"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "django-nscd-dasmon"
+description = "SNS DASMON listener"
+dynamic = ["version"]
+requires-python = ">=3.10"
+license = "LGPL-3.0-or-later"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: System :: Networking",
+]
+
+[project.scripts]
+dasmon_listener = "dasmon_listener.dasmon_listener:run"
+# Note: reduction_update entry point commented out - module dasmon_listener.reduction_script_update does not exist
+# Uncomment when module is implemented:
+# reduction_update = "dasmon_listener.reduction_script_update:run"
+
+[project.optional-dependencies]
+tests = ["pytest"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+exclude = ["dasmon_listener.tests*"]
+
 [tool.versioningit.vcs]
 method = "git"
 default-tag = "1.0.0"

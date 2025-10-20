@@ -2,6 +2,34 @@
 requires = ["setuptools >= 42", "wheel", "toml", "versioningit"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "django-nscd-workflow"
+description = "SNS data workflow manager"
+dynamic = ["version"]
+requires-python = ">=3.10"
+license = "LGPL-3.0-or-later"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: System :: Networking",
+]
+
+[project.scripts]
+workflowmgr = "workflow.sns_post_processing:run"
+
+[project.optional-dependencies]
+tests = ["pytest"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["workflow.tests*"]
+
 [tool.versioningit.vcs]
 method = "git"
 default-tag = "1.0.0"
