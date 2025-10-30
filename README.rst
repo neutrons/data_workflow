@@ -20,7 +20,8 @@ Dependencies:
  * `stomp <https://github.com/jasonrbriggs/stomp.py>`_
  * `django <https://www.djangoproject.com/>`_
  * `MySQLdb <https://sourceforge.net/projects/mysql-python/>`_ if using MySQL
- * `psycopg2 <https://www.psycopg.org/>`_ if using PostgreSQL
+ * `psycopg2 <https://www.psycopg.org/>`_ 2.9.11+ if using PostgreSQL
+ * PostgreSQL 17+
 
 It consists of 3 applications (Workflow Manager, Web Monitor, and DASMON Listener) which are deployed via docker compose.
 
