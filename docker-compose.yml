@@ -84,7 +84,7 @@ services:
 
   db:
     restart: always
-    image: postgres:14
+    image: postgres:17
     env_file:
       - .env
     environment:

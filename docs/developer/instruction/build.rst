@@ -7,6 +7,13 @@ Developing in a Local Environment
 .. note::
    This document is updated, however, it may be good to read the `continuous integration <https://github.com/neutrons/data_workflow/tree/next/.github/workflows>`_ scripts as well.
 
+Requirements
+------------
+
+* PostgreSQL 17 or higher
+* Python 3.11
+* Docker and Docker Compose (for local development)
+
 Dependencies between services
 -----------------------------
 
