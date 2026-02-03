@@ -145,6 +145,28 @@ class MonitoredVariableTest(TestCase):
         max_len = pv._meta.get_field("rule_name").max_length
         self.assertEqual(max_len, 50)
 
+    def test_created_field_exists(self):
+        pv = MonitoredVariable.objects.get(id=1)
+        self.assertTrue(hasattr(pv, "created"))
+        self.assertIsNotNone(pv.created)
+
+    def test_updated_field_exists(self):
+        pv = MonitoredVariable.objects.get(id=1)
+        self.assertTrue(hasattr(pv, "updated"))
+        self.assertIsNotNone(pv.updated)
+
+    def test_created_auto_now_add(self):
+        # Test that created field has auto_now_add=True
+        pv = MonitoredVariable.objects.get(id=1)
+        created_field = pv._meta.get_field("created")
+        self.assertTrue(created_field.auto_now_add)
+
+    def test_updated_auto_now(self):
+        # Test that updated field has auto_now=True
+        pv = MonitoredVariable.objects.get(id=1)
+        updated_field = pv._meta.get_field("updated")
+        self.assertTrue(updated_field.auto_now)
+
 
 if __name__ == "__main__":
     pytest.main()

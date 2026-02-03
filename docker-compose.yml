@@ -84,7 +84,7 @@ services:
 
   db:
     restart: always
-    image: postgres:14
+    image: postgres:17
     env_file:
       - .env
     environment:
@@ -223,6 +223,11 @@ services:
         condition: service_healthy
       activemq:
         condition: service_healthy
+
+  oncat:
+    build:
+      context: .
+      dockerfile: Dockerfile.oncat
 
   autoheal:
     restart: always

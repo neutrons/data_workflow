@@ -1,0 +1,11 @@
+FROM python:3-alpine
+COPY tests/oncat_server.py .
+
+# install the fake test data
+ARG DATA_TARBALL=/tmp/SNSdata.tar.gz
+COPY SNSdata.tar.gz ${DATA_TARBALL}
+RUN ls ${DATA_TARBALL}
+RUN mkdir /SNS
+RUN cd /SNS && tar xzf ${DATA_TARBALL}
+
+CMD ["python", "oncat_server.py"]

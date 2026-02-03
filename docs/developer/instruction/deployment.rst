@@ -6,6 +6,12 @@ To deploy the web-monitor, you require **web-monitor**,
 also **catalog**, **testfixtures**, **amqbroker** and **autoreducer**
 to fake external services.
 
+Requirements
+------------
+
+* PostgreSQL 17 or higher
+* Python 3.11
+
 Configuration
 -------------
 

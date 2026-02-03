@@ -7,6 +7,13 @@ Developing in a Local Environment
 .. note::
    This document is updated, however, it may be good to read the `continuous integration <https://github.com/neutrons/data_workflow/tree/next/.github/workflows>`_ scripts as well.
 
+Requirements
+------------
+
+* PostgreSQL 17 or higher
+* Python 3.11
+* Docker and Docker Compose (for local development)
+
 Dependencies between services
 -----------------------------
 
@@ -50,11 +57,36 @@ After installing pre-commit the checks can be run using
 
    pre-commit run --all-files
 
+Python package configuration
+-----------------------------
+
+This project contains three separate Python packages (dasmon_app, webmon_app, and workflow_app),
+each with its own ``pyproject.toml`` file following modern Python packaging standards (PEP 518 and PEP 621).
+The configuration includes:
+
+* Package metadata (name, version, description, authors, license)
+* Console script entry points for command-line tools
+* Package data specifications (SQL files, templates, static assets)
+* Build system configuration using setuptools
+* Test dependencies
+
+Each package can be built independently using:
+
+.. code-block:: shell
+
+   make wheel/dasmon   # Build dasmon package
+   make wheel/webmon   # Build webmon package
+   make wheel/workflow # Build workflow package
+   make wheel/all      # Build all three packages
+
+The built wheels are stored in each package's ``dist/`` directory and are used by the Docker containers
+to install the applications.
+
 Running unit tests
 ------------------
 
 The unit tests exist next to the code it is testing.
-They are run inside a pixi environment and pointing at the correct directory with the configuration inside the root-level ``setup.cfg``.
+They are run inside a pixi environment with configuration defined in the root-level ``pyproject.toml``.
 This is based on what is run in `.github/workflow/ci.yml <https://github.com/neutrons/data_workflow/blob/next/.github/workflows/ci.yml>`_
 
 .. code-block:: shell
