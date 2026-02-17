@@ -17,9 +17,15 @@
 <script language="javascript" type="text/javascript" src="/static/thirdparty/d3.v3/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript" src="/static/live_update.js"></script>
 <script language="javascript" type="text/javascript" src="/static/bar_chart.js"></script>
+<script language="javascript" type="text/javascript" src="/static/plotly_dynamic_loader.js"></script>
 
 <link rel="stylesheet" media="all" href="/static/bar_chart.css" />
 <link rel="stylesheet" type="text/css" href="/static/thirdparty/flaticon/flaticon.css">
+
+{% if html_data %}
+{{ update_url|json_script:"plot-update-url" }}
+{% endif %}
+
 <div id="dialog-confirm" title="Submit for post-processing" style="display:none">
    <p><span class="ui-icon ui-icon-alert" style="float: left"></span>
    Confirm submission?</p>
@@ -38,101 +44,7 @@
                         }
                     }
         });
-    };
-
-{% if html_data %}
-    // --- NEW DYNAMIC PLOTLY LOADER SCRIPT ---
-    var loadedPlotlyScriptUrls = new Set();
-    var defaultPlotlyVersion = '2.9.0';
-    var plotlyBaseUrl = '/static/thirdparty/';
-    var plotlyV2ScriptPath = plotlyBaseUrl + 'plotly-2.9.0.min.js';
-    var plotlyV3ScriptPath = plotlyBaseUrl + 'plotly-3.0.1.min.js';
-
-    function insertPlotHtml(plotHtml) {
-        var graphContainer = $('#graph');
-        if (graphContainer.length === 0) {
-            console.error("#graph container not found in DOM for plot insertion.");
-            return;
-        }
-        graphContainer.html(plotHtml);
-        console.log("Plot HTML inserted into #graph.");
     }
-
-    function loadPlotlyScriptAndRender(requiredVersion, plotHtmlToRender) {
-        if (!requiredVersion || typeof requiredVersion !== 'string' || requiredVersion.trim() === '') {
-            console.warn("Plotly version requirement is missing or invalid. Using default:", defaultPlotlyVersion);
-            requiredVersion = defaultPlotlyVersion;
-        }
-
-        let scriptUrlToLoad = plotlyV2ScriptPath;
-        if (requiredVersion.trim().startsWith('3.')) {
-             scriptUrlToLoad = plotlyV3ScriptPath;
-        }
-
-        console.log("Plotly.js version required by plot data:", requiredVersion, "-> Mapped to script URL:", scriptUrlToLoad);
-
-        if (loadedPlotlyScriptUrls.has(scriptUrlToLoad)) {
-            console.log("Required Plotly script already loaded:", scriptUrlToLoad);
-            insertPlotHtml(plotHtmlToRender);
-            return;
-        }
-
-        console.log("Attempting to load Plotly.js from:", scriptUrlToLoad);
-        var script = document.createElement('script');
-        script.src = scriptUrlToLoad;
-        script.async = false;
-        script.onload = function() {
-            console.log("Successfully loaded Plotly script:", scriptUrlToLoad);
-            loadedPlotlyScriptUrls.add(scriptUrlToLoad);
-            insertPlotHtml(plotHtmlToRender);
-        };
-        script.onerror = function() {
-            console.error("CRITICAL ERROR: Failed to load Plotly script:", scriptUrlToLoad);
-            $('#graph').html('<p class="error" style="color:red; font-weight:bold;">Error: Could not load required plotting library. Plot cannot be displayed.</p>');
-        };
-        document.head.appendChild(script);
-    }
-
-    var currentPlotHtml = '';
-    function get_plot_update() {
-        $.ajax({
-            type: "GET",
-            url: "{{ update_url }}",
-            success: function(newPlotHtml) {
-                if (currentPlotHtml.localeCompare(newPlotHtml) !== 0) {
-                    currentPlotHtml = newPlotHtml;
-                    console.log("New plot HTML received from server. Determining Plotly.js version requirement...");
-
-                    var tempDiv = $('<div>').html(newPlotHtml);
-                    var plotGraphDiv = tempDiv.find('div.plotly-graph-div');
-                    var requiredVersion = null;
-
-                    if (plotGraphDiv.length > 0 && plotGraphDiv.attr('plotlyjs-version')) {
-                        requiredVersion = String(plotGraphDiv.attr('plotlyjs-version'));
-                        console.log("Extracted 'plotlyjs-version' from plot div:", requiredVersion);
-                    } else {
-                        console.log("No 'plotlyjs-version' attribute found on the main plot div. Will use default.");
-                        requiredVersion = defaultPlotlyVersion;
-                    }
-
-                    tempDiv.remove();
-
-                    loadPlotlyScriptAndRender(requiredVersion, newPlotHtml);
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("Failed to fetch plot update from {{ update_url }}:", textStatus, errorThrown);
-                $('#graph').html('<p class="error" style="color:red;">Failed to load plot data. Please try again later.</p>');
-            },
-            dataType: "html",
-            timeout: 25000
-        });
-    }
-
-    get_plot_update();
-    setInterval(get_plot_update, 60000);
-
-{% endif %}
 </script>
 
 {% endblock %}
@@ -226,12 +138,7 @@
 {% endblock %}
 
 {% block extra_files_footer %}
-  {% if plot_data %}
-  <script language="javascript" type="text/javascript" src="/static/1d_plot/1d_plots_v2.js"></script>
-  <script language="javascript" type="text/javascript" src="/static/thirdparty/saveSvgAsPng.js"></script>
-  <script language="javascript" type="text/javascript" src="/static/1d_plot/spectrum.js"></script>
-  <script language="javascript" type="text/javascript" src="/static/1d_plot/mustachetemplates.js"></script>
-  <script language="javascript" type="text/javascript" src="/static/1d_plot/appfunctions.js"></script>
-  <script language="javascript" type="text/javascript" src="/static/thirdparty/cssmenu/script.js"></script>
+  {% if html_data %}
+  <script language="javascript" type="text/javascript" src="/static/plot_init.js"></script>
   {% endif %}
 {% endblock %}
