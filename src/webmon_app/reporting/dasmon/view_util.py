@@ -969,6 +969,8 @@ def get_signals(instrument_id):
     try:
         monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
         for item in monitored:
+            if item.pv_name is None:
+                continue
             try:
                 latests = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
                 if len(latests) == 0:
@@ -987,10 +989,11 @@ def get_signals(instrument_id):
             data = pvmon_view_util.get_live_variables(request=None, instrument_id=instrument_id, key_id=item.pv_name)
             data_list = []
             try:
-                for point in data[0][1]:
-                    data_list.append("%g:%g" % (point[0], point[1]))
+                if data is not None and len(data) > 0 and len(data[0]) > 1:
+                    for point in data[0][1]:
+                        data_list.append("%g:%g" % (point[0], point[1]))
             except:  # noqa: E722
-                logger.exception()
+                logger.exception(f"Error processing data for {instrument_id} {item.pv_name}:")
             sig_entry.data = ",".join(data_list)
             sig_alerts.append(sig_entry)
     except:  # noqa: E722
