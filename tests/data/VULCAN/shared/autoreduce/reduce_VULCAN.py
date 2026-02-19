@@ -62,5 +62,4 @@ if __name__ == "__main__":
         url,
         data={"username": publisher_username, "password": publisher_password},
         files={"file": plot_html},
-        # verify=config.verify_ssl,
     )

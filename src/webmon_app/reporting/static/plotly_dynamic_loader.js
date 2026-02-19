@@ -30,7 +30,8 @@ const PlotlyDynamicLoader = (function() {
             requiredVersion = defaultPlotlyVersion;
         }
 
-        let scriptUrlToLoad = plotlyV2ScriptPath;
+        const majorVersion = parseInt(requiredVersion.trim().split('.')[0], 10);
+        let scriptUrlToLoad = (majorVersion >= 3) ? plotlyV3ScriptPath : plotlyV2ScriptPath;
         if (requiredVersion.trim().startsWith('3.')) {
              scriptUrlToLoad = plotlyV3ScriptPath;
         }
