@@ -1,4 +1,3 @@
-import json
 from unittest import mock
 
 import pytest
@@ -340,54 +339,6 @@ class ViewUtilTest(TestCase):
         run = DataRun.objects.get(run_number=1, instrument_id=inst)
         rst = get_plot_data_from_server(inst.name, run)
         self.assertEqual(rst, "test")
-
-    def test_extract_d3_data_from_json(self):
-        from reporting.report.view_util import extract_d3_data_from_json
-
-        # null case
-        plot_data, x_label, y_label = extract_d3_data_from_json(None)
-        self.assertEqual(plot_data, None)
-        self.assertEqual(x_label, "Q [1/\u00c5]")
-        self.assertEqual(y_label, "Absolute reflectivity")
-        # main_output in data_dict['main_output']
-        json_data = json.dumps(
-            {
-                "main_output": {
-                    "x": [1, 2, 3],
-                    "y": [1, 2, 3],
-                    "e": [0, 0, 0],
-                    "x_label": "x_label",
-                    "y_label": "y_label",
-                }
-            }
-        )
-        plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
-        self.assertEqual(len(plot_data), 3)
-        self.assertEqual(x_label, "x_label")
-        self.assertEqual(y_label, "y_label")
-        # data in data_dict['main_output']
-        json_data = json.dumps(
-            {
-                "main_output": {
-                    "data": {
-                        "1": [
-                            [1, 2, 3],  # x
-                            [1, 2, 3],  # y
-                            [0, 0, 0],  # e
-                            [0, 0, 0],  # dx [optional]
-                        ]
-                    },
-                    "axes": {
-                        "xlabel": "xlabel",
-                        "ylabel": "ylabel",
-                    },
-                }
-            }
-        )
-        plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
-        self.assertEqual(len(plot_data), 3)
-        self.assertEqual(x_label, "xlabel")
-        self.assertEqual(y_label, "ylabel")
 
     def test_find_skipped_runs(self):
         from reporting.report.view_util import find_skipped_runs

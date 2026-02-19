@@ -168,7 +168,7 @@ def download_reduced_data(request, instrument, run_id):
     :param instrument: instrument name
     :param run_id: run number
     """
-    html_data = view_util.get_plot_data_from_server(instrument, run_id, "html")
+    html_data = view_util.get_plot_data_from_server(instrument, run_id)
     ascii_data = view_util.extract_ascii_from_div(html_data)
     if ascii_data is None:
         error_msg = "No data available for %s %s" % (instrument, run_id)

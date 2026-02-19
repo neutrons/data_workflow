@@ -577,10 +577,7 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     :param run_id: run_number
     """
     plot_dict = {
-        "plot_data": None,
         "html_data": None,
-        "plot_label_x": "",
-        "plot_label_y": "",
         "update_url": None,
         "key": generate_key(instrument, run_id),
     }
@@ -589,104 +586,37 @@ def get_plot_template_dict(run_object=None, instrument=None, run_id=None):
     live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
     live_data_url = f"https://{settings.LIVE_DATA_SERVER_DOMAIN}:{settings.LIVE_DATA_SERVER_PORT}{live_data_url}"
 
-    # First option: html data
-    html_data = get_plot_data_from_server(instrument, run_id, "html")
+    html_data = get_plot_data_from_server(instrument, run_id)
     if html_data is not None:
         plot_dict["html_data"] = html_data
         plot_dict["update_url"] = append_key(live_data_url + "/html/", instrument, run_id)
         if extract_ascii_from_div(html_data) is not None:
             plot_dict["data_url"] = reverse("report:download_reduced_data", args=[instrument, run_id])
-        return plot_dict
-
-    # Second, json data from the plot server
-    json_data = get_plot_data_from_server(instrument, run_id, "json")
-
-    # Third, local json data for the d3 plots
-    if json_data:
-        plot_dict["update_url"] = append_key(live_data_url + "/json/", instrument, run_id)
-
-    plot_data, x_label, y_label = extract_d3_data_from_json(json_data)
-    if plot_data is not None:
-        plot_dict["plot_data"] = plot_data
-        plot_dict["plot_label_x"] = x_label
-        plot_dict["plot_label_y"] = y_label
-        return plot_dict
 
     return plot_dict
 
 
-def get_plot_data_from_server(instrument, run_id, data_type="json"):
+def get_plot_data_from_server(instrument, run_id):
     """
-    Get json data from the live data server
+    Get html data from the live data server
 
     :param instrument: instrument name
     :param run_id: run number
-    :param data_type: data type, either 'json' or 'html'
     """
-    json_data = None
+    html_data = None
     try:
         url_template = string.Template(settings.LIVE_DATA_SERVER)
         live_data_url = url_template.substitute(instrument=instrument, run_number=run_id)
         live_data_url = (
-            f"https://{settings.LIVE_DATA_SERVER_DOMAIN}:{settings.LIVE_DATA_SERVER_PORT}{live_data_url}/{data_type}/"
+            f"https://{settings.LIVE_DATA_SERVER_DOMAIN}:{settings.LIVE_DATA_SERVER_PORT}{live_data_url}/html/"
         )
         live_data_url = append_key(live_data_url, instrument, run_id)
         data_request = requests.get(live_data_url, timeout=1.5)
         if data_request.status_code == 200:
-            json_data = data_request.text
+            html_data = data_request.text
     except:  # noqa: E722
         logging.exception("Could not pull data from live data server: %s", str(instrument))
-    return json_data
-
-
-def extract_d3_data_from_json(json_data):
-    """
-    DEPRECATED
-
-    For backward compatibility, extract D3 data from json data for
-    the old-style interactive plots.
-
-    :param json_data: json data block
-    """
-    plot_data = None
-    x_label = "Q [1/\u00c5]"
-    y_label = "Absolute reflectivity"
-
-    # Return dummy data if not data is coming in.
-    if json_data is None:
-        return plot_data, x_label, y_label
-
-    try:
-        data_dict = json.loads(json_data)
-        if "main_output" in data_dict:
-            # Old format
-            if "x" in data_dict["main_output"]:
-                x_values = data_dict["main_output"]["x"]
-                y_values = data_dict["main_output"]["y"]
-                e_values = data_dict["main_output"]["e"]
-                if "x_label" in data_dict["main_output"]:
-                    x_label = data_dict["main_output"]["x_label"]
-                if "y_label" in data_dict["main_output"]:
-                    y_label = data_dict["main_output"]["y_label"]
-                plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
-            # New format from Mantid
-            elif "data" in data_dict["main_output"]:
-                x_values = data_dict["main_output"]["data"]["1"][0]
-                y_values = data_dict["main_output"]["data"]["1"][1]
-                e_values = data_dict["main_output"]["data"]["1"][2]
-                if "axes" in data_dict["main_output"]:
-                    if "xlabel" in data_dict["main_output"]["axes"]:
-                        x_label = data_dict["main_output"]["axes"]["xlabel"]
-                    if "ylabel" in data_dict["main_output"]["axes"]:
-                        y_label = data_dict["main_output"]["axes"]["ylabel"]
-                if len(data_dict["main_output"]["data"]["1"]) > 3:
-                    dx = data_dict["main_output"]["data"]["1"][3]
-                    plot_data = [[x_values[i], y_values[i], e_values[i], dx[i]] for i in range(len(y_values))]
-                else:
-                    plot_data = [[x_values[i], y_values[i], e_values[i]] for i in range(len(y_values))]
-    except:  # noqa: E722
-        logging.exception("Error finding reduced json data:")
-    return plot_data, x_label, y_label
+    return html_data
 
 
 def find_skipped_runs(instrument_id, start_run_number=0):
