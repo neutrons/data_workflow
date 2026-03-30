@@ -16,6 +16,9 @@ from django.urls import reverse
 
 from reporting.users.models import PageView
 
+# Global LDAP groups with privileged access across all instruments
+GLOBAL_PRIVILEGED_LDAP_GROUPS = ["snsadmin", "slowcontrols_developers"]
+
 
 def fill_template_values(request, **template_args):
     """
@@ -145,11 +148,11 @@ def is_instrument_staff(request, instrument_id):
     try:
         if request.user is not None and hasattr(request.user, "ldap_user"):
             groups = request.user.ldap_user.group_names
+            # Check instrument-specific groups or global privileged groups
             if (
                 "sns_%s_team" % str(instrument_id).lower() in groups
                 or "hfir_%s_team" % str(instrument_id).lower() in groups
-                or "snsadmin" in groups
-                or "slowcontrols_developers" in groups
+                or any(privileged_group in groups for privileged_group in GLOBAL_PRIVILEGED_LDAP_GROUPS)
             ):
                 return True
     except:  # noqa: E722
@@ -175,8 +178,7 @@ def is_experiment_member(request, instrument_id, experiment_id):
             return (
                 "sns_%s_team" % str(instrument_id).lower() in groups
                 or "sns-ihc" in groups
-                or "snsadmin" in groups
-                or "slowcontrols_developers" in groups
+                or any(privileged_group in groups for privileged_group in GLOBAL_PRIVILEGED_LDAP_GROUPS)
                 or "%s" % experiment_id.expt_name.upper() in groups
                 or is_instrument_staff(request, instrument_id)
             )
