@@ -1183,8 +1183,12 @@ def get_instruments_for_user(request):
         # LDAP groups
         try:
             if request.user is not None and hasattr(request.user, "ldap_user"):
+                from reporting.users.view_util import GLOBAL_PRIVILEGED_LDAP_GROUPS
+
                 groups = request.user.ldap_user.group_names
-                if "sns_%s_team" % instrument_name.lower() in groups or "snsadmin" in groups:
+                if "sns_%s_team" % instrument_name.lower() in groups or any(
+                    privileged_group in groups for privileged_group in GLOBAL_PRIVILEGED_LDAP_GROUPS
+                ):
                     instrument_list.append(instrument_name)
         except:  # noqa: E722
             # Couldn't find the user in the instrument LDAP group

@@ -159,6 +159,12 @@ class TestViews(TestCase):
         ldap_user.group_names = None
         self.assertFalse(view_util.is_instrument_staff(request, "inst"))
 
+        # in slowcontrols_developers group
+        ldap_user = mock.MagicMock()
+        ldap_user.group_names = ["slowcontrols_developers"]
+        user.ldap_user = ldap_user
+        self.assertTrue(view_util.is_instrument_staff(request, "inst"))
+
     def test_is_experiment_member(self):
         # HIDE_RUN_DETAILS = False
         with self.settings(HIDE_RUN_DETAILS=False):
@@ -183,6 +189,13 @@ class TestViews(TestCase):
         # invalid input
         exp.expt_name = 1234
         self.assertFalse(view_util.is_experiment_member(request, "inst", exp))
+
+        # in slowcontrols_developers group
+        ldap_user = mock.MagicMock()
+        ldap_user.group_names = ["slowcontrols_developers"]
+        user.ldap_user = ldap_user
+        exp.expt_name = "IPTS-1234"
+        self.assertTrue(view_util.is_experiment_member(request, "inst", exp))
 
     def test_monitor(self):
         user = User.objects.create_user("user")

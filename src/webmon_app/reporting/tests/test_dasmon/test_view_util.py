@@ -1092,16 +1092,29 @@ class ViewUtilTest(TestCase):
     def test_get_instruments_for_user(self):
         from reporting.dasmon.view_util import get_instruments_for_user
 
-        # make entries
+        # Test Django group membership
         gp_name = "TESTINST" + settings.INSTRUMENT_TEAM_SUFFIX
         gp = Group.objects.create(name=gp_name)
         gp.save()
-        # mock request
         request = mock.MagicMock()
         request.user.groups.all.return_value = [Group.objects.get(name=gp_name)]
-        # test
         inst_list = get_instruments_for_user(request)
         assert inst_list[0] == "TESTINST"
+
+        # Test LDAP group membership - slowcontrols_developers should see all instruments
+        request = mock.MagicMock()
+        request.user.groups.all.return_value = []
+        ldap_user = mock.MagicMock()
+        ldap_user.group_names = ["slowcontrols_developers"]
+        request.user.ldap_user = ldap_user
+        inst_list = get_instruments_for_user(request)
+        assert "TESTINST" in inst_list
+
+        # Test LDAP group membership - snsadmin should see all instruments
+        ldap_user.group_names = ["snsadmin"]
+        request.user.ldap_user = ldap_user
+        inst_list = get_instruments_for_user(request)
+        assert "TESTINST" in inst_list
 
 
 if __name__ == "__main__":
