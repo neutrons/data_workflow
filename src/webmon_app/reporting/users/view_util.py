@@ -149,6 +149,7 @@ def is_instrument_staff(request, instrument_id):
                 "sns_%s_team" % str(instrument_id).lower() in groups
                 or "hfir_%s_team" % str(instrument_id).lower() in groups
                 or "snsadmin" in groups
+                or "slowcontrols_developers" in groups
             ):
                 return True
     except:  # noqa: E722
@@ -175,6 +176,7 @@ def is_experiment_member(request, instrument_id, experiment_id):
                 "sns_%s_team" % str(instrument_id).lower() in groups
                 or "sns-ihc" in groups
                 or "snsadmin" in groups
+                or "slowcontrols_developers" in groups
                 or "%s" % experiment_id.expt_name.upper() in groups
                 or is_instrument_staff(request, instrument_id)
             )

@@ -1184,7 +1184,11 @@ def get_instruments_for_user(request):
         try:
             if request.user is not None and hasattr(request.user, "ldap_user"):
                 groups = request.user.ldap_user.group_names
-                if "sns_%s_team" % instrument_name.lower() in groups or "snsadmin" in groups:
+                if (
+                    "sns_%s_team" % instrument_name.lower() in groups
+                    or "snsadmin" in groups
+                    or "slowcontrols_developers" in groups
+                ):
                     instrument_list.append(instrument_name)
         except:  # noqa: E722
             # Couldn't find the user in the instrument LDAP group
