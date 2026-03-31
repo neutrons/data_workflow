@@ -21,7 +21,7 @@ jobs:
     - name: Test with pytest
       run: pixi run unittests-with-coverage
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Build documentation
