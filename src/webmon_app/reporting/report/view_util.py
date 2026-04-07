@@ -14,9 +14,9 @@ import string
 
 import requests
 from django.conf import settings
+from django.contrib import messages
 from django.core.cache import cache
 from django.db import connection, models, transaction
-from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import formats, timezone
@@ -162,7 +162,7 @@ def send_processing_request(instrument_id, run_id, user=None, destination=None, 
     # If not, look up the online catalog
     file_path = run_id.file
     if len(file_path) == 0:
-        from report.catalog import get_run_info
+        from reporting.report.catalog import get_run_info
 
         run_info = get_run_info(str(instrument_id), "", run_id.run_number)
         for _file in run_info["data_files"]:
@@ -214,10 +214,25 @@ def processing_request(request, instrument, run_id, destination):
     if is_instrument_staff(request, instrument_id):
         try:
             send_processing_request(instrument_id, run_object, request.user, destination=destination)
-        except:  # noqa: E722
+        except RuntimeError as e:
+            # Catalog not found - the Nexus file hasn't been created yet
+            logging.warning("Run not ready for post-processing: %s", str(e))
+            messages.error(
+                request,
+                "This run cannot be submitted for post-processing yet. "
+                "The NeXus data file is not available in the catalog. "
+                "Please wait for the run to be translated to NeXus format or contact the "
+                "data acquisition team if this error persists.",
+            )
+        except Exception:  # noqa: E722
+            # Unexpected error - log and show generic message
             logging.error("Could not send post-processing request: %s", destination)
             logging.exception("")
-            return HttpResponseServerError()
+            messages.error(
+                request,
+                "An unexpected error occurred while submitting the post-processing request. "
+                "Please try again or contact support if the problem persists.",
+            )
     # return render(request, 'report/processing_request_failure.html', {})
     return redirect(reverse("report:detail", args=[instrument, run_id]))
 
