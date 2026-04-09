@@ -406,6 +406,181 @@ class ViewUtilTest(TestCase):
         self.assertTrue("test_instrument/experiment/test_exp1" in rst[0]["experiment"])
         self.assertTrue("test_instrument/7" in rst[0]["run"])
 
+    @mock.patch("reporting.report.view_util.send_processing_request")
+    def test_processing_request_runtime_error_shows_user_friendly_message(self, mock_send_request):
+        """
+        Test that RuntimeError (catalog not found) shows a user-friendly message
+        instead of a 500 error. This fixes the bug where runs without Nexus files
+        showed internal server errors.
+        """
+        from django.contrib.messages import get_messages
+        from django.test import RequestFactory
+
+        from reporting.report.view_util import processing_request
+
+        # Setup: Make send_processing_request raise RuntimeError (catalog not found)
+        mock_send_request.side_effect = RuntimeError("Run 62174 not found in catalog")
+
+        # Create a request object with session and messages support
+        factory = RequestFactory()
+        request = factory.get("/report/pg3/62174/postprocess/")
+        request.user = mock.MagicMock()
+        request.user.username = "test_user"
+        request.user.is_staff = True
+
+        # Add session and messages middleware components
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        from django.contrib.sessions.backends.db import SessionStore
+
+        setattr(request, "session", SessionStore())
+        setattr(request, "_messages", FallbackStorage(request))
+
+        # Execute: Call processing_request which should catch RuntimeError
+        response = processing_request(request, instrument="test_instrument", run_id=1, destination=None)
+
+        # Verify: Should redirect (not 500 error)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.endswith("/report/test_instrument/1/"))
+
+        # Verify: Should have user-friendly error message
+        messages = list(get_messages(request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn("cannot be submitted for post-processing yet", str(messages[0]))
+        self.assertIn("data file is not available in the catalog", str(messages[0]))
+        self.assertIn("wait for the run to complete", str(messages[0]))
+
+    @mock.patch("reporting.report.view_util.send_processing_request")
+    def test_processing_request_generic_error_shows_generic_message(self, mock_send_request):
+        """
+        Test that generic exceptions (not RuntimeError) still show an error message
+        and redirect properly instead of crashing.
+        """
+        from django.contrib.messages import get_messages
+        from django.test import RequestFactory
+
+        from reporting.report.view_util import processing_request
+
+        # Setup: Make send_processing_request raise a generic exception
+        mock_send_request.side_effect = Exception("Network timeout")
+
+        # Create a request object with session and messages support
+        factory = RequestFactory()
+        request = factory.get("/report/hb2b/5757/reduce/")
+        request.user = mock.MagicMock()
+        request.user.username = "test_user"
+        request.user.is_staff = True
+
+        # Add session and messages middleware components
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        from django.contrib.sessions.backends.db import SessionStore
+
+        setattr(request, "session", SessionStore())
+        setattr(request, "_messages", FallbackStorage(request))
+
+        # Execute: Call processing_request with generic exception
+        response = processing_request(request, instrument="test_instrument", run_id=1, destination=None)
+
+        # Verify: Should redirect (not 500 error)
+        self.assertEqual(response.status_code, 302)
+
+        # Verify: Should have generic error message
+        messages = list(get_messages(request))
+        self.assertEqual(len(messages), 1)
+        self.assertIn("unexpected error occurred", str(messages[0]))
+        self.assertIn("contact support", str(messages[0]))
+
+    @mock.patch("reporting.report.view_util.send_processing_request")
+    def test_processing_request_success_no_error_message(self, mock_send_request):
+        """
+        Test that successful post-processing requests don't show error messages.
+        """
+        from django.contrib.messages import get_messages
+        from django.test import RequestFactory
+
+        from reporting.report.view_util import processing_request
+
+        # Setup: send_processing_request succeeds without error
+        mock_send_request.return_value = None
+
+        # Create a request object
+        factory = RequestFactory()
+        request = factory.get("/report/pg3/62174/postprocess/")
+        request.user = mock.MagicMock()
+        request.user.username = "test_user"
+        request.user.is_staff = True
+
+        from django.contrib.messages.storage.fallback import FallbackStorage
+        from django.contrib.sessions.backends.db import SessionStore
+
+        setattr(request, "session", SessionStore())
+        setattr(request, "_messages", FallbackStorage(request))
+
+        # Execute
+        response = processing_request(request, instrument="test_instrument", run_id=1, destination=None)
+
+        # Verify: Should redirect successfully
+        self.assertEqual(response.status_code, 302)
+
+        # Verify: Should have NO error messages
+        messages = list(get_messages(request))
+        self.assertEqual(len(messages), 0)
+
+    @mock.patch("reporting.reporting_app.view_util.send_activemq_message")
+    @mock.patch("reporting.report.catalog.get_run_info")
+    def test_send_processing_request_import_fix(self, mock_get_run_info, mock_msg_sender):
+        """
+        Test that the import statement is now correct and doesn't raise ModuleNotFoundError.
+        This was the original bug: `from report.catalog import get_run_info` instead of
+        `from reporting.report.catalog import get_run_info`.
+        """
+        from reporting.report.view_util import send_processing_request
+
+        # Setup: Mock catalog to return data files (to trigger the catalog import path)
+        mock_get_run_info.return_value = {
+            "data_files": ["/SNS/PG3/IPTS-36301/nexus/PG3_62174.nxs.h5"],
+            "proposal": "IPTS-36301",
+        }
+        mock_msg_sender.return_value = None
+
+        inst = Instrument.objects.get(name="test_instrument")
+        run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
+        # Clear the file path to force catalog lookup
+        run_id.file = ""
+        run_id.save()
+
+        # Execute: This should NOT raise ModuleNotFoundError anymore
+        try:
+            send_processing_request(inst, run_id)
+            import_worked = True
+        except ModuleNotFoundError:
+            import_worked = False
+
+        # Verify: Import should work correctly now
+        self.assertTrue(import_worked, "Import statement should be fixed to use 'from reporting.report.catalog'")
+
+    @mock.patch("reporting.reporting_app.view_util.send_activemq_message")
+    @mock.patch("reporting.report.catalog.get_run_info")
+    def test_send_processing_request_raises_runtime_error_when_no_catalog(self, mock_get_run_info, mock_msg_sender):
+        """
+        Test that send_processing_request raises RuntimeError when catalog info is missing.
+        """
+        from reporting.report.view_util import send_processing_request
+
+        # Setup: Mock catalog to return no data files
+        mock_get_run_info.return_value = {"data_files": [], "proposal": ""}
+        mock_msg_sender.return_value = None
+
+        inst = Instrument.objects.get(name="test_instrument")
+        run_id = DataRun.objects.get(run_number=1, instrument_id=inst)
+        run_id.file = ""  # Clear file to trigger catalog lookup
+        run_id.save()
+
+        # Execute & Verify: Should raise RuntimeError
+        with self.assertRaises(RuntimeError) as context:
+            send_processing_request(inst, run_id)
+
+        self.assertIn("not found in catalog", str(context.exception))
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

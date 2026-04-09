@@ -64,7 +64,7 @@
 </script>
 </head>
 <body>
-{% if user_alert %}
+{% if user_alert or messages %}
 <script id="source" language="javascript" type="text/javascript">
     $(document).ready(show_alert);
 </script>
@@ -80,6 +80,14 @@
 <div class="banner_title">{% block banner %}Data Processing Report{% endblock %}</div>
 
 <div class='user_alert'>
+  {% if messages %}
+  <div id="alert_message">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% if not forloop.last %}<br>{% endif %}
+  {% endfor %}
+  </div>
+  {% endif %}
   {% if user_alert %}
   <div id="alert_message">
   {% for item in user_alert %}
