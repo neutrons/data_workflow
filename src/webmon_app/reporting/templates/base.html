@@ -87,7 +87,8 @@
     {% if not forloop.last %}<br>{% endif %}
   {% endfor %}
   </div>
-  {% elif user_alert %}
+  {% endif %}
+  {% if user_alert %}
   <div id="alert_message">
   {% for item in user_alert %}
     {{ item|safe }} {% if not forloop.last %}<br><br>{% endif %}

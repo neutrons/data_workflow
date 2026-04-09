@@ -446,7 +446,8 @@ class ViewUtilTest(TestCase):
         messages = list(get_messages(request))
         self.assertEqual(len(messages), 1)
         self.assertIn("cannot be submitted for post-processing yet", str(messages[0]))
-        self.assertIn("NeXus data file is not available", str(messages[0]))
+        self.assertIn("data file is not available in the catalog", str(messages[0]))
+        self.assertIn("wait for the run to complete", str(messages[0]))
 
     @mock.patch("reporting.report.view_util.send_processing_request")
     def test_processing_request_generic_error_shows_generic_message(self, mock_send_request):
@@ -534,7 +535,7 @@ class ViewUtilTest(TestCase):
         """
         from reporting.report.view_util import send_processing_request
 
-        # Setup: Mock catalog to return empty data files (to trigger the import)
+        # Setup: Mock catalog to return data files (to trigger the catalog import path)
         mock_get_run_info.return_value = {
             "data_files": ["/SNS/PG3/IPTS-36301/nexus/PG3_62174.nxs.h5"],
             "proposal": "IPTS-36301",

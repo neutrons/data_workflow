@@ -219,15 +219,13 @@ def processing_request(request, instrument, run_id, destination):
             logging.warning("Run not ready for post-processing: %s", str(e))
             messages.error(
                 request,
-                "This run cannot be submitted for post-processing yet. "
-                "The NeXus data file is not available in the catalog. "
-                "Please wait for the run to be translated to NeXus format or contact the "
+                "This run cannot be submitted for post-processing yet because the data file is not available "
+                "in the catalog. Please wait for the run to complete and the file to be saved, or contact the "
                 "data acquisition team if this error persists.",
             )
-        except Exception:  # noqa: E722
+        except Exception:
             # Unexpected error - log and show generic message
-            logging.error("Could not send post-processing request: %s", destination)
-            logging.exception("")
+            logging.exception("Could not send post-processing request: %s", destination)
             messages.error(
                 request,
                 "An unexpected error occurred while submitting the post-processing request. "
