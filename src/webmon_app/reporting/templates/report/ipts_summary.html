@@ -47,12 +47,20 @@
       columns: [
         { data: 'run' },
         { data: 'timestamp' },
-        { data: 'status' }
+        { data: 'run_title' },
+        { data: 'status' },
+        { data: 'oncat_link' }
       ],
-      columnDefs: [{
-        "targets": 2,
-        "orderable": false
-      }],
+      columnDefs: [
+        {
+          "targets": 3,
+          "orderable": false
+        },
+        {
+          "targets": 4,
+          "orderable": false
+        }
+      ],
       lengthMenu: [25, 50, 100, 500],
       layout: {
         topEnd: null
@@ -94,13 +102,17 @@ List of {{ instrument }} runs for {{ ipts_number|upper }}:<br><br>
     <tr>
       <th>Run</th>
       <th>Created on</th>
+      <th>Run Title</th>
       <th>Status</th>
+      <th>ONCat</th>
     </tr>
   </thead>
   <tbody>
   </tbody>
   <tfoot>
     <tr>
+      <th></th>
+      <th></th>
       <th></th>
       <th></th>
       <th></th>

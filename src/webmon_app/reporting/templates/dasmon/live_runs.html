@@ -49,8 +49,12 @@
       columns: [
         { data: 'run' },
         { data: 'timestamp' },
+        { data: 'run_title' },
         { data: 'status' },
+        { data: 'oncat_link' },
+        {% if user.is_staff %}
         { data: 'reduce_url' }
+        {% endif %}
       ],
       lengthMenu: [25, 50, 100],
       ordering: false,
@@ -86,7 +90,9 @@ List of latest runs:<br><br>
       <tr>
         <th>Run</th>
         <th>Created on</th>
+        <th>Run Title</th>
         <th>Status</th>
+        <th>ONCat</th>
         {% if user.is_staff %}
         <th>Reduce</th>
         {% endif %}
@@ -99,6 +105,11 @@ List of latest runs:<br><br>
         <th></th>
         <th></th>
         <th></th>
+        <th></th>
+        <th></th>
+        {% if user.is_staff %}
+        <th></th>
+        {% endif %}
       </tr>
     </tfoot>
   </table>

@@ -5,9 +5,12 @@ from .base import INSTALLED_APPS
 
 del DATABASES  # noqa: F821
 # use sqllite for unit test runs
+import os
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join("/tmp", "test_db.sqlite3"),
         "OPTIONS": {
             "timeout": 30000,
         },

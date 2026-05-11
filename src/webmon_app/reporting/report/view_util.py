@@ -516,6 +516,32 @@ def get_run_list_dict(run_list):
             reduce_url = reverse("report:submit_for_reduction", args=[str(r.instrument_id), r.run_number])
             instr_url = reverse("dasmon:live_runs", args=[str(r.instrument_id)])
 
+            # Format run_title with truncation and tooltip
+            run_title_display = ""
+            if r.run_title:
+                # Use the same pruning function used in DASMON views
+                pruned_title = dasmon_view_util._prune_title_string(r.run_title)
+                # Truncate long titles for display
+                if len(r.run_title) > 50:
+                    truncated = r.run_title[:47] + "..."
+                    run_title_display = f'<span title="{r.run_title}">{truncated}</span>'
+                else:
+                    run_title_display = pruned_title
+
+            # Construct ONCat link
+            oncat_link = ""
+            if hasattr(settings, "CATALOG_URL") and settings.CATALOG_URL:
+                # Get facility from settings or default to SNS
+                facility = settings.FACILITY_INFO.get(str(r.instrument_id).upper(), "SNS")
+                oncat_url = (
+                    f"{settings.CATALOG_URL}/api/datafiles?"
+                    f"facility={facility}&"
+                    f"instrument={str(r.instrument_id).upper()}&"
+                    f"experiment={str(r.ipts_id).upper()}&"
+                    f"indexed.run_number={r.run_number}"
+                )
+                oncat_link = f'<a href="{oncat_url}" target="_blank" rel="noopener noreferrer">View</a>'
+
             run_dicts.append(
                 {
                     "instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
@@ -527,6 +553,8 @@ def get_run_list_dict(run_list):
                     "run_id": r.id,
                     "timestamp": formats.localize(localtime),
                     "status": run_status_text_dict.get(r.id, "unknown"),
+                    "run_title": run_title_display,
+                    "oncat_link": oncat_link,
                 }
             )
     except Exception:

@@ -429,6 +429,7 @@ def get_experiment_update(request, instrument, ipts):
     column_to_field = {
         "run": "run_number",
         "timestamp": "created_on",
+        "run_title": "run_title",
     }
 
     order_column_number = request.GET.get("order[0][column]", "0")
@@ -442,7 +443,8 @@ def get_experiment_update(request, instrument, ipts):
 
     run_search = request.GET.get("columns[0][search][value]", "")
     date_search = request.GET.get("columns[1][search][value]", "")
-    status_search = request.GET.get("columns[2][search][value]", "")
+    title_search = request.GET.get("columns[2][search][value]", "")
+    status_search = request.GET.get("columns[3][search][value]", "")
 
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -461,6 +463,7 @@ def get_experiment_update(request, instrument, ipts):
         run_search,
         date_search,
         status_search,
+        title_search=title_search,
     )
     data["data"] = view_util.get_run_list_dict(run_list)
     data["recordsTotal"] = count

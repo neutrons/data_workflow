@@ -146,10 +146,11 @@ def run_summary_update(request):
     instrument_search = request.GET.get("columns[0][search][value]", "")
     run_search = request.GET.get("columns[1][search][value]", "")
     date_search = request.GET.get("columns[2][search][value]", "")
-    status_search = request.GET.get("columns[3][search][value]", "")
+    title_search = request.GET.get("columns[3][search][value]", "")
+    status_search = request.GET.get("columns[4][search][value]", "")
 
     run_list, count, filtered_count = view_util.get_run_list_newest(
-        offset, limit, instrument_search, run_search, date_search, status_search
+        offset, limit, instrument_search, run_search, date_search, status_search, title_search=title_search
     )
     data = {}
     data["data"] = report_view_util.get_run_list_dict(run_list)
@@ -318,7 +319,8 @@ def get_update(request, instrument):
 
     run_search = request.GET.get("columns[0][search][value]", "")
     date_search = request.GET.get("columns[1][search][value]", "")
-    status_search = request.GET.get("columns[2][search][value]", "")
+    title_search = request.GET.get("columns[2][search][value]", "")
+    status_search = request.GET.get("columns[3][search][value]", "")
 
     # Get instrument
     instrument_id = get_object_or_404(Instrument, name=instrument.lower())
@@ -341,7 +343,7 @@ def get_update(request, instrument):
     data_dict["live_plot_data"] = view_util.get_live_variables(request, instrument_id)
 
     run_list, count, filtered_count = view_util.get_run_list_instrument_newest(
-        instrument_id, offset, limit, run_search, date_search, status_search
+        instrument_id, offset, limit, run_search, date_search, status_search, title_search=title_search
     )
     data_dict["data"] = report_view_util.get_run_list_dict(run_list)
     data_dict["recordsTotal"] = count
