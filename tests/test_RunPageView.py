@@ -304,7 +304,9 @@ class TestRunPageView:
             """<th>Instr.</th>
             <th>Run</th>
             <th>Created on</th>
-            <th>Status</th>""",
+            <th>Run Title</th>
+            <th>Status</th>
+            <th>ONCat</th>""",
             r.text,
         )
 
