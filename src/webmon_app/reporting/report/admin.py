@@ -51,6 +51,7 @@ class DataRunAdmin(admin.ModelAdmin):
         "instrument_id",
         "ipts_id",
         "file",
+        "run_title",
         "created_on",
     )
 

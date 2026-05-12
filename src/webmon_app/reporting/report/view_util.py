@@ -533,12 +533,11 @@ def get_run_list_dict(run_list):
             if hasattr(settings, "CATALOG_URL") and settings.CATALOG_URL:
                 # Get facility from settings or default to SNS
                 facility = settings.FACILITY_INFO.get(str(r.instrument_id).upper(), "SNS")
+                # Use web interface format: /runs/SNS/ARCS/IPTS-36590/343513
                 oncat_url = (
-                    f"{settings.CATALOG_URL}/api/datafiles?"
-                    f"facility={facility}&"
-                    f"instrument={str(r.instrument_id).upper()}&"
-                    f"experiment={str(r.ipts_id).upper()}&"
-                    f"indexed.run_number={r.run_number}"
+                    f"{settings.CATALOG_URL}/runs/{facility}/"
+                    f"{str(r.instrument_id).upper()}/"
+                    f"{str(r.ipts_id).upper()}/{r.run_number}"
                 )
                 oncat_link = f'<a href="{oncat_url}" target="_blank" rel="noopener noreferrer">View</a>'
 

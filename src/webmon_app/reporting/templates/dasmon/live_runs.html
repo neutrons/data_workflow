@@ -56,6 +56,33 @@
         { data: 'reduce_url' }
         {% endif %}
       ],
+      columnDefs: [
+        {
+          "targets": 0,
+          "width": "8%"
+        },
+        {
+          "targets": 1,
+          "width": "15%"
+        },
+        {
+          "targets": 2,
+          "width": "35%"
+        },
+        {
+          "targets": 3,
+          "width": "12%"
+        },
+        {
+          "targets": 4,
+          "width": "8%"
+        }{% if user.is_staff %},
+        {
+          "targets": 5,
+          "width": "10%"
+        }
+        {% endif %}
+      ],
       lengthMenu: [25, 50, 100],
       ordering: false,
       layout: {
