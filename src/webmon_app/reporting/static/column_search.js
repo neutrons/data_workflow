@@ -38,6 +38,20 @@ function column_search() {
                   column.search(input.value).draw();
                 }
               });
+            } else if (title == 'Run Title') {
+              // Create input element
+              let input = document.createElement('input');
+              input.type = 'text';
+              input.placeholder = 'Search...';
+              input.style.width = '90%';
+              column.footer().replaceChildren(input);
+
+              // Event listener for user input
+              input.addEventListener('keyup', () => {
+                if (column.search() !== this.value) {
+                  column.search(input.value).draw();
+                }
+              });
             } else if (title == 'Instr.') {
               // Create select element
               let select = document.createElement('select');
