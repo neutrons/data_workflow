@@ -51,8 +51,7 @@
         { data: 'timestamp' },
         { data: 'run_title' },
         { data: 'status' },
-        { data: 'oncat_link' },
-        {% if user.is_staff %}
+        { data: 'oncat_link' }{% if user.is_staff %},
         { data: 'reduce_url' }
         {% endif %}
       ],

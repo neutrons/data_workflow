@@ -478,6 +478,14 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
 
     # The longest allowable string is 128 characters
     value_string = str(value)
+
+    # If this is a run_title parameter, update the DataRun record with full value before truncation
+    if str(key_id) == "run_title":
+        # Pass the full value (up to 256 chars for DataRun.run_title field)
+        full_title = value_string[:256] if len(value_string) > 256 else value_string
+        _update_datarun_title(instrument_id, full_title)
+
+    # Truncate for StatusVariable/StatusCache (128 char limit)
     if len(value_string) > 128:
         value_string = value_string[:128]
 
@@ -506,10 +514,6 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
             value=value_string,
         )
         last_value.save()
-
-    # If this is a run_title parameter, update the DataRun record
-    if str(key_id) == "run_title":
-        _update_datarun_title(instrument_id, value_string)
 
 
 def _update_datarun_title(instrument_id: Instrument, run_title: str) -> None:

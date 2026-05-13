@@ -20,6 +20,7 @@ from django.db import connection, models, transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import formats, timezone
+from django.utils.html import escape
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
@@ -521,22 +522,24 @@ def get_run_list_dict(run_list):
             if r.run_title:
                 # Use the same pruning function used in DASMON views
                 pruned_title = dasmon_view_util._prune_title_string(r.run_title)
-                # Truncate long titles for display
+                # Truncate long titles for display with escaped HTML
                 if len(r.run_title) > 50:
                     truncated = r.run_title[:47] + "..."
-                    run_title_display = f'<span title="{r.run_title}">{truncated}</span>'
+                    # Escape both the title attribute and the content to prevent XSS
+                    run_title_display = f'<span title="{escape(r.run_title)}">{escape(truncated)}</span>'
                 else:
-                    run_title_display = pruned_title
+                    run_title_display = escape(pruned_title)
 
             # Construct ONCat link
             oncat_link = ""
             if hasattr(settings, "CATALOG_URL") and settings.CATALOG_URL:
-                # Get facility from settings or default to SNS
-                facility = settings.FACILITY_INFO.get(str(r.instrument_id).upper(), "SNS")
+                # FACILITY_INFO is keyed by lowercase instrument names
+                instrument_name = str(r.instrument_id)
+                facility = settings.FACILITY_INFO.get(instrument_name.lower(), "SNS")
                 # Use web interface format: /runs/SNS/ARCS/IPTS-36590/343513
                 oncat_url = (
                     f"{settings.CATALOG_URL}/runs/{facility}/"
-                    f"{str(r.instrument_id).upper()}/"
+                    f"{instrument_name.upper()}/"
                     f"{str(r.ipts_id).upper()}/{r.run_number}"
                 )
                 oncat_link = f'<a href="{oncat_url}" target="_blank" rel="noopener noreferrer">View</a>'
