@@ -7,6 +7,9 @@ del DATABASES  # noqa: F821
 # use sqllite for unit test runs
 import os
 
+# File-based SQLite is used instead of :memory: to avoid "table not found" errors
+# that occur when Django migrations create tables in one connection but tests
+# run in another connection (SQLite :memory: databases are per-connection)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",

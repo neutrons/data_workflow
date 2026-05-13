@@ -512,11 +512,11 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
         _update_datarun_title(instrument_id, value_string)
 
 
-def _update_datarun_title(instrument_id, run_title):
+def _update_datarun_title(instrument_id: Instrument, run_title: str) -> None:
     """
     Update the DataRun record with the run title
 
-    :param instrument_id: Instrument object
+    :param instrument_id: Instrument object (note: despite the parameter name, this is the Instrument object, not an ID)
     :param run_title: run title string
     """
     try:
