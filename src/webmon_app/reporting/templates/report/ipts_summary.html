@@ -78,6 +78,9 @@
       lengthMenu: [25, 50, 100, 500],
       layout: {
         topEnd: null
+      },
+      drawCallback: function () {
+        $('.ui-tooltip').remove();
       }
     });
   });
