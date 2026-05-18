@@ -10,8 +10,10 @@ import datetime
 import json
 import logging
 import os
+import smtplib
 import sys
 import time
+from email.mime.text import MIMEText
 
 import stomp
 
@@ -23,7 +25,9 @@ else:
 
 from . import settings  # noqa: E402
 from .settings import (
+    ALERT_EMAIL,  # noqa: E402
     CACHE_PURGE_TIMEOUT,  # noqa: E402
+    FROM_EMAIL,  # noqa: E402
     INSTALLATION_DIR,  # noqa: E402
     PURGE_TIMEOUT,  # noqa: E402
 )
@@ -260,6 +264,30 @@ def process_SMS(instrument_id, headers, data):
         logging.exception("Could not process SMS message:")
 
 
+def send_message(sender, recipients, subject, message):
+    """
+    Send an email message for AMQ heartbeat alerts
+
+    :param sender: email of the sender
+    :param recipients: list of recipient emails
+    :param subject: subject of the message
+    :param message: content of the message
+    """
+    # If no sender or recipients are defined, do nothing
+    if len(sender) == 0 or len(recipients) == 0:
+        return
+    try:
+        msg = MIMEText(message)
+        msg["Subject"] = subject
+        msg["From"] = sender
+        msg["To"] = ";".join(recipients)
+        s = smtplib.SMTP("localhost")
+        s.sendmail(sender, recipients, msg.as_string())
+        s.quit()
+    except:  # noqa: E722
+        logging.exception("Could not send message:")
+
+
 def process_ack(data=None, headers=None):
     """
     Process a ping request ack
@@ -273,6 +301,12 @@ def process_ack(data=None, headers=None):
                 if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0 * HEARTBEAT_DELAY:
                     logging.error("Client %s disappeared", proc_name)
                     acks[proc_name] = None
+                    send_message(
+                        sender=FROM_EMAIL,
+                        recipients=ALERT_EMAIL,
+                        subject="Client %s disappeared" % proc_name,
+                        message="An AMQ client disappeared",
+                    )
         elif "src_name" in data:
             current_time = time.time()
             msg_time = 0
@@ -298,6 +332,12 @@ def process_ack(data=None, headers=None):
                 )
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared", proc_name)
+                send_message(
+                    sender=FROM_EMAIL,
+                    recipients=ALERT_EMAIL,
+                    subject="Client %s reappeared" % proc_name,
+                    message="An AMQ client reappeared",
+                )
             acks[proc_name] = time.time()
             if EXTRA_LOGS:
                 logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)

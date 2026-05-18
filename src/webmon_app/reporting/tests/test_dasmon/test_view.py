@@ -640,6 +640,21 @@ class SummaryUpdateTest(TestCase):
         response = self.client.get(reverse("dasmon:summary_update"))
         self.assertEqual(response.status_code, 200)
 
+    def test_notifications_endpoint_returns_404(self):
+        """Verify obsolete notifications endpoint returns 404"""
+        response = self.client.get("/dasmon/notifications/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_instrument_signals_endpoint_returns_404(self):
+        """Verify obsolete signals endpoint returns 404"""
+        response = self.client.get("/dasmon/test_instrument/signals/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_acknowledge_signal_endpoint_returns_404(self):
+        """Verify obsolete signal acknowledgment endpoint returns 404"""
+        response = self.client.get("/dasmon/test_instrument/signals/ack/1/")
+        self.assertEqual(response.status_code, 404)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
