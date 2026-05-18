@@ -258,6 +258,64 @@ class ViewUtilTest(TestCase):
         self.assertEqual(len(rst), 9)
         print(rst)
 
+    def test_datarun_with_run_title(self):
+        """Test that DataRun can store and retrieve run_title"""
+        inst = Instrument.objects.get(name="test_instrument")
+        ipts = IPTS.objects.get(expt_name="test_exp1")
+
+        # Test create with run_title
+        run = DataRun.objects.create(
+            run_number=999, ipts_id=ipts, instrument_id=inst, file="tmp/test_999.nxs", run_title="Test Run Title"
+        )
+        run.save()
+
+        # Verify run_title is stored
+        retrieved_run = DataRun.objects.get(run_number=999, instrument_id=inst)
+        self.assertEqual(retrieved_run.run_title, "Test Run Title")
+
+        # Test create without run_title (should be None)
+        run2 = DataRun.objects.create(run_number=998, ipts_id=ipts, instrument_id=inst, file="tmp/test_998.nxs")
+        run2.save()
+        retrieved_run2 = DataRun.objects.get(run_number=998, instrument_id=inst)
+        self.assertIsNone(retrieved_run2.run_title)
+
+        # Cleanup
+        run.delete()
+        run2.delete()
+
+    def test_get_run_list_dict_includes_run_title_and_oncat(self):
+        """Test that get_run_list_dict includes run_title and oncat_link"""
+        from reporting.report.view_util import get_run_list_dict
+
+        inst = Instrument.objects.get(name="test_instrument")
+        ipts = IPTS.objects.get(expt_name="test_exp1")
+
+        # Create run with title
+        run = DataRun.objects.create(
+            run_number=997, ipts_id=ipts, instrument_id=inst, file="tmp/test_997.nxs", run_title="Test Title for Dict"
+        )
+        run.save()
+
+        runs = DataRun.objects.filter(run_number=997, instrument_id=inst)
+        rst = get_run_list_dict(runs)
+
+        self.assertEqual(len(rst), 1)
+        self.assertIn("run_title", rst[0])
+        self.assertIn("oncat_link", rst[0])
+        self.assertEqual(rst[0]["run_title"], "Test Title for Dict")
+        self.assertIn("catalog", rst[0]["oncat_link"])
+
+        # Test with very long title (should truncate)
+        long_title = "A" * 100
+        run.run_title = long_title
+        run.save()
+
+        rst = get_run_list_dict(DataRun.objects.filter(run_number=997, instrument_id=inst))
+        self.assertIn("title=", rst[0]["run_title"])  # Should have tooltip
+
+        # Cleanup
+        run.delete()
+
     def test_get_run_status_text_dict(self):
         from reporting.report.view_util import get_run_status_text_dict
 

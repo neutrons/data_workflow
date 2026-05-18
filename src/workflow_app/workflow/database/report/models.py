@@ -149,6 +149,7 @@ class DataRun(models.Model):
     ipts_id = models.ForeignKey(IPTS, on_delete=models.CASCADE)
     instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     file = models.CharField(max_length=128)
+    run_title = models.CharField(max_length=256, null=True, blank=True)
     created_on = models.DateTimeField("Timestamp", auto_now_add=True)
     objects = DataRunManager()
 
@@ -159,7 +160,7 @@ class DataRun(models.Model):
         return "%s_%d" % (self.instrument_id, self.run_number)
 
     @classmethod
-    def create_and_save(cls, run_number, ipts_id, instrument_id, file):
+    def create_and_save(cls, run_number, ipts_id, instrument_id, file, run_title=None):
         """
         Create a database entry for this run
         and update the instrument status
@@ -170,6 +171,7 @@ class DataRun(models.Model):
             instrument_id=instrument_id,
             ipts_id=ipts_id,
             file=file,
+            run_title=run_title,
         )
         run_id.save()
 

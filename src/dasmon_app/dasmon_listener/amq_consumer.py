@@ -50,7 +50,7 @@ from reporting.pvmon.models import (  # noqa: E402
     PVCache,
     PVStringCache,
 )  # noqa: E402
-from workflow.database.report.models import Instrument  # noqa: E402
+from workflow.database.report.models import DataRun, Instrument  # noqa: E402
 
 # ACK data
 acks = {}
@@ -478,6 +478,14 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
 
     # The longest allowable string is 128 characters
     value_string = str(value)
+
+    # If this is a run_title parameter, update the DataRun record with full value before truncation
+    if str(key_id) == "run_title":
+        # Pass the full value (up to 256 chars for DataRun.run_title field)
+        full_title = value_string[:256] if len(value_string) > 256 else value_string
+        _update_datarun_title(instrument_id, full_title)
+
+    # Truncate for StatusVariable/StatusCache (128 char limit)
     if len(value_string) > 128:
         value_string = value_string[:128]
 
@@ -506,6 +514,44 @@ def store_and_cache_(instrument_id, key_id, value, timestamp=None, cache_only=Fa
             value=value_string,
         )
         last_value.save()
+
+
+def _update_datarun_title(instrument_id: Instrument, run_title: str) -> None:
+    """
+    Update the DataRun record with the run title
+
+    :param instrument_id: Instrument object (note: despite the parameter name, this is the Instrument object, not an ID)
+    :param run_title: run title string
+    """
+    try:
+        # Get the current run number for this instrument
+        run_number_key = Parameter.objects.get(name="run_number")
+        run_number_cache = StatusCache.objects.filter(instrument_id=instrument_id, key_id=run_number_key).latest(
+            "timestamp"
+        )
+        run_number = int(run_number_cache.value)
+
+        # Find and update the DataRun record
+        data_run = DataRun.objects.get(instrument_id=instrument_id, run_number=run_number)
+        # Only update if the title is different or not set
+        if data_run.run_title != run_title:
+            data_run.run_title = run_title
+            data_run.save()
+            logging.info("Updated run_title for %s run %d", instrument_id.name, run_number)
+    except Parameter.DoesNotExist:
+        # run_number parameter doesn't exist yet
+        pass
+    except StatusCache.DoesNotExist:
+        # No run_number in cache yet
+        pass
+    except DataRun.DoesNotExist:
+        # DataRun not created yet - this is expected in some cases
+        pass
+    except ValueError:
+        # run_number is not a valid integer
+        logging.warning("Invalid run_number value when updating run_title")
+    except:  # noqa: E722
+        logging.exception("Could not update DataRun run_title:")
 
 
 class Client:

@@ -801,7 +801,7 @@ def _red_message(msg):
     return "<span class='red'><b>%s</b></span>" % str(msg)
 
 
-def run_list_search(run_list, run_search, date_search, status_search, instrument_search=""):
+def run_list_search(run_list, run_search, date_search, status_search, title_search="", instrument_search=""):
     """
     Search the run list based on the search parameters
     """
@@ -814,6 +814,9 @@ def run_list_search(run_list, run_search, date_search, status_search, instrument
     if date_search:
         date = timezone.make_aware(datetime.datetime.fromisoformat(date_search), timezone.get_current_timezone())
         run_list = run_list.filter(created_on__gt=date, created_on__lt=date + datetime.timedelta(days=1))
+
+    if title_search:
+        run_list = run_list.filter(run_title__icontains=title_search)
 
     if status_search:
         if status_search == "complete":
@@ -833,7 +836,16 @@ def run_list_search(run_list, run_search, date_search, status_search, instrument
 
 
 def get_run_list_ipts(
-    instrument_id, ipts_id, offset, limit, order_by, reverse_dir, run_search, date_search, status_search
+    instrument_id,
+    ipts_id,
+    offset,
+    limit,
+    order_by,
+    reverse_dir,
+    run_search,
+    date_search,
+    status_search,
+    title_search="",
 ):
     """
     Get the list of runs for a given instrument and IPTS
@@ -844,7 +856,7 @@ def get_run_list_ipts(
     )
     count = run_list.count()
 
-    run_list = run_list_search(run_list, run_search, date_search, status_search)
+    run_list = run_list_search(run_list, run_search, date_search, status_search, title_search=title_search)
     filtered_count = run_list.count()
 
     run_list = run_list.order_by(order_by)
@@ -854,7 +866,9 @@ def get_run_list_ipts(
     return run_list, count, filtered_count
 
 
-def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, date_search, status_search):
+def get_run_list_instrument_newest(
+    instrument_id, offset, limit, run_search, date_search, status_search, title_search=""
+):
     """
     Get the latest runs for a given instrument
     """
@@ -885,14 +899,14 @@ def get_run_list_instrument_newest(instrument_id, offset, limit, run_search, dat
             )
     count = run_list.count()
 
-    run_list = run_list_search(run_list, run_search, date_search, status_search)
+    run_list = run_list_search(run_list, run_search, date_search, status_search, title_search=title_search)
     filtered_count = run_list.count()
 
     run_list = run_list[offset : limit + offset]  # noqa E203
     return run_list, count, filtered_count
 
 
-def get_run_list_newest(offset, limit, instrument_search, run_search, date_search, status_search):
+def get_run_list_newest(offset, limit, instrument_search, run_search, date_search, status_search, title_search=""):
     """
     Get the latest runs for all instruments
     """
@@ -913,7 +927,9 @@ def get_run_list_newest(offset, limit, instrument_search, run_search, date_searc
 
     count = run_list.count()
 
-    run_list = run_list_search(run_list, run_search, date_search, status_search, instrument_search)
+    run_list = run_list_search(
+        run_list, run_search, date_search, status_search, title_search=title_search, instrument_search=instrument_search
+    )
     filtered_count = run_list.count()
 
     run_list = run_list[offset : limit + offset]  # noqa E203

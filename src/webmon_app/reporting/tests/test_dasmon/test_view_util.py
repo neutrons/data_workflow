@@ -899,6 +899,68 @@ class ViewUtilTest(TestCase):
         assert filtered_count == 1
         assert rst[0].run_number == 7
 
+    def test_run_list_search_with_title_filter(self):
+        """Test that run_list_search filters by run_title"""
+        from reporting.dasmon.view_util import run_list_search
+
+        inst = Instrument.objects.get(name="testinst")
+
+        # Add run titles to some runs
+        DataRun.objects.filter(run_number=0, instrument_id=inst).update(run_title="Alpha Test")
+        DataRun.objects.filter(run_number=1, instrument_id=inst).update(run_title="Beta Test")
+        DataRun.objects.filter(run_number=2, instrument_id=inst).update(run_title="Alpha Run")
+
+        run_list = DataRun.objects.filter(instrument_id=inst)
+
+        # Test filtering by title
+        filtered = run_list_search(run_list, "", "", "", title_search="Alpha")
+        assert filtered.count() == 2
+        assert filtered.filter(run_number=0).exists()
+        assert filtered.filter(run_number=2).exists()
+
+        # Test case-insensitive search
+        filtered = run_list_search(run_list, "", "", "", title_search="beta")
+        assert filtered.count() == 1
+        assert filtered.filter(run_number=1).exists()
+
+        # Test no match
+        filtered = run_list_search(run_list, "", "", "", title_search="Nonexistent")
+        assert filtered.count() == 0
+
+    def test_get_run_list_ipts_with_title_filter(self):
+        """Test that get_run_list_ipts supports title filtering"""
+        from reporting.dasmon.view_util import get_run_list_ipts
+
+        inst = Instrument.objects.get(name="testinst")
+        ipts = IPTS.objects.get(expt_name="testexp")
+
+        # Add run titles
+        DataRun.objects.filter(run_number=3, instrument_id=inst).update(run_title="Special Run")
+        DataRun.objects.filter(run_number=4, instrument_id=inst).update(run_title="Normal Run")
+
+        # Test title search
+        rst, count, filtered_count = get_run_list_ipts(
+            inst, ipts, 0, 10, "created_on", True, "", "", "", title_search="Special"
+        )
+        assert count == 12
+        assert filtered_count == 1
+        assert rst[0].run_number == 3
+
+    def test_get_run_list_newest_with_title_filter(self):
+        """Test that get_run_list_newest supports title filtering"""
+        from reporting.dasmon.view_util import get_run_list_newest
+
+        inst = Instrument.objects.get(name="testinst")
+
+        # Add run titles
+        DataRun.objects.filter(run_number=5, instrument_id=inst).update(run_title="Unique Title")
+        DataRun.objects.filter(run_number=6, instrument_id=inst).update(run_title="Another Title")
+
+        # Test title search
+        rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "", title_search="Unique")
+        assert filtered_count == 1
+        assert rst[0].run_number == 5
+
         # incomplete status
         rst, count, filtered_count = get_run_list_newest(0, 10, "", "", "", "incomplete")
         assert count == 12

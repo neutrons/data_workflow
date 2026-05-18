@@ -20,6 +20,7 @@ from django.db import connection, models, transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import formats, timezone
+from django.utils.html import escape
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
@@ -516,6 +517,33 @@ def get_run_list_dict(run_list):
             reduce_url = reverse("report:submit_for_reduction", args=[str(r.instrument_id), r.run_number])
             instr_url = reverse("dasmon:live_runs", args=[str(r.instrument_id)])
 
+            # Format run_title with truncation and tooltip
+            run_title_display = ""
+            if r.run_title:
+                # Use the same pruning function used in DASMON views
+                pruned_title = dasmon_view_util._prune_title_string(r.run_title)
+                # Truncate long titles for display with escaped HTML
+                if len(r.run_title) > 50:
+                    truncated = r.run_title[:47] + "..."
+                    # Escape both the title attribute and the content to prevent XSS
+                    run_title_display = f'<span title="{escape(r.run_title)}">{escape(truncated)}</span>'
+                else:
+                    run_title_display = escape(pruned_title)
+
+            # Construct ONCat link
+            oncat_link = ""
+            if hasattr(settings, "CATALOG_URL") and settings.CATALOG_URL:
+                # FACILITY_INFO is keyed by lowercase instrument names
+                instrument_name = str(r.instrument_id)
+                facility = settings.FACILITY_INFO.get(instrument_name.lower(), "SNS")
+                # Use web interface format: /runs/SNS/ARCS/IPTS-36590/343513
+                oncat_url = (
+                    f"{settings.CATALOG_URL}/runs/{facility}/"
+                    f"{instrument_name.upper()}/"
+                    f"{str(r.ipts_id).upper()}/{r.run_number}"
+                )
+                oncat_link = f'<a href="{oncat_url}" target="_blank" rel="noopener noreferrer">View</a>'
+
             run_dicts.append(
                 {
                     "instrument_id": str("<a href='%s'>%s</a>" % (instr_url, str(r.instrument_id))),
@@ -527,6 +555,8 @@ def get_run_list_dict(run_list):
                     "run_id": r.id,
                     "timestamp": formats.localize(localtime),
                     "status": run_status_text_dict.get(r.id, "unknown"),
+                    "run_title": run_title_display,
+                    "oncat_link": oncat_link,
                 }
             )
     except Exception:

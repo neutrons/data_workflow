@@ -1,11 +1,13 @@
 import unittest.mock as mock
 
 import pytest
-from dasmon_listener.amq_consumer import Client, Listener, store_and_cache_
+from dasmon_listener.amq_consumer import Client, Listener, _update_datarun_title, store_and_cache_
 from django.test import TestCase
 from django.utils import timezone
+from reporting.dasmon.models import Parameter, StatusCache
 from reporting.pvmon.models import PV, MonitoredVariable, PVCache, PVName, PVStringCache
 from reporting.report.models import Instrument
+from workflow.database.report.models import IPTS, DataRun
 
 values = {"test_key": "test_value"}
 
@@ -334,6 +336,63 @@ class TestAMQConsumer(TestCase):
         )
         store_and_cache_(instrument_id, key_id, value, None, True)
         statusVariableMock.assert_not_called()
+
+    def test_update_datarun_title(self):
+        """Test that _update_datarun_title updates run titles correctly"""
+        # Setup test data
+        inst = Instrument.objects.create(name="test_update_title")
+        inst.save()
+        ipts = IPTS.objects.create(expt_name="test_ipts_title")
+        ipts.save()
+
+        # Create run_number parameter and cache
+        run_number_param = Parameter.objects.create(name="run_number")
+        run_number_param.save()
+        StatusCache.objects.create(instrument_id=inst, key_id=run_number_param, value="12345")
+
+        # Create a DataRun without title
+        run = DataRun.objects.create(run_number=12345, ipts_id=ipts, instrument_id=inst, file="test.nxs")
+        run.save()
+
+        # Test updating with title
+        _update_datarun_title(inst, "Test Run Title")
+        run.refresh_from_db()
+        assert run.run_title == "Test Run Title"
+
+        # Test updating again with different title
+        _update_datarun_title(inst, "Updated Title")
+        run.refresh_from_db()
+        assert run.run_title == "Updated Title"
+
+        # Cleanup
+        run.delete()
+        StatusCache.objects.filter(instrument_id=inst).delete()
+        run_number_param.delete()
+        ipts.delete()
+        inst.delete()
+
+    def test_update_datarun_title_no_run(self):
+        """Test that _update_datarun_title handles missing runs gracefully"""
+        # Setup test data
+        inst = Instrument.objects.create(name="test_no_run")
+        inst.save()
+
+        # Create run_number parameter and cache
+        run_number_param = Parameter.objects.create(name="run_number")
+        run_number_param.save()
+        StatusCache.objects.create(
+            instrument_id=inst,
+            key_id=run_number_param,
+            value="99999",  # Non-existent run
+        )
+
+        # Should not raise exception
+        _update_datarun_title(inst, "Some Title")
+
+        # Cleanup
+        StatusCache.objects.filter(instrument_id=inst).delete()
+        run_number_param.delete()
+        inst.delete()
 
 
 if __name__ == "__main__":
