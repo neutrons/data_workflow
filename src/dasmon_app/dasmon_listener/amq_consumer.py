@@ -10,10 +10,8 @@ import datetime
 import json
 import logging
 import os
-import smtplib
 import sys
 import time
-from email.mime.text import MIMEText
 
 import stomp
 
@@ -27,7 +25,6 @@ from . import settings  # noqa: E402
 from .settings import (
     CACHE_PURGE_TIMEOUT,  # noqa: E402
     INSTALLATION_DIR,  # noqa: E402
-    MIN_NOTIFICATION_LEVEL,  # noqa: E402
     PURGE_TIMEOUT,  # noqa: E402
 )
 
@@ -39,10 +36,8 @@ django.setup()
 from django.utils import timezone  # noqa: E402
 from reporting.dasmon.models import (  # noqa: E402
     Parameter,
-    Signal,
     StatusCache,
     StatusVariable,
-    UserNotification,
 )  # noqa: E402
 from reporting.pvmon.models import (  # noqa: E402
     PV,
@@ -171,14 +166,6 @@ class Listener(stomp.ConnectionListener):
                         key_id = self.retrieve_parameter("%s_pid" % key)
                         store_and_cache(instrument, key_id, data_dict["pid"], cache_only=True)
 
-        # Process signals
-        elif "SIGNAL" in destination:
-            try:
-                logging.warning("SIGNAL: %s: %s", destination, str(data_dict))
-                process_signal(instrument, data_dict)
-            except:  # noqa: E722
-                logging.exception("Could not process signal: %s", str(data_dict))
-
         elif "APP.SMS" in destination:
             process_SMS(instrument, headers, data_dict)
         # For other status messages, store each entry
@@ -235,30 +222,6 @@ class Listener(stomp.ConnectionListener):
                     )
 
 
-def send_message(sender, recipients, subject, message):
-    """
-    Send an email message
-
-    :param sender: email of the sender
-    :param recipients: list of recipient emails
-    :param subject: subject of the message
-    :param message: content of the message
-    """
-    # If no sender or recipients are defined, do nothing
-    if len(sender) == 0 or len(recipients) == 0:
-        return
-    try:
-        msg = MIMEText(message)
-        msg["Subject"] = subject
-        msg["From"] = sender
-        msg["To"] = ";".join(recipients)
-        s = smtplib.SMTP("localhost")
-        s.sendmail(sender, recipients, msg.as_string())
-        s.quit()
-    except:  # noqa: E722
-        logging.exception("Could not send message:")
-
-
 def process_SMS(instrument_id, headers, data):
     """
     Process SMS process information
@@ -304,20 +267,12 @@ def process_ack(data=None, headers=None):
     :param data: data that came in with the ack
     """
     try:
-        from .settings import ALERT_EMAIL, FROM_EMAIL
-
         if data is None:
             for proc_name in acks:
                 # Start complaining if we missed three heartbeats
                 if acks[proc_name] is not None and time.time() - acks[proc_name] > 3.0 * HEARTBEAT_DELAY:
                     logging.error("Client %s disappeared", proc_name)
                     acks[proc_name] = None
-                    send_message(
-                        sender=FROM_EMAIL,
-                        recipients=ALERT_EMAIL,
-                        subject="Client %s disappeared" % proc_name,
-                        message="An AMQ client disappeared",
-                    )
         elif "src_name" in data:
             current_time = time.time()
             msg_time = 0
@@ -343,108 +298,11 @@ def process_ack(data=None, headers=None):
                 )
             if proc_name in acks and acks[proc_name] is None:
                 logging.error("Client %s reappeared", proc_name)
-                send_message(
-                    sender=FROM_EMAIL,
-                    recipients=ALERT_EMAIL,
-                    subject="Client %s reappeared" % proc_name,
-                    message="An AMQ client reappeared",
-                )
             acks[proc_name] = time.time()
             if EXTRA_LOGS:
                 logging.warning("%s ACK deltas: msg=%s rcv=%s", proc_name, msg_time, answer_delay)
     except:  # noqa: E722
         logging.exception("Error processing ack:")
-
-
-def notify_users(instrument_id, signal):
-    """
-    Find users who need to be notified and send them a message
-
-    :param instrument_id: Instrument object
-    :param signal: Signal object
-    """
-    try:
-        for item in UserNotification.objects.filter(instruments__in=[instrument_id], registered=True):
-            message = "A new alert signal was set on %s\n\n" % str(instrument_id).upper()
-            message += "    Name:    %s\n" % signal.name
-            message += "    Source:  %s\n" % signal.source
-            message += "    Message: %s\n" % signal.message
-            message += "    Level:   %s\n" % signal.level
-            message += "    Time:    %s\n" % signal.timestamp.ctime()
-            send_message(
-                sender=item.email,
-                recipients=[item.email],
-                subject="New alert on %s" % str(instrument_id).upper(),
-                message=message,
-            )
-    except:  # noqa: E722
-        logging.exception("Failed to notify users:")
-
-
-def process_signal(instrument_id, data):
-    """
-    Process and store signal messages.
-
-    Asserted signals look like this:
-    {
-        "msg_type": "2147483648",
-        "src_name": "DASMON.0",
-        "timestamp": "1375464085",
-        "sig_name": "SID_SVP_HIGH",
-        "sig_source": "DAS",
-        "sig_message": "SV Pressure too high!",
-        "sig_level": "3"
-    }
-
-    Retracted signals look like this:
-    {
-        "msg_type": "2147483649",
-        "src_name": "DASMON.0",
-        "timestamp": "1375464079",
-        "sig_name": "SID_SVP_HIGH"
-    }
-
-    :param instrument_id: Instrument object
-    :param data: data dictionary
-    """
-    # Assert a signal
-    if "sig_name" in data:
-        # Query the DB to see whether we have the signal asserted
-        asserted_sig = (
-            Signal.objects.filter(instrument_id=instrument_id, name=data["sig_name"]).order_by("timestamp").reverse()
-        )
-        if "sig_level" in data:
-            level = int(data["sig_level"]) if "sig_level" in data else 0
-            message = data["sig_message"] if "sig_message" in data else ""
-            source = data["sig_source"] if "sig_source" in data else ""
-            timestamp = float(data["timestamp"]) if "timestamp" in data else time.time()
-            if time.time() - timestamp > 3600:
-                return
-            timestamp = datetime.datetime.fromtimestamp(timestamp).replace(tzinfo=timezone.get_current_timezone())
-            if len(asserted_sig) == 0:
-                signal = Signal(
-                    instrument_id=instrument_id,
-                    name=data["sig_name"],
-                    source=source,
-                    message=message,
-                    level=level,
-                    timestamp=timestamp,
-                )
-                signal.save()
-            else:
-                signal = asserted_sig[0]
-                signal.source = source
-                signal.message = message
-                signal.level = level
-                signal.timestamp = timestamp
-                signal.save()
-            # Notify users only if it the signal level is greater than our threshold.
-            if level >= MIN_NOTIFICATION_LEVEL:
-                notify_users(instrument_id, signal)
-        # Retract a signal
-        else:
-            for item in asserted_sig:
-                item.delete()
 
 
 def store_and_cache(instrument_id, key_id, value, timestamp=None, cache_only=False):

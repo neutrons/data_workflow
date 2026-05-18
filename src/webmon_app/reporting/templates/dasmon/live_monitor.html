@@ -86,26 +86,12 @@
                 }
             });
         }
-        get_alarms();
 
     };
 
     $( document ).tooltip({
       items: '*:not(.ui-dialog-titlebar-close)'
     });
-
-    function get_alarms()
-    {
-        $.ajax({ url: "{{ signals_url }}", success: function(data) {
-            $('#signal_table').replaceWith(data);
-        }, dataType: "html", timeout: 30000, cache: true });
-    }
-
-    function ack_alarm(ack_url, id)
-    {
-        $.ajax({ url: ack_url, cache: false });
-        $(id).remove();
-    }
 
 </script>
 {% endblock %}
@@ -120,7 +106,6 @@
 
 {% block bodytop %}
 <script id="source" language="javascript" type="text/javascript">
-    get_alarms();
     setInterval(poll, 5000);
 </script>
 {% endblock %}

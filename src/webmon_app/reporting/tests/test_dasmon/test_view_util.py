@@ -10,8 +10,8 @@ from django.utils import timezone
 from workflow.database.report.models import IPTS, DataRun
 
 from reporting import dasmon, users
-from reporting.dasmon.models import ActiveInstrument, Parameter, Signal, StatusCache, StatusVariable
-from reporting.pvmon.models import MonitoredVariable, PVCache, PVName, PVStringCache
+from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable
+from reporting.pvmon.models import PVCache, PVName
 from reporting.report.models import Error, Information, Instrument, RunStatus, StatusQueue, WorkflowSummary
 
 # make flake8 happy
@@ -440,7 +440,6 @@ class ViewUtilTest(TestCase):
         assert template["instrument"] == "testinst"
         assert template["is_instrument_staff"]
         assert template["is_adara"]
-        assert template["profile_url"] == "/dasmon/notifications/"
         assert template["live_monitor_url"] == "/dasmon/testinst/"
         assert template["live_runs_url"] == "/dasmon/testinst/runs/"
         assert template["live_pv_url"] == "/pvmon/testinst/"
@@ -933,82 +932,6 @@ class ViewUtilTest(TestCase):
             assert filtered_count == 5
             assert rst[0].run_number == 10
             assert len(rst) == 5
-
-    def test_get_signals(self):
-        from reporting.dasmon.view_util import get_signals
-
-        # make signals
-        inst = Instrument.objects.create(name="testinst_getsignals")
-        inst.save()
-        for i in range(4):
-            sig = Signal(
-                instrument_id=inst,
-                name=f"sig_{i}",
-                source=f"src_{i}",
-                message=f"msg_{i}",
-                level=i,
-                timestamp=timezone.now(),
-            )
-            sig.save()
-
-        pvname = PVName.objects.create(name="testpv")
-        pvname.save()
-        PVStringCache.objects.create(
-            instrument=inst,
-            name=pvname,
-            value="test",
-            status=0,
-            timestamp=timezone.now(),
-        )
-        MonitoredVariable.objects.create(
-            instrument=inst,
-            pv_name=pvname,
-            rule_name="",
-        )
-        # test
-        sig_list = get_signals(inst)
-        for i, me in enumerate(sig_list):
-            if i == 4:
-                assert str(me.name) == "testpv"
-                assert me.status == "test"
-            else:
-                assert me.name == f"sig_{i}"
-                assert f"msg_{i}" in me.status
-
-    def test_get_signals_when_has_monitored_variable_none(self):
-        from reporting.dasmon.view_util import get_signals
-
-        # make instrument
-        inst = Instrument.objects.create(name="testinst_getsignals_no_mon_pvs")
-        inst.save()
-
-        # test with monitored variable with pv_name equal to None
-        MonitoredVariable.objects.create(
-            instrument=inst,
-            pv_name=None,
-            rule_name="",
-        )
-        sig_list = get_signals(inst)
-        assert len(sig_list) == 0
-
-        # test with monitored variables where one is None and one is valid
-        pvname = PVName.objects.create(name="testpv")
-        pvname.save()
-        PVStringCache.objects.create(
-            instrument=inst,
-            name=pvname,
-            value="test",
-            status=0,
-            timestamp=timezone.now(),
-        )
-        MonitoredVariable.objects.create(
-            instrument=inst,
-            pv_name=pvname,
-            rule_name="",
-        )
-        # test
-        sig_list = get_signals(inst)
-        assert len(sig_list) == 1
 
     def test_get_instrument_status_summary(self):
         from reporting.dasmon.view_util import get_instrument_status_summary

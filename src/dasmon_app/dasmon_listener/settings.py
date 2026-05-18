@@ -55,13 +55,10 @@ PURGE_TIMEOUT = float(os.environ.get("PURGE_TIMEOUT", 0.5))
 # if the PV is not a monitored PV
 CACHE_PURGE_TIMEOUT = float(os.environ.get("CACHE_PURGE_TIMEOUT", 180))
 
-MIN_NOTIFICATION_LEVEL = 3
-
 # queues
 default_queues = [
     "/topic/ADARA.APP.DASMON.0",
     "/topic/ADARA.STATUS.DASMON.0",
-    "/topic/ADARA.SIGNAL.DASMON.0",
 ]
 env_amq_queue = os.environ.get("AMQ_QUEUE", json.dumps(default_queues))
 QUEUES = json.loads(env_amq_queue)
