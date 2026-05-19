@@ -147,21 +147,6 @@ class TestAMQConsumer(TestCase):
 
     @mock.patch("reporting.dasmon.models.Parameter.save")
     @mock.patch("workflow.database.report.models.Instrument.save")
-    @mock.patch("dasmon_listener.amq_consumer.process_signal")
-    @mock.patch("json.loads")
-    def test_on_message_signal(self, jsonLoadsMock, processSignal, instrumentSaveMock, parametereSaveMock):
-        listener = self.get_listener()
-        frame = mock.Mock()
-        # ending with .ACK returns premptively
-        frame.headers = {"header1": "header1_value", "destination": "SIGNAL.STS"}
-        frame.body = "body"
-        jsonLoadsMock.return_value = {"status": "cowboy2"}
-        listener.on_message(frame)
-        jsonLoadsMock.assert_called()
-        processSignal.assert_called()
-
-    @mock.patch("reporting.dasmon.models.Parameter.save")
-    @mock.patch("workflow.database.report.models.Instrument.save")
     @mock.patch("dasmon_listener.amq_consumer.process_SMS")
     @mock.patch("json.loads")
     def test_on_message_app_sms(self, jsonLoadsMock, processSMS, instrumentSaveMock, parametereSaveMock):

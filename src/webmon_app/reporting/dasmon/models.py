@@ -104,27 +104,3 @@ class ActiveInstrument(models.Model):
     has_pvsd = models.BooleanField(default=False)
     has_pvstreamer = models.BooleanField(default=True)
     objects = ActiveInstrumentManager()
-
-
-class Signal(models.Model):
-    """
-    Table of signals received from DASMON
-    """
-
-    instrument_id = models.ForeignKey(Instrument, on_delete=models.CASCADE)
-    name = models.CharField(max_length=128)
-    source = models.CharField(max_length=40)
-    message = models.CharField(max_length=250)
-    level = models.IntegerField()
-    timestamp = models.DateTimeField("timestamp")
-
-
-class UserNotification(models.Model):
-    """
-    Table of users to notify
-    """
-
-    user_id = models.IntegerField(unique=True)
-    instruments = models.ManyToManyField(Instrument, related_name="_usernotification_instruments+")
-    email = models.EmailField(max_length=254)
-    registered = models.BooleanField(default=False)

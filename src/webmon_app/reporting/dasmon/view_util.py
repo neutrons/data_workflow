@@ -15,17 +15,15 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats, timezone
 
-import reporting.pvmon.view_util as pvmon_view_util
 import reporting.report.view_util as report_view_util
 import reporting.users.view_util as users_view_util
 from reporting.dasmon.models import (
     ActiveInstrument,
     Parameter,
-    Signal,
     StatusCache,
     StatusVariable,
 )
-from reporting.pvmon.models import MonitoredVariable, PVCache, PVStringCache
+from reporting.pvmon.models import PVCache
 from reporting.report.models import DataRun, Information, Instrument
 
 LOGNAME = "dasmon:view_util"
@@ -231,8 +229,6 @@ def fill_template_values(request, **template_args):
     is_alive = ActiveInstrument.objects.is_alive(instrument_id)
     template_args["is_adara"] = is_adara
     template_args["is_alive"] = is_alive
-    if template_args["is_instrument_staff"] and is_adara:
-        template_args["profile_url"] = reverse("dasmon:notifications")
 
     # Get live monitoring URLs
     template_args["live_monitor_url"] = reverse("dasmon:live_monitor", args=[instr])
@@ -934,92 +930,6 @@ def get_run_list_newest(offset, limit, instrument_search, run_search, date_searc
 
     run_list = run_list[offset : limit + offset]  # noqa E203
     return run_list, count, filtered_count
-
-
-class SignalEntry:
-    """
-    Utility class representing a DASMON signal
-    """
-
-    def __init__(self, name="", status="", assert_time="", key="", ack_url=""):
-        self.name = name
-        self.status = status
-        self.assert_time = assert_time
-        self.key = key
-        self.ack_url = ack_url
-        self.data = None
-
-
-def get_signals(instrument_id):
-    """
-    Get the current list of signals/alarms for a given instrument
-
-    :param instrument_id: Instrument object
-    """
-    logger = logging.getLogger(LOGNAME)
-    try:
-        signals = Signal.objects.filter(instrument_id=instrument_id)
-    except:  # noqa: E722
-        logger.exception("Error reading signals:")
-        return []
-
-    sig_alerts = []
-    for sig in signals:
-        sig_entry = SignalEntry(
-            name=sig.name,
-            status="<span class='red'><b>%s</b></span>" % sig.message,
-            assert_time=sig.timestamp,
-            ack_url=reverse("dasmon:acknowledge_signal", args=[instrument_id, sig.id]),
-        )
-        try:
-            monitored = MonitoredVariable.objects.filter(instrument=instrument_id, rule_name=sig.name)
-            if len(monitored) > 0:
-                sig_entry.key = str(monitored[0].pv_name)
-        except:  # noqa: E722
-            # Could not find an entry for this signal
-            logger.exception("Problem finding PV for signal:")
-
-        sig_alerts.append(sig_entry)
-
-    # Get the monitored PVs and signal equivalences
-    try:
-        monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
-        for item in monitored:
-            if item.pv_name is None:
-                continue
-            try:
-                latests = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
-                if len(latests) == 0:
-                    latests = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
-                latest = latests.latest("timestamp")
-                if isinstance(latest.value, float):
-                    value = "%g" % latest.value
-                else:
-                    value = "%s" % latest.value
-                localtime = timezone.localtime(latest.timestamp)
-                timestamp = formats.localize(localtime)
-            except:  # noqa: E722
-                value = "No data available"
-                timestamp = "-"
-            sig_entry = SignalEntry(name=item.pv_name, status=value, key=item.pv_name, assert_time=timestamp)
-            data = pvmon_view_util.get_live_variables(request=None, instrument_id=instrument_id, key_id=item.pv_name)
-            data_list = []
-            try:
-                if data is not None and len(data) > 0 and len(data[0]) > 1:
-                    for point in data[0][1]:
-                        data_list.append("%g:%g" % (point[0], point[1]))
-            except:  # noqa: E722
-                logger.exception(f"Error processing data for {instrument_id} {item.pv_name}:")
-            sig_entry.data = ",".join(data_list)
-            sig_alerts.append(sig_entry)
-    except:  # noqa: E722
-        logger.exception("Could not process monitored PVs:")
-
-    try:
-        return sorted(sig_alerts, key=lambda s: str(s.name).lower())
-    except:  # noqa: E722
-        logger.exception("Could not sort monitored PV list:")
-    return sig_alerts
 
 
 def get_instrument_status_summary(expert=False) -> list:

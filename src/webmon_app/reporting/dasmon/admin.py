@@ -6,10 +6,8 @@ from django.contrib import admin
 from reporting.dasmon.models import (
     ActiveInstrument,
     Parameter,
-    Signal,
     StatusCache,
     StatusVariable,
-    UserNotification,
 )
 
 
@@ -37,17 +35,7 @@ class ActiveInstrumentAdmin(admin.ModelAdmin):
     list_editable = ("is_alive", "is_adara")
 
 
-class SignalAdmin(admin.ModelAdmin):
-    list_display = ("id", "instrument_id", "name", "message", "level", "timestamp")
-
-
-class UserNotificationAdmin(admin.ModelAdmin):
-    list_display = ("id", "user_id", "email")
-
-
 admin.site.register(StatusVariable, StatusVariableAdmin)
 admin.site.register(Parameter, ParameterAdmin)
 admin.site.register(StatusCache, StatusVariableAdmin)
 admin.site.register(ActiveInstrument, ActiveInstrumentAdmin)
-admin.site.register(Signal, SignalAdmin)
-admin.site.register(UserNotification, UserNotificationAdmin)

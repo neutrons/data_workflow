@@ -7,10 +7,8 @@ from django.utils import timezone
 from reporting.dasmon.models import (
     ActiveInstrument,
     Parameter,
-    Signal,
     StatusCache,
     StatusVariable,
-    UserNotification,
 )
 from reporting.report.models import Instrument
 
@@ -111,86 +109,6 @@ class ActiveInstrumentTest(TestCase):
     def test_has_pvstreamer(self):
         ai = ActiveInstrument.objects.get(id=1)
         self.assertTrue(ai.has_pvstreamer)
-
-
-class SignalTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        instrument = Instrument.objects.create(name="testInst")
-        instrument.save()
-        Signal.objects.create(
-            instrument_id=instrument,
-            name="testSignal",
-            source="testSource",
-            message="testMessage",
-            level=1,
-            timestamp=timezone.now(),
-        )
-
-    def test_name(self):
-        s = Signal.objects.get(id=1)
-        self.assertEqual(s.name, "testSignal")
-
-    def test_name_max_length(self):
-        s = Signal.objects.get(id=1)
-        max_len = s._meta.get_field("name").max_length
-        self.assertEqual(max_len, 128)
-
-    def test_source(self):
-        s = Signal.objects.get(id=1)
-        self.assertEqual(s.source, "testSource")
-
-    def test_source_max_length(self):
-        s = Signal.objects.get(id=1)
-        max_len = s._meta.get_field("source").max_length
-        self.assertEqual(max_len, 40)
-
-    def test_message(self):
-        s = Signal.objects.get(id=1)
-        self.assertEqual(s.message, "testMessage")
-
-    def test_message_max_length(self):
-        s = Signal.objects.get(id=1)
-        max_len = s._meta.get_field("message").max_length
-        self.assertEqual(max_len, 250)
-
-    def test_level(self):
-        s = Signal.objects.get(id=1)
-        self.assertEqual(s.level, 1)
-
-    def test_timestamp(self):
-        s = Signal.objects.get(id=1)
-        self.assertTrue(isinstance(s.timestamp, datetime))
-
-
-class UserNotificationTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        # NOTE:
-        # we cannot directly assign instruments due to its ManyToManyField
-        # nature, therefore we settle for a zero checking for the instruments
-        # field, i.e. not assigning any.
-        UserNotification.objects.create(
-            user_id=1,
-            email="user@test.com",
-            registered=True,
-        )
-
-    def test_user_id(self):
-        un = UserNotification.objects.get(id=1)
-        self.assertEqual(un.user_id, 1)
-
-    def test_instruments(self):
-        un = UserNotification.objects.get(id=1)
-        self.assertEqual(un.instruments.all().count(), 0)
-
-    def test_email(self):
-        un = UserNotification.objects.get(id=1)
-        self.assertEqual(un.email, "user@test.com")
-
-    def test_registered(self):
-        un = UserNotification.objects.get(id=1)
-        self.assertTrue(un.registered)
 
 
 if __name__ == "__main__":

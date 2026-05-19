@@ -3,14 +3,9 @@
 Live monitoring
 """
 
-import logging
-
-from django import forms
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.template import loader
 from django.urls import reverse
 from django.utils import formats, timezone
 from django.views.decorators.cache import cache_control, cache_page
@@ -18,7 +13,7 @@ from django.views.decorators.vary import vary_on_cookie
 
 import reporting.report.view_util as report_view_util
 import reporting.users.view_util as users_view_util
-from reporting.dasmon.models import ActiveInstrument, Signal, UserNotification
+from reporting.dasmon.models import ActiveInstrument
 from reporting.report.models import Instrument
 from reporting.users.models import SiteNotification
 
@@ -189,8 +184,6 @@ def live_monitor(request, instrument):
     template_values = report_view_util.fill_template_values(request, **template_values)
     template_values = users_view_util.fill_template_values(request, **template_values)
     template_values = view_util.fill_template_values(request, **template_values)
-
-    template_values["signals_url"] = reverse("dasmon:get_signal_table", args=[instrument])
 
     return render(request, "dasmon/live_monitor.html", template_values)
 
@@ -364,131 +357,3 @@ def summary_update(request):
         "postprocess_status": view_util.get_system_health(),
     }
     return JsonResponse(data_dict)
-
-
-@users_view_util.login_or_local_required_401
-def get_signal_table(request, instrument):
-    """
-    Ajax call to get the signal table
-
-    Note: Since users can interact with this table, we are not caching it.
-    That avoids seeing cleared entries momentarily reappearing in the case
-    where the page requests a refresh while the cache hasn't yet been updated.
-    """
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-    t = loader.get_template("dasmon/signal_table.html")
-    template_values = {"signals": view_util.get_signals(instrument_id)}
-    template_values["is_instrument_staff"] = users_view_util.is_instrument_staff(request, instrument_id)
-    resp = t.render(template_values)
-    response = HttpResponse(resp, content_type="text/html")
-    response["Connection"] = "close"
-    response["Content-Length"] = len(response.content)
-    return response
-
-
-@users_view_util.login_or_local_required_401
-@users_view_util.monitor
-def acknowledge_signal(request, instrument, sig_id):
-    """
-    Acknowledge a signal and remove it from the DB
-
-    :param request: request obect
-    :param instrument: instrument name
-    :param sig_id: signal ID
-    """
-    try:
-        sig_object = get_object_or_404(Signal, id=sig_id)
-        sig_object.delete()
-    except:  # noqa: E722
-        logging.exception("ACK signal %s/%s:", instrument, sig_id)
-    return HttpResponse()
-
-
-@login_required
-def notifications(request):
-    """
-    Let an instrument team member register for a DASMON signal
-    """
-    instrument_list = view_util.get_instruments_for_user(request)
-
-    class NotificationForm(forms.Form):
-        """
-        Form for notification registration
-        """
-
-        email = forms.EmailField(required=False, initial="")
-        register = forms.BooleanField(required=False, initial=False)
-        instruments = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            options = ()
-            for i in instrument_list:
-                options += ((i, i),)
-            self.fields["instruments"] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, choices=options)
-
-    # Process request
-    alert_list = []
-    if request.method == "POST":
-        options_form = NotificationForm(request.POST)
-        if options_form.is_valid():
-            email_address = options_form.cleaned_data["email"]
-            registered = options_form.cleaned_data["register"]
-            instruments = options_form.cleaned_data["instruments"]
-            try:
-                user_options_list = UserNotification.objects.filter(user_id=request.user.id)
-                if len(user_options_list) == 0:
-                    user_options = UserNotification(
-                        user_id=request.user.id,
-                        email=email_address,
-                        registered=registered,
-                    )
-                    user_options.save()
-                else:
-                    user_options = user_options_list[0]
-                    user_options.email = email_address
-                    user_options.registered = registered
-                # Add the instruments
-                user_options.instruments.clear()
-                for item in instruments:
-                    try:
-                        inst_entry = Instrument.objects.get(name=item.lower())
-                        user_options.instruments.add(inst_entry)
-                        user_options.save()
-                    except:  # noqa: E722
-                        alert_list.append("Could not find instrument %s" % item)
-                        logging.exception("Notification registration failed:")
-                alert_list.append("Your changes have been saved.")
-
-            except:  # noqa: E722
-                alert_list.append("There was a problem processing your request.")
-                logging.exception("Error processing notification settings:")
-        else:
-            alert_list.append("Your form is invalid. Please modify your entries and re-submit.")
-            logging.error("Invalid form %s", options_form.errors)
-    else:
-        params_dict = {}
-        try:
-            user_options = UserNotification.objects.get(user_id=request.user.id)
-            params_dict["email"] = user_options.email
-            params_dict["register"] = user_options.registered
-            params_dict["instruments"] = []
-            for item in user_options.instruments.all():
-                params_dict["instruments"].append(item.name.upper())
-        except:  # noqa: E722
-            # No entry found for this user. Use a blank form.
-            pass
-        options_form = NotificationForm(initial=params_dict)
-
-    # Breadcrumbs
-    breadcrumbs = "<a href='%s'>home</a>" % reverse(settings.LANDING_VIEW)
-    breadcrumbs += " &rsaquo; notifications"
-
-    template_values = {
-        "helpline": settings.HELPLINE_EMAIL,
-        "options_form": options_form,
-        "user_alert": alert_list,
-        "breadcrumbs": breadcrumbs,
-    }
-    template_values = users_view_util.fill_template_values(request, **template_values)
-    return render(request, "dasmon/notifications.html", template_values)
