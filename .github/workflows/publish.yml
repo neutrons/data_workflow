@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.9.4
+        uses: prefix-dev/setup-pixi@v0.9.6
       - name: Build wheels
         run: make wheel/all
 
@@ -54,7 +54,7 @@ jobs:
           esac
 
       - name: Upload wheels
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
