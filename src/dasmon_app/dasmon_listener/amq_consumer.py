@@ -90,9 +90,8 @@ class Listener(stomp.ConnectionListener):
         for key_id in self._parameters:
             if str(key_id) == key:
                 return key_id
-        # If we haven't found it, create it.
-        key_id = Parameter(name=key)
-        key_id.save()
+        # If we haven't found it, get from DB or create it (avoids UniqueViolation if DB already has it)
+        key_id, _ = Parameter.objects.get_or_create(name=key)
         self._parameters.append(key_id)
         return key_id
 
@@ -104,9 +103,8 @@ class Listener(stomp.ConnectionListener):
         for instrument in self._instruments:
             if str(instrument) == instrument_name:
                 return instrument
-        # If we haven't found it, create and save it in the database
-        instrument = Instrument(name=instrument_name)
-        instrument.save()
+        # If we haven't found it, get from DB or create it (avoids UniqueViolation if DB already has it)
+        instrument, _ = Instrument.objects.get_or_create(name=instrument_name)
         self._instruments.append(instrument)
         return instrument
 
