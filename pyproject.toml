@@ -95,10 +95,14 @@ pip = "*"
 wheel = "*"
 check-wheel-contents = "*"
 toml = ">=0.10.2,<0.11"
+git = "*"
 
 [tool.pixi.feature.webmon.dependencies]
 gunicorn = "*"
 pyoncat = "*"
+ca-certificates = "*"
+wget = "*"
+tzdata = "*"
 
 [tool.pixi.feature.dasmon.dependencies]
 psutil = "*"

@@ -2,11 +2,14 @@
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim AS builder
 
 COPY pyproject.toml pixi.lock ./
+RUN pixi install --locked -e dasmon
+
+# Copy source and git history after pixi install so that layer is cached until pixi.lock changes.
 COPY src/dasmon_app  src/dasmon_app/
 COPY src/webmon_app  src/webmon_app/
 COPY src/workflow_app src/workflow_app/
+COPY .git .git
 
-RUN pixi install --locked -e dasmon
 RUN pixi run -e dasmon wheel-workflow && pixi run -e dasmon wheel-webmon && pixi run -e dasmon wheel-dasmon
 
 # Stage 2: Runtime image

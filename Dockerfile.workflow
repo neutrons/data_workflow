@@ -2,9 +2,12 @@
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim AS builder
 
 COPY pyproject.toml pixi.lock ./
-COPY src/workflow_app src/workflow_app/
-
 RUN pixi install --locked -e workflow
+
+# Copy source and git history after pixi install so that layer is cached until pixi.lock changes.
+COPY src/workflow_app src/workflow_app/
+COPY .git .git
+
 RUN pixi run -e workflow wheel-workflow
 
 # Stage 2: Runtime image
