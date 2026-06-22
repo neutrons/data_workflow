@@ -100,9 +100,6 @@ git = "*"
 [tool.pixi.feature.webmon.dependencies]
 gunicorn = "*"
 pyoncat = "*"
-ca-certificates = "*"
-wget = "*"
-tzdata = "*"
 
 [tool.pixi.feature.dasmon.dependencies]
 psutil = "*"
