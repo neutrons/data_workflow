@@ -15,8 +15,10 @@ jobs:
       uses: prefix-dev/setup-pixi@v0.9.4
       with:
         environments: test
-    - name: Build requirements
-      run:  make all
+    - name: Build test data and SSL certificates
+      run: |
+        pixi run -e test test-data
+        pixi run -e test ssl
     - name: Stand up docker containers
       run: docker compose up --build --wait --wait-timeout 300
       env:

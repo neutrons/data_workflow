@@ -67,5 +67,4 @@ Start at the Developer's documentation. This requires building the docs:
 
 .. code-block:: bash
 
-   $ pixi shell
-   $ make docs
+   $ pixi run build-docs

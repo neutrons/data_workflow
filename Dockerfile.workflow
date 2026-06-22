@@ -1,16 +1,23 @@
+# Stage 1: Build wheel
+FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim AS builder
+
+COPY pyproject.toml pixi.lock ./
+COPY src/workflow_app src/workflow_app/
+
+RUN pixi install --locked -e workflow
+RUN pixi run -e workflow wheel-workflow
+
+# Stage 2: Runtime image
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim
 
-COPY pixi.lock .
-COPY pyproject.toml .
+COPY pixi.lock pyproject.toml ./
 RUN pixi install --locked -e workflow
 
 WORKDIR /usr/src/data_workflow
 
-# copy the necessary wheels and the Makefile which knows the dependency order
-COPY ./src/workflow_app/dist/django_nscd_workflow-*-none-any.whl .
-COPY ./Makefile .
+COPY --from=builder /src/workflow_app/dist/ ./dist/
+RUN pixi run -e workflow pip install dist/*.whl && rm -rf dist/
 
-# move the entry-point into the volume
-COPY ./src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+COPY src/workflow_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 CMD ["pixi", "run", "-e", "workflow", "/usr/bin/docker-entrypoint.sh"]
