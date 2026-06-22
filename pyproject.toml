@@ -105,10 +105,10 @@ psutil = "*"
 
 [tool.pixi.feature.build.tasks]
 all          = { depends-on = ["wheel-all", "test-data", "ssl"] }
-wheel-clean  = { cmd = "rm -rf src/dasmon_app/build src/dasmon_app/dist src/webmon_app/build src/webmon_app/dist src/workflow_app/build src/workflow_app/dist" }
-wheel-dasmon   = { cmd = "cd src/dasmon_app && (if [ -d build ]; then chmod u+rwx -R build && rm -rf build; fi) && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_dasmon-*.whl" }
-wheel-webmon   = { cmd = "cd src/webmon_app && (if [ -d build ]; then chmod u+rwx -R build && rm -rf build; fi) && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_webmon-*.whl" }
-wheel-workflow = { cmd = "cd src/workflow_app && (if [ -d build ]; then chmod u+rwx -R build && rm -rf build; fi) && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_workflow-*.whl" }
+wheel-clean    = { cmd = "rm -rf src/dasmon_app/build src/dasmon_app/dist src/webmon_app/build src/webmon_app/dist src/workflow_app/build src/workflow_app/dist" }
+wheel-dasmon   = { cmd = "rm -rf src/dasmon_app/build && cd src/dasmon_app && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_dasmon-*.whl" }
+wheel-webmon   = { cmd = "rm -rf src/webmon_app/build && cd src/webmon_app && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_webmon-*.whl" }
+wheel-workflow = { cmd = "rm -rf src/workflow_app/build && cd src/workflow_app && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_workflow-*.whl" }
 wheel-all    = { depends-on = ["wheel-clean", "wheel-dasmon", "wheel-webmon", "wheel-workflow"] }
 
 [tool.pixi.feature.docs.tasks]
