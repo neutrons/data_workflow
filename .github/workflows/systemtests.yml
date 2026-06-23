@@ -28,7 +28,7 @@ jobs:
     - name: Wait for everything to start up
       run: sleep 66
     - name: Test with pytest
-      run: pixi run systemtests
+      run: pixi run -e test systemtests
     - name: Capture container logs on failure
       if: failure()
       run: docker compose logs webmon dasmon workflow 2>&1 || true
