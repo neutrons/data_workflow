@@ -51,7 +51,7 @@ sleep 2
 docker compose --file docker-compose.yml up --detach db
 sleep 10
 docker exec -i data_workflow-db-1 /bin/bash -c "pg_restore -d workflow -U workflow" < ${dbdumpfile} || true
-docker exec -i data_workflow-db-1 /bin/bash -c "psql -d workflow -U workflow -c \\"ALTER ROLE workflow WITH PASSWORD '${DATABASE_PASS}';\\""
+docker exec -i data_workflow-db-1 psql -d workflow -U workflow -v "pw=${DATABASE_PASS}" -c "ALTER ROLE workflow WITH PASSWORD :'pw';"
 LOAD_INITIAL_DATA=false docker compose --file docker-compose.yml up --build
 """ }
 
