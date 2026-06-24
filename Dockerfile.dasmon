@@ -10,7 +10,7 @@ COPY src/webmon_app  src/webmon_app/
 COPY src/workflow_app src/workflow_app/
 COPY .git .git
 
-RUN pixi run -e dasmon wheel-workflow && pixi run -e dasmon wheel-webmon && pixi run -e dasmon wheel-dasmon
+RUN rm -rf src/*/dist src/*/build && pixi run -e dasmon wheel-workflow && pixi run -e dasmon wheel-webmon && pixi run -e dasmon wheel-dasmon
 
 # Stage 2: Runtime image
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim

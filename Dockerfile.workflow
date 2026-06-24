@@ -8,7 +8,7 @@ RUN pixi install --locked -e workflow
 COPY src/workflow_app src/workflow_app/
 COPY .git .git
 
-RUN pixi run -e workflow wheel-workflow
+RUN rm -rf src/workflow_app/dist src/workflow_app/build && pixi run -e workflow wheel-workflow
 
 # Stage 2: Runtime image
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim
