@@ -1,18 +1,30 @@
+# Stage 1: Build wheels
+FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim AS builder
+
+COPY pyproject.toml pixi.lock ./
+RUN pixi install --locked -e dasmon
+
+# Copy source and git history after pixi install so that layer is cached until pixi.lock changes.
+COPY src/dasmon_app  src/dasmon_app/
+COPY src/webmon_app  src/webmon_app/
+COPY src/workflow_app src/workflow_app/
+COPY .git .git
+
+RUN pixi run -e dasmon wheel-workflow && pixi run -e dasmon wheel-webmon && pixi run -e dasmon wheel-dasmon
+
+# Stage 2: Runtime image
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim
 
-COPY pixi.lock .
-COPY pyproject.toml .
+COPY pixi.lock pyproject.toml ./
 RUN pixi install --locked -e dasmon
 
 WORKDIR /usr/src/data_workflow
 
-# copy the necessary wheels and the Makefile which knows the dependency order
-COPY ./src/dasmon_app/dist/django_nscd_dasmon-*-none-any.whl .
-COPY ./src/webmon_app/dist/django_nscd_webmon-*-none-any.whl .
-COPY ./src/workflow_app/dist/django_nscd_workflow-*-none-any.whl .
-COPY ./Makefile .
+COPY --from=builder /src/workflow_app/dist/ ./dist/
+COPY --from=builder /src/webmon_app/dist/  ./dist/
+COPY --from=builder /src/dasmon_app/dist/  ./dist/
+RUN pixi run -e dasmon pip install dist/*.whl && rm -rf dist/
 
-# move the entry-point into the volume
-COPY ./src/dasmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
+COPY src/dasmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 CMD ["pixi", "run", "-e", "dasmon", "/usr/bin/docker-entrypoint.sh"]

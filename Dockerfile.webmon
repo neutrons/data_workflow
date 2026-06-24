@@ -1,20 +1,30 @@
+# Stage 1: Build wheels
+FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim AS builder
+
+COPY pyproject.toml pixi.lock ./
+RUN pixi install --locked -e webmon
+
+# Copy source and git history after pixi install so that layer is cached until pixi.lock changes.
+COPY src/webmon_app  src/webmon_app/
+COPY src/workflow_app src/workflow_app/
+COPY .git .git
+
+RUN pixi run -e webmon wheel-workflow && pixi run -e webmon wheel-webmon
+
+# Stage 2: Runtime image
 FROM ghcr.io/prefix-dev/pixi:0.69.0-bookworm-slim
 
-RUN apt update && apt install -y ca-certificates wget tzdata
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget tzdata && rm -rf /var/lib/apt/lists/*
 
-COPY pixi.lock .
-COPY pyproject.toml .
+COPY pixi.lock pyproject.toml ./
 RUN pixi install --locked -e webmon
 
 WORKDIR /usr/src/webmon
 
-# copy the necessary wheels and the Makefile which knows the dependency order
-COPY ./src/webmon_app/dist/django_nscd_webmon-*-none-any.whl .
-COPY ./src/workflow_app/dist/django_nscd_workflow-*-none-any.whl .
-COPY ./Makefile .
+COPY --from=builder /src/workflow_app/dist/ ./dist/
+COPY --from=builder /src/webmon_app/dist/  ./dist/
+RUN pixi run -e webmon pip install dist/*.whl && rm -rf dist/
 
-# move the entry-point into the volume
-COPY ./src/webmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
-
+COPY src/webmon_app/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 CMD ["pixi", "run", "-e", "webmon", "/usr/bin/docker-entrypoint.sh"]

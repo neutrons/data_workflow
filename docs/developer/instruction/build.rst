@@ -74,13 +74,14 @@ Each package can be built independently using:
 
 .. code-block:: shell
 
-   make wheel/dasmon   # Build dasmon package
-   make wheel/webmon   # Build webmon package
-   make wheel/workflow # Build workflow package
-   make wheel/all      # Build all three packages
+   pixi run wheel-dasmon   # Build dasmon package
+   pixi run wheel-webmon   # Build webmon package
+   pixi run wheel-workflow # Build workflow package
+   pixi run wheel-all      # Build all three packages
 
-The built wheels are stored in each package's ``dist/`` directory and are used by the Docker containers
-to install the applications.
+The built wheels are stored in each package's ``dist/`` directory.
+In the Docker containers, wheels are built automatically at image build time via multistage builds —
+no manual pre-build step is required before ``docker compose up --build``.
 
 Running unit tests
 ------------------
@@ -100,7 +101,8 @@ The system test are run via `.github/workflow/systemtests.yml <https://github.co
 
 .. code-block:: shell
 
-   make all # wheels and test data
+   pixi run test-data
+   pixi run ssl
    LDAP_SERVER_URI=. LDAP_DOMAIN_COMPONENT=. DJANGO_SETTINGS_MODULE=reporting.reporting_app.settings.envtest docker compose up --build
 
 Wait for a time for everything to get up and running.
@@ -115,8 +117,7 @@ Building a local deployment
 ---------------------------
 
 Most of the shell commands used when working in the developer setup (a.k.a "localdev")
-are encapsulated in ``make`` targets. Type ``make help`` for a list of ``make`` targets
-and a brief description.
+are encapsulated in ``pixi`` tasks. Run ``pixi task list`` for a list of available tasks.
 
 When starting from scratch, open a shell where the following secret environment variables have
 been initialized:
@@ -155,12 +156,12 @@ While one can connect to the production LDAP, in a developer environment there a
 * ``InstrumentScientist`` : ``InstrumentScientist`` has permissions similar to an instrument scientist
 
 
-After setting the environment variables, run the following ``make`` targets in the shell:
+After setting the environment variables, run the following ``pixi`` tasks in the shell:
 
 .. code-block:: shell
 
-   make all  # create: python packages for dasmon, webmon, and workflow; fake SNS data; self-signed SSL certificates
-   make localdev/up  # build all the services
+   pixi run all         # create: fake SNS data; self-signed SSL certificates; python packages
+   pixi run localdev-up # build all the services
 
 The site is served at http://localhost by default.
 
@@ -184,30 +185,33 @@ Stoping and deleting the running containers as well as deleting the images and d
 
 this command will delete the database. Omit ``--volumes`` if preservation of the database is desired.
 
-Alternatively, do **Ctrl-C** in the terminal where  you ran ``make localdev/up`` or ``docker compose up --build``.
+Alternatively, do **Ctrl-C** in the terminal where you ran ``pixi run localdev-up`` or ``docker compose up --build``.
 
-Recreate the Python wheels
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-The selected format to inject ``dasmon``, ``webmon``, and ``workflow`` apps into their
-corresponding services is python wheels, thus any changes for the python
-source code requires rebuilding the python wheel(s).
+Rebuild after source changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+With multistage Docker builds, wheels are built automatically inside Docker at image build time.
+After changing the source code of an app, rebuild only its service:
 
-For instance, if the source code of ``dasmon`` is changed, run at this
-point ``make wheel/dasmon`` to rebuild the ``dasmon`` wheel.
+.. code-block:: shell
 
-If necessary, delete all existing wheels with ``make wheel/clean``, then run ``make all`` to recreate them.
+   pixi run build-service --service=webmon   # or dasmon, workflow
 
-Rebuild the services
-~~~~~~~~~~~~~~~~~~~~
-Run again ``make localdev/up``. This ``make`` target builds the services
-with command ``docker compose up --build`` using settings in ``docker-compose.yml``.
+To rebuild all services:
+
+.. code-block:: shell
+
+   pixi run localdev-up
+
+This runs ``docker compose up --build`` using settings in ``docker-compose.yml``.
+Local wheel builds can still be triggered manually (e.g. for inspection) with
+``pixi run wheel-dasmon`` etc., but they are not required before starting the containers.
 
 More information on docker commands for this project can be found :doc:`here <docker>`.
 
 Uploading a database dump
 +++++++++++++++++++++++++
 
-Make target ``localdev/dbup`` contains the shell command to load the
+Pixi task ``localdev-dbup`` contains the shell command to load the
 database dump and start the service. Assuming that:
 
 - the full path to the dump file  is ``./database_dump_file.sql``:
@@ -215,7 +219,7 @@ database dump and start the service. Assuming that:
 
 .. code-block::
 
-   (webmon) $> dbdumpfile=./database_dump_file.sql make DATABASE_PASS=$(dotenv get DATABASE_PASS) localdev/dbup
+   $> dbdumpfile=./database_dump_file.sql DATABASE_PASS=$(dotenv get DATABASE_PASS) pixi run localdev-dbup
 
-Target ``localdev/dbup`` sets ``LOAD_INITIAL_DATA="false"``, thus preventing loading the default
+Task ``localdev-dbup`` sets ``LOAD_INITIAL_DATA="false"``, thus preventing loading the default
 database dump (file "db_init.json")

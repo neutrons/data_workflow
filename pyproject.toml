@@ -34,7 +34,30 @@ platforms = ["linux-64"]
 unittests = { cmd = "python -m pytest src", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.unittest" } }
 unittests-with-coverage = { cmd = "python -m pytest --cov --cov-report=xml --cov-report=term src", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.unittest" } }
 systemtests = { cmd = "python -m pytest tests", env = { DJANGO_SETTINGS_MODULE = "reporting.reporting_app.settings.envtest", LDAP_SERVER_URI = ".", LDAP_DOMAIN_COMPONENT = ".", LIVE_PLOT_SECRET_KEY = "secretKey"} }
-build-docs ="cd docs & make html"
+
+ssl       = { cmd = "openssl req -x509 -out nginx/nginx.crt -keyout nginx/nginx.key -newkey rsa:2048 -nodes -sha256 -addext 'basicConstraints=CA:TRUE' --config nginx/san.cnf" }
+ssl-clean = { cmd = "rm -f nginx/nginx.crt nginx/nginx.key" }
+test-data = { cmd = "tar czf SNSdata.tar.gz -C tests/data/ ." }
+clean     = { cmd = "rm -rf src/dasmon_app/build src/dasmon_app/dist src/webmon_app/build src/webmon_app/dist src/workflow_app/build src/workflow_app/dist && rm -f nginx/nginx.crt nginx/nginx.key SNSdata.tar.gz" }
+
+localdev-up   = { cmd = "docker compose --file docker-compose.yml up --build" }
+# Usage: dbdumpfile=./dump.sql DATABASE_PASS=$(dotenv get DATABASE_PASS) pixi run localdev-dbup
+localdev-dbup = { cmd = """
+if ! test -f "${dbdumpfile}"; then echo "dbdumpfile does not exist" && exit 1; fi
+if test -z "${DATABASE_PASS}"; then echo "DATABASE_PASS undefined" && exit 1; fi
+docker compose --file docker-compose.yml stop
+docker compose --file docker-compose.yml down --volumes
+sleep 2
+docker compose --file docker-compose.yml up --detach db
+sleep 10
+docker exec -i data_workflow-db-1 /bin/bash -c "pg_restore -d workflow -U workflow" < ${dbdumpfile} || true
+docker exec -i data_workflow-db-1 psql -d workflow -U workflow -v "pw=${DATABASE_PASS}" -c "ALTER ROLE workflow WITH PASSWORD :'pw';"
+LOAD_INITIAL_DATA=false docker compose --file docker-compose.yml up --build
+""" }
+
+# Rebuild a single Docker service. Usage: pixi run build-service --service=webmon
+build-service   = { cmd = "docker compose --file docker-compose.yml build $service", args = ["service"] }
+docker-pruneall = { cmd = "docker system prune --force --all --volumes" }
 
 [tool.pixi.environments]
 default = { features = [
@@ -64,14 +87,15 @@ pyoncat = "*"
 sphinx = ">=8"
 sphinx_rtd_theme = ">=3.0.1"
 sphinxcontrib-mermaid = "*"
+make = "*"
 
 [tool.pixi.feature.build.dependencies]
 python-build = "*"
 pip = "*"
 wheel = "*"
 check-wheel-contents = "*"
-make = "*"
 toml = ">=0.10.2,<0.11"
+git = "*"
 
 [tool.pixi.feature.webmon.dependencies]
 gunicorn = "*"
@@ -79,3 +103,28 @@ pyoncat = "*"
 
 [tool.pixi.feature.dasmon.dependencies]
 psutil = "*"
+
+[tool.pixi.feature.build.tasks]
+all          = { depends-on = ["wheel-all", "test-data", "ssl"] }
+wheel-clean    = { cmd = "rm -rf src/dasmon_app/build src/dasmon_app/dist src/webmon_app/build src/webmon_app/dist src/workflow_app/build src/workflow_app/dist" }
+wheel-dasmon   = { cmd = "rm -rf src/dasmon_app/build && cd src/dasmon_app && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_dasmon-*.whl" }
+wheel-webmon   = { cmd = "rm -rf src/webmon_app/build && cd src/webmon_app && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_webmon-*.whl" }
+wheel-workflow = { cmd = "rm -rf src/workflow_app/build && cd src/workflow_app && python -m build --no-isolation --wheel . && check-wheel-contents dist/django_nscd_workflow-*.whl" }
+wheel-all    = { depends-on = ["wheel-clean", "wheel-dasmon", "wheel-webmon", "wheel-workflow"] }
+
+[tool.pixi.feature.docs.tasks]
+# Fixed: & → && (was a pre-existing bug). Moved here because make is in the docs feature.
+build-docs = { cmd = "cd docs && make html SPHINXOPTS='-W --keep-going -n' && echo \"Docs: file://$(pwd)/_build/html/index.html\"" }
+
+[tool.pixi.feature.webmon.tasks]
+# DJANGO_SETTINGS_MODULE is not set here — it is inherited from the container environment.
+configure-webmon = { cmd = """django-admin collectstatic --noinput \
+  && django-admin makemigrations --noinput \
+  && django-admin migrate --fake-initial --noinput \
+  && django-admin migrate --run-syncdb --noinput \
+  && django-admin createcachetable webcache \
+  && django-admin ensure_adminuser --username=${DATABASE_USER} --email='workflow@example.com' --password=${DATABASE_PASS} \
+  && django-admin add_stored_procs \
+  && django-admin add_indices""" }
+# Fixture path resolved dynamically so it survives Python version bumps.
+configure-load-initial-data = { cmd = "django-admin loaddata $(python -c \"import reporting, os; print(os.path.join(os.path.dirname(reporting.__file__), 'fixtures', 'db_init.json'))\")" }
