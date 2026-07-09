@@ -397,6 +397,13 @@ img {border: 0;}
     width: 60%;
 }
 
+.ornlFooter .attribution
+{
+    margin: 0px 0px 8px 0px;
+    line-height: 1.5;
+    color: #333;
+}
+
 .ornlFooter .links ul
 {
     list-style: none;
