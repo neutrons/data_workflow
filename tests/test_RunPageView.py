@@ -300,11 +300,12 @@ class TestRunPageView:
 
     def verifyLatestRun(self, r):
         self.assertHtml("""<div class="summary">List of latest runs:<br><br>""", r.text)
+        # The Run Title column was removed from the summary page so that run
+        # titles are not exposed on the cross-instrument latest-runs table.
         self.assertHtml(
             """<th>Instr.</th>
             <th>Run</th>
             <th>Created on</th>
-            <th>Run Title</th>
             <th>Status</th>
             <th>ONCat</th>""",
             r.text,
