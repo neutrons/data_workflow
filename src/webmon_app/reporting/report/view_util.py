@@ -24,6 +24,7 @@ from django.utils.html import escape
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
+import reporting.users.view_util as users_view_util
 from reporting.report.models import (
     IPTS,
     DataRun,
@@ -491,12 +492,15 @@ def get_run_status_text_dict(run_list, use_element_id=False):
     return run_statuses
 
 
-def get_run_list_dict(run_list):
+def get_run_list_dict(run_list, request=None, show_run_title=True):
     """
     Get a list of run object and transform it into a list of
     dictionaries that can be used to fill a table.
 
     :param run_list: list of run object (usually a QuerySet)
+    :param request: HTTP request, used to gate the run title by experiment
+                    access. When None, the title is shown (legacy behavior).
+    :param show_run_title: set False to never include the run title
     """
     run_dicts = []
 
@@ -517,9 +521,14 @@ def get_run_list_dict(run_list):
             reduce_url = reverse("report:submit_for_reduction", args=[str(r.instrument_id), r.run_number])
             instr_url = reverse("dasmon:live_runs", args=[str(r.instrument_id)])
 
-            # Format run_title with truncation and tooltip
+            # Format run_title with truncation and tooltip. Titles can carry
+            # proprietary experiment info, so only expose them to users with
+            # access to the experiment (see users_view_util.is_experiment_member).
             run_title_display = ""
-            if r.run_title:
+            title_allowed = show_run_title and (
+                request is None or users_view_util.is_experiment_member(request, r.instrument_id, r.ipts_id)
+            )
+            if r.run_title and title_allowed:
                 # Use the same pruning function used in DASMON views
                 pruned_title = dasmon_view_util._prune_title_string(r.run_title)
                 # Truncate long titles for display with escaped HTML

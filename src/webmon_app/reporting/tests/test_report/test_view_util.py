@@ -316,6 +316,32 @@ class ViewUtilTest(TestCase):
         # Cleanup
         run.delete()
 
+    def test_get_run_list_dict_hides_run_title(self):
+        """run_title is blanked when show_run_title is False or the user is not an experiment member"""
+        from django.contrib.auth.models import User
+        from django.test import RequestFactory
+
+        from reporting.report.view_util import get_run_list_dict
+
+        inst = Instrument.objects.get(name="test_instrument")
+        ipts = IPTS.objects.get(expt_name="test_exp1")
+        run = DataRun.objects.create(
+            run_number=996, ipts_id=ipts, instrument_id=inst, file="tmp/test_996.nxs", run_title="Secret Title"
+        )
+        run.save()
+        runs = DataRun.objects.filter(run_number=996, instrument_id=inst)
+
+        # Summary page: title never shown
+        self.assertEqual(get_run_list_dict(runs, show_run_title=False)[0]["run_title"], "")
+
+        # Non-member user: title hidden
+        request = RequestFactory().get("/")
+        request.user = User.objects.create_user(username="not_a_member")
+        self.assertEqual(get_run_list_dict(runs, request=request)[0]["run_title"], "")
+
+        # Cleanup
+        run.delete()
+
     def test_get_run_status_text_dict(self):
         from reporting.report.view_util import get_run_status_text_dict
 

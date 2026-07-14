@@ -4,6 +4,7 @@ Live monitoring
 """
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -141,14 +142,14 @@ def run_summary_update(request):
     instrument_search = request.GET.get("columns[0][search][value]", "")
     run_search = request.GET.get("columns[1][search][value]", "")
     date_search = request.GET.get("columns[2][search][value]", "")
-    title_search = request.GET.get("columns[3][search][value]", "")
-    status_search = request.GET.get("columns[4][search][value]", "")
+    status_search = request.GET.get("columns[3][search][value]", "")
 
     run_list, count, filtered_count = view_util.get_run_list_newest(
-        offset, limit, instrument_search, run_search, date_search, status_search, title_search=title_search
+        offset, limit, instrument_search, run_search, date_search, status_search
     )
     data = {}
-    data["data"] = report_view_util.get_run_list_dict(run_list)
+    # Run titles are not shown on the cross-instrument summary page
+    data["data"] = report_view_util.get_run_list_dict(run_list, show_run_title=False)
     data["recordsTotal"] = count
     data["recordsFiltered"] = filtered_count
     data["draw"] = draw
@@ -156,7 +157,7 @@ def run_summary_update(request):
     return JsonResponse(data)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -188,7 +189,7 @@ def live_monitor(request, instrument):
     return render(request, "dasmon/live_monitor.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -338,7 +339,7 @@ def get_update(request, instrument):
     run_list, count, filtered_count = view_util.get_run_list_instrument_newest(
         instrument_id, offset, limit, run_search, date_search, status_search, title_search=title_search
     )
-    data_dict["data"] = report_view_util.get_run_list_dict(run_list)
+    data_dict["data"] = report_view_util.get_run_list_dict(run_list, request=request)
     data_dict["recordsTotal"] = count
     data_dict["recordsFiltered"] = filtered_count
     data_dict["draw"] = draw

@@ -5,6 +5,7 @@ Live PV monitoring
 import json
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -20,7 +21,7 @@ from reporting.report.models import Instrument
 from . import view_util
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
