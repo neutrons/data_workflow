@@ -306,6 +306,7 @@ def diagnostics(request, instrument):
 @users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
+@vary_on_cookie
 def get_update(request, instrument):
     limit = int(request.GET.get("length", 10))
     offset = int(request.GET.get("start", 0))

@@ -510,6 +510,25 @@ def get_run_list_dict(run_list, request=None, show_run_title=True):
 
     run_status_text_dict = get_run_status_text_dict(run_list, use_element_id=True)
 
+    # Cache experiment-membership decisions per experiment so is_experiment_member
+    # (which may hit LDAP and the database) is evaluated at most once per
+    # experiment, even for large pages.
+    title_access_cache = {}
+
+    def title_allowed(run):
+        # Titles can carry proprietary experiment info, so only expose them to
+        # users with access to the experiment (see is_experiment_member).
+        if not show_run_title:
+            return False
+        if request is None:
+            return True
+        cache_key = (run.instrument_id_id, run.ipts_id_id)
+        if cache_key not in title_access_cache:
+            title_access_cache[cache_key] = users_view_util.is_experiment_member(
+                request, run.instrument_id, run.ipts_id
+            )
+        return title_access_cache[cache_key]
+
     try:
         for r in run_list:
             if r.id not in run_status_text_dict:
@@ -521,14 +540,9 @@ def get_run_list_dict(run_list, request=None, show_run_title=True):
             reduce_url = reverse("report:submit_for_reduction", args=[str(r.instrument_id), r.run_number])
             instr_url = reverse("dasmon:live_runs", args=[str(r.instrument_id)])
 
-            # Format run_title with truncation and tooltip. Titles can carry
-            # proprietary experiment info, so only expose them to users with
-            # access to the experiment (see users_view_util.is_experiment_member).
+            # Format run_title with truncation and tooltip
             run_title_display = ""
-            title_allowed = show_run_title and (
-                request is None or users_view_util.is_experiment_member(request, r.instrument_id, r.ipts_id)
-            )
-            if r.run_title and title_allowed:
+            if r.run_title and title_allowed(r):
                 # Use the same pruning function used in DASMON views
                 pruned_title = dasmon_view_util._prune_title_string(r.run_title)
                 # Truncate long titles for display with escaped HTML
