@@ -417,6 +417,7 @@ def live_errors(request, instrument):
 
 @users_view_util.login_or_local_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@vary_on_cookie
 def get_experiment_update(request, instrument, ipts):
     """
     Ajax call to get updates behind the scenes
@@ -465,7 +466,7 @@ def get_experiment_update(request, instrument, ipts):
         status_search,
         title_search=title_search,
     )
-    data["data"] = view_util.get_run_list_dict(run_list)
+    data["data"] = view_util.get_run_list_dict(run_list, request=request)
     data["recordsTotal"] = count
     data["recordsFiltered"] = filtered_count
     data["draw"] = draw

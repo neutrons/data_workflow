@@ -24,6 +24,7 @@ from django.utils.html import escape
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.reporting_app.view_util as reporting_view_util
+import reporting.users.view_util as users_view_util
 from reporting.report.models import (
     IPTS,
     DataRun,
@@ -491,12 +492,15 @@ def get_run_status_text_dict(run_list, use_element_id=False):
     return run_statuses
 
 
-def get_run_list_dict(run_list):
+def get_run_list_dict(run_list, request=None, show_run_title=True):
     """
     Get a list of run object and transform it into a list of
     dictionaries that can be used to fill a table.
 
     :param run_list: list of run object (usually a QuerySet)
+    :param request: HTTP request, used to gate the run title by experiment
+                    access. When None, the title is shown (legacy behavior).
+    :param show_run_title: set False to never include the run title
     """
     run_dicts = []
 
@@ -505,6 +509,25 @@ def get_run_list_dict(run_list):
         return run_dicts
 
     run_status_text_dict = get_run_status_text_dict(run_list, use_element_id=True)
+
+    # Cache experiment-membership decisions per experiment so is_experiment_member
+    # (which may hit LDAP and the database) is evaluated at most once per
+    # experiment, even for large pages.
+    title_access_cache = {}
+
+    def title_allowed(run):
+        # Titles can carry proprietary experiment info, so only expose them to
+        # users with access to the experiment (see is_experiment_member).
+        if not show_run_title:
+            return False
+        if request is None:
+            return True
+        cache_key = (run.instrument_id_id, run.ipts_id_id)
+        if cache_key not in title_access_cache:
+            title_access_cache[cache_key] = users_view_util.is_experiment_member(
+                request, run.instrument_id, run.ipts_id
+            )
+        return title_access_cache[cache_key]
 
     try:
         for r in run_list:
@@ -519,7 +542,7 @@ def get_run_list_dict(run_list):
 
             # Format run_title with truncation and tooltip
             run_title_display = ""
-            if r.run_title:
+            if r.run_title and title_allowed(r):
                 # Use the same pruning function used in DASMON views
                 pruned_title = dasmon_view_util._prune_title_string(r.run_title)
                 # Truncate long titles for display with escaped HTML
