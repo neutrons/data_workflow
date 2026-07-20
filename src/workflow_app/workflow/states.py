@@ -11,9 +11,16 @@ import json
 import logging
 import re
 
+from . import settings
 from .database import transactions
 from .settings import CATALOG_DATA_READY, POSTPROCESS_ERROR, REDUCTION_CATALOG_DATA_READY, REDUCTION_DATA_READY
 from .state_utilities import logged_action
+
+# Instrument names are short alphanumeric tokens (e.g. "eqsans", "cg2", "hb2c").
+# Validate strictly before interpolating into a queue name so that a malformed or
+# hostile "instrument" value cannot inject queue delimiters ("."), STOMP path
+# segments ("/queue/"), or ActiveMQ Artemis wildcard characters ("*", "#").
+_VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9]+$")
 
 
 class StateAction:
@@ -32,6 +39,92 @@ class StateAction:
         """
         self._user_db_task = use_db_task
         self._send_connection = connection
+
+    def get_instrument_from_message(self, message):
+        """
+        Extract and validate the instrument name from a message.
+
+        Returns the lowercase instrument name only when the message is valid JSON,
+        carries a string ``instrument`` field, and that field is a plain
+        alphanumeric token. Any other case (unparseable message, missing field,
+        wrong type, or a value containing characters that are unsafe in a queue
+        name) returns ``None`` so the caller falls back to the shared queue.
+
+        :param message: JSON-encoded message content
+        :return: lowercase instrument name, or None
+        """
+        try:
+            data = json.loads(message)
+        except (json.JSONDecodeError, TypeError):
+            logging.debug("Could not parse message as JSON while extracting instrument")
+            return None
+
+        if not isinstance(data, dict):
+            return None
+
+        instrument = data.get("instrument")
+        if not isinstance(instrument, str):
+            return None
+
+        instrument = instrument.strip().lower()
+        if not _VALID_INSTRUMENT_RE.match(instrument):
+            logging.debug("Ignoring invalid instrument value %r for per-instrument routing", instrument)
+            return None
+
+        return instrument
+
+    def get_instrument_queue_name(self, instrument, queue_type="reduction"):
+        """
+        Generate an instrument-specific queue name.
+
+        :param instrument: validated instrument name (e.g. 'eqsans')
+        :param queue_type: one of 'reduction', 'reduction_catalog', 'catalog'
+        :return: queue name string
+        :raises ValueError: if queue_type is unknown
+        """
+        instrument_upper = instrument.upper()
+
+        if queue_type == "reduction":
+            return f"REDUCTION.{instrument_upper}.DATA_READY"
+        elif queue_type == "reduction_catalog":
+            return f"REDUCTION_CATALOG.{instrument_upper}.DATA_READY"
+        elif queue_type == "catalog":
+            return f"CATALOG.{instrument_upper}.DATA_READY"
+        else:
+            raise ValueError(f"Unknown queue type: {queue_type}")
+
+    def resolve_reduction_queue(self, message, shared_queue, queue_type):
+        """
+        Choose the destination queue for a message, honoring the feature flag.
+
+        When per-instrument routing is enabled (see
+        ``settings.ENABLE_PER_INSTRUMENT_QUEUES``) and a valid instrument can be
+        extracted, returns the instrument-specific queue name. Otherwise returns
+        ``shared_queue`` -- and, if routing is enabled but the instrument is
+        missing or invalid, logs a warning so the fallback is visible.
+
+        The flag is read from the settings module at call time so it can be
+        toggled per-process (and overridden in tests) without re-importing.
+
+        :param message: JSON-encoded message content
+        :param shared_queue: queue name to fall back to
+        :param queue_type: queue type passed to get_instrument_queue_name
+        :return: queue name string
+        """
+        if not settings.ENABLE_PER_INSTRUMENT_QUEUES:
+            return shared_queue
+
+        instrument = self.get_instrument_from_message(message)
+        if not instrument:
+            logging.warning(
+                "Per-instrument routing enabled but no valid instrument in message; falling back to shared queue %s",
+                shared_queue,
+            )
+            return shared_queue
+
+        queue = self.get_instrument_queue_name(instrument, queue_type)
+        logging.info("Routing %s message to per-instrument queue %s", instrument, queue)
+        return queue
 
     def _call_default_task(self, headers, message):
         """
@@ -140,7 +233,11 @@ class StateAction:
 
 class Postprocess_data_ready(StateAction):
     """
-    Default action for POSTPROCESS.DATA_READY messages
+    Default action for POSTPROCESS.DATA_READY messages.
+
+    Routes the reduction message to the instrument-specific REDUCTION queue when
+    per-instrument routing is enabled, falling back to the shared queue otherwise.
+    The CATALOG message always uses the shared queue (CATALOG.ONCAT.DATA_READY).
     """
 
     def __call__(self, headers, message):
@@ -150,14 +247,17 @@ class Postprocess_data_ready(StateAction):
         :param headers: message headers
         :param message: JSON-encoded message content
         """
-        # Tell workers for start processing
+        reduction_queue = self.resolve_reduction_queue(message, REDUCTION_DATA_READY, "reduction")
+
+        # Tell workers for start processing.
+        # Cataloging stays on the shared queue for now.
         self.send(
             destination="/queue/%s" % CATALOG_DATA_READY,
             message=message,
             persistent="true",
         )
         self.send(
-            destination="/queue/%s" % REDUCTION_DATA_READY,
+            destination="/queue/%s" % reduction_queue,
             message=message,
             persistent="true",
         )
@@ -165,7 +265,10 @@ class Postprocess_data_ready(StateAction):
 
 class Reduction_request(StateAction):
     """
-    Default action for REDUCTION.REQUEST messages
+    Default action for REDUCTION.REQUEST messages.
+
+    Routes to the instrument-specific REDUCTION queue when per-instrument routing
+    is enabled, falling back to the shared queue otherwise.
     """
 
     def __call__(self, headers, message):
@@ -175,9 +278,11 @@ class Reduction_request(StateAction):
         :param headers: message headers
         :param message: JSON-encoded message content
         """
+        reduction_queue = self.resolve_reduction_queue(message, REDUCTION_DATA_READY, "reduction")
+
         # Tell workers for start reduction
         self.send(
-            destination="/queue/%s" % REDUCTION_DATA_READY,
+            destination="/queue/%s" % reduction_queue,
             message=message,
             persistent="true",
         )
@@ -205,7 +310,10 @@ class Catalog_request(StateAction):
 
 class Reduction_complete(StateAction):
     """
-    Default action for REDUCTION.COMPLETE messages
+    Default action for REDUCTION.COMPLETE messages.
+
+    Routes to the instrument-specific REDUCTION_CATALOG queue when per-instrument
+    routing is enabled, falling back to the shared queue otherwise.
     """
 
     def __call__(self, headers, message):
@@ -215,9 +323,11 @@ class Reduction_complete(StateAction):
         :param headers: message headers
         :param message: JSON-encoded message content
         """
+        catalog_queue = self.resolve_reduction_queue(message, REDUCTION_CATALOG_DATA_READY, "reduction_catalog")
+
         # Tell workers to catalog the output
         self.send(
-            destination="/queue/%s" % REDUCTION_CATALOG_DATA_READY,
+            destination="/queue/%s" % catalog_queue,
             message=message,
             persistent="true",
         )
