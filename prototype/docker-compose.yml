@@ -1,0 +1,252 @@
+services:
+
+  nginx:
+    image: nginx:1.21.1
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - web-static:/var/www/workflow/static
+      - web-static-livedata:/var/www/livedata/static
+      - ./nginx/django.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.crt:/etc/nginx/nginx.crt
+      - ./nginx/nginx.key:/etc/nginx/nginx.key
+    healthcheck:
+      test: ["CMD", "service", "nginx", "status"]
+    depends_on:
+      webmon:
+        condition: service_healthy
+    networks:
+      default:
+        ipv4_address: 172.16.238.222
+
+  webmon:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.webmon
+    volumes:
+      - web-static:/var/www/workflow/static/
+      # add in folder to be picked up by update-ca-certificates in docker entrypoint
+      - ./nginx/nginx.crt:/usr/local/share/ca-certificates/nginx.crt
+    env_file:
+      - .env
+      - .env.ci
+    environment:
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - LOAD_INITIAL_DATA=${LOAD_INITIAL_DATA-true}
+      - LDAP_SERVER_URI=${LDAP_SERVER_URI}
+      - LDAP_DOMAIN_COMPONENT=${LDAP_DOMAIN_COMPONENT}
+      - CATALOG_URL=${CATALOG_URL}
+      - CATALOG_API_TOKEN=${CATALOG_API_TOKEN}
+      - GUNICORN_CMD_ARGS=--reload --workers=8
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8000/ht || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  dasmon:
+    build:
+      context: .
+      dockerfile: Dockerfile.dasmon
+    env_file:
+      - .env
+    environment:
+      - PURGE_TIMEOUT=0.1
+      - CACHE_PURGE_TIMEOUT=0.5
+    healthcheck:
+      test: ["CMD", "pixi", "run", "-e", "dasmon", "dasmon_listener", "status"]
+    depends_on:
+      activemq:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+
+  workflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.workflow
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "pixi", "run", "-e", "workflow", "workflowmgr", "status"]
+    depends_on:
+      activemq:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+
+  db:
+    restart: always
+    image: postgres:17
+    env_file:
+      - .env
+    environment:
+      # variables DATABASE_* should be initialized in .env file
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+    ports:
+      # DATABASE_PORT should be initialized in .env file
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  activemq:
+    user: root
+    image: apache/activemq-artemis:latest-alpine
+    hostname: activemq
+    ports:
+      - 8161:8161
+      - 61613:61613
+    volumes:
+      - ./config/artemis:/var/lib/artemis-instance/etc-override
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8161 || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  autoreducer:
+    build:
+      context: .
+      dockerfile: Dockerfile.autoreducer
+      args:
+        CONFIG_FILE: ./tests/configuration/post_process_consumer.conf
+        PLOTLY_VERSION: "5"
+    volumes:
+      # add in RHEL9 certs folder to be picked up by update-ca-trust in docker entrypoint
+      - ./nginx/nginx.crt:/etc/pki/ca-trust/source/anchors/nginx.crt
+    hostname: autoreducer
+    environment:
+      - PLOTLY_VERSION=5
+    healthcheck:
+      test: ["CMD", "pgrep", "queueProcessor"]
+    depends_on:
+      activemq:
+        condition: service_healthy
+      livedata:
+        condition: service_healthy
+      nginx:
+        condition: service_healthy
+
+  autoreducer_himem:
+    build:
+      context: .
+      dockerfile: Dockerfile.autoreducer
+      args:
+        CONFIG_FILE: ./tests/configuration/post_process_consumer.himem.conf
+        PLOTLY_VERSION: "6"
+    volumes:
+      # add in RHEL9 certs folder to be picked up by update-ca-trust in docker entrypoint
+      - ./nginx/nginx.crt:/etc/pki/ca-trust/source/anchors/nginx.crt
+    hostname: autoreducer.himem
+    environment:
+      - PLOTLY_VERSION=6
+    healthcheck:
+      test: ["CMD", "pgrep", "queueProcessor"]
+    depends_on:
+      activemq:
+        condition: service_healthy
+      livedata:
+        condition: service_healthy
+      nginx:
+        condition: service_healthy
+
+  # Generator of AMQ messages and VP updates
+  # https://webmonchow.readthedocs.io/en/latest/index.html
+  webmonchow:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.webmonchow
+    env_file:
+      - .env
+    environment:
+      - MESSAGE_INTERVAL=${MESSAGE_INTERVAL:-5}  # seconds between message bursts (default 5 for load testing)
+    depends_on:
+      db:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+      activemq:
+        condition: service_healthy
+
+  livedata:
+    restart: always
+    image: ghcr.io/neutrons/live_data_server/live_data_server:latest-dev
+    env_file:
+      - .env
+    environment:
+      DJANGO_SUPERUSER_USERNAME: ${DATABASE_USER}
+      DJANGO_SUPERUSER_PASSWORD: ${DATABASE_PASS}
+    volumes:
+      - web-static-livedata:/var/www/livedata/static
+      - ./config/livedata_local_settings.py:/var/www/livedata/app/local_settings.py
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8000/admin || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+
+  artemis_data_collector:
+    restart: always
+    image: ghcr.io/neutrons/artemis_data_collector/artemis_data_collector:latest-prod
+    env_file:
+      - .env
+    environment:
+      INTERVAL: 60
+      ARTEMIS_URL: http://activemq:8161
+      ARTEMIS_USER: artemis
+      ARTEMIS_PASSWORD: artemis
+      ARTEMIS_BROKER_NAME: Artemis-Broker
+      QUEUE_LIST: "['REDUCTION.DATA_READY', 'REDUCTION.HIMEM.DATA_READY', 'CATALOG.ONCAT.DATA_READY', 'REDUCTION_CATALOG.DATA_READY']"
+    depends_on:
+      db:
+        condition: service_healthy
+      webmon:
+        condition: service_healthy
+      activemq:
+        condition: service_healthy
+
+  oncat:
+    build:
+      context: .
+      dockerfile: Dockerfile.oncat
+
+  autoheal:
+    restart: always
+    image: willfarrell/autoheal
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  web-static:
+  web-static-livedata:
+  pgdata:
+
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.16.238.0/24

@@ -1,0 +1,18 @@
+FROM ghcr.io/prefix-dev/pixi:0.53.0-bookworm-slim
+
+# Install webmonchow
+RUN pixi init --channel conda-forge --channel neutrons
+RUN pixi add webmonchow=1.0.2
+
+# Create a script for high-frequency message generation
+RUN echo '#!/bin/sh\n\
+MESSAGE_INTERVAL=${MESSAGE_INTERVAL:-60}\n\
+echo "Starting webmonchow with message interval: ${MESSAGE_INTERVAL} seconds"\n\
+pixi run broadcast_pv &\n\
+while true; do\n\
+  pixi run broadcast_amq --broker "activemq:61613"\n\
+  sleep ${MESSAGE_INTERVAL}\n\
+done' > /start_webmonchow.sh && chmod +x /start_webmonchow.sh
+
+# Start the AMQ and PV generators when starting the container
+CMD ["/start_webmonchow.sh"]
