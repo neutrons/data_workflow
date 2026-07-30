@@ -30,7 +30,7 @@ COPY tests/python3-pyoncat-2.1-1.noarch.rpm /tmp/
 RUN dnf install -y /tmp/python3-pyoncat-2.1-1.noarch.rpm
 
 # install postprocessing
-RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v4.1.0/postprocessing-4.1.0-1.el9.noarch.rpm
+RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v4.5.0/postprocessing-4.5.0-1.el9.noarch.rpm
 
 # Install dependencies
 ARG PLOTLY_VERSION=5
