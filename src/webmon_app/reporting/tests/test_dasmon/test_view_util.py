@@ -11,7 +11,7 @@ from workflow.database.report.models import IPTS, DataRun
 
 from reporting import dasmon, users
 from reporting.dasmon.models import ActiveInstrument, Parameter, StatusCache, StatusVariable
-from reporting.pvmon.models import PVCache, PVName
+from reporting.pvmon.models import MonitoredVariable, PVCache, PVName, PVStringCache
 from reporting.report.models import Error, Information, Instrument, RunStatus, StatusQueue, WorkflowSummary
 
 # make flake8 happy
@@ -1100,6 +1100,151 @@ class ViewUtilTest(TestCase):
         request.user.ldap_user = ldap_user
         inst_list = get_instruments_for_user(request)
         assert "TESTINST" in inst_list
+
+
+class GetMonitoredPVsTest(TestCase):
+    """Tests for the monitored PV table shown on the instrument status page"""
+
+    def _make_instrument(self, name):
+        inst = Instrument.objects.create(name=name)
+        inst.save()
+        return inst
+
+    def test_returns_monitored_pvs_sorted_by_name(self):
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_sorted")
+        for pv_name, value in [("zebra", 3.5), ("alpha", 1.25)]:
+            pvname = PVName.objects.create(name=pv_name)
+            PVCache.objects.create(
+                instrument=inst,
+                name=pvname,
+                value=value,
+                status=0,
+                timestamp=timezone.now(),
+            )
+            MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+        monitored_pvs = get_monitored_pvs(inst)
+        assert [pv["key"] for pv in monitored_pvs] == ["alpha", "zebra"]
+        assert monitored_pvs[0]["value"] == "1.25"
+        assert monitored_pvs[1]["value"] == "3.5"
+
+    def test_returns_string_pv_values(self):
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_string")
+        pvname = PVName.objects.create(name="SampleName")
+        PVStringCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value="vanadium rod",
+            status=0,
+            timestamp=timezone.now(),
+        )
+        MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+        monitored_pvs = get_monitored_pvs(inst)
+        assert len(monitored_pvs) == 1
+        assert monitored_pvs[0]["key"] == "SampleName"
+        assert monitored_pvs[0]["value"] == "vanadium rod"
+
+    def test_skips_entries_without_a_pv_name(self):
+        """setInstrumentPVs stores a placeholder row when the PV list is empty"""
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_none")
+        MonitoredVariable.objects.create(instrument=inst, pv_name=None, rule_name="")
+        assert get_monitored_pvs(inst) == []
+
+        pvname = PVName.objects.create(name="BeamPower")
+        PVCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value=1100.0,
+            status=0,
+            timestamp=timezone.now(),
+        )
+        MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+        monitored_pvs = get_monitored_pvs(inst)
+        assert len(monitored_pvs) == 1
+        assert monitored_pvs[0]["key"] == "BeamPower"
+
+    def test_monitored_pv_without_cached_value(self):
+        """A PV can be monitored before any value has been received for it"""
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_novalue")
+        pvname = PVName.objects.create(name="Wavelength")
+        MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+        monitored_pvs = get_monitored_pvs(inst)
+        assert len(monitored_pvs) == 1
+        assert monitored_pvs[0]["value"] == "No data available"
+        assert monitored_pvs[0]["timestamp"] == "-"
+
+    def test_only_returns_pvs_for_the_requested_instrument(self):
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_mine")
+        other_inst = self._make_instrument("testinst_monpvs_other")
+        for instrument, pv_name in [(inst, "MyPV"), (other_inst, "TheirPV")]:
+            pvname = PVName.objects.create(name=pv_name)
+            PVCache.objects.create(
+                instrument=instrument,
+                name=pvname,
+                value=1.0,
+                status=0,
+                timestamp=timezone.now(),
+            )
+            MonitoredVariable.objects.create(instrument=instrument, pv_name=pvname, rule_name="")
+
+        assert [pv["key"] for pv in get_monitored_pvs(inst)] == ["MyPV"]
+
+    def test_no_monitored_pvs(self):
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_empty")
+        assert get_monitored_pvs(inst) == []
+
+    def test_numeric_pv_has_history_for_the_sparkline(self):
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_history")
+        pvname = PVName.objects.create(name="BeamPower")
+        PVCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value=1100.0,
+            status=0,
+            timestamp=timezone.now(),
+        )
+        MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+        monitored_pvs = get_monitored_pvs(inst)
+        assert len(monitored_pvs) == 1
+        # The history drives the inline sparkline and the link to the plot dialog
+        assert "1100" in monitored_pvs[0]["data"]
+
+    def test_string_pv_has_no_history(self):
+        """String PVs cannot be plotted, so they get no sparkline"""
+        from reporting.dasmon.view_util import get_monitored_pvs
+
+        inst = self._make_instrument("testinst_monpvs_nohistory")
+        pvname = PVName.objects.create(name="SampleName")
+        PVStringCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value="vanadium rod",
+            status=0,
+            timestamp=timezone.now(),
+        )
+        MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+        monitored_pvs = get_monitored_pvs(inst)
+        assert len(monitored_pvs) == 1
+        assert monitored_pvs[0]["data"] == ""
 
 
 if __name__ == "__main__":

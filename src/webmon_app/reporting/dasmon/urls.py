@@ -22,4 +22,9 @@ urlpatterns = [
     re_path(r"^(?P<instrument>[\w]+)/runs/$", views.live_runs, name="live_runs"),
     re_path(r"^(?P<instrument>[\w]+)/update/$", views.get_update, name="get_update"),
     re_path(r"^(?P<instrument>[\w]+)/diagnostics/$", views.diagnostics, name="diagnostics"),
+    re_path(
+        r"^(?P<instrument>[\w]+)/monitored_pvs/$",
+        views.get_monitored_pv_table,
+        name="get_monitored_pv_table",
+    ),
 ]

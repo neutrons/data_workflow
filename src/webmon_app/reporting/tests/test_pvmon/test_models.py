@@ -26,13 +26,13 @@ class PVTest(TestCase):
         instrument.save()
         pvname = PVName.objects.create(name="testPV")
         pvname.save()
-        PV.objects.create(
+        cls.pv_id = PV.objects.create(
             instrument=instrument,
             name=pvname,
             value=1.0,
             status=0,
             timestamp=datetime.fromisoformat("2011-11-04T00:05:23Z"),
-        )
+        ).id
 
     @classmethod
     def tearDownClass(cls):
@@ -40,15 +40,15 @@ class PVTest(TestCase):
         PVName.objects.get(name="testPV").delete()
 
     def test_value(self):
-        pv = PV.objects.get(id=1)
+        pv = PV.objects.get(id=self.pv_id)
         self.assertEqual(pv.value, 1.0)
 
     def test_status(self):
-        pv = PV.objects.get(id=1)
+        pv = PV.objects.get(id=self.pv_id)
         self.assertEqual(pv.status, 0)
 
     def test_timestamp(self):
-        pv = PV.objects.get(id=1)
+        pv = PV.objects.get(id=self.pv_id)
         self.assertEqual(pv.timestamp, datetime.fromisoformat("2011-11-04T00:05:23Z"))
 
 
@@ -59,13 +59,13 @@ class PVCacheTest(TestCase):
         instrument.save()
         pvname = PVName.objects.create(name="testPV")
         pvname.save()
-        PVCache.objects.create(
+        cls.pv_id = PVCache.objects.create(
             instrument=instrument,
             name=pvname,
             value=1.0,
             status=0,
             timestamp=datetime.fromisoformat("2011-11-04T00:05:23Z"),
-        )
+        ).id
 
     @classmethod
     def tearDownClass(cls):
@@ -73,15 +73,15 @@ class PVCacheTest(TestCase):
         PVName.objects.get(name="testPV").delete()
 
     def test_value(self):
-        pv = PVCache.objects.get(id=1)
+        pv = PVCache.objects.get(id=self.pv_id)
         self.assertEqual(pv.value, 1.0)
 
     def test_status(self):
-        pv = PVCache.objects.get(id=1)
+        pv = PVCache.objects.get(id=self.pv_id)
         self.assertEqual(pv.status, 0)
 
     def test_timestamp(self):
-        pv = PVCache.objects.get(id=1)
+        pv = PVCache.objects.get(id=self.pv_id)
         self.assertEqual(pv.timestamp, datetime.fromisoformat("2011-11-04T00:05:23Z"))
 
 
@@ -92,13 +92,13 @@ class PVStringCacheTest(TestCase):
         instrument.save()
         pvname = PVName.objects.create(name="testPV")
         pvname.save()
-        PVStringCache.objects.create(
+        cls.pv_id = PVStringCache.objects.create(
             instrument=instrument,
             name=pvname,
             value="test",
             status=0,
             timestamp=datetime.fromisoformat("2011-11-04T00:05:23Z"),
-        )
+        ).id
 
     @classmethod
     def tearDownClass(cls):
@@ -106,15 +106,15 @@ class PVStringCacheTest(TestCase):
         PVName.objects.get(name="testPV").delete()
 
     def test_value(self):
-        pv = PVStringCache.objects.get(id=1)
+        pv = PVStringCache.objects.get(id=self.pv_id)
         self.assertEqual(pv.value, "test")
 
     def test_status(self):
-        pv = PVStringCache.objects.get(id=1)
+        pv = PVStringCache.objects.get(id=self.pv_id)
         self.assertEqual(pv.status, 0)
 
     def test_timestamp(self):
-        pv = PVStringCache.objects.get(id=1)
+        pv = PVStringCache.objects.get(id=self.pv_id)
         self.assertEqual(pv.timestamp, datetime.fromisoformat("2011-11-04T00:05:23Z"))
 
 
@@ -125,11 +125,11 @@ class MonitoredVariableTest(TestCase):
         instrument.save()
         pvname = PVName.objects.create(name="testPV")
         pvname.save()
-        MonitoredVariable.objects.create(
+        cls.monitored_variable_id = MonitoredVariable.objects.create(
             instrument=instrument,
             pv_name=pvname,
             rule_name="testRule",
-        )
+        ).id
 
     @classmethod
     def tearDownClass(cls):
@@ -137,33 +137,33 @@ class MonitoredVariableTest(TestCase):
         PVName.objects.get(name="testPV").delete()
 
     def test_rule_name(self):
-        pv = MonitoredVariable.objects.get(id=1)
+        pv = MonitoredVariable.objects.get(id=self.monitored_variable_id)
         self.assertEqual(pv.rule_name, "testRule")
 
     def test_rule_name_max_length(self):
-        pv = MonitoredVariable.objects.get(id=1)
+        pv = MonitoredVariable.objects.get(id=self.monitored_variable_id)
         max_len = pv._meta.get_field("rule_name").max_length
         self.assertEqual(max_len, 50)
 
     def test_created_field_exists(self):
-        pv = MonitoredVariable.objects.get(id=1)
+        pv = MonitoredVariable.objects.get(id=self.monitored_variable_id)
         self.assertTrue(hasattr(pv, "created"))
         self.assertIsNotNone(pv.created)
 
     def test_updated_field_exists(self):
-        pv = MonitoredVariable.objects.get(id=1)
+        pv = MonitoredVariable.objects.get(id=self.monitored_variable_id)
         self.assertTrue(hasattr(pv, "updated"))
         self.assertIsNotNone(pv.updated)
 
     def test_created_auto_now_add(self):
         # Test that created field has auto_now_add=True
-        pv = MonitoredVariable.objects.get(id=1)
+        pv = MonitoredVariable.objects.get(id=self.monitored_variable_id)
         created_field = pv._meta.get_field("created")
         self.assertTrue(created_field.auto_now_add)
 
     def test_updated_auto_now(self):
         # Test that updated field has auto_now=True
-        pv = MonitoredVariable.objects.get(id=1)
+        pv = MonitoredVariable.objects.get(id=self.monitored_variable_id)
         updated_field = pv._meta.get_field("updated")
         self.assertTrue(updated_field.auto_now)
 
