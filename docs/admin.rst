@@ -47,10 +47,18 @@ Monitored Variables
 
 URL: https://monitor.sns.gov/database/pvmon/monitoredvariable/
 
-The ``Monitored Variable`` model control which PVs appear on the
-instrument status page. To promote a PV from the PV page to the status
-page just create a model with the correct ``Instrument`` and ``PV
-Name``. To remove a PV from the status page just delete that model.
+The ``Monitored Variable`` model controls which PVs appear in the
+monitored PV table at the top of the instrument status page. To promote
+a PV from the PV page to the status page just create a model with the
+correct ``Instrument`` and ``PV Name``. To remove a PV from the status
+page just delete that model.
+
+Note that this model is normally maintained by DASMON rather than by
+hand: the beamline sets the list of monitored PVs through the
+``MonitorPVs`` IOC, and DASMON pushes that list to the database by
+calling the ``setInstrumentPVs`` stored procedure, which replaces the
+entries for that instrument. Manual edits are therefore overwritten the
+next time the beamline updates its list.
 
 For example, the following ``Monitored Variables`` exist for TOPAZ,
 

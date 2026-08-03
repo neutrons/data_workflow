@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats, timezone
 
+import reporting.pvmon.view_util as pvmon_view_util
 import reporting.report.view_util as report_view_util
 import reporting.users.view_util as users_view_util
 from reporting.dasmon.models import (
@@ -23,7 +24,7 @@ from reporting.dasmon.models import (
     StatusCache,
     StatusVariable,
 )
-from reporting.pvmon.models import PVCache
+from reporting.pvmon.models import MonitoredVariable, PVCache, PVStringCache
 from reporting.report.models import DataRun, Information, Instrument
 
 LOGNAME = "dasmon:view_util"
@@ -234,6 +235,7 @@ def fill_template_values(request, **template_args):
     template_args["live_monitor_url"] = reverse("dasmon:live_monitor", args=[instr])
     template_args["live_runs_url"] = reverse("dasmon:live_runs", args=[instr])
     template_args["live_pv_url"] = reverse("pvmon:pv_monitor", args=[instr])
+    template_args["monitored_pvs_url"] = reverse("dasmon:get_monitored_pv_table", args=[instr])
 
     # template_args["help_url"] = reverse('dasmon:user_help')
 
@@ -930,6 +932,75 @@ def get_run_list_newest(offset, limit, instrument_search, run_search, date_searc
 
     run_list = run_list[offset : limit + offset]  # noqa E203
     return run_list, count, filtered_count
+
+
+def get_monitored_pvs(instrument_id):
+    """
+    Get the monitored PVs for a given instrument, with their latest value and history.
+
+    The list of monitored PVs is chosen at the beamline and pushed to WebMon by DASMON,
+    which calls the ``setInstrumentPVs`` stored procedure to populate the
+    ``MonitoredVariable`` table. The PV values themselves are written by DASMON
+    straight into the PV cache tables.
+
+    :param instrument_id: Instrument object
+    :return: list of dicts with the keys ``key``, ``value``, ``data`` and ``timestamp``,
+             sorted by PV name
+    """
+    logger = logging.getLogger(LOGNAME)
+    monitored_pvs = []
+
+    try:
+        monitored = MonitoredVariable.objects.filter(instrument=instrument_id)
+    except:  # noqa: E722
+        logger.exception("Could not read the monitored PVs:")
+        return monitored_pvs
+
+    for item in monitored:
+        # setInstrumentPVs stores a placeholder entry with no PV attached when an
+        # instrument has an empty list of monitored PVs, so skip those.
+        if item.pv_name is None:
+            continue
+
+        try:
+            latest_values = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
+            if not latest_values.exists():
+                latest_values = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
+            latest = latest_values.latest("timestamp")
+            if isinstance(latest.value, (int, float)):
+                value = "%g" % latest.value
+            else:
+                value = "%s" % latest.value
+            timestamp = formats.localize(timezone.localtime(latest.timestamp))
+        except:  # noqa: E722
+            # The PV is monitored but no value has been received for it yet
+            value = "No data available"
+            timestamp = "-"
+
+        # History used to draw the inline sparkline next to the value
+        history = []
+        try:
+            data = pvmon_view_util.get_live_variables(request=None, instrument_id=instrument_id, key_id=item.pv_name)
+            if data is not None and len(data) > 0 and len(data[0]) > 1:
+                for point in data[0][1]:
+                    history.append("%g:%g" % (point[0], point[1]))
+        except:  # noqa: E722
+            logger.exception(f"Error processing data for {instrument_id} {item.pv_name}:")
+
+        monitored_pvs.append(
+            {
+                "key": str(item.pv_name),
+                "value": value,
+                "data": ",".join(history),
+                "timestamp": timestamp,
+            }
+        )
+
+    try:
+        return sorted(monitored_pvs, key=lambda pv: pv["key"].lower())
+    except:  # noqa: E722
+        logger.exception("Could not sort the monitored PV list:")
+    return monitored_pvs
 
 
 def get_instrument_status_summary(expert=False) -> list:

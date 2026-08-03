@@ -2,9 +2,11 @@ import pytest
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from workflow.database.report.models import IPTS, DataRun, WorkflowSummary
 
 from reporting.dasmon.models import ActiveInstrument, Instrument
+from reporting.pvmon.models import MonitoredVariable, PVCache, PVName
 
 
 class DashboardViewTest(TestCase):
@@ -343,6 +345,68 @@ class LiveMonitorViewTest(TestCase):
         response = self.client.get(reverse("dasmon:live_monitor", args=["test_instrument"]))
         self.assertEqual(response.status_code, 200)
         assert "test_instrument" in str(response.context)
+
+    def test_monitored_pv_table_placeholder_present(self):
+        """The status page must provide the element the monitored PV table is loaded into"""
+        response = self.client.get(reverse("dasmon:live_monitor", args=["test_instrument"]))
+        self.assertEqual(response.status_code, 200)
+        assert "monitored_pv_table" in response.content.decode()
+
+
+class GetMonitoredPVTableViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User.objects.create_superuser(username="testuser", password="12345").save()
+        inst = Instrument.objects.create(name="test_instrument")
+        inst.save()
+        ActiveInstrument.objects.create(
+            instrument_id=inst,
+            is_alive=True,
+            is_adara=True,
+            has_pvsd=True,
+            has_pvstreamer=True,
+        )
+        pvname = PVName.objects.create(name="BeamPower")
+        PVCache.objects.create(
+            instrument=inst,
+            name=pvname,
+            value=1100.0,
+            status=0,
+            timestamp=timezone.now(),
+        )
+        MonitoredVariable.objects.create(instrument=inst, pv_name=pvname, rule_name="")
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.get(username="testuser").delete()
+        Instrument.objects.get(name="test_instrument").delete()
+        MonitoredVariable.objects.all().delete()
+        PVCache.objects.all().delete()
+        PVName.objects.all().delete()
+
+    def setUp(self):
+        self.assertTrue(self.client.login(username="testuser", password="12345"))
+
+    def test_view_url_exists_at_desired_location(self):
+        response = self.client.get("/dasmon/test_instrument/monitored_pvs/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_url_accessible_by_name(self):
+        response = self.client.get(reverse("dasmon:get_monitored_pv_table", args=["test_instrument"]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_monitored_pv_is_rendered(self):
+        response = self.client.get(reverse("dasmon:get_monitored_pv_table", args=["test_instrument"]))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        assert "BeamPower" in content
+        assert "1100" in content
+
+    def test_unknown_instrument_does_not_render_a_table(self):
+        # login_or_local_required_401 turns the Http404 into a 500, which is the
+        # same behaviour as the other AJAX endpoints, e.g. dasmon:get_update
+        response = self.client.get(reverse("dasmon:get_monitored_pv_table", args=["no_such_instrument"]))
+        self.assertEqual(response.status_code, 500)
 
 
 class LiveRunsViewTest(TestCase):

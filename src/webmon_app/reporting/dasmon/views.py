@@ -5,8 +5,9 @@ Live monitoring
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.template import loader
 from django.urls import reverse
 from django.utils import formats, timezone
 from django.views.decorators.cache import cache_control, cache_page
@@ -187,6 +188,24 @@ def live_monitor(request, instrument):
     template_values = view_util.fill_template_values(request, **template_values)
 
     return render(request, "dasmon/live_monitor.html", template_values)
+
+
+@users_view_util.login_or_local_required_401
+@cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
+@cache_control(private=True)
+@vary_on_cookie
+def get_monitored_pv_table(request, instrument):
+    """
+    Ajax call to get the table of monitored PVs
+
+    :param instrument: instrument name
+    """
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+    template = loader.get_template("dasmon/monitored_pv_table.html")
+    template_values = {"monitored_pvs": view_util.get_monitored_pvs(instrument_id)}
+    response = HttpResponse(template.render(template_values), content_type="text/html")
+    response["Connection"] = "close"
+    return response
 
 
 @login_required

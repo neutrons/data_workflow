@@ -29,9 +29,11 @@
     //************************************************************************80
     function poll() {
         var query_str = "";
+        var pv_query_str = "";
         var options;
         for (var i=0; i<Plots.length; i++){
             if (Plots[i].option === "1") query_str += Plots[i].element_id + ",";
+            else if (Plots[i].option === "2") pv_query_str += Plots[i].element_id + ",";
         }
         $.ajax({ url: "{{ update_url }}?time="+plot_timeframe+"&vars="+query_str, success: function(data){
                 update_from_ajax_data(data);
@@ -64,11 +66,39 @@
             }
         });
 
+        if (pv_query_str.length>0) {
+            $.ajax({ url: "{{ pv_url }}?time="+plot_timeframe+"&vars="+pv_query_str, success: function(data) {
+                for (var i=0; i<data.live_plot_data.length; i++){
+                    for (var j=0; j<Plots.length; j++){
+                        if (data.live_plot_data[i][0] === Plots[j].element_id){
+                            Plots[j].plotted_data = data.live_plot_data[i][1];
+                            plot_1d(Plots[j].plotted_data, Plots[j].plot_id, Plots[j].plot_options)
+                            break;
+                        }
+                    }
+                }
+            }, dataType: "json", timeout: 2000, cache: true,
+            statusCode: { 401: function() {
+                        new_alert("Your session expired. Please log in again");
+                        show_alert();
+                    }
+                }
+            });
+        }
+        get_monitored_pvs();
+
     };
 
     $( document ).tooltip({
       items: '*:not(.ui-dialog-titlebar-close)'
     });
+
+    function get_monitored_pvs()
+    {
+        $.ajax({ url: "{{ monitored_pvs_url }}", success: function(data) {
+            $('#monitored_pv_table').replaceWith(data);
+        }, dataType: "html", timeout: 30000, cache: true });
+    }
 
 </script>
 {% endblock %}
@@ -83,6 +113,7 @@
 
 {% block bodytop %}
 <script id="source" language="javascript" type="text/javascript">
+    get_monitored_pvs();
     setInterval(poll, 5000);
 </script>
 {% endblock %}
