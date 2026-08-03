@@ -964,10 +964,10 @@ def get_monitored_pvs(instrument_id):
 
         try:
             latest_values = PVCache.objects.filter(instrument=instrument_id, name=item.pv_name)
-            if len(latest_values) == 0:
+            if not latest_values.exists():
                 latest_values = PVStringCache.objects.filter(instrument=instrument_id, name=item.pv_name)
             latest = latest_values.latest("timestamp")
-            if isinstance(latest.value, float):
+            if isinstance(latest.value, (int, float)):
                 value = "%g" % latest.value
             else:
                 value = "%s" % latest.value

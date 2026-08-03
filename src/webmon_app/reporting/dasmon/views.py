@@ -205,7 +205,6 @@ def get_monitored_pv_table(request, instrument):
     template_values = {"monitored_pvs": view_util.get_monitored_pvs(instrument_id)}
     response = HttpResponse(template.render(template_values), content_type="text/html")
     response["Connection"] = "close"
-    response["Content-Length"] = len(response.content)
     return response
 
 

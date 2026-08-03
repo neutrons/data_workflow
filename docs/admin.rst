@@ -47,7 +47,7 @@ Monitored Variables
 
 URL: https://monitor.sns.gov/database/pvmon/monitoredvariable/
 
-The ``Monitored Variable`` model control which PVs appear in the
+The ``Monitored Variable`` model controls which PVs appear in the
 monitored PV table at the top of the instrument status page. To promote
 a PV from the PV page to the status page just create a model with the
 correct ``Instrument`` and ``PV Name``. To remove a PV from the status
