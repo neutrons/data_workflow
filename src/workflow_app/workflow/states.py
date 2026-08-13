@@ -23,6 +23,42 @@ from .state_utilities import logged_action
 _VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9]+$")
 
 
+class _RoutingLogThrottle:
+    """
+    Bound the number of repeated routing log lines.
+
+    A flood of messages (the very scenario per-instrument routing exists to
+    handle) would otherwise emit one log line per message. For each key this logs
+    the first occurrence, then only every ``every``-th occurrence, annotated with
+    how many similar lines were suppressed in between. It is intentionally simple
+    and count based (no timers) so the behavior is deterministic and easy to test.
+    """
+
+    def __init__(self, every=500):
+        self._every = every
+        self._counts = {}
+        self._last_emit = {}
+
+    def record(self, key):
+        """Return ``(should_log, suppressed_since_last_emit)`` for this occurrence."""
+        count = self._counts.get(key, 0) + 1
+        self._counts[key] = count
+        if count == 1 or (self._every > 0 and count % self._every == 0):
+            suppressed = count - self._last_emit.get(key, 0) - 1
+            self._last_emit[key] = count
+            return True, max(suppressed, 0)
+        return False, 0
+
+    def reset(self):
+        """Clear all counters (used by tests, and safe to call any time)."""
+        self._counts.clear()
+        self._last_emit.clear()
+
+
+# Shared by all handlers in the single workflow-manager process. Tests reset it.
+_routing_log_throttle = _RoutingLogThrottle()
+
+
 class StateAction:
     """
     Base class for processing messages
@@ -116,15 +152,51 @@ class StateAction:
 
         instrument = self.get_instrument_from_message(message)
         if not instrument:
-            logging.warning(
-                "Per-instrument routing enabled but no valid instrument in message; falling back to shared queue %s",
-                shared_queue,
+            self._log_routing_decision(
+                logging.WARNING,
+                decision="fallback",
+                instrument=None,
+                queue=shared_queue,
+                reason="no_valid_instrument",
             )
             return shared_queue
 
         queue = self.get_instrument_queue_name(instrument, queue_type)
-        logging.info("Routing %s message to per-instrument queue %s", instrument, queue)
+        self._log_routing_decision(
+            logging.INFO,
+            decision="per_instrument",
+            instrument=instrument,
+            queue=queue,
+            reason="ok",
+        )
         return queue
+
+    @staticmethod
+    def _log_routing_decision(level, decision, instrument, queue, reason):
+        """
+        Emit one standardized, greppable routing-decision log line.
+
+        The format is key=value so a human can read it and the downstream
+        monitoring work can parse it::
+
+            per_instrument_routing decision=<...> instrument=<...> queue=<...> reason=<...>
+
+        Repeated identical decisions are rate limited (see _RoutingLogThrottle) so
+        a flood does not spam the log; a ``suppressed=<n>`` field is appended when
+        earlier similar lines were dropped.
+        """
+        should_log, suppressed = _routing_log_throttle.record((decision, queue))
+        if not should_log:
+            return
+        line = "per_instrument_routing decision=%s instrument=%s queue=%s reason=%s" % (
+            decision,
+            instrument or "none",
+            queue,
+            reason,
+        )
+        if suppressed:
+            line += " suppressed=%d" % suppressed
+        logging.log(level, line)
 
     def _call_default_task(self, headers, message):
         """
@@ -212,23 +284,51 @@ class StateAction:
 
     def send(self, destination, message, persistent="true"):
         """
-        Send a message to a queue
+        Send a message to a queue.
+
+        Any failure is contained rather than dropped: if there is no connection,
+        or the broker send raises, the run is recorded to POSTPROCESS.ERROR with
+        context instead of being lost, and the exception is swallowed so a single
+        bad send cannot stall the manager.
 
         :param destination: name of the queue
         :param message: message content
         """
         logging.debug("Send: %s" % destination)
-        if self._send_connection is not None:
+        if self._send_connection is None:
+            self._record_send_error(destination, message, "No AMQ connection")
+            return
+        try:
             self._send_connection.send(destination, message, persistent=persistent)
-            headers = {"destination": destination, "message-id": ""}
-            transactions.add_status_entry(headers, message)
-        else:
-            logging.error("No AMQ connection to send to %s" % destination)
-            headers = {"destination": "/queue/%s" % POSTPROCESS_ERROR, "message-id": ""}
+        except Exception:
+            logging.exception("Failed to send message to %s", destination)
+            self._record_send_error(destination, message, "Send to broker failed")
+            return
+        headers = {"destination": destination, "message-id": ""}
+        transactions.add_status_entry(headers, message)
+
+    def _record_send_error(self, destination, message, reason):
+        """
+        Record a POSTPROCESS.ERROR status entry for a message that could not be
+        sent, annotated with the reason.
+
+        Tolerant of a non-JSON (or non-dict) message body so that the error path
+        itself never raises.
+
+        :param destination: the queue we were trying to send to
+        :param message: the original message body
+        :param reason: short human-readable reason for the failure
+        """
+        logging.error("%s: could not send to %s", reason, destination)
+        headers = {"destination": "/queue/%s" % POSTPROCESS_ERROR, "message-id": ""}
+        try:
             data_dict = json.loads(message)
-            data_dict["error"] = "No AMQ connection: Could not send to %s" % destination
-            message = json.dumps(data_dict)
-            transactions.add_status_entry(headers, message)
+            if not isinstance(data_dict, dict):
+                data_dict = {"message": data_dict}
+        except (json.JSONDecodeError, TypeError):
+            data_dict = {"message": message if isinstance(message, str) else repr(message)}
+        data_dict["error"] = "%s: could not send to %s" % (reason, destination)
+        transactions.add_status_entry(headers, json.dumps(data_dict))
 
 
 class Postprocess_data_ready(StateAction):

@@ -6,10 +6,14 @@ Covers:
 * queue-name generation (get_instrument_queue_name)
 * routing decisions for each handler with the feature flag ON and OFF
 * both fallback paths (flag off, and instrument missing/invalid) and the warning log
+* the standardized routing-decision log format and its rate limiting
+* startup configuration validation and the effective-config echo
+* error handling in send() (no connection, failed broker send, non-JSON body)
 * the env-driven feature flag parser (settings._env_flag) and its default (OFF)
 """
 
 import json
+import logging
 from unittest import mock
 
 import pytest
@@ -125,21 +129,22 @@ class ResolveReductionQueueTest(TestCase):
         self.caplog = caplog
 
     def setUp(self):
-        from workflow.states import StateAction
+        import workflow.states as states
 
-        self.action = StateAction()
+        states._routing_log_throttle.reset()
+        self.action = states.StateAction()
 
     def test_flag_off_returns_shared_queue(self):
         message = json.dumps({"instrument": "eqsans"})
         with _patch_flag(False):
             assert self.action.resolve_reduction_queue(message, "SHARED", "reduction") == "SHARED"
 
-    def test_flag_off_does_not_warn(self):
+    def test_flag_off_logs_no_routing_decision(self):
         message = json.dumps({"run_number": 1})  # no instrument
         with _patch_flag(False):
             self.caplog.clear()
             self.action.resolve_reduction_queue(message, "SHARED", "reduction")
-        assert "falling back" not in self.caplog.text
+        assert "per_instrument_routing" not in self.caplog.text
 
     def test_flag_on_valid_instrument(self):
         message = json.dumps({"instrument": "eqsans"})
@@ -148,17 +153,25 @@ class ResolveReductionQueueTest(TestCase):
 
     def test_flag_on_missing_instrument_falls_back_and_warns(self):
         message = json.dumps({"run_number": 1})
-        with _patch_flag(True):
+        with _patch_flag(True), self.caplog.at_level(logging.WARNING):
             self.caplog.clear()
             result = self.action.resolve_reduction_queue(message, "SHARED", "reduction")
         assert result == "SHARED"
-        assert "falling back to shared queue" in self.caplog.text.lower()
+        # Standardized, greppable key=value line at WARNING level.
+        assert "per_instrument_routing decision=fallback" in self.caplog.text
+        assert "queue=SHARED" in self.caplog.text
+        assert "reason=no_valid_instrument" in self.caplog.text
 
 
 class PostprocessDataReadyRoutingTest(TestCase):
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self.caplog = caplog
+
+    def setUp(self):
+        import workflow.states as states
+
+        states._routing_log_throttle.reset()
 
     def _make_handler(self):
         from workflow.states import Postprocess_data_ready
@@ -197,12 +210,12 @@ class PostprocessDataReadyRoutingTest(TestCase):
     def test_flag_on_missing_instrument_falls_back(self):
         handler, sent = self._make_handler()
         message = json.dumps({"run_number": 1})
-        with _patch_flag(True):
+        with _patch_flag(True), self.caplog.at_level(logging.WARNING):
             self.caplog.clear()
             handler({"destination": "/queue/POSTPROCESS.DATA_READY"}, message)
         reduction_dests = [d for d in sent if "REDUCTION" in d]
         assert reduction_dests == ["/queue/REDUCTION.DATA_READY"]
-        assert "falling back to shared queue" in self.caplog.text.lower()
+        assert "per_instrument_routing decision=fallback" in self.caplog.text
 
     def test_always_sends_both_catalog_and_reduction(self):
         handler, sent = self._make_handler()
@@ -309,6 +322,187 @@ class FeatureFlagConfigTest(TestCase):
             assert workflow_settings.ENABLE_PER_INSTRUMENT_QUEUES is False
         # Reload once more so other tests see a clean module state.
         importlib.reload(workflow_settings)
+
+
+class RoutingLogFormatTest(TestCase):
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self.caplog = caplog
+
+    def setUp(self):
+        import workflow.states as states
+
+        states._routing_log_throttle.reset()
+        self.action = states.StateAction()
+
+    def test_per_instrument_decision_logged_at_info(self):
+        message = json.dumps({"instrument": "eqsans"})
+        with _patch_flag(True), self.caplog.at_level(logging.INFO):
+            self.action.resolve_reduction_queue(message, "REDUCTION.DATA_READY", "reduction")
+        text = self.caplog.text
+        assert "per_instrument_routing decision=per_instrument" in text
+        assert "instrument=eqsans" in text
+        assert "queue=REDUCTION.EQSANS.DATA_READY" in text
+        assert "reason=ok" in text
+
+
+class RoutingLogThrottleTest(TestCase):
+    def test_logs_first_then_every_nth_with_suppressed_counts(self):
+        from workflow.states import _RoutingLogThrottle
+
+        throttle = _RoutingLogThrottle(every=3)
+        results = [throttle.record("k") for _ in range(7)]
+        assert results == [
+            (True, 0),  # first occurrence always logs
+            (False, 0),
+            (True, 1),  # 3rd: logs, 1 suppressed since last emit
+            (False, 0),
+            (False, 0),
+            (True, 2),  # 6th: logs, 2 suppressed since last emit
+            (False, 0),
+        ]
+
+    def test_keys_are_independent(self):
+        from workflow.states import _RoutingLogThrottle
+
+        throttle = _RoutingLogThrottle(every=100)
+        assert throttle.record("a") == (True, 0)
+        assert throttle.record("b") == (True, 0)
+
+
+class RoutingLogSpamControlTest(TestCase):
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self.caplog = caplog
+
+    def setUp(self):
+        import workflow.states as states
+
+        states._routing_log_throttle.reset()
+        self.action = states.StateAction()
+
+    def test_repeated_fallbacks_do_not_flood_the_log(self):
+        message = json.dumps({"run_number": 1})  # no instrument -> fallback every time
+        with _patch_flag(True), self.caplog.at_level(logging.WARNING):
+            for _ in range(1000):
+                self.action.resolve_reduction_queue(message, "REDUCTION.DATA_READY", "reduction")
+        warnings = [
+            r
+            for r in self.caplog.records
+            if r.levelno == logging.WARNING and "per_instrument_routing" in r.getMessage()
+        ]
+        # 1000 identical fallbacks must not produce anywhere near 1000 log lines.
+        assert 0 < len(warnings) <= 5
+        assert any("suppressed=" in r.getMessage() for r in warnings)
+
+
+class StartupConfigValidationTest(TestCase):
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self.caplog = caplog
+
+    def test_parse_env_flag_unset_uses_default_and_is_recognized(self):
+        from workflow.settings import _parse_env_flag
+
+        with mock.patch.dict("os.environ", {}, clear=True):
+            assert _parse_env_flag("FLAG") == (False, True)
+            assert _parse_env_flag("FLAG", default=True) == (True, True)
+
+    def test_parse_env_flag_recognized_values(self):
+        from workflow.settings import _parse_env_flag
+
+        for value in ("1", "true", "On", "  YES "):
+            with mock.patch.dict("os.environ", {"FLAG": value}):
+                assert _parse_env_flag("FLAG") == (True, True), value
+        for value in ("0", "false", "off", ""):
+            with mock.patch.dict("os.environ", {"FLAG": value}):
+                assert _parse_env_flag("FLAG") == (False, True), value
+
+    def test_parse_env_flag_unrecognized_is_flagged_and_fails_safe(self):
+        from workflow.settings import _parse_env_flag
+
+        with mock.patch.dict("os.environ", {"FLAG": "ture"}):
+            value, recognized = _parse_env_flag("FLAG", default=False)
+            assert value is False
+            assert recognized is False
+
+    def test_log_effective_config_reports_enabled(self):
+        from workflow import settings
+
+        with (
+            mock.patch.multiple(settings, ENABLE_PER_INSTRUMENT_QUEUES=True, _PER_INSTRUMENT_FLAG_RECOGNIZED=True),
+            self.caplog.at_level(logging.INFO),
+        ):
+            self.caplog.clear()
+            settings.log_effective_config()
+        assert "ENABLED" in self.caplog.text
+
+    def test_log_effective_config_reports_disabled(self):
+        from workflow import settings
+
+        with (
+            mock.patch.multiple(settings, ENABLE_PER_INSTRUMENT_QUEUES=False, _PER_INSTRUMENT_FLAG_RECOGNIZED=True),
+            self.caplog.at_level(logging.INFO),
+        ):
+            self.caplog.clear()
+            settings.log_effective_config()
+        assert "DISABLED" in self.caplog.text
+
+    def test_log_effective_config_warns_on_unrecognized_value(self):
+        from workflow import settings
+
+        with (
+            mock.patch.multiple(
+                settings,
+                ENABLE_PER_INSTRUMENT_QUEUES=False,
+                _PER_INSTRUMENT_FLAG_RECOGNIZED=False,
+                _PER_INSTRUMENT_FLAG_RAW="ture",
+            ),
+            self.caplog.at_level(logging.WARNING),
+        ):
+            self.caplog.clear()
+            settings.log_effective_config()
+        assert "not a recognized boolean" in self.caplog.text
+        assert "ture" in self.caplog.text
+
+
+class SendErrorHandlingTest(TestCase):
+    @mock.patch("workflow.database.transactions.add_status_entry")
+    def test_no_connection_records_error_entry(self, mock_add):
+        from workflow.states import StateAction
+
+        StateAction().send("REDUCTION.DATA_READY", json.dumps({"run_number": 1}))
+        assert mock_add.called
+        headers = mock_add.call_args[0][0]
+        assert "POSTPROCESS.ERROR" in headers["destination"]
+
+    @mock.patch("workflow.database.transactions.add_status_entry")
+    def test_no_connection_with_non_json_message_does_not_raise(self, mock_add):
+        from workflow.states import StateAction
+
+        StateAction().send("REDUCTION.DATA_READY", "not-json")  # must not raise
+        assert mock_add.called
+
+    @mock.patch("workflow.database.transactions.add_status_entry")
+    def test_broker_send_failure_is_contained(self, mock_add):
+        from workflow.states import StateAction
+
+        connection = mock.Mock()
+        connection.send.side_effect = RuntimeError("broker down")
+        # Should not raise even though the broker send fails.
+        StateAction(connection=connection).send("REDUCTION.EQSANS.DATA_READY", json.dumps({"run_number": 1}))
+        headers = mock_add.call_args[0][0]
+        assert "POSTPROCESS.ERROR" in headers["destination"]
+
+    @mock.patch("workflow.database.transactions.add_status_entry")
+    def test_successful_send_records_destination(self, mock_add):
+        from workflow.states import StateAction
+
+        connection = mock.Mock()
+        StateAction(connection=connection).send("REDUCTION.EQSANS.DATA_READY", json.dumps({"run_number": 1}))
+        connection.send.assert_called_once()
+        headers = mock_add.call_args[0][0]
+        assert headers["destination"] == "REDUCTION.EQSANS.DATA_READY"
 
 
 if __name__ == "__main__":
