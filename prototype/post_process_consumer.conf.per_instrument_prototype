@@ -1,0 +1,37 @@
+{
+    "COMMENT": "PROTOTYPE configuration for per-instrument queue support",
+
+    "failover_uri": "failover:(tcp://localhost:61613)?randomize=false,startupMaxReconnectAttempts=100,initialReconnectDelay=1000,maxReconnectDelay=5000,maxReconnectAttempts=-1",
+    "brokers": [["localhost", 61613]],
+    "amq_user": "icat",
+    "amq_pwd": "icat",
+    "sw_dir": "/opt/postprocessing",
+    "python_dir": "/opt/postprocessing/postprocessing",
+    "start_script": "python3",
+    "task_script": "PostProcessAdmin.py",
+    "task_script_queue_arg": "-q",
+    "task_script_data_arg": "-d",
+    "log_file": "/opt/postprocessing/log/postprocessing.log",
+    "postprocess_error": "POSTPROCESS.ERROR",
+    "reduction_started": "REDUCTION.STARTED",
+    "reduction_complete": "REDUCTION.COMPLETE",
+    "reduction_error": "REDUCTION.ERROR",
+    "reduction_disabled": "REDUCTION.DISABLED",
+    "heart_beat": "/topic/SNS.COMMON.STATUS.AUTOREDUCE.0",
+    "dev_output_dir": "",
+    "reduction_data_ready": "REDUCTION.DATA_READY",
+    "communication_only": 0,
+    "max_procs": 5,
+    "processors": ["reduction_processor.ReductionProcessor"],
+
+    "COMMENT_per_instrument_queues": "NEW: Enable per-instrument queue subscriptions",
+    "per_instrument_queues": true,
+
+    "COMMENT_BEHAVIOR": "When per_instrument_queues=true:",
+    "COMMENT_BEHAVIOR_1": "  - Subscribes to: REDUCTION.*.DATA_READY (wildcard)",
+    "COMMENT_BEHAVIOR_2": "  - Receives from: REDUCTION.EQSANS.DATA_READY, REDUCTION.CG2.DATA_READY, etc.",
+    "COMMENT_BEHAVIOR_3": "  - Routes via pattern matching to correct processor",
+    "COMMENT_BEHAVIOR_4": "When per_instrument_queues=false (default):",
+    "COMMENT_BEHAVIOR_5": "  - Subscribes to: REDUCTION.DATA_READY (exact)",
+    "COMMENT_BEHAVIOR_6": "  - Backwards compatible with shared queue behavior"
+}

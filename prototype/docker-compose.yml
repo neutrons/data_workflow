@@ -74,11 +74,6 @@ services:
       dockerfile: Dockerfile.workflow
     env_file:
       - .env
-    environment:
-      # Feature-flagged per-instrument queue routing; defaults OFF.
-      # Override for local validation, e.g.:
-      #   ENABLE_PER_INSTRUMENT_QUEUES=true docker compose up workflow
-      - ENABLE_PER_INSTRUMENT_QUEUES=${ENABLE_PER_INSTRUMENT_QUEUES:-false}
     healthcheck:
       test: ["CMD", "pixi", "run", "-e", "workflow", "workflowmgr", "status"]
     depends_on:
@@ -178,6 +173,8 @@ services:
       dockerfile: Dockerfile.webmonchow
     env_file:
       - .env
+    environment:
+      - MESSAGE_INTERVAL=${MESSAGE_INTERVAL:-5}  # seconds between message bursts (default 5 for load testing)
     depends_on:
       db:
         condition: service_healthy
