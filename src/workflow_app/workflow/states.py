@@ -314,8 +314,12 @@ class StateAction:
         Record a POSTPROCESS.ERROR status entry for a message that could not be
         sent, annotated with the reason.
 
-        Tolerant of a non-JSON (or non-dict) message body so that the error path
-        itself never raises.
+        This is the containment path, so it must never raise. It is tolerant of a
+        non-JSON (or non-dict) message body, and the status-entry write itself is
+        guarded: add_status_entry expects fields like instrument/ipts/run_number
+        and would raise on a message that lacks them, or if the database is
+        unavailable during an outage, so a failure there is logged and swallowed
+        rather than propagated.
 
         :param destination: the queue we were trying to send to
         :param message: the original message body
@@ -330,7 +334,10 @@ class StateAction:
         except (json.JSONDecodeError, TypeError):
             data_dict = {"message": message if isinstance(message, str) else repr(message)}
         data_dict["error"] = "%s: could not send to %s" % (reason, destination)
-        transactions.add_status_entry(headers, json.dumps(data_dict))
+        try:
+            transactions.add_status_entry(headers, json.dumps(data_dict))
+        except Exception:
+            logging.exception("Failed to record POSTPROCESS.ERROR status entry for %s", destination)
 
 
 class Postprocess_data_ready(StateAction):

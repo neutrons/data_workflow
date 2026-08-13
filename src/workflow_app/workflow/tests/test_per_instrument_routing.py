@@ -533,6 +533,26 @@ class SendErrorHandlingTest(TestCase):
         headers = mock_add.call_args[0][0]
         assert headers["destination"] == "REDUCTION.EQSANS.DATA_READY"
 
+    @mock.patch("workflow.database.transactions.add_status_entry", side_effect=KeyError("instrument"))
+    def test_error_recording_failure_is_contained(self, mock_add):
+        # add_status_entry raises on a message missing instrument/ipts/run_number.
+        # Recording the error must not itself raise (containment guarantee).
+        from workflow.states import StateAction
+
+        StateAction().send("REDUCTION.DATA_READY", json.dumps({"run_number": 1}))
+        assert mock_add.called
+
+    @mock.patch("workflow.database.transactions.add_status_entry", side_effect=Exception("db down"))
+    def test_broker_failure_with_db_down_is_contained(self, mock_add):
+        # The outage case: broker send fails and the DB is unavailable too. Neither
+        # can be allowed to propagate out of send().
+        from workflow.states import StateAction
+
+        connection = mock.Mock()
+        connection.send.side_effect = RuntimeError("broker down")
+        StateAction(connection=connection).send("REDUCTION.EQSANS.DATA_READY", json.dumps({"run_number": 1}))
+        assert mock_add.called
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
