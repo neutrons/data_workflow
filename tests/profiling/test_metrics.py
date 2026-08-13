@@ -8,9 +8,17 @@ anywhere with::
     .pixi/envs/default/bin/python -m pytest tests/profiling/test_metrics.py
 """
 
+import os
+import sys
 from datetime import datetime, timedelta
 
-from metrics import (
+# tests/profiling is not on the pytest pythonpath, so make the sibling `metrics`
+# module importable regardless of the pytest import mode (matches
+# baseline_profile.py). Without this the import only works under the default
+# "prepend" import mode.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from metrics import (  # noqa: E402
     RunEvent,
     build_report,
     compute_concurrency_timeline,

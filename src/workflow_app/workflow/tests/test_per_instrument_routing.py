@@ -95,6 +95,11 @@ class InstrumentExtractionTest(TestCase):
         assert self.action.get_instrument_from_message(json.dumps({"instrument": "*"})) is None
         assert self.action.get_instrument_from_message(json.dumps({"instrument": "eq#sans"})) is None
 
+    def test_instrument_with_underscore_allowed(self):
+        # REF_L / REF_M are real SNS instruments; underscore is safe in queue names.
+        assert self.action.get_instrument_from_message(json.dumps({"instrument": "REF_L"})) == "ref_l"
+        assert self.action.get_instrument_from_message(json.dumps({"instrument": "ref_m"})) == "ref_m"
+
 
 class QueueNameGenerationTest(TestCase):
     def setUp(self):
@@ -117,6 +122,12 @@ class QueueNameGenerationTest(TestCase):
 
     def test_default_queue_type_is_reduction(self):
         assert self.action.get_instrument_queue_name("nom") == "REDUCTION.NOM.DATA_READY"
+
+    def test_underscore_instrument_queue_name(self):
+        assert self.action.get_instrument_queue_name("ref_l", "reduction") == "REDUCTION.REF_L.DATA_READY"
+        assert (
+            self.action.get_instrument_queue_name("ref_l", "reduction_catalog") == "REDUCTION_CATALOG.REF_L.DATA_READY"
+        )
 
     def test_unknown_queue_type_raises(self):
         with pytest.raises(ValueError):
@@ -224,6 +235,15 @@ class PostprocessDataReadyRoutingTest(TestCase):
             handler({"destination": "/queue/POSTPROCESS.DATA_READY"}, message)
         assert len(sent) == 2
 
+    def test_flag_on_routes_underscore_instrument_per_instrument(self):
+        # REF_L must route to its own queue, not fall back to the shared queue.
+        handler, sent = self._make_handler()
+        message = json.dumps({"instrument": "REF_L", "run_number": 1, "facility": "SNS"})
+        with _patch_flag(True):
+            handler({"destination": "/queue/POSTPROCESS.DATA_READY"}, message)
+        reduction_dests = [d for d in sent if "REDUCTION" in d]
+        assert reduction_dests == ["/queue/REDUCTION.REF_L.DATA_READY"]
+
 
 class ReductionRequestRoutingTest(TestCase):
     def _make_handler(self):
@@ -309,6 +329,15 @@ class FeatureFlagConfigTest(TestCase):
         for value in ("0", "false", "False", "no", "off", "", "banana"):
             with mock.patch.dict("os.environ", {"FLAG": value}):
                 assert _env_flag("FLAG") is False, value
+
+    def test_unrecognized_value_returns_caller_default(self):
+        # An unrecognized value must honor the caller's default rather than
+        # silently returning False (matches the docstring).
+        from workflow.settings import _env_flag
+
+        with mock.patch.dict("os.environ", {"FLAG": "banana"}):
+            assert _env_flag("FLAG", default=True) is True
+            assert _env_flag("FLAG", default=False) is False
 
     def test_module_default_is_off(self):
         # The shipped default value of the setting must be False so that merging

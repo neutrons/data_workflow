@@ -16,11 +16,13 @@ from .database import transactions
 from .settings import CATALOG_DATA_READY, POSTPROCESS_ERROR, REDUCTION_CATALOG_DATA_READY, REDUCTION_DATA_READY
 from .state_utilities import logged_action
 
-# Instrument names are short alphanumeric tokens (e.g. "eqsans", "cg2", "hb2c").
-# Validate strictly before interpolating into a queue name so that a malformed or
-# hostile "instrument" value cannot inject queue delimiters ("."), STOMP path
-# segments ("/queue/"), or ActiveMQ Artemis wildcard characters ("*", "#").
-_VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9]+$")
+# Instrument names are short tokens of letters, digits, and underscores
+# (e.g. "eqsans", "cg2", "hb2c", "ref_l", "ref_m"). Validate strictly before
+# interpolating into a queue name so that a malformed or hostile "instrument"
+# value cannot inject queue delimiters ("."), STOMP path segments ("/queue/"), or
+# ActiveMQ Artemis wildcard characters ("*", "#"). Underscore is none of those and
+# is already used in our queue names (REDUCTION_CATALOG), so it is allowed.
+_VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9_]+$")
 
 
 class _RoutingLogThrottle:
