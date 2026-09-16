@@ -24,6 +24,42 @@ from .state_utilities import logged_action
 # is already used in our queue names (REDUCTION_CATALOG), so it is allowed.
 _VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9_]+$")
 
+# Queue families that get split per instrument. A queue is eligible when its
+# first segment is one of these and its last segment is DATA_READY; the
+# instrument is then inserted just before that last segment::
+#
+#     REDUCTION.DATA_READY          -> REDUCTION.EQSANS.DATA_READY
+#     REDUCTION.HIMEM.DATA_READY    -> REDUCTION.HIMEM.EQSANS.DATA_READY
+#     REDUCTION_CATALOG.DATA_READY  -> REDUCTION_CATALOG.EQSANS.DATA_READY
+#
+# Keeping any tier segment (HIMEM) adjacent to the family root preserves the
+# existing worker-pool split: the high-memory pool still matches on the
+# REDUCTION.HIMEM.* prefix and the normal pool on REDUCTION.* with one segment.
+#
+# CATALOG.ONCAT.DATA_READY is deliberately NOT in this list. Initial cataloging
+# goes to OnCat, a single external service with no per-instrument fairness
+# problem, so splitting it would only create empty queues to babysit.
+_PER_INSTRUMENT_QUEUE_ROOTS = ("REDUCTION", "REDUCTION_CATALOG")
+
+
+def per_instrument_queue_name(shared_queue, instrument):
+    """
+    Build the per-instrument name for a shared queue, or None if it does not split.
+
+    Returning None (rather than raising or guessing) is what keeps queues such as
+    CATALOG.ONCAT.DATA_READY and REDUCTION.REQUEST on their shared destination
+    when the caller hands us an arbitrary queue name, for example one read from a
+    task definition in the database.
+
+    :param shared_queue: queue name as configured today (no /queue/ prefix)
+    :param instrument: validated, lowercase instrument name
+    :return: per-instrument queue name, or None if this queue is not split
+    """
+    parts = shared_queue.split(".")
+    if len(parts) < 2 or parts[0] not in _PER_INSTRUMENT_QUEUE_ROOTS or parts[-1] != "DATA_READY":
+        return None
+    return ".".join(parts[:-1] + [instrument.upper(), parts[-1]])
+
 
 class _RoutingLogThrottle:
     """
@@ -111,42 +147,22 @@ class StateAction:
 
         return instrument
 
-    def get_instrument_queue_name(self, instrument, queue_type="reduction"):
+    def resolve_destination_queue(self, message, shared_queue):
         """
-        Generate an instrument-specific queue name.
+        Choose the destination for a message, honoring the feature flag.
 
-        :param instrument: validated instrument name (e.g. 'eqsans')
-        :param queue_type: one of 'reduction', 'reduction_catalog', 'catalog'
-        :return: queue name string
-        :raises ValueError: if queue_type is unknown
-        """
-        instrument_upper = instrument.upper()
-
-        if queue_type == "reduction":
-            return f"REDUCTION.{instrument_upper}.DATA_READY"
-        elif queue_type == "reduction_catalog":
-            return f"REDUCTION_CATALOG.{instrument_upper}.DATA_READY"
-        elif queue_type == "catalog":
-            return f"CATALOG.{instrument_upper}.DATA_READY"
-        else:
-            raise ValueError(f"Unknown queue type: {queue_type}")
-
-    def resolve_reduction_queue(self, message, shared_queue, queue_type):
-        """
-        Choose the destination queue for a message, honoring the feature flag.
-
-        When per-instrument routing is enabled (see
-        ``settings.ENABLE_PER_INSTRUMENT_QUEUES``) and a valid instrument can be
-        extracted, returns the instrument-specific queue name. Otherwise returns
-        ``shared_queue`` -- and, if routing is enabled but the instrument is
-        missing or invalid, logs a warning so the fallback is visible.
+        With per-instrument routing enabled (see
+        ``settings.ENABLE_PER_INSTRUMENT_QUEUES``), a valid instrument in the
+        message, and a queue that belongs to a per-instrument family, this
+        returns the instrument-specific name. Every other case returns
+        ``shared_queue`` unchanged, so the caller never has to know which queues
+        split and which do not.
 
         The flag is read from the settings module at call time so it can be
         toggled per-process (and overridden in tests) without re-importing.
 
         :param message: JSON-encoded message content
-        :param shared_queue: queue name to fall back to
-        :param queue_type: queue type passed to get_instrument_queue_name
+        :param shared_queue: queue name as configured today
         :return: queue name string
         """
         if not settings.ENABLE_PER_INSTRUMENT_QUEUES:
@@ -163,7 +179,18 @@ class StateAction:
             )
             return shared_queue
 
-        queue = self.get_instrument_queue_name(instrument, queue_type)
+        queue = per_instrument_queue_name(shared_queue, instrument)
+        if queue is None:
+            # A queue we deliberately do not split, e.g. CATALOG.ONCAT.DATA_READY.
+            self._log_routing_decision(
+                logging.DEBUG,
+                decision="shared",
+                instrument=instrument,
+                queue=shared_queue,
+                reason="queue_not_split_per_instrument",
+            )
+            return shared_queue
+
         self._log_routing_decision(
             logging.INFO,
             decision="per_instrument",
@@ -243,6 +270,16 @@ class StateAction:
 
     def _call_db_task(self, task_data, headers, message):
         """
+        Run the task definition stored in the database for this instrument.
+
+        This is the path most instruments actually take: whenever a Task row
+        exists for (instrument, input queue), it runs instead of the default
+        action, so per-instrument routing has to be applied to the configured
+        task queues here as well. The queues are resolved individually, which
+        keeps a task that fans out to both REDUCTION.DATA_READY and
+        CATALOG.ONCAT.DATA_READY correct: the first splits per instrument, the
+        second stays shared.
+
         :param task_data: JSON-encoded task definition
         :param headers: message headers
         :param message: JSON-encoded message content
@@ -261,7 +298,7 @@ class StateAction:
                     logging.exception("Task [%s] failed:", headers["destination"])
         if "task_queues" in task_def:
             for item in task_def["task_queues"]:
-                destination = "/queue/%s" % item
+                destination = "/queue/%s" % self.resolve_destination_queue(message, item)
                 self.send(destination=destination, message=message, persistent="true")
 
                 headers = {"destination": destination, "message-id": ""}
@@ -356,10 +393,11 @@ class Postprocess_data_ready(StateAction):
         :param headers: message headers
         :param message: JSON-encoded message content
         """
-        reduction_queue = self.resolve_reduction_queue(message, REDUCTION_DATA_READY, "reduction")
+        reduction_queue = self.resolve_destination_queue(message, REDUCTION_DATA_READY)
 
         # Tell workers for start processing.
-        # Cataloging stays on the shared queue for now.
+        # Cataloging stays on the shared queue: it goes to OnCat, a single
+        # external service with no per-instrument fairness problem.
         self.send(
             destination="/queue/%s" % CATALOG_DATA_READY,
             message=message,
@@ -387,7 +425,7 @@ class Reduction_request(StateAction):
         :param headers: message headers
         :param message: JSON-encoded message content
         """
-        reduction_queue = self.resolve_reduction_queue(message, REDUCTION_DATA_READY, "reduction")
+        reduction_queue = self.resolve_destination_queue(message, REDUCTION_DATA_READY)
 
         # Tell workers for start reduction
         self.send(
@@ -432,7 +470,7 @@ class Reduction_complete(StateAction):
         :param headers: message headers
         :param message: JSON-encoded message content
         """
-        catalog_queue = self.resolve_reduction_queue(message, REDUCTION_CATALOG_DATA_READY, "reduction_catalog")
+        catalog_queue = self.resolve_destination_queue(message, REDUCTION_CATALOG_DATA_READY)
 
         # Tell workers to catalog the output
         self.send(

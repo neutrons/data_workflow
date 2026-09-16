@@ -14,7 +14,7 @@ import pytest
 # connection, and the `amq_connection` / `db_connection` fixtures (provided by
 # the docker-compose stack, not defined here). Skipped by default so the file is
 # collectable without erroring. The maintained end-to-end validation lives in
-# tests/validate_per_instrument_routing.py.
+# tests/test_per_instrument_routing_integration.py, which runs in CI.
 pytestmark = pytest.mark.skip(reason="prototype integration reference; requires live ActiveMQ + DB services")
 
 

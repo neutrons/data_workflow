@@ -3,8 +3,8 @@ Unit tests for per-instrument queue routing in workflow.states.
 
 Covers:
 * instrument extraction and validation (get_instrument_from_message)
-* queue-name generation (get_instrument_queue_name)
-* routing decisions for each handler with the feature flag ON and OFF
+* which queue names split per instrument and which stay shared (per_instrument_queue_name)
+* routing decisions for each handler, and for the database task path, with the flag ON and OFF
 * both fallback paths (flag off, and instrument missing/invalid) and the warning log
 * the standardized routing-decision log format and its rate limiting
 * startup configuration validation and the effective-config echo
@@ -20,6 +20,7 @@ import pytest
 from django.test import TestCase
 
 import workflow
+from workflow.states import per_instrument_queue_name
 
 _ = [workflow]
 
@@ -102,39 +103,43 @@ class InstrumentExtractionTest(TestCase):
 
 
 class QueueNameGenerationTest(TestCase):
-    def setUp(self):
-        from workflow.states import StateAction
-
-        self.action = StateAction()
+    """The shared queue name alone decides whether (and how) it splits."""
 
     def test_reduction_queue_name(self):
-        assert self.action.get_instrument_queue_name("eqsans", "reduction") == "REDUCTION.EQSANS.DATA_READY"
-        assert self.action.get_instrument_queue_name("cg2", "reduction") == "REDUCTION.CG2.DATA_READY"
+        assert per_instrument_queue_name("REDUCTION.DATA_READY", "eqsans") == "REDUCTION.EQSANS.DATA_READY"
+        assert per_instrument_queue_name("REDUCTION.DATA_READY", "cg2") == "REDUCTION.CG2.DATA_READY"
 
     def test_reduction_catalog_queue_name(self):
         assert (
-            self.action.get_instrument_queue_name("eqsans", "reduction_catalog")
-            == "REDUCTION_CATALOG.EQSANS.DATA_READY"
+            per_instrument_queue_name("REDUCTION_CATALOG.DATA_READY", "eqsans") == "REDUCTION_CATALOG.EQSANS.DATA_READY"
         )
-
-    def test_catalog_queue_name(self):
-        assert self.action.get_instrument_queue_name("venus", "catalog") == "CATALOG.VENUS.DATA_READY"
-
-    def test_default_queue_type_is_reduction(self):
-        assert self.action.get_instrument_queue_name("nom") == "REDUCTION.NOM.DATA_READY"
 
     def test_underscore_instrument_queue_name(self):
-        assert self.action.get_instrument_queue_name("ref_l", "reduction") == "REDUCTION.REF_L.DATA_READY"
+        assert per_instrument_queue_name("REDUCTION.DATA_READY", "ref_l") == "REDUCTION.REF_L.DATA_READY"
         assert (
-            self.action.get_instrument_queue_name("ref_l", "reduction_catalog") == "REDUCTION_CATALOG.REF_L.DATA_READY"
+            per_instrument_queue_name("REDUCTION_CATALOG.DATA_READY", "ref_l") == "REDUCTION_CATALOG.REF_L.DATA_READY"
         )
 
-    def test_unknown_queue_type_raises(self):
-        with pytest.raises(ValueError):
-            self.action.get_instrument_queue_name("eqsans", "bogus")
+    def test_himem_tier_segment_is_preserved(self):
+        # The tier segment must stay next to the family root so the high-memory
+        # worker pool keeps matching on REDUCTION.HIMEM.* and the normal pool on
+        # REDUCTION.<one segment>.
+        assert per_instrument_queue_name("REDUCTION.HIMEM.DATA_READY", "vulcan") == "REDUCTION.HIMEM.VULCAN.DATA_READY"
+
+    def test_catalog_queue_does_not_split(self):
+        # Initial cataloging goes to OnCat, a single external service.
+        assert per_instrument_queue_name("CATALOG.ONCAT.DATA_READY", "venus") is None
+
+    def test_non_data_ready_queue_does_not_split(self):
+        assert per_instrument_queue_name("REDUCTION.REQUEST", "eqsans") is None
+        assert per_instrument_queue_name("POSTPROCESS.DATA_READY", "eqsans") is None
+
+    def test_unrelated_queue_family_does_not_split(self):
+        assert per_instrument_queue_name("FERMI_REDUCTION.DATA_READY", "eqsans") is None
+        assert per_instrument_queue_name("DATA_READY", "eqsans") is None
 
 
-class ResolveReductionQueueTest(TestCase):
+class ResolveDestinationQueueTest(TestCase):
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self.caplog = caplog
@@ -148,30 +153,38 @@ class ResolveReductionQueueTest(TestCase):
     def test_flag_off_returns_shared_queue(self):
         message = json.dumps({"instrument": "eqsans"})
         with _patch_flag(False):
-            assert self.action.resolve_reduction_queue(message, "SHARED", "reduction") == "SHARED"
+            assert self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY") == "REDUCTION.DATA_READY"
 
     def test_flag_off_logs_no_routing_decision(self):
         message = json.dumps({"run_number": 1})  # no instrument
         with _patch_flag(False):
             self.caplog.clear()
-            self.action.resolve_reduction_queue(message, "SHARED", "reduction")
+            self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY")
         assert "per_instrument_routing" not in self.caplog.text
 
     def test_flag_on_valid_instrument(self):
         message = json.dumps({"instrument": "eqsans"})
         with _patch_flag(True):
-            assert self.action.resolve_reduction_queue(message, "SHARED", "reduction") == "REDUCTION.EQSANS.DATA_READY"
+            resolved = self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY")
+        assert resolved == "REDUCTION.EQSANS.DATA_READY"
 
     def test_flag_on_missing_instrument_falls_back_and_warns(self):
         message = json.dumps({"run_number": 1})
         with _patch_flag(True), self.caplog.at_level(logging.WARNING):
             self.caplog.clear()
-            result = self.action.resolve_reduction_queue(message, "SHARED", "reduction")
-        assert result == "SHARED"
+            result = self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY")
+        assert result == "REDUCTION.DATA_READY"
         # Standardized, greppable key=value line at WARNING level.
         assert "per_instrument_routing decision=fallback" in self.caplog.text
-        assert "queue=SHARED" in self.caplog.text
+        assert "queue=REDUCTION.DATA_READY" in self.caplog.text
         assert "reason=no_valid_instrument" in self.caplog.text
+
+    def test_flag_on_non_splitting_queue_stays_shared(self):
+        # A valid instrument is not enough: the queue itself must be one we split.
+        message = json.dumps({"instrument": "eqsans"})
+        with _patch_flag(True):
+            resolved = self.action.resolve_destination_queue(message, "CATALOG.ONCAT.DATA_READY")
+        assert resolved == "CATALOG.ONCAT.DATA_READY"
 
 
 class PostprocessDataReadyRoutingTest(TestCase):
@@ -307,6 +320,58 @@ class ReductionCompleteRoutingTest(TestCase):
         assert sent == ["/queue/REDUCTION_CATALOG.DATA_READY"]
 
 
+class DbTaskRoutingTest(TestCase):
+    """
+    Instruments that have a task definition in the database take _call_db_task
+    instead of the default action, so routing has to apply there too. This is the
+    path most instruments actually take, and the configured queues today are
+    either REDUCTION.DATA_READY or REDUCTION.HIMEM.DATA_READY.
+    """
+
+    def setUp(self):
+        import workflow.states as states
+
+        states._routing_log_throttle.reset()
+
+    @staticmethod
+    def _run_task(task_queues, message, flag):
+        """Drive StateAction.__call__ with a stubbed DB task definition."""
+        from workflow.states import StateAction
+
+        task_def = json.dumps({"task_class": "", "task_queues": task_queues})
+        action = StateAction(use_db_task=True)
+        sent = []
+        action.send = lambda destination, message, persistent="true": sent.append(destination)
+        with (
+            _patch_flag(flag),
+            mock.patch("workflow.database.transactions.get_task", return_value=task_def),
+            mock.patch("workflow.database.transactions.add_status_entry"),
+        ):
+            action({"destination": "/queue/POSTPROCESS.DATA_READY", "message-id": ""}, message)
+        return sent
+
+    def test_flag_on_routes_task_queues_per_instrument(self):
+        message = json.dumps({"instrument": "eqsans", "run_number": 1, "facility": "SNS"})
+        sent = self._run_task(["CATALOG.ONCAT.DATA_READY", "REDUCTION.DATA_READY"], message, flag=True)
+        # The reduction queue splits; cataloging stays on the shared OnCat queue.
+        assert sent == ["/queue/CATALOG.ONCAT.DATA_READY", "/queue/REDUCTION.EQSANS.DATA_READY"]
+
+    def test_flag_on_preserves_himem_tier(self):
+        message = json.dumps({"instrument": "vulcan", "run_number": 1, "facility": "SNS"})
+        sent = self._run_task(["REDUCTION.HIMEM.DATA_READY"], message, flag=True)
+        assert sent == ["/queue/REDUCTION.HIMEM.VULCAN.DATA_READY"]
+
+    def test_flag_off_leaves_task_queues_untouched(self):
+        message = json.dumps({"instrument": "eqsans", "run_number": 1, "facility": "SNS"})
+        sent = self._run_task(["CATALOG.ONCAT.DATA_READY", "REDUCTION.DATA_READY"], message, flag=False)
+        assert sent == ["/queue/CATALOG.ONCAT.DATA_READY", "/queue/REDUCTION.DATA_READY"]
+
+    def test_flag_on_missing_instrument_leaves_task_queues_untouched(self):
+        message = json.dumps({"instrument": "", "run_number": 1, "facility": "SNS"})
+        sent = self._run_task(["REDUCTION.DATA_READY"], message, flag=True)
+        assert sent == ["/queue/REDUCTION.DATA_READY"]
+
+
 class FeatureFlagConfigTest(TestCase):
     """The flag must be environment-driven and default OFF (never hardcoded on)."""
 
@@ -367,7 +432,7 @@ class RoutingLogFormatTest(TestCase):
     def test_per_instrument_decision_logged_at_info(self):
         message = json.dumps({"instrument": "eqsans"})
         with _patch_flag(True), self.caplog.at_level(logging.INFO):
-            self.action.resolve_reduction_queue(message, "REDUCTION.DATA_READY", "reduction")
+            self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY")
         text = self.caplog.text
         assert "per_instrument_routing decision=per_instrument" in text
         assert "instrument=eqsans" in text
@@ -414,7 +479,7 @@ class RoutingLogSpamControlTest(TestCase):
         message = json.dumps({"run_number": 1})  # no instrument -> fallback every time
         with _patch_flag(True), self.caplog.at_level(logging.WARNING):
             for _ in range(1000):
-                self.action.resolve_reduction_queue(message, "REDUCTION.DATA_READY", "reduction")
+                self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY")
         warnings = [
             r
             for r in self.caplog.records
