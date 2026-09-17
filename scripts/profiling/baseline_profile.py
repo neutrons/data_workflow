@@ -10,7 +10,7 @@ database, then reports the three metrics.
 
 Run (with the stack up via ``docker compose up -d``)::
 
-    .pixi/envs/default/bin/python tests/profiling/baseline_profile.py \\
+    python scripts/profiling/baseline_profile.py \\
         --scenario blocking --capacity 10
 
 Scenarios:
@@ -30,22 +30,17 @@ import os
 import sys
 import time
 
-# Reuse the STOMP sender from the sibling load-test module rather than
-# duplicating connection/send code.
+# Reuse the STOMP sender from the sibling load-test module.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from load_test_per_instrument_queues import LoadTestClient  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import metrics  # noqa: E402
 
-# Each scenario is an ordered list of phases. A phase sends ``count`` runs for
-# ``instrument`` starting at run number ``base``. Order matters: the first phase
-# is sent first and creates the backlog.
-# Real data files baked into the autoreducer image (SNSdata.tar.gz). A run only
-# occupies a worker if its data_file exists in the container; arbitrary files
-# error out instantly at the post-process stage. For controlled processing time
-# the flood/victim instruments' reduce scripts are replaced with a fixed sleep
-# (see METHODOLOGY.md "Controlled processing time").
+# Each scenario is an ordered list of phases, sent in order, so the first phase
+# builds the backlog. The data files must be ones baked into the autoreducer
+# image (SNSdata.tar.gz): a run only occupies a worker if its file exists in the
+# container, otherwise it errors out instantly and creates no contention.
 ARCS_FILE = "/SNS/ARCS/IPTS-27800/nexus/ARCS_214583.nxs.h5"
 REF_L_FILE = "/SNS/REF_L/IPTS-33077/nexus/REF_L_214746.nxs.h5"
 REF_M_FILE = "/SNS/REF_M/IPTS-30794/nexus/REF_M_42112.nxs.h5"

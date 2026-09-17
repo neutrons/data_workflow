@@ -110,9 +110,7 @@ class ProfileReport:
     timeline: list = field(default_factory=list)
 
 
-# --------------------------------------------------------------------------- #
 # Pure analysis functions (no database, directly unit-testable)
-# --------------------------------------------------------------------------- #
 def compute_total_time(events: list) -> Optional[float]:
     """Wall-clock seconds from the earliest submission to the latest finish.
 
@@ -227,9 +225,6 @@ def build_report(
     )
 
 
-# --------------------------------------------------------------------------- #
-# Rendering
-# --------------------------------------------------------------------------- #
 def _fmt(seconds: Optional[float]) -> str:
     return f"{seconds:.1f}s" if seconds is not None else "n/a"
 
@@ -293,9 +288,7 @@ def render_json(report: ProfileReport) -> str:
     return json.dumps(to_dict(report), indent=2)
 
 
-# --------------------------------------------------------------------------- #
 # Database access (psycopg2 imported lazily so the math above stays importable)
-# --------------------------------------------------------------------------- #
 DEFAULT_DB = {
     "host": "localhost",
     "port": 5432,
@@ -304,10 +297,8 @@ DEFAULT_DB = {
     "password": "workflow",
 }
 
-# NOTE on column names: these models use ForeignKey fields literally named
-# ``run_id`` and ``queue_id``, so Django's generated DB columns are
-# ``run_id_id`` and ``queue_id_id``. (The shorthand SQL in the old load-test
-# script joined on ``run_id``/``queue_id`` and would have errored.)
+# The ForeignKey fields are literally named ``run_id`` and ``queue_id``, so the
+# columns Django generates are ``run_id_id`` and ``queue_id_id``.
 _FETCH_SQL = """
 SELECT
     inst.name        AS instrument,

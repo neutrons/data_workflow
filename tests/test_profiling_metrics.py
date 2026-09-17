@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-Unit tests for the profiling metric math.
+Unit tests for the profiling metric math in scripts/profiling/metrics.py.
 
 These exercise the pure functions only (no database, no ActiveMQ), so they run
 anywhere with::
 
-    .pixi/envs/default/bin/python -m pytest tests/profiling/test_metrics.py
+    python -m pytest tests/test_profiling_metrics.py
 """
 
 import os
 import sys
 from datetime import datetime, timedelta
 
-# tests/profiling is not on the pytest pythonpath, so make the sibling `metrics`
-# module importable regardless of the pytest import mode (matches
-# baseline_profile.py). Without this the import only works under the default
-# "prepend" import mode.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# The code under test lives in scripts/, which is not on the pytest pythonpath.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_REPO_ROOT, "scripts", "profiling"))
 
 from metrics import (  # noqa: E402
     RunEvent,

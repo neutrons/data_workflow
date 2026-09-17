@@ -3,15 +3,10 @@
 Controlled-time reduction fixture for load testing.
 
 Drop-in replacement for a real ``reduce_<INST>.py`` inside the autoreducer
-containers. It occupies a worker slot for a fixed duration and then exits 0, so
-the run records a clean ``REDUCTION.COMPLETE``. This lets us control per-run
-processing time precisely: only the *ratio* of arrival rate to processing time
-matters for measuring contention, so a 1.5 s sleep is as valid as a 15 min
-reduction (see METHODOLOGY.md, "Controlled processing time").
-
-The sleep duration is read from the REDUCE_SLEEP environment variable (seconds),
-defaulting to 1.5. For the "large dataset" instrument in the large-dataset
-scenario, deploy a variant with a longer default (e.g. 20) instead.
+containers. It holds a worker slot for REDUCE_SLEEP seconds (default 1.5) then
+exits 0, so the run records a clean ``REDUCTION.COMPLETE``. Only the ratio of
+arrival rate to processing time matters for measuring contention, so a short
+sleep stands in for a long reduction.
 
 Deploy into the running stack with:
 

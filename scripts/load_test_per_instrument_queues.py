@@ -7,13 +7,13 @@ blocked processing for other instruments.
 
 Usage:
     # Start services
-    docker-compose up -d artemis postgres webmonchow
+    docker compose up -d
 
     # Run load test
-    python3 tests/load_test_per_instrument_queues.py --scenario blocking
+    python scripts/load_test_per_instrument_queues.py --scenario blocking
 
     # Check results
-    python3 tests/load_test_per_instrument_queues.py --analyze results.json
+    python scripts/load_test_per_instrument_queues.py --analyze results.json
 """
 
 import argparse
@@ -29,7 +29,7 @@ import stomp
 class LoadTestClient:
     """Client for sending test messages to ActiveMQ."""
 
-    def __init__(self, host="localhost", port=61613, user="admin", password="admin"):
+    def __init__(self, host="localhost", port=61613, user="artemis", password="artemis"):
         self.host = host
         self.port = port
         self.user = user
@@ -120,7 +120,7 @@ class BlockingScenario(LoadTestScenario):
 
         self.start_time = time.time()
 
-        # Phase 1: CG2 floods the queue (represents backlog)
+        # Phase 1: CG2 floods the queue
         print("Phase 1: CG2 sends 200 runs (creating backlog)...")
         for i in range(200):
             msg = self.client.send_run("cg2", 10000 + i, facility="HFIR")
@@ -131,7 +131,7 @@ class BlockingScenario(LoadTestScenario):
 
         print("✓ CG2 backlog created\n")
 
-        # Phase 2: EQSANS tries to process (should NOT be blocked)
+        # Phase 2: EQSANS should not be blocked behind it
         print("Phase 2: EQSANS sends 10 runs (should process immediately)...")
 
         for i in range(10):
@@ -141,7 +141,6 @@ class BlockingScenario(LoadTestScenario):
 
         print(f"✓ EQSANS runs sent at t={time.time() - self.start_time:.1f}s\n")
 
-        # Phase 3: Monitor processing
         print("Phase 3: Monitoring (30 seconds)...")
         print("  Check database to see if EQSANS runs complete despite CG2 backlog")
         print("  With per-instrument queues: EQSANS should complete in <5s")
@@ -172,19 +171,14 @@ class LargeDatasetScenario(LoadTestScenario):
 
         self.start_time = time.time()
 
-        # Phase 1: VENUS sends large dataset
+        # Phase 1: VENUS sends the large dataset
         print("Phase 1: VENUS sends large dataset run...")
-        msg = self.client.send_run(
-            "venus",
-            30000,
-            facility="SNS",
-            data_file="/SNS/VENUS/large_dataset_1000_files.nxs",  # Marker for large dataset
-        )
+        msg = self.client.send_run("venus", 30000, facility="SNS", data_file="/SNS/VENUS/large_dataset_1000_files.nxs")
         msg["large_dataset"] = True
         self.messages_sent.append(msg)
         print("✓ VENUS large dataset queued\n")
 
-        # Phase 2: Other instruments send normal runs
+        # Phase 2: normal runs from the other instruments
         print("Phase 2: Other instruments send normal runs...")
         normal_instruments = ["eqsans", "hb2c", "cg3"]
 
@@ -197,7 +191,6 @@ class LargeDatasetScenario(LoadTestScenario):
         print("\nWith per-instrument queues: Normal runs should NOT wait for VENUS")
         print("Without per-instrument queues: Normal runs blocked behind VENUS\n")
 
-        # Monitor
         print("Monitoring for 30 seconds...")
         time.sleep(30)
 
@@ -226,7 +219,6 @@ class FairnessScenario(LoadTestScenario):
 
         instruments = ["eqsans", "venus", "cg2", "hb2c", "nomad"]
 
-        # Interleave messages from all instruments
         for i in range(20):
             for inst in instruments:
                 msg = self.client.send_run(inst, 50000 + i * len(instruments) + instruments.index(inst))
@@ -240,7 +232,6 @@ class FairnessScenario(LoadTestScenario):
         print("\nWith per-instrument queues: All instruments should process ~evenly")
         print("Without per-instrument queues: FIFO order creates uneven distribution\n")
 
-        # Monitor
         print("Monitoring for 60 seconds...")
         time.sleep(60)
 
@@ -256,55 +247,39 @@ def analyze_results(results_file):
     print("=" * 70)
     print("Query database to check processing times and fairness\n")
 
-    # This would query the database to analyze:
-    # 1. Time from message sent to processing complete
-    # 2. Per-instrument throughput
-    # 3. Fairness metrics (coefficient of variation)
-    # 4. Detection of blocking incidents
-
-    print("SQL queries to run:")
+    print("SQL queries to run (connect via: docker compose exec db psql -U workflow workflow):")
     print()
-    print("-- Check EQSANS processing times during CG2 backlog")
+    print("-- Check processing times per instrument during the test window")
     print("""
     SELECT
-        instrument_id.name,
+        i.name AS instrument,
         r.run_number,
         r.created_on,
-        s.created_on as completed_on,
-        EXTRACT(EPOCH FROM (s.created_on - r.created_on)) as processing_seconds
+        s.created_on AS status_on,
+        EXTRACT(EPOCH FROM (s.created_on - r.created_on)) AS wait_seconds
     FROM report_datarun r
-    JOIN report_instrument instrument_id ON r.instrument_id = instrument_id.id
-    JOIN report_runstatus s ON r.run_status_id = s.id
-    WHERE r.created_on > NOW() - INTERVAL '5 minutes'
-    ORDER BY r.created_on;
+    JOIN report_instrument i ON r.instrument_id = i.id
+    JOIN report_runstatus s ON s.run_id = r.id
+    JOIN report_statusqueue q ON s.queue_id = q.id
+    WHERE q.name = 'REDUCTION.STARTED'
+      AND r.created_on > NOW() - INTERVAL '10 minutes'
+    ORDER BY s.created_on;
     """)
 
-    print("\n-- Calculate per-instrument processing rates")
+    print("-- Per-instrument processing rates")
     print("""
     SELECT
-        instrument_id.name,
-        COUNT(*) as runs_processed,
-        AVG(EXTRACT(EPOCH FROM (s.created_on - r.created_on))) as avg_seconds
+        i.name AS instrument,
+        COUNT(*) AS runs_started,
+        AVG(EXTRACT(EPOCH FROM (s.created_on - r.created_on))) AS avg_wait_seconds
     FROM report_datarun r
-    JOIN report_instrument instrument_id ON r.instrument_id = instrument_id.id
-    JOIN report_runstatus s ON r.run_status_id = s.id
-    WHERE r.created_on > NOW() - INTERVAL '5 minutes'
-    GROUP BY instrument_id.name
-    ORDER BY runs_processed DESC;
-    """)
-
-    print("\n-- Check for blocked instruments (long wait times)")
-    print("""
-    SELECT
-        instrument_id.name,
-        r.run_number,
-        EXTRACT(EPOCH FROM (s.created_on - r.created_on)) as wait_seconds
-    FROM report_datarun r
-    JOIN report_instrument instrument_id ON r.instrument_id = instrument_id.id
-    JOIN report_runstatus s ON r.run_status_id = s.id
-    WHERE r.created_on > NOW() - INTERVAL '5 minutes'
-      AND EXTRACT(EPOCH FROM (s.created_on - r.created_on)) > 300  -- > 5 min wait
-    ORDER BY wait_seconds DESC;
+    JOIN report_instrument i ON r.instrument_id = i.id
+    JOIN report_runstatus s ON s.run_id = r.id
+    JOIN report_statusqueue q ON s.queue_id = q.id
+    WHERE q.name = 'REDUCTION.STARTED'
+      AND r.created_on > NOW() - INTERVAL '10 minutes'
+    GROUP BY i.name
+    ORDER BY avg_wait_seconds;
     """)
 
 
@@ -319,8 +294,8 @@ def main():
     )
     parser.add_argument("--host", default="localhost", help="ActiveMQ host")
     parser.add_argument("--port", type=int, default=61613, help="ActiveMQ STOMP port")
-    parser.add_argument("--user", default="admin", help="ActiveMQ user")
-    parser.add_argument("--password", default="admin", help="ActiveMQ password")
+    parser.add_argument("--user", default="artemis", help="ActiveMQ user")
+    parser.add_argument("--password", default="artemis", help="ActiveMQ password")
     parser.add_argument("--analyze", help="Analyze results from JSON file")
     parser.add_argument("--output", default="load_test_results.json", help="Output file for results")
 
@@ -330,7 +305,6 @@ def main():
         analyze_results(args.analyze)
         return
 
-    # Connect to ActiveMQ
     client = LoadTestClient(args.host, args.port, args.user, args.password)
 
     try:
@@ -338,19 +312,12 @@ def main():
 
         scenarios = {"blocking": BlockingScenario, "large-dataset": LargeDatasetScenario, "fairness": FairnessScenario}
 
-        # Determine which scenarios to run
-        if args.scenario == "all":
-            to_run = scenarios.keys()
-        else:
-            to_run = [args.scenario]
+        to_run = list(scenarios.keys()) if args.scenario == "all" else [args.scenario]
 
-        # Run scenarios
         all_results = {}
 
         for scenario_name in to_run:
-            scenario_class = scenarios[scenario_name]
-            scenario = scenario_class(client)
-
+            scenario = scenarios[scenario_name](client)
             print(f"\nExecuting: {scenario_name}")
             results = scenario.run()
             all_results[scenario_name] = results
@@ -360,17 +327,15 @@ def main():
             print(json.dumps(results, indent=2, default=str))
             print("-" * 70)
 
-            # Pause between scenarios
-            if scenario_name != list(to_run)[-1]:
+            if scenario_name != to_run[-1]:
                 print("\nWaiting 10 seconds before next scenario...")
                 time.sleep(10)
 
-        # Save results
         with open(args.output, "w") as f:
             json.dump(all_results, f, indent=2, default=str)
 
         print(f"\n✓ Results saved to {args.output}")
-        print(f"\nRun analysis: python3 {sys.argv[0]} --analyze {args.output}")
+        print(f"Run analysis: python {sys.argv[0]} --analyze {args.output}")
 
     finally:
         client.disconnect()

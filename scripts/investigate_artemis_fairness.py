@@ -23,7 +23,7 @@ Methodology notes (important):
 
 Usage:
     docker compose up -d activemq
-    python tests/investigate_artemis_fairness.py \\
+    python scripts/investigate_artemis_fairness.py \\
         --host localhost --port 61613 --user icat --password icat \\
         --cg2-count 100 --eqsans-count 10
 
@@ -50,9 +50,7 @@ except ImportError:  # pragma: no cover
     _HAVE_URLLIB = False
 
 
-# ---------------------------------------------------------------------------
 # Listener that records delivery order, throttled to force a backlog
-# ---------------------------------------------------------------------------
 
 
 class OrderRecorder(stomp.ConnectionListener):
@@ -94,9 +92,7 @@ class OrderRecorder(stomp.ConnectionListener):
                 return
 
 
-# ---------------------------------------------------------------------------
 # Management API helper (Jolokia) to read residual queue depths
-# ---------------------------------------------------------------------------
 
 
 def read_queue_count(console_host, console_port, user, password, address, queue):
@@ -124,11 +120,6 @@ def read_queue_count(console_host, console_port, user, password, address, queue)
         return None
 
 
-# ---------------------------------------------------------------------------
-# Sender
-# ---------------------------------------------------------------------------
-
-
 def send_batch(conn, queue, instrument, count, run_number_start):
     for i in range(count):
         payload = json.dumps(
@@ -142,11 +133,6 @@ def send_batch(conn, queue, instrument, count, run_number_start):
             }
         )
         conn.send(destination=queue, body=payload, headers={"persistent": "false"})
-
-
-# ---------------------------------------------------------------------------
-# Analysis
-# ---------------------------------------------------------------------------
 
 
 def analyse(received, cg2_count, eqsans_count, residual):
@@ -205,11 +191,6 @@ def analyse(received, cg2_count, eqsans_count, residual):
             "  an alternative fairness mechanism is required (e.g. one consumer per queue)."
         )
         return 1
-
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 
 def main():
