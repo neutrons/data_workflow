@@ -1,15 +1,12 @@
 # pylint: disable=line-too-long, too-many-statements, too-few-public-methods, too-many-instance-attributes, invalid-name
 """
-PROTOTYPE: Per-instrument queue support for Configuration.py
+PROTOTYPE: per-instrument queue support for Configuration.py.
 
-Key changes:
-1. Add per_instrument_queues config parameter (default: False for backwards compatibility)
-2. When enabled, transform queue names to wildcard patterns for subscription
-3. Store both original patterns (for routing) and subscription patterns
+Adds a ``per_instrument_queues`` parameter (default False) that turns each
+configured queue into a wildcard subscription pattern, keeping the original
+around for routing::
 
-Example:
-  Original: REDUCTION.DATA_READY
-  Subscription pattern: REDUCTION.*.DATA_READY (matches REDUCTION.EQSANS.DATA_READY, etc.)
+    REDUCTION.DATA_READY -> REDUCTION.*.DATA_READY
 """
 
 import importlib
@@ -43,8 +40,7 @@ class Configuration:
         self.sw_dir = config["sw_dir"] if "sw_dir" in config else "/opt/postprocessing"
         self.postprocess_error = config["postprocess_error"]
 
-        # PER-INSTRUMENT QUEUE SUPPORT
-        # When enabled, subscribes to wildcard patterns to receive messages from per-instrument queues
+        # When enabled, subscribe to wildcard patterns rather than exact names.
         self.per_instrument_queues = config.get("per_instrument_queues", False)
 
         # Reduction AMQ queues
@@ -116,9 +112,8 @@ class Configuration:
         ]
         self.processors = config.get("processors", default_processors)
 
-        # Store both original queue patterns (for routing) and subscription patterns
-        self.queue_patterns = {}  # Maps subscription pattern -> original processor queue name
-        self.queues = []  # List of queue patterns to subscribe to
+        self.queue_patterns = {}  # subscription pattern -> original processor queue
+        self.queues = []  # queue patterns to subscribe to
 
         if isinstance(self.processors, list):
             for p in self.processors:
@@ -132,7 +127,6 @@ class Configuration:
                         processor_class = getattr(processor_module, toks[1])
                         base_queue = processor_class.get_input_queue_name()
 
-                        # Transform to per-instrument pattern if enabled
                         subscription_queue = self._make_subscription_pattern(base_queue)
 
                         self.queues.append(subscription_queue)
@@ -178,22 +172,18 @@ class Configuration:
         if base_queue.startswith("/topic/"):
             return base_queue  # Don't transform topics
 
-        # Transform queue patterns for per-instrument routing
-        # Pattern: PREFIX.DATA_READY -> PREFIX.*.DATA_READY
+        # Insert the wildcard before the trailing segment:
+        #   REDUCTION.DATA_READY      -> REDUCTION.*.DATA_READY
+        #   CATALOG.ONCAT.DATA_READY  -> CATALOG.ONCAT.*.DATA_READY
         parts = base_queue.split(".")
 
         if len(parts) >= 2 and parts[-1] == "DATA_READY":
-            # Insert wildcard before DATA_READY
-            # REDUCTION.DATA_READY -> REDUCTION.*.DATA_READY
-            # CATALOG.ONCAT.DATA_READY -> CATALOG.ONCAT.*.DATA_READY
             parts.insert(-1, "*")
             return ".".join(parts)
         elif len(parts) >= 2 and parts[-1] == "CREATE_SCRIPT":
-            # REDUCTION.CREATE_SCRIPT -> REDUCTION.*.CREATE_SCRIPT
             parts.insert(-1, "*")
             return ".".join(parts)
         else:
-            # Unknown pattern, don't transform
             return base_queue
 
     def matches_processor_queue(self, actual_queue, base_queue):
@@ -212,27 +202,23 @@ class Configuration:
         Returns:
             True if the actual queue matches the base pattern
         """
-        # Exact match (backwards compatibility)
         if actual_queue == base_queue:
             return True
 
         if not self.per_instrument_queues:
-            return False  # Strict matching when per-instrument is disabled
+            return False
 
-        # Per-instrument pattern matching
-        # Convert base_queue to pattern and check if actual_queue matches
         base_parts = base_queue.split(".")
         actual_parts = actual_queue.split(".")
 
-        # Must have one more part than base (the instrument name)
+        # The instrument adds exactly one segment.
         if len(actual_parts) != len(base_parts) + 1:
             return False
 
-        # Check pattern: base parts must match at same positions
-        # REDUCTION.DATA_READY matches REDUCTION.EQSANS.DATA_READY
-        # Index: 0=REDUCTION, 1=EQSANS (wildcard), 2=DATA_READY
+        # REDUCTION.DATA_READY matches REDUCTION.EQSANS.DATA_READY: every base
+        # segment must line up once the instrument position is skipped.
         for i, base_part in enumerate(base_parts):
-            actual_index = i if i == 0 else i + 1  # Skip instrument position
+            actual_index = i if i == 0 else i + 1
             if actual_parts[actual_index] != base_part:
                 return False
 

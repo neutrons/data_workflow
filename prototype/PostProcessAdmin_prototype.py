@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 """
-PROTOTYPE: Post-processing tasks with per-instrument queue support
+PROTOTYPE: post-processing tasks with per-instrument queue support.
 
-Key changes:
-1. Use configuration.matches_processor_queue() for flexible queue matching
-2. Supports both exact matches (legacy) and per-instrument patterns
-
-Example flow:
-  Message arrives from: REDUCTION.EQSANS.DATA_READY
-  Matches processor: ReductionProcessor (base queue: REDUCTION.DATA_READY)
-  Routes correctly via pattern matching
+Replaces exact queue-name equality with configuration.matches_processor_queue(),
+so a message from REDUCTION.EQSANS.DATA_READY still reaches the processor whose
+base queue is REDUCTION.DATA_READY.
 
 @copyright: 2014 Oak Ridge National Laboratory
 """
@@ -113,10 +108,8 @@ if __name__ == "__main__":
                             processor_class = getattr(processor_module, toks[1])
                             base_queue = processor_class.get_input_queue_name()
 
-                            # NEW: Use flexible pattern matching instead of exact equality
-                            # This supports both:
-                            #   - Exact match: REDUCTION.DATA_READY == REDUCTION.DATA_READY
-                            #   - Pattern match: REDUCTION.EQSANS.DATA_READY matches REDUCTION.DATA_READY
+                            # Pattern matching rather than equality, so both
+                            # REDUCTION.DATA_READY and REDUCTION.EQSANS.DATA_READY match.
                             if configuration.matches_processor_queue(namespace.queue, base_queue):
                                 logging.info(
                                     "Matched queue %s to processor %s (base queue: %s)",
@@ -124,7 +117,6 @@ if __name__ == "__main__":
                                     toks[1],
                                     base_queue,
                                 )
-                                # Instantiate and call the processor
                                 proc = processor_class(data, configuration, send_function=pp.send)
                                 proc()
                                 processor_matched = True

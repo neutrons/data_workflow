@@ -35,7 +35,7 @@ class StateAction:
 
     def get_instrument_from_message(self, message):
         """
-        Extract instrument name from message.
+        Extract the instrument name from a message.
 
         :param message: JSON-encoded message content
         :return: lowercase instrument name or None
@@ -50,10 +50,10 @@ class StateAction:
 
     def get_instrument_queue_name(self, instrument, queue_type="reduction"):
         """
-        Generate instrument-specific queue name.
+        Generate the instrument-specific queue name.
 
         :param instrument: instrument name (e.g., 'eqsans')
-        :param queue_type: type of queue ('reduction', 'catalog', etc.)
+        :param queue_type: 'reduction', 'catalog' or 'reduction_catalog'
         :return: queue name string
         """
         instrument_upper = instrument.upper()
@@ -174,11 +174,11 @@ class StateAction:
 
 class Postprocess_data_ready(StateAction):
     """
-    Handler for POSTPROCESS.DATA_READY messages with per-instrument queue routing.
-    Routes to instrument-specific queues for isolation, falls back to shared queue.
+    Handler for POSTPROCESS.DATA_READY messages, routing per instrument for
+    isolation and falling back to the shared queue.
     """
 
-    ENABLE_PER_INSTRUMENT_QUEUES = True  # Enable per-instrument routing
+    ENABLE_PER_INSTRUMENT_QUEUES = True
 
     def __call__(self, headers, message):
         """
@@ -189,9 +189,7 @@ class Postprocess_data_ready(StateAction):
         """
         instrument = self.get_instrument_from_message(message)
 
-        # Determine catalog and reduction queue destinations
         if self.ENABLE_PER_INSTRUMENT_QUEUES and instrument:
-            # Per-instrument routing for queue isolation
             catalog_queue = self.get_instrument_queue_name(instrument, "catalog")
             reduction_queue = self.get_instrument_queue_name(instrument, "reduction")
 
@@ -200,7 +198,6 @@ class Postprocess_data_ready(StateAction):
                 f"catalog={catalog_queue}, reduction={reduction_queue}"
             )
         else:
-            # Fallback to shared queues
             catalog_queue = CATALOG_DATA_READY
             reduction_queue = REDUCTION_DATA_READY
 

@@ -1,16 +1,11 @@
 """
-PROTOTYPE: Per-Instrument Queue Routing for Autoreduction
+PROTOTYPE: per-instrument queue routing for autoreduction.
 
-This file demonstrates the proposed changes to enable per-instrument queue isolation.
-It shows how to modify state handlers to route messages to instrument-specific queues.
+Explores routing state handlers to REDUCTION.{INSTRUMENT}.DATA_READY with the
+shared queue as a fallback. Two approaches are sketched here: routing from the
+message itself, and routing from the Task table.
 
-Key Changes:
-1. Extract instrument from message data
-2. Route to instrument-specific queue: REDUCTION.{INSTRUMENT}.DATA_READY
-3. Maintain backward compatibility with shared queue as fallback
-4. Support both static and dynamic queue creation
-
-Status: PROTOTYPE - Not production code
+Status: PROTOTYPE, not production code
 Date: April 17, 2026
 Related: EWM-15518, EWM-15444
 """
@@ -29,7 +24,7 @@ from workflow.settings import (
 
 class StateAction:
     """
-    Base class for processing messages (unchanged from original)
+    Base class for processing messages, unchanged from the original.
     """
 
     _send_connection = None
@@ -55,7 +50,7 @@ class StateAction:
 
     def get_instrument_from_message(self, message):
         """
-        Extract instrument name from message.
+        Extract the instrument name from a message.
 
         :param message: JSON-encoded message content
         :return: lowercase instrument name or None
@@ -70,10 +65,10 @@ class StateAction:
 
     def get_instrument_queue_name(self, instrument, queue_type="reduction"):
         """
-        Generate instrument-specific queue name.
+        Generate the instrument-specific queue name.
 
         :param instrument: instrument name (e.g., 'eqsans')
-        :param queue_type: type of queue ('reduction', 'catalog', etc.)
+        :param queue_type: 'reduction', 'catalog' or 'reduction_catalog'
         :return: queue name string
         """
         instrument_upper = instrument.upper()
@@ -88,35 +83,21 @@ class StateAction:
             raise ValueError(f"Unknown queue type: {queue_type}")
 
 
-# ============================================================================
-# PROTOTYPE: Enhanced State Handlers with Per-Instrument Routing
-# ============================================================================
-
-
 class Postprocess_data_ready(StateAction):
     """
-    PROTOTYPE: Enhanced handler for POSTPROCESS.DATA_READY messages.
-
-    Routes to instrument-specific queues instead of shared queue.
-    Maintains backward compatibility via fallback to shared queue.
+    PROTOTYPE: handler for POSTPROCESS.DATA_READY, routing per instrument with
+    the shared queue as a fallback.
     """
 
-    # Configuration flags (would be in settings or config file in production)
-    ENABLE_PER_INSTRUMENT_QUEUES = True  # Toggle per-instrument routing
-    USE_SHARED_QUEUE_FALLBACK = True  # Fallback to shared queue if instrument unknown
+    # Would live in settings or a config file in production.
+    ENABLE_PER_INSTRUMENT_QUEUES = True
+    USE_SHARED_QUEUE_FALLBACK = True
 
     def __call__(self, headers, message):
-        """
-        Route message to instrument-specific or shared reduction queue.
-
-        :param headers: message headers
-        :param message: JSON-encoded message content
-        """
+        """Route the message to an instrument-specific or shared reduction queue."""
         instrument = self.get_instrument_from_message(message)
 
-        # Determine catalog and reduction queue destinations
         if self.ENABLE_PER_INSTRUMENT_QUEUES and instrument:
-            # Per-instrument routing
             catalog_queue = self.get_instrument_queue_name(instrument, "catalog")
             reduction_queue = self.get_instrument_queue_name(instrument, "reduction")
 
@@ -125,22 +106,19 @@ class Postprocess_data_ready(StateAction):
                 f"catalog={catalog_queue}, reduction={reduction_queue}"
             )
         else:
-            # Fallback to shared queues
             catalog_queue = CATALOG_DATA_READY
             reduction_queue = REDUCTION_DATA_READY
 
             if not instrument:
                 logging.warning("Could not extract instrument from message, using shared queue")
 
-        # Send to catalog queue (could also be per-instrument in future)
-        # NOTE: Keeping catalog as shared queue for now, but could also be per-instrument
+        # Catalog stays shared for now, though catalog_queue above could be used.
         self.send(
-            destination=f"/queue/{CATALOG_DATA_READY}",  # Could use catalog_queue for per-inst
+            destination=f"/queue/{CATALOG_DATA_READY}",
             message=message,
             persistent="true",
         )
 
-        # Send to reduction queue (per-instrument or shared)
         self.send(
             destination=f"/queue/{reduction_queue}",
             message=message,
@@ -150,20 +128,13 @@ class Postprocess_data_ready(StateAction):
 
 class Reduction_request(StateAction):
     """
-    PROTOTYPE: Enhanced handler for REDUCTION.REQUEST messages.
-
-    Supports manual reduction requests with per-instrument routing.
+    PROTOTYPE: handler for REDUCTION.REQUEST, the manual re-reduction path.
     """
 
     ENABLE_PER_INSTRUMENT_QUEUES = True
 
     def __call__(self, headers, message):
-        """
-        Route reduction request to instrument-specific queue.
-
-        :param headers: message headers
-        :param message: JSON-encoded message content
-        """
+        """Route a manual reduction request to the instrument-specific queue."""
         instrument = self.get_instrument_from_message(message)
 
         if self.ENABLE_PER_INSTRUMENT_QUEUES and instrument:
@@ -183,20 +154,13 @@ class Reduction_request(StateAction):
 
 class Reduction_complete(StateAction):
     """
-    PROTOTYPE: Enhanced handler for REDUCTION.COMPLETE messages.
-
-    Routes completed reduction to instrument-specific catalog queue.
+    PROTOTYPE: handler for REDUCTION.COMPLETE, cataloging the reduced data.
     """
 
     ENABLE_PER_INSTRUMENT_QUEUES = True
 
     def __call__(self, headers, message):
-        """
-        Route to catalog reduced data queue after reduction completes.
-
-        :param headers: message headers
-        :param message: JSON-encoded message content
-        """
+        """Route to the reduced-data catalog queue once reduction completes."""
         instrument = self.get_instrument_from_message(message)
 
         if self.ENABLE_PER_INSTRUMENT_QUEUES and instrument:
@@ -212,42 +176,32 @@ class Reduction_complete(StateAction):
         )
 
 
-# ============================================================================
-# Database-Driven Queue Routing (Alternative Approach)
-# ============================================================================
-
-
+# Alternative approach: route from the database instead of the message.
 class Postprocess_data_ready_db_driven(StateAction):
     """
-    PROTOTYPE: Database-driven routing using existing Task model.
-
-    This approach leverages the report_task table to map instruments to queues,
-    providing more flexibility without code changes.
+    PROTOTYPE: routing driven by the report_task table rather than by the
+    message, which allows remapping an instrument without a code change.
     """
 
     def get_reduction_queue_from_db(self, instrument):
         """
-        Query database for instrument-specific queue assignment.
+        Query the database for this instrument's queue assignment.
 
         :param instrument: instrument name
         :return: queue name or None
         """
         try:
-            # This would query the Task model for instrument-specific routing
-            # Simplified example (actual implementation in transactions.py):
             from workflow.database.report.models import Instrument, StatusQueue, Task
 
             inst_obj = Instrument.objects.get(name=instrument)
             postprocess_queue = StatusQueue.objects.get(name="POSTPROCESS.DATA_READY")
 
-            # Find task mapping for this instrument + input queue
             task = Task.objects.filter(instrument_id=inst_obj, input_queue_id=postprocess_queue).first()
 
             if task:
-                # Get output queues for reduction
                 reduction_queues = task.task_queue_ids.filter(name__startswith="REDUCTION.").all()
                 if reduction_queues:
-                    return str(reduction_queues[0])  # Return first reduction queue
+                    return str(reduction_queues[0])
 
         except Exception:
             logging.exception(f"Failed to lookup queue for instrument {instrument}")
@@ -255,68 +209,40 @@ class Postprocess_data_ready_db_driven(StateAction):
         return None
 
     def __call__(self, headers, message):
-        """
-        Route based on database Task model configuration.
-
-        :param headers: message headers
-        :param message: JSON-encoded message content
-        """
+        """Route according to the Task model configuration."""
         instrument = self.get_instrument_from_message(message)
 
-        # Try database lookup first
         reduction_queue = None
         if instrument:
             reduction_queue = self.get_reduction_queue_from_db(instrument)
 
-        # Fallback to default shared queue
         if not reduction_queue:
             reduction_queue = REDUCTION_DATA_READY
             logging.info(f"No DB mapping for {instrument}, using shared queue")
 
-        # Send to catalog (shared) and reduction (per-instrument or shared)
         self.send(destination=f"/queue/{CATALOG_DATA_READY}", message=message, persistent="true")
         self.send(destination=f"/queue/{reduction_queue}", message=message, persistent="true")
 
 
-# ============================================================================
-# Configuration Management
-# ============================================================================
-
-
 def get_per_instrument_queue_config():
     """
-    PROTOTYPE: Configuration for per-instrument queue routing.
-
-    In production, this would be loaded from settings.py or environment variables.
+    PROTOTYPE: configuration for per-instrument routing. In production this would
+    come from settings.py or the environment.
 
     :return: dict with configuration
     """
     return {
-        # Enable per-instrument routing globally
         "enable_per_instrument_queues": True,
-        # Fallback to shared queue if instrument unknown
         "use_shared_queue_fallback": True,
-        # List of instruments to route to per-instrument queues
-        # (empty list = all instruments)
-        "instrument_whitelist": [],
-        # List of instruments to always use shared queue
-        "shared_queue_instruments": [],
-        # Queue naming convention
+        "instrument_whitelist": [],  # empty = all instruments
+        "shared_queue_instruments": [],  # always use the shared queue
         "queue_name_template": "REDUCTION.{instrument}.DATA_READY",
-        # Auto-create queues in database on first message
-        "autocreate_queues": True,
+        "autocreate_queues": True,  # create in the database on first message
     }
 
 
-# ============================================================================
-# Testing Utilities
-# ============================================================================
-
-
 def test_instrument_queue_routing():
-    """
-    PROTOTYPE: Test function demonstrating queue routing logic.
-    """
+    """PROTOTYPE: demonstrate the queue routing logic."""
     test_messages = [
         {
             "instrument": "eqsans",
@@ -359,13 +285,8 @@ def test_instrument_queue_routing():
 
 
 if __name__ == "__main__":
-    # Run test demonstration
     test_instrument_queue_routing()
 
-
-# ============================================================================
-# Migration Notes
-# ============================================================================
 
 _MIGRATION_NOTES = """
 IMPLEMENTATION CHECKLIST:

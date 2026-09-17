@@ -120,7 +120,7 @@ class BlockingScenario(LoadTestScenario):
 
         self.start_time = time.time()
 
-        # Phase 1: CG2 floods the queue (represents backlog)
+        # Phase 1: CG2 floods the queue
         print("Phase 1: CG2 sends 200 runs (creating backlog)...")
         for i in range(200):
             msg = self.client.send_run("cg2", 10000 + i, facility="HFIR")
@@ -131,7 +131,7 @@ class BlockingScenario(LoadTestScenario):
 
         print("✓ CG2 backlog created\n")
 
-        # Phase 2: EQSANS tries to process (should NOT be blocked)
+        # Phase 2: EQSANS should not be blocked behind it
         print("Phase 2: EQSANS sends 10 runs (should process immediately)...")
 
         for i in range(10):
@@ -141,7 +141,6 @@ class BlockingScenario(LoadTestScenario):
 
         print(f"✓ EQSANS runs sent at t={time.time() - self.start_time:.1f}s\n")
 
-        # Phase 3: Monitor processing
         print("Phase 3: Monitoring (30 seconds)...")
         print("  Check database to see if EQSANS runs complete despite CG2 backlog")
         print("  With per-instrument queues: EQSANS should complete in <5s")
@@ -172,7 +171,7 @@ class LargeDatasetScenario(LoadTestScenario):
 
         self.start_time = time.time()
 
-        # Phase 1: VENUS sends large dataset
+        # Phase 1: VENUS sends the large dataset
         print("Phase 1: VENUS sends large dataset run...")
         msg = self.client.send_run(
             "venus",
@@ -184,7 +183,7 @@ class LargeDatasetScenario(LoadTestScenario):
         self.messages_sent.append(msg)
         print("✓ VENUS large dataset queued\n")
 
-        # Phase 2: Other instruments send normal runs
+        # Phase 2: normal runs from the other instruments
         print("Phase 2: Other instruments send normal runs...")
         normal_instruments = ["eqsans", "hb2c", "cg3"]
 
@@ -197,7 +196,6 @@ class LargeDatasetScenario(LoadTestScenario):
         print("\nWith per-instrument queues: Normal runs should NOT wait for VENUS")
         print("Without per-instrument queues: Normal runs blocked behind VENUS\n")
 
-        # Monitor
         print("Monitoring for 30 seconds...")
         time.sleep(30)
 
@@ -226,7 +224,6 @@ class FairnessScenario(LoadTestScenario):
 
         instruments = ["eqsans", "venus", "cg2", "hb2c", "nomad"]
 
-        # Interleave messages from all instruments
         for i in range(20):
             for inst in instruments:
                 msg = self.client.send_run(inst, 50000 + i * len(instruments) + instruments.index(inst))
@@ -240,7 +237,6 @@ class FairnessScenario(LoadTestScenario):
         print("\nWith per-instrument queues: All instruments should process ~evenly")
         print("Without per-instrument queues: FIFO order creates uneven distribution\n")
 
-        # Monitor
         print("Monitoring for 60 seconds...")
         time.sleep(60)
 
@@ -255,12 +251,6 @@ def analyze_results(results_file):
     print("ANALYZING RESULTS")
     print("=" * 70)
     print("Query database to check processing times and fairness\n")
-
-    # This would query the database to analyze:
-    # 1. Time from message sent to processing complete
-    # 2. Per-instrument throughput
-    # 3. Fairness metrics (coefficient of variation)
-    # 4. Detection of blocking incidents
 
     print("SQL queries to run:")
     print()
@@ -330,7 +320,6 @@ def main():
         analyze_results(args.analyze)
         return
 
-    # Connect to ActiveMQ
     client = LoadTestClient(args.host, args.port, args.user, args.password)
 
     try:
@@ -338,13 +327,11 @@ def main():
 
         scenarios = {"blocking": BlockingScenario, "large-dataset": LargeDatasetScenario, "fairness": FairnessScenario}
 
-        # Determine which scenarios to run
         if args.scenario == "all":
             to_run = scenarios.keys()
         else:
             to_run = [args.scenario]
 
-        # Run scenarios
         all_results = {}
 
         for scenario_name in to_run:
@@ -360,12 +347,10 @@ def main():
             print(json.dumps(results, indent=2, default=str))
             print("-" * 70)
 
-            # Pause between scenarios
             if scenario_name != list(to_run)[-1]:
                 print("\nWaiting 10 seconds before next scenario...")
                 time.sleep(10)
 
-        # Save results
         with open(args.output, "w") as f:
             json.dump(all_results, f, indent=2, default=str)
 
