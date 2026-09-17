@@ -1,27 +1,17 @@
 """
 Broker-backed integration tests for per-instrument queue routing.
 
-These drive the *real* workflow-manager handlers (``workflow.states``) over a
-live STOMP connection to the ActiveMQ Artemis broker in the docker-compose
-stack, then confirm via a subscribed consumer that each message landed on the
-queue we expect. They run as part of ``pixi run systemtests``, so the routing
-stays exercised instead of relying on a manual script.
+These drive the real workflow-manager handlers over a live STOMP connection to
+the broker in the docker-compose stack and confirm, via a subscribed consumer,
+that each message landed where we expect. They run under ``pixi run systemtests``.
 
-Scope notes:
+Only the per-instrument queues are driven over the broker. The shared queues have
+live consumers in the stack, so subscribing to them would compete for real
+traffic and producing to them would hand the autoreducer runs that do not exist;
+those paths assert the chosen destination against a stub connection instead.
 
-* Only the *per-instrument* queues are driven over the real broker. The shared
-  queues (REDUCTION.DATA_READY, CATALOG.ONCAT.DATA_READY) have live consumers in
-  the stack, so subscribing to them would compete for real traffic and injecting
-  into them would hand the autoreducer runs that do not exist. Those paths are
-  asserted against a recording stub connection instead, which is enough: what
-  they verify is which destination the handler chose, not broker mechanics.
-* ``add_status_entry`` is mocked out. These tests are about routing, not about
-  the reporting database, and the workflow container (not this process) owns
-  those writes.
-* The workflow container in the stack runs with the flag off, which is the
-  production default. These tests toggle the flag in-process, which is why they
-  instantiate the handlers here rather than sending to POSTPROCESS.DATA_READY
-  and waiting for the container to act.
+The workflow container runs with the flag off, so these toggle it in-process and
+call the handlers directly rather than waiting for the container to act.
 """
 
 import json
@@ -33,8 +23,7 @@ import stomp
 from dotenv import dotenv_values
 from workflow.states import Postprocess_data_ready, Reduction_complete, Reduction_request, StateAction
 
-# Instruments used only by these tests. Deliberately not the ones the other
-# system tests drive (vulcan, ref_l, arcs, hysa) so nothing collides.
+# Not the instruments the other system tests drive, so nothing collides.
 REDUCTION_INSTRUMENT = "eqsans"
 HIMEM_INSTRUMENT = "cg2"
 
@@ -48,7 +37,7 @@ DELIVERY_TIMEOUT_SECONDS = 15
 
 
 def _patch_flag(value):
-    """Toggle the feature flag; handlers read it from settings at call time."""
+    """Toggle the feature flag."""
     return mock.patch("workflow.settings.ENABLE_PER_INSTRUMENT_QUEUES", value)
 
 
@@ -91,11 +80,8 @@ class _StubConnection:
 
 @pytest.fixture(scope="module")
 def routing_consumer():
-    """A consumer subscribed to the per-instrument queues these tests create.
-
-    Subscribing before anything is produced also means the queues exist up front,
-    so a test never races the broker's auto-create.
-    """
+    """Consumer for the per-instrument queues, subscribed before anything is
+    produced so no test races the broker's auto-create."""
     config = dotenv_values(".env")
     assert config
     conn = stomp.Connection(host_and_ports=[("localhost", 61613)])
@@ -110,7 +96,7 @@ def routing_consumer():
 
 @pytest.fixture(scope="module")
 def producer_connection():
-    """Connection the handlers send through, mirroring the workflow manager."""
+    """Connection the handlers send through, as the workflow manager does."""
     config = dotenv_values(".env")
     assert config
     conn = stomp.Connection(host_and_ports=[("localhost", 61613)])
@@ -121,7 +107,7 @@ def producer_connection():
 
 @pytest.fixture(autouse=True)
 def no_db_writes():
-    """Routing is what is under test; the reporting DB writes are not."""
+    """Routing is under test here, not the reporting database writes."""
     with mock.patch("workflow.database.transactions.add_status_entry"):
         yield
 
@@ -165,11 +151,8 @@ class TestPerInstrumentDeliveryOverBroker:
         assert listener.wait_for(validation_id) == {"REDUCTION_CATALOG.EQSANS.DATA_READY"}
 
     def test_db_task_queue_reaches_instrument_queue_preserving_tier(self, producer_connection, routing_consumer):
-        """The path most instruments take: queues configured in the database.
-
-        The high-memory tier segment must survive the split, otherwise enabling
-        the flag would silently move HIMEM instruments onto the normal pool.
-        """
+        """The tier segment must survive the split, otherwise enabling the flag
+        would silently move HIMEM instruments onto the normal worker pool."""
         _conn, listener = routing_consumer
         validation_id, message = _message(HIMEM_INSTRUMENT)
         task_def = json.dumps({"task_class": "", "task_queues": ["REDUCTION.HIMEM.DATA_READY"]})
@@ -183,11 +166,8 @@ class TestPerInstrumentDeliveryOverBroker:
 
 
 class TestSharedQueuePaths:
-    """Paths that must stay on the shared queues, asserted without producing.
-
-    These queues have live consumers in the stack, so the assertion is on the
-    destination the handler chose rather than on broker delivery.
-    """
+    """Paths that must stay on the shared queues. Asserted without producing,
+    since those queues have live consumers in the stack."""
 
     def test_catalog_stays_shared_while_reduction_splits(self):
         connection = _StubConnection()

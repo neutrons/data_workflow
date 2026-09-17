@@ -28,10 +28,9 @@ def _parse_env_flag(name, default=False):
     """
     Parse a boolean feature flag from the environment.
 
-    Returns a ``(value, recognized)`` tuple. ``recognized`` is False when the
-    variable is set to something we do not understand; in that case ``value`` is
-    the supplied default, so a typo (for example ``ENABLE_..=ture``) fails safe to
-    the default rather than raising.
+    ``recognized`` is False for a value we do not understand, in which case
+    ``value`` is the caller's default, so a typo (``=ture``) fails safe rather
+    than raising.
 
     :param name: environment variable name
     :param default: value to return when the variable is unset or unrecognized
@@ -50,11 +49,8 @@ def _parse_env_flag(name, default=False):
 
 def _env_flag(name, default=False):
     """
-    Read a boolean feature flag from the environment.
-
-    Accepts common truthy/falsy spellings ("1"/"0", "true"/"false", "yes"/"no",
-    "on"/"off"), case-insensitively. Any unset or unrecognized value returns the
-    supplied default.
+    Read a boolean feature flag from the environment, ignoring whether the value
+    was recognized. See :func:`_parse_env_flag`.
 
     :param name: environment variable name
     :param default: value to return when the variable is unset
@@ -64,21 +60,12 @@ def _env_flag(name, default=False):
     return value
 
 
-# Per-instrument queue routing.
+# Per-instrument queue routing. Defaults OFF so merging changes nothing.
 #
-# When enabled, completed runs are routed to dedicated per-instrument queues
-# (REDUCTION.<INSTRUMENT>.DATA_READY / REDUCTION_CATALOG.<INSTRUMENT>.DATA_READY)
-# instead of the shared REDUCTION.DATA_READY / REDUCTION_CATALOG.DATA_READY queues.
-#
-# Defaults to OFF so that merging this change does not alter current behavior.
-# DO NOT enable in any environment until the consumer side (post_processing_agent)
-# is deployed and subscribed to the per-instrument queues -- otherwise routed
-# messages accumulate with no consumer.
-#
-# Follow-up: this flag is a rollout and rollback control, not permanent config.
-# Plan to deprecate and remove it once per-instrument routing has run clean for
-# one full run cycle, so we are not left maintaining a branch that is never
-# exercised in production.
+# DO NOT enable until the consumer side (post_processing_agent) is deployed and
+# subscribed to the per-instrument queues, or routed messages accumulate with no
+# consumer. This is a rollout control, not permanent config: remove it once
+# routing has run clean for a full run cycle.
 ENABLE_PER_INSTRUMENT_QUEUES, _PER_INSTRUMENT_FLAG_RECOGNIZED = _parse_env_flag(
     "ENABLE_PER_INSTRUMENT_QUEUES", default=False
 )
@@ -87,13 +74,11 @@ _PER_INSTRUMENT_FLAG_RAW = os.environ.get("ENABLE_PER_INSTRUMENT_QUEUES")
 
 def log_effective_config():
     """
-    Log the effective per-instrument routing configuration once, at startup.
+    Log the effective per-instrument routing configuration once, at startup, so
+    operators can confirm the mode from the first log lines.
 
-    Called from the workflow manager entry point so operators can confirm which
-    mode the process is running in from the very first log lines. A value we
-    could not interpret is reported as a warning and treated as OFF (shared
-    queues); it is never a fatal error, so a misconfigured flag degrades to
-    current behavior instead of taking the manager down.
+    A value we could not interpret warns and is treated as OFF rather than being
+    fatal, so a misconfigured flag degrades to current behavior.
     """
     if not _PER_INSTRUMENT_FLAG_RECOGNIZED:
         logging.warning(

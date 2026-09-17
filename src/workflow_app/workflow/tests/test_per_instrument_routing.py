@@ -121,9 +121,7 @@ class QueueNameGenerationTest(TestCase):
         )
 
     def test_himem_tier_segment_is_preserved(self):
-        # The tier segment must stay next to the family root so the high-memory
-        # worker pool keeps matching on REDUCTION.HIMEM.* and the normal pool on
-        # REDUCTION.<one segment>.
+        # Losing the tier segment would move HIMEM instruments to the normal pool.
         assert per_instrument_queue_name("REDUCTION.HIMEM.DATA_READY", "vulcan") == "REDUCTION.HIMEM.VULCAN.DATA_READY"
 
     def test_catalog_queue_does_not_split(self):
@@ -174,7 +172,6 @@ class ResolveDestinationQueueTest(TestCase):
             self.caplog.clear()
             result = self.action.resolve_destination_queue(message, "REDUCTION.DATA_READY")
         assert result == "REDUCTION.DATA_READY"
-        # Standardized, greppable key=value line at WARNING level.
         assert "per_instrument_routing decision=fallback" in self.caplog.text
         assert "queue=REDUCTION.DATA_READY" in self.caplog.text
         assert "reason=no_valid_instrument" in self.caplog.text
@@ -249,7 +246,6 @@ class PostprocessDataReadyRoutingTest(TestCase):
         assert len(sent) == 2
 
     def test_flag_on_routes_underscore_instrument_per_instrument(self):
-        # REF_L must route to its own queue, not fall back to the shared queue.
         handler, sent = self._make_handler()
         message = json.dumps({"instrument": "REF_L", "run_number": 1, "facility": "SNS"})
         with _patch_flag(True):
@@ -322,10 +318,8 @@ class ReductionCompleteRoutingTest(TestCase):
 
 class DbTaskRoutingTest(TestCase):
     """
-    Instruments that have a task definition in the database take _call_db_task
-    instead of the default action, so routing has to apply there too. This is the
-    path most instruments actually take, and the configured queues today are
-    either REDUCTION.DATA_READY or REDUCTION.HIMEM.DATA_READY.
+    Instruments with a task definition in the database take _call_db_task rather
+    than the default action, which is the path most of them actually take.
     """
 
     def setUp(self):
@@ -396,8 +390,7 @@ class FeatureFlagConfigTest(TestCase):
                 assert _env_flag("FLAG") is False, value
 
     def test_unrecognized_value_returns_caller_default(self):
-        # An unrecognized value must honor the caller's default rather than
-        # silently returning False (matches the docstring).
+        # An unrecognized value honors the caller's default, not a hardcoded False.
         from workflow.settings import _env_flag
 
         with mock.patch.dict("os.environ", {"FLAG": "banana"}):
@@ -405,8 +398,7 @@ class FeatureFlagConfigTest(TestCase):
             assert _env_flag("FLAG", default=False) is False
 
     def test_module_default_is_off(self):
-        # The shipped default value of the setting must be False so that merging
-        # this change does not alter production behavior.
+        # The shipped default must be False so merging does not alter production.
         import importlib
 
         from workflow import settings as workflow_settings
@@ -583,7 +575,6 @@ class SendErrorHandlingTest(TestCase):
 
         connection = mock.Mock()
         connection.send.side_effect = RuntimeError("broker down")
-        # Should not raise even though the broker send fails.
         StateAction(connection=connection).send("REDUCTION.EQSANS.DATA_READY", json.dumps({"run_number": 1}))
         headers = mock_add.call_args[0][0]
         assert "POSTPROCESS.ERROR" in headers["destination"]
@@ -601,7 +592,6 @@ class SendErrorHandlingTest(TestCase):
     @mock.patch("workflow.database.transactions.add_status_entry", side_effect=KeyError("instrument"))
     def test_error_recording_failure_is_contained(self, mock_add):
         # add_status_entry raises on a message missing instrument/ipts/run_number.
-        # Recording the error must not itself raise (containment guarantee).
         from workflow.states import StateAction
 
         StateAction().send("REDUCTION.DATA_READY", json.dumps({"run_number": 1}))
@@ -609,8 +599,7 @@ class SendErrorHandlingTest(TestCase):
 
     @mock.patch("workflow.database.transactions.add_status_entry", side_effect=Exception("db down"))
     def test_broker_failure_with_db_down_is_contained(self, mock_add):
-        # The outage case: broker send fails and the DB is unavailable too. Neither
-        # can be allowed to propagate out of send().
+        # The outage case: the broker send fails and the database is down too.
         from workflow.states import StateAction
 
         connection = mock.Mock()

@@ -16,40 +16,28 @@ from .database import transactions
 from .settings import CATALOG_DATA_READY, POSTPROCESS_ERROR, REDUCTION_CATALOG_DATA_READY, REDUCTION_DATA_READY
 from .state_utilities import logged_action
 
-# Instrument names are short tokens of letters, digits, and underscores
-# (e.g. "eqsans", "cg2", "hb2c", "ref_l", "ref_m"). Validate strictly before
-# interpolating into a queue name so that a malformed or hostile "instrument"
-# value cannot inject queue delimiters ("."), STOMP path segments ("/queue/"), or
-# ActiveMQ Artemis wildcard characters ("*", "#"). Underscore is none of those and
-# is already used in our queue names (REDUCTION_CATALOG), so it is allowed.
+# Validated before being interpolated into a queue name, so that a malformed
+# instrument cannot inject queue delimiters ("."), STOMP path segments
+# ("/queue/"), or Artemis wildcards ("*", "#"). Underscore is safe and real
+# (REF_L, REF_M).
 _VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9_]+$")
 
-# Queue families that get split per instrument. A queue is eligible when its
-# first segment is one of these and its last segment is DATA_READY; the
-# instrument is then inserted just before that last segment::
-#
-#     REDUCTION.DATA_READY          -> REDUCTION.EQSANS.DATA_READY
-#     REDUCTION.HIMEM.DATA_READY    -> REDUCTION.HIMEM.EQSANS.DATA_READY
-#     REDUCTION_CATALOG.DATA_READY  -> REDUCTION_CATALOG.EQSANS.DATA_READY
-#
-# Keeping any tier segment (HIMEM) adjacent to the family root preserves the
-# existing worker-pool split: the high-memory pool still matches on the
-# REDUCTION.HIMEM.* prefix and the normal pool on REDUCTION.* with one segment.
-#
-# CATALOG.ONCAT.DATA_READY is deliberately NOT in this list. Initial cataloging
-# goes to OnCat, a single external service with no per-instrument fairness
-# problem, so splitting it would only create empty queues to babysit.
+# Queue families that split per instrument. CATALOG.ONCAT.DATA_READY is
+# deliberately absent: cataloging goes to OnCat, a single external service with
+# no per-instrument fairness problem.
 _PER_INSTRUMENT_QUEUE_ROOTS = ("REDUCTION", "REDUCTION_CATALOG")
 
 
 def per_instrument_queue_name(shared_queue, instrument):
     """
-    Build the per-instrument name for a shared queue, or None if it does not split.
+    Build the per-instrument name for a queue, or None if that queue does not split::
 
-    Returning None (rather than raising or guessing) is what keeps queues such as
-    CATALOG.ONCAT.DATA_READY and REDUCTION.REQUEST on their shared destination
-    when the caller hands us an arbitrary queue name, for example one read from a
-    task definition in the database.
+        REDUCTION.DATA_READY          -> REDUCTION.EQSANS.DATA_READY
+        REDUCTION.HIMEM.DATA_READY    -> REDUCTION.HIMEM.EQSANS.DATA_READY
+        REDUCTION_CATALOG.DATA_READY  -> REDUCTION_CATALOG.EQSANS.DATA_READY
+
+    Inserting before the last segment keeps a tier segment (HIMEM) next to the
+    family root, so the high-memory worker pool keeps its own lane.
 
     :param shared_queue: queue name as configured today (no /queue/ prefix)
     :param instrument: validated, lowercase instrument name
@@ -63,13 +51,10 @@ def per_instrument_queue_name(shared_queue, instrument):
 
 class _RoutingLogThrottle:
     """
-    Bound the number of repeated routing log lines.
-
-    A flood of messages (the very scenario per-instrument routing exists to
-    handle) would otherwise emit one log line per message. For each key this logs
-    the first occurrence, then only every ``every``-th occurrence, annotated with
-    how many similar lines were suppressed in between. It is intentionally simple
-    and count based (no timers) so the behavior is deterministic and easy to test.
+    Bound repeated routing log lines: log the first occurrence of a key, then
+    every ``every``-th. Without this a message flood, the very scenario this
+    feature exists for, would emit one line per message. Count based rather than
+    timed so the behavior is deterministic.
     """
 
     def __init__(self, every=500):
@@ -88,12 +73,11 @@ class _RoutingLogThrottle:
         return False, 0
 
     def reset(self):
-        """Clear all counters (used by tests, and safe to call any time)."""
+        """Clear all counters. Safe to call at any time."""
         self._counts.clear()
         self._last_emit.clear()
 
 
-# Shared by all handlers in the single workflow-manager process. Tests reset it.
 _routing_log_throttle = _RoutingLogThrottle()
 
 
@@ -118,11 +102,8 @@ class StateAction:
         """
         Extract and validate the instrument name from a message.
 
-        Returns the lowercase instrument name only when the message is valid JSON,
-        carries a string ``instrument`` field, and that field is a plain
-        alphanumeric token. Any other case (unparseable message, missing field,
-        wrong type, or a value containing characters that are unsafe in a queue
-        name) returns ``None`` so the caller falls back to the shared queue.
+        Anything we cannot use (unparseable message, missing field, wrong type,
+        unsafe value) returns None so the caller falls back to the shared queue.
 
         :param message: JSON-encoded message content
         :return: lowercase instrument name, or None
@@ -151,15 +132,11 @@ class StateAction:
         """
         Choose the destination for a message, honoring the feature flag.
 
-        With per-instrument routing enabled (see
-        ``settings.ENABLE_PER_INSTRUMENT_QUEUES``), a valid instrument in the
-        message, and a queue that belongs to a per-instrument family, this
-        returns the instrument-specific name. Every other case returns
-        ``shared_queue`` unchanged, so the caller never has to know which queues
-        split and which do not.
+        Returns ``shared_queue`` unchanged unless the flag is on, the message
+        carries a usable instrument, and the queue is one that splits. Callers
+        therefore never need to know which queues split and which do not.
 
-        The flag is read from the settings module at call time so it can be
-        toggled per-process (and overridden in tests) without re-importing.
+        The flag is read at call time so it can be toggled per-process.
 
         :param message: JSON-encoded message content
         :param shared_queue: queue name as configured today
@@ -181,7 +158,6 @@ class StateAction:
 
         queue = per_instrument_queue_name(shared_queue, instrument)
         if queue is None:
-            # A queue we deliberately do not split, e.g. CATALOG.ONCAT.DATA_READY.
             self._log_routing_decision(
                 logging.DEBUG,
                 decision="shared",
@@ -203,16 +179,11 @@ class StateAction:
     @staticmethod
     def _log_routing_decision(level, decision, instrument, queue, reason):
         """
-        Emit one standardized, greppable routing-decision log line.
-
-        The format is key=value so a human can read it and the downstream
-        monitoring work can parse it::
+        Emit one routing-decision line, key=value so monitoring can parse it::
 
             per_instrument_routing decision=<...> instrument=<...> queue=<...> reason=<...>
 
-        Repeated identical decisions are rate limited (see _RoutingLogThrottle) so
-        a flood does not spam the log; a ``suppressed=<n>`` field is appended when
-        earlier similar lines were dropped.
+        Repeats are rate limited, and a throttled line carries ``suppressed=<n>``.
         """
         should_log, suppressed = _routing_log_throttle.record((decision, queue))
         if not should_log:
@@ -272,13 +243,10 @@ class StateAction:
         """
         Run the task definition stored in the database for this instrument.
 
-        This is the path most instruments actually take: whenever a Task row
-        exists for (instrument, input queue), it runs instead of the default
-        action, so per-instrument routing has to be applied to the configured
-        task queues here as well. The queues are resolved individually, which
+        This is the path most instruments actually take, so routing is applied to
+        the configured task queues here too. Each is resolved on its own, which
         keeps a task that fans out to both REDUCTION.DATA_READY and
-        CATALOG.ONCAT.DATA_READY correct: the first splits per instrument, the
-        second stays shared.
+        CATALOG.ONCAT.DATA_READY correct.
 
         :param task_data: JSON-encoded task definition
         :param headers: message headers
@@ -325,10 +293,10 @@ class StateAction:
         """
         Send a message to a queue.
 
-        Any failure is contained rather than dropped: if there is no connection,
-        or the broker send raises, the run is recorded to POSTPROCESS.ERROR with
-        context instead of being lost, and the exception is swallowed so a single
-        bad send cannot stall the manager.
+        A failed send (no connection, or the broker raising) is recorded to
+        POSTPROCESS.ERROR with context rather than being dropped, and the
+        exception is swallowed so one bad send does not abort the rest of the
+        handler.
 
         :param destination: name of the queue
         :param message: message content
@@ -348,15 +316,12 @@ class StateAction:
 
     def _record_send_error(self, destination, message, reason):
         """
-        Record a POSTPROCESS.ERROR status entry for a message that could not be
-        sent, annotated with the reason.
+        Record a POSTPROCESS.ERROR status entry for a message that could not be sent.
 
-        This is the containment path, so it must never raise. It is tolerant of a
-        non-JSON (or non-dict) message body, and the status-entry write itself is
-        guarded: add_status_entry expects fields like instrument/ipts/run_number
-        and would raise on a message that lacks them, or if the database is
-        unavailable during an outage, so a failure there is logged and swallowed
-        rather than propagated.
+        This is the containment path, so it must never raise. The write itself is
+        guarded because add_status_entry expects fields like instrument/ipts and
+        would raise on a message lacking them, or if the database is down during
+        the same outage that broke the send.
 
         :param destination: the queue we were trying to send to
         :param message: the original message body
@@ -379,11 +344,7 @@ class StateAction:
 
 class Postprocess_data_ready(StateAction):
     """
-    Default action for POSTPROCESS.DATA_READY messages.
-
-    Routes the reduction message to the instrument-specific REDUCTION queue when
-    per-instrument routing is enabled, falling back to the shared queue otherwise.
-    The CATALOG message always uses the shared queue (CATALOG.ONCAT.DATA_READY).
+    Default action for POSTPROCESS.DATA_READY messages
     """
 
     def __call__(self, headers, message):
@@ -395,9 +356,7 @@ class Postprocess_data_ready(StateAction):
         """
         reduction_queue = self.resolve_destination_queue(message, REDUCTION_DATA_READY)
 
-        # Tell workers for start processing.
-        # Cataloging stays on the shared queue: it goes to OnCat, a single
-        # external service with no per-instrument fairness problem.
+        # Tell workers for start processing. Cataloging stays on the shared queue.
         self.send(
             destination="/queue/%s" % CATALOG_DATA_READY,
             message=message,
@@ -412,10 +371,7 @@ class Postprocess_data_ready(StateAction):
 
 class Reduction_request(StateAction):
     """
-    Default action for REDUCTION.REQUEST messages.
-
-    Routes to the instrument-specific REDUCTION queue when per-instrument routing
-    is enabled, falling back to the shared queue otherwise.
+    Default action for REDUCTION.REQUEST messages
     """
 
     def __call__(self, headers, message):
@@ -457,10 +413,7 @@ class Catalog_request(StateAction):
 
 class Reduction_complete(StateAction):
     """
-    Default action for REDUCTION.COMPLETE messages.
-
-    Routes to the instrument-specific REDUCTION_CATALOG queue when per-instrument
-    routing is enabled, falling back to the shared queue otherwise.
+    Default action for REDUCTION.COMPLETE messages
     """
 
     def __call__(self, headers, message):

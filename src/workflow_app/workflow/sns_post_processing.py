@@ -40,8 +40,6 @@ def start(check_frequency, workflow_recovery, flexible_tasks):
     """
     Run the workflow manager
     """
-    # Report the effective per-instrument routing configuration up front so the
-    # running mode is visible in the first log lines (and warn on a bad flag).
     log_effective_config()
 
     auto_ack = True
