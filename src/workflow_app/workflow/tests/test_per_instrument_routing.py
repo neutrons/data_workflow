@@ -9,7 +9,7 @@ Covers:
 * the standardized routing-decision log format and its rate limiting
 * startup configuration validation and the effective-config echo
 * error handling in send() (no connection, failed broker send, non-JSON body)
-* the env-driven feature flag parser (settings._env_flag) and its default (OFF)
+* the env-driven feature flag parser (settings._parse_env_flag) and its default (OFF)
 """
 
 import json
@@ -131,6 +131,13 @@ class QueueNameGenerationTest(TestCase):
     def test_non_data_ready_queue_does_not_split(self):
         assert per_instrument_queue_name("REDUCTION.REQUEST", "eqsans") is None
         assert per_instrument_queue_name("POSTPROCESS.DATA_READY", "eqsans") is None
+
+    def test_already_per_instrument_queue_is_left_alone(self):
+        # A task row naming an instrument queue directly must not be doubled up
+        # into REDUCTION.EQSANS.EQSANS.DATA_READY.
+        assert per_instrument_queue_name("REDUCTION.EQSANS.DATA_READY", "eqsans") is None
+        assert per_instrument_queue_name("REDUCTION_CATALOG.EQSANS.DATA_READY", "eqsans") is None
+        assert per_instrument_queue_name("REDUCTION.HIMEM.VULCAN.DATA_READY", "vulcan") is None
 
     def test_unrelated_queue_family_does_not_split(self):
         assert per_instrument_queue_name("FERMI_REDUCTION.DATA_READY", "eqsans") is None
@@ -370,32 +377,32 @@ class FeatureFlagConfigTest(TestCase):
     """The flag must be environment-driven and default OFF (never hardcoded on)."""
 
     def test_default_is_off(self):
-        from workflow.settings import _env_flag
+        from workflow.settings import _parse_env_flag
 
         with mock.patch.dict("os.environ", {}, clear=True):
-            assert _env_flag("ENABLE_PER_INSTRUMENT_QUEUES") is False
+            assert _parse_env_flag("ENABLE_PER_INSTRUMENT_QUEUES") == (False, True)
 
     def test_truthy_spellings(self):
-        from workflow.settings import _env_flag
+        from workflow.settings import _parse_env_flag
 
         for value in ("1", "true", "True", "TRUE", "yes", "on", "  true  "):
             with mock.patch.dict("os.environ", {"FLAG": value}):
-                assert _env_flag("FLAG") is True, value
+                assert _parse_env_flag("FLAG") == (True, True), value
 
     def test_falsy_spellings(self):
-        from workflow.settings import _env_flag
+        from workflow.settings import _parse_env_flag
 
-        for value in ("0", "false", "False", "no", "off", "", "banana"):
+        for value in ("0", "false", "False", "no", "off", ""):
             with mock.patch.dict("os.environ", {"FLAG": value}):
-                assert _env_flag("FLAG") is False, value
+                assert _parse_env_flag("FLAG") == (False, True), value
 
     def test_unrecognized_value_returns_caller_default(self):
         # An unrecognized value honors the caller's default, not a hardcoded False.
-        from workflow.settings import _env_flag
+        from workflow.settings import _parse_env_flag
 
         with mock.patch.dict("os.environ", {"FLAG": "banana"}):
-            assert _env_flag("FLAG", default=True) is True
-            assert _env_flag("FLAG", default=False) is False
+            assert _parse_env_flag("FLAG", default=True) == (True, False)
+            assert _parse_env_flag("FLAG", default=False) == (False, False)
 
     def test_module_default_is_off(self):
         # The shipped default must be False so merging does not alter production.

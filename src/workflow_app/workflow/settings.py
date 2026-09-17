@@ -24,7 +24,7 @@ _TRUTHY_VALUES = ("1", "true", "yes", "on")
 _FALSY_VALUES = ("0", "false", "no", "off", "")
 
 
-def _parse_env_flag(name, default=False):
+def _parse_env_flag(name: str, default: bool = False) -> tuple[bool, bool]:
     """
     Parse a boolean feature flag from the environment.
 
@@ -47,19 +47,6 @@ def _parse_env_flag(name, default=False):
     return default, False
 
 
-def _env_flag(name, default=False):
-    """
-    Read a boolean feature flag from the environment, ignoring whether the value
-    was recognized. See :func:`_parse_env_flag`.
-
-    :param name: environment variable name
-    :param default: value to return when the variable is unset
-    :return: bool
-    """
-    value, _recognized = _parse_env_flag(name, default=default)
-    return value
-
-
 # Per-instrument queue routing. Defaults OFF so merging changes nothing.
 #
 # DO NOT enable until the consumer side (post_processing_agent) is deployed and
@@ -72,7 +59,7 @@ ENABLE_PER_INSTRUMENT_QUEUES, _PER_INSTRUMENT_FLAG_RECOGNIZED = _parse_env_flag(
 _PER_INSTRUMENT_FLAG_RAW = os.environ.get("ENABLE_PER_INSTRUMENT_QUEUES")
 
 
-def log_effective_config():
+def log_effective_config() -> None:
     """
     Log the effective per-instrument routing configuration once, at startup, so
     operators can confirm the mode from the first log lines.

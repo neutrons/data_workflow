@@ -22,13 +22,21 @@ from .state_utilities import logged_action
 # (REF_L, REF_M).
 _VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9_]+$")
 
-# Queue families that split per instrument. CATALOG.ONCAT.DATA_READY is
-# deliberately absent: cataloging goes to OnCat, a single external service with
-# no per-instrument fairness problem.
-_PER_INSTRUMENT_QUEUE_ROOTS = ("REDUCTION", "REDUCTION_CATALOG")
+# The exact shared queues that split per instrument. This is an explicit list
+# rather than a pattern so that a queue which is already instrument-specific is
+# left alone: a task row naming REDUCTION.EQSANS.DATA_READY must not become
+# REDUCTION.EQSANS.EQSANS.DATA_READY.
+#
+# CATALOG.ONCAT.DATA_READY is deliberately absent. Cataloging goes to OnCat, a
+# single external service with no per-instrument fairness problem.
+_PER_INSTRUMENT_QUEUES = (
+    "REDUCTION.DATA_READY",
+    "REDUCTION.HIMEM.DATA_READY",
+    "REDUCTION_CATALOG.DATA_READY",
+)
 
 
-def per_instrument_queue_name(shared_queue, instrument):
+def per_instrument_queue_name(shared_queue: str, instrument: str) -> str | None:
     """
     Build the per-instrument name for a queue, or None if that queue does not split::
 
@@ -43,9 +51,9 @@ def per_instrument_queue_name(shared_queue, instrument):
     :param instrument: validated, lowercase instrument name
     :return: per-instrument queue name, or None if this queue is not split
     """
-    parts = shared_queue.split(".")
-    if len(parts) < 2 or parts[0] not in _PER_INSTRUMENT_QUEUE_ROOTS or parts[-1] != "DATA_READY":
+    if shared_queue not in _PER_INSTRUMENT_QUEUES:
         return None
+    parts = shared_queue.split(".")
     return ".".join(parts[:-1] + [instrument.upper(), parts[-1]])
 
 
@@ -57,12 +65,12 @@ class _RoutingLogThrottle:
     timed so the behavior is deterministic.
     """
 
-    def __init__(self, every=500):
+    def __init__(self, every: int = 500):
         self._every = every
-        self._counts = {}
-        self._last_emit = {}
+        self._counts: dict = {}
+        self._last_emit: dict = {}
 
-    def record(self, key):
+    def record(self, key: tuple[str, str]) -> tuple[bool, int]:
         """Return ``(should_log, suppressed_since_last_emit)`` for this occurrence."""
         count = self._counts.get(key, 0) + 1
         self._counts[key] = count
@@ -72,7 +80,7 @@ class _RoutingLogThrottle:
             return True, max(suppressed, 0)
         return False, 0
 
-    def reset(self):
+    def reset(self) -> None:
         """Clear all counters. Safe to call at any time."""
         self._counts.clear()
         self._last_emit.clear()
@@ -98,7 +106,7 @@ class StateAction:
         self._user_db_task = use_db_task
         self._send_connection = connection
 
-    def get_instrument_from_message(self, message):
+    def get_instrument_from_message(self, message: str) -> str | None:
         """
         Extract and validate the instrument name from a message.
 
@@ -128,7 +136,7 @@ class StateAction:
 
         return instrument
 
-    def resolve_destination_queue(self, message, shared_queue):
+    def resolve_destination_queue(self, message: str, shared_queue: str) -> str:
         """
         Choose the destination for a message, honoring the feature flag.
 
@@ -177,7 +185,7 @@ class StateAction:
         return queue
 
     @staticmethod
-    def _log_routing_decision(level, decision, instrument, queue, reason):
+    def _log_routing_decision(level: int, decision: str, instrument: str | None, queue: str, reason: str) -> None:
         """
         Emit one routing-decision line, key=value so monitoring can parse it::
 
