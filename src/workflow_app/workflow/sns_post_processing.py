@@ -16,7 +16,7 @@ from workflow.amq_client import Client
 from workflow.amq_listener import Listener
 
 from .database import transactions  # noqa: F401
-from .settings import BROKERS, LOGGING_LEVEL, WKFLOW_PASSCODE, WKFLOW_USER
+from .settings import BROKERS, LOGGING_LEVEL, WKFLOW_PASSCODE, WKFLOW_USER, log_effective_config
 
 # Set log level
 logging.getLogger().setLevel(LOGGING_LEVEL)
@@ -40,6 +40,8 @@ def start(check_frequency, workflow_recovery, flexible_tasks):
     """
     Run the workflow manager
     """
+    log_effective_config()
+
     auto_ack = True
     if check_frequency is None:
         check_frequency = 24

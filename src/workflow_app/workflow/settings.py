@@ -19,6 +19,70 @@ REDUCTION_CATALOG_DATA_READY = "REDUCTION_CATALOG.DATA_READY"
 WKFLOW_USER = os.environ.get("WORKFLOW_USER")
 WKFLOW_PASSCODE = os.environ.get("WORKFLOW_PASS")
 
+
+_TRUTHY_VALUES = ("1", "true", "yes", "on")
+_FALSY_VALUES = ("0", "false", "no", "off", "")
+
+
+def _parse_env_flag(name: str, default: bool = False) -> tuple[bool, bool]:
+    """
+    Parse a boolean feature flag from the environment.
+
+    ``recognized`` is False for a value we do not understand, in which case
+    ``value`` is the caller's default, so a typo (``=ture``) fails safe rather
+    than raising.
+
+    :param name: environment variable name
+    :param default: value to return when the variable is unset or unrecognized
+    :return: (bool value, bool recognized)
+    """
+    raw = os.environ.get(name)
+    if raw is None:
+        return default, True
+    normalized = raw.strip().lower()
+    if normalized in _TRUTHY_VALUES:
+        return True, True
+    if normalized in _FALSY_VALUES:
+        return False, True
+    return default, False
+
+
+# Per-instrument queue routing. Defaults OFF so merging changes nothing.
+#
+# DO NOT enable until the consumer side (post_processing_agent) is deployed and
+# subscribed to the per-instrument queues, or routed messages accumulate with no
+# consumer. This is a rollout control, not permanent config: remove it once
+# routing has run clean for a full run cycle.
+ENABLE_PER_INSTRUMENT_QUEUES, _PER_INSTRUMENT_FLAG_RECOGNIZED = _parse_env_flag(
+    "ENABLE_PER_INSTRUMENT_QUEUES", default=False
+)
+_PER_INSTRUMENT_FLAG_RAW = os.environ.get("ENABLE_PER_INSTRUMENT_QUEUES")
+
+
+def log_effective_config() -> None:
+    """
+    Log the effective per-instrument routing configuration once, at startup, so
+    operators can confirm the mode from the first log lines.
+
+    A value we could not interpret warns and is treated as OFF rather than being
+    fatal, so a misconfigured flag degrades to current behavior.
+    """
+    if not _PER_INSTRUMENT_FLAG_RECOGNIZED:
+        logging.warning(
+            "ENABLE_PER_INSTRUMENT_QUEUES=%r is not a recognized boolean; "
+            "treating per-instrument routing as OFF (shared queues)",
+            _PER_INSTRUMENT_FLAG_RAW,
+        )
+    if ENABLE_PER_INSTRUMENT_QUEUES:
+        logging.info(
+            "Per-instrument queue routing is ENABLED; reduction and reduction-catalog messages "
+            "route to REDUCTION.<INSTRUMENT>.DATA_READY / REDUCTION_CATALOG.<INSTRUMENT>.DATA_READY "
+            "(cataloging stays on the shared CATALOG.ONCAT.DATA_READY)"
+        )
+    else:
+        logging.info("Per-instrument queue routing is DISABLED; all traffic uses the shared queues")
+
+
 # configure activemq brokers
 default_brokers = [("amqbroker1.sns.gov", 61613), ("amqbroker2.sns.gov", 61613)]
 env_amq_broker = os.environ.get("AMQ_BROKER", json.dumps(default_brokers))
