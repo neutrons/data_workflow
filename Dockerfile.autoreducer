@@ -51,6 +51,10 @@ RUN if [ "$PLOTLY_VERSION" = "5" ]; then \
     pip3 install plotly==5.17.0; \
     fi
 
+# use the system trust store (which update-ca-trust populates) instead of the certifi bundle
+# shipped with the pip-installed requests, so the self-signed test certificate is trusted
+ENV REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
+
 # create startup script
 # add updating certificates to add self-signed certificate for local testing
 RUN echo "#!/bin/bash" > /usr/bin/run_postprocessing && \
