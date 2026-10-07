@@ -18,12 +18,19 @@ Run it with only the broker up, so nothing else consumes the shared queue:
 --order backlog-first sends the messages before subscribing, like a consumer restart
 during a flood.
 
-Exit codes: 0 if at least one variant is fair, 1 if none are, 2 on errors.
+It only runs against a broker on this machine, since it purges its queues and sends the
+credentials unencrypted. It also refuses to start if the queues already hold messages,
+unless --purge-existing is given.
+
+Exit codes: 0 if at least one variant is fair, 1 if none are, 2 on errors, including
+lost, duplicated or leftover messages.
 """
 
 import argparse
 import base64
+import ipaddress
 import json
+import socket
 import sys
 import threading
 import time
@@ -53,7 +60,8 @@ class Jolokia:
         self.auth = base64.b64encode(f"{user}:{password}".encode()).decode()
         self.broker = None
 
-    def request(self, body):
+    def request(self, body, allow_missing=False):
+        """Return the reply, or None for a missing MBean when allow_missing is set"""
         req = urllib.request.Request(
             self.url,
             data=json.dumps(body).encode(),
@@ -64,12 +72,22 @@ class Jolokia:
             },
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read().decode())
+            reply = json.loads(resp.read().decode())
+        # Jolokia reports errors in the body, often with HTTP 200
+        status = reply.get("status")
+        if status == 200:
+            return reply
+        if allow_missing and status == 404:
+            return None
+        raise RuntimeError(f"Jolokia {body['type']} failed: {reply.get('error', status)}")
 
     def find_broker(self):
         """Look up the broker MBean name instead of assuming it"""
         reply = self.request({"type": "search", "mbean": "org.apache.activemq.artemis:broker=*"})
-        self.broker = next(name for name in reply["value"] if "," not in name)
+        brokers = [name for name in reply["value"] if "," not in name]
+        if not brokers:
+            raise RuntimeError("no broker MBean visible, check the user's management role")
+        self.broker = brokers[0]
         return self.broker
 
     def queue_names(self):
@@ -89,9 +107,10 @@ class Jolokia:
                 "type": "read",
                 "mbean": self._queue_mbean(queue),
                 "attribute": ["MessageCount", "DeliveringCount", "ConsumerCount"],
-            }
+            },
+            allow_missing=True,
         )
-        return reply["value"] if reply.get("status") == 200 else None
+        return reply["value"] if reply else None
 
     def purge(self, queue):
         self.request({"type": "exec", "mbean": self._queue_mbean(queue), "operation": "removeAllMessages()"})
@@ -157,6 +176,7 @@ def connect(args, listener_factory=None):
 def run_variant(args, jolokia, name, headers):
     sent = {CG2_QUEUE: args.cg2_count, EQSANS_QUEUE: args.eqsans_count, SHARED_QUEUE: args.shared_count}
     total = sum(sent.values())
+    # main() checked the queues started empty, so anything here is left over from an earlier variant
     for queue in sent:
         if jolokia.queue_stats(queue) is not None:
             jolokia.purge(queue)
@@ -196,6 +216,7 @@ def run_variant(args, jolokia, name, headers):
 
 
 def analyse(received, sent, in_flight, residual):
+    """Return (intact, fair): intact means no lost, duplicated or leftover messages"""
     order = [LABELS[queue] for queue, _ in received]
     print("  First 30 deliveries: " + " ".join(order[:30]))
     print(f"  In flight per queue after 2 s (DeliveringCount): {in_flight}")
@@ -207,9 +228,10 @@ def analyse(received, sent, in_flight, residual):
     print(f"  Left in queues after the consumer disconnected: {residual}")
 
     total = sum(sent.values())
-    if len(received) != total or duplicates or any(residual.values()):
+    # A count we couldn't read (None) isn't proof the queue is empty
+    if len(received) != total or duplicates or any(count != 0 for count in residual.values()):
         print("  VERDICT: LOSS, DUPLICATION OR UNDELIVERED MESSAGES")
-        return False
+        return False, False
 
     # If the queues take turns, the CG2 messages delivered before the last EQSANS (or shared)
     # one should be about the EQSANS count. In arrival order it's the whole flood.
@@ -223,7 +245,7 @@ def analyse(received, sent, in_flight, residual):
         print(f"  {victim}: first at position {first}, last at {last}, CG2 delivered before last = {cg2_before_last}")
         fair = fair and cg2_before_last <= count + 2
     print(f"  VERDICT: {'FAIR (interleaved)' if fair else 'UNFAIR (flood delivered first)'}")
-    return fair
+    return True, fair
 
 
 def main():
@@ -241,7 +263,18 @@ def main():
     parser.add_argument("--variant", choices=["all", *VARIANTS], default="all")
     parser.add_argument("--timeout", type=int, default=120, help="Max seconds to wait per variant")
     parser.add_argument("--idle-timeout", type=int, default=8, help="Stop after this long with no new message")
+    parser.add_argument(
+        "--purge-existing", action="store_true", help="Delete messages already in the test queues before starting"
+    )
     args = parser.parse_args()
+
+    try:
+        local = ipaddress.ip_address(socket.gethostbyname(args.host)).is_loopback
+    except (OSError, ValueError):
+        local = False
+    if not local:
+        print(f"ERROR: {args.host} is not a local broker; this test only runs against this machine", file=sys.stderr)
+        return 2
 
     jolokia = Jolokia(args.host, args.console_port, args.user, args.password)
     try:
@@ -252,11 +285,30 @@ def main():
         return 2
     print(f"Queues on the broker before the test: {before}")
 
-    for queue in LABELS:
-        stats = jolokia.queue_stats(queue)
-        if stats and stats["ConsumerCount"]:
-            print(f"ERROR: {queue} already has {stats['ConsumerCount']} consumer(s); stop them first", file=sys.stderr)
-            return 2
+    try:
+        for queue in LABELS:
+            stats = jolokia.queue_stats(queue)
+            if not stats:
+                continue
+            if stats["ConsumerCount"]:
+                print(
+                    f"ERROR: {queue} already has {stats['ConsumerCount']} consumer(s); stop them first", file=sys.stderr
+                )
+                return 2
+            # Don't delete messages this test didn't send unless asked to
+            if stats["MessageCount"] or stats["DeliveringCount"]:
+                if not args.purge_existing:
+                    print(
+                        f"ERROR: {queue} already holds {stats['MessageCount']} message(s); "
+                        "rerun with --purge-existing to delete them",
+                        file=sys.stderr,
+                    )
+                    return 2
+                print(f"Purging {stats['MessageCount']} existing message(s) from {queue}")
+                jolokia.purge(queue)
+    except Exception as exc:
+        print(f"ERROR: Jolokia query failed: {exc}", file=sys.stderr)
+        return 2
 
     variants = VARIANTS if args.variant == "all" else {args.variant: VARIANTS[args.variant]}
     results = {}
@@ -270,8 +322,11 @@ def main():
     # A wildcard subscription would create an extra queue
     extra = sorted(set(jolokia.queue_names()) - set(before) - set(LABELS))
     print(f"\nQueues created by the test other than the three expected: {extra or 'none'}")
-    print("Summary: " + ", ".join(f"{name}={'FAIR' if ok else 'UNFAIR'}" for name, ok in results.items()))
-    return 0 if any(results.values()) and not extra else 1
+    labels = {name: "FAIR" if fair else "UNFAIR" if intact else "FAILED" for name, (intact, fair) in results.items()}
+    print("Summary: " + ", ".join(f"{name}={label}" for name, label in labels.items()))
+    if extra or not all(intact for intact, _ in results.values()):
+        return 2
+    return 0 if any(fair for _, fair in results.values()) else 1
 
 
 if __name__ == "__main__":
