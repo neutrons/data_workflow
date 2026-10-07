@@ -108,6 +108,7 @@ class BlockingRecorder(stomp.ConnectionListener):
         self._last_msg_time = None
         self._lock = threading.Lock()
         self._done = threading.Event()
+        self.broker_error = None
 
     def on_message(self, frame):
         self.conn.ack(frame.headers["message-id"], frame.headers["subscription"])
@@ -120,18 +121,22 @@ class BlockingRecorder(stomp.ConnectionListener):
         time.sleep(self.consume_delay)
 
     def on_error(self, frame):
-        print(f"  ERROR from broker: {frame.body}", file=sys.stderr)
+        # The broker sends an ERROR frame when it rejects a subscription, so fail the variant
+        self.broker_error = frame.body
+        self._done.set()
 
     def wait(self, total_timeout, idle_timeout):
         """Return once everything has arrived, or after idle_timeout with nothing new"""
         start = time.monotonic()
         while time.monotonic() - start < total_timeout:
             if self._done.wait(timeout=0.25):
-                return
+                break
             with self._lock:
                 last = self._last_msg_time or start
             if time.monotonic() - last > idle_timeout:
-                return
+                break
+        if self.broker_error is not None:
+            raise RuntimeError(f"broker error: {self.broker_error}")
 
 
 def send_batch(conn, queue, count):
@@ -181,8 +186,10 @@ def run_variant(args, jolokia, name, headers):
     time.sleep(2.0)
     in_flight = {LABELS[q]: (jolokia.queue_stats(q) or {}).get("DeliveringCount") for q in sent}
 
-    recorder.wait(args.timeout, args.idle_timeout)
-    consumer.disconnect()
+    try:
+        recorder.wait(args.timeout, args.idle_timeout)
+    finally:
+        consumer.disconnect()
     time.sleep(1.0)
     residual = {LABELS[q]: (jolokia.queue_stats(q) or {}).get("MessageCount") for q in sent}
     return analyse(recorder.received, sent, in_flight, residual)
