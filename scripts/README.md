@@ -15,6 +15,7 @@ The unit tests for the profiling math live with the rest of the tests, in
 | `profiling/reduce_sleep.py` | Stand-in for a real `reduce_<INST>.py`, holding a worker slot for a fixed time so a backlog can be built on demand. |
 | `load_test_per_instrument_queues.py` | Drives load through the queues for the same three scenarios. |
 | `investigate_artemis_fairness.py` | Measures whether an Artemis wildcard subscription delivers fairly across per-instrument queues. |
+| `investigate_per_queue_fairness.py` | Measures whether Artemis alternates deliveries across separate per-queue subscriptions on one blocking consumer, for each prefetch header. |
 
 Each script carries its own usage in its module docstring. Typical starting
 point, with the stack already up:
