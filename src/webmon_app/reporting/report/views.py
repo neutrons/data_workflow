@@ -98,7 +98,7 @@ def processing_admin(request):
     return render(request, "report/processing_admin.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 def summary(request):
     """
     List of available instruments
@@ -186,7 +186,7 @@ def download_reduced_data(request, instrument, run_id):
     return response
 
 
-@users_view_util.login_or_local_required
+@login_required
 def detail(request, instrument, run_id):
     """
     Run details
@@ -313,7 +313,7 @@ def submit_for_cataloging(request, instrument, run_id):
     return view_util.processing_request(request, instrument, run_id, destination="/queue/CATALOG.REQUEST")
 
 
-@users_view_util.login_or_local_required
+@login_required
 def instrument_summary(request, instrument):
     """
     Instrument summary page
@@ -344,7 +344,7 @@ def instrument_summary(request, instrument):
     return render(request, "report/instrument.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 def ipts_summary(request, instrument, ipts):
     """
     Experiment summary giving the list of runs
@@ -382,7 +382,7 @@ def ipts_summary(request, instrument, ipts):
     return render(request, "report/ipts_summary.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @vary_on_cookie
@@ -415,7 +415,7 @@ def live_errors(request, instrument):
     return render(request, "report/live_errors.html", template_values)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @vary_on_cookie
 def get_experiment_update(request, instrument, ipts):
@@ -474,7 +474,7 @@ def get_experiment_update(request, instrument, ipts):
     return JsonResponse(data)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_instrument_update(request, instrument):
     """
@@ -514,7 +514,7 @@ def get_instrument_update(request, instrument):
     return JsonResponse(data_dict)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_error_update(request, instrument):
     """

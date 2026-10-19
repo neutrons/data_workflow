@@ -55,7 +55,7 @@ def pv_monitor(request, instrument):
     return render(request, "pvmon/pv_monitor.html", template_values)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def get_update(request, instrument):
     """

@@ -200,9 +200,6 @@ AUTHENTICATION_BACKENDS = (
 # See https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["*"]
 
-# Set the following to the local domain name
-ALLOWED_DOMAIN = ("ornl.gov", "sns.gov")
-
 # If a user tries to access a view requiring authentication and they are not logged in,
 # Django will redirect them to the URL defined by LOGIN_URL
 LOGIN_URL = "/users/login"

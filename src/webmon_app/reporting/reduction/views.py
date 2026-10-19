@@ -10,6 +10,7 @@ import json
 import logging
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,7 +26,7 @@ from reporting.report.models import Instrument
 from . import forms, view_util
 
 
-@users_view_util.login_or_local_required
+@login_required
 def configuration(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -48,7 +49,7 @@ def configuration(request, instrument):
     raise Http404("No instrument matches the given query.")
 
 
-@users_view_util.login_or_local_required
+@login_required
 def configuration_ref_m(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -122,7 +123,7 @@ def configuration_ref_m(request, instrument):
     return render(request, "reduction/configuration_ref_m.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 def configuration_cncs(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -212,7 +213,7 @@ def configuration_cncs(request, instrument):
     return render(request, "reduction/configuration_cncs.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 def configuration_dgs(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -312,7 +313,7 @@ def configuration_dgs(request, instrument):
     return render(request, template_file, template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 def configuration_corelli(request, instrument):
     """
     View current automated reduction configuration and modification history
@@ -420,7 +421,7 @@ def configuration_corelli(request, instrument):
 
 
 @csrf_exempt
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 def configuration_change(request, instrument):
     """
     AJAX call to update the reduction parameters for an instrument.
@@ -458,7 +459,7 @@ def configuration_change(request, instrument):
     return response
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 # @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def configuration_update(request, instrument):
     """
