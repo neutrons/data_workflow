@@ -14,18 +14,7 @@ class TestViews(TestCase):
         request.user = user
         request.path = "/path/"
         request.mobile = False
-        with self.settings(GRAVATAR_URL="http://gravatar.url/", ALLOWED_DOMAIN=""):
-            template_args = view_util.fill_template_values(request)
-        self.assertEqual(template_args["user"].username, "user")
-        self.assertEqual(
-            template_args["gravatar_url"],
-            "http://gravatar.url/ee11cbb19052e40b07aac0ca060c23ee?d=identicon",
-        )
-        self.assertEqual(template_args["logout_url"], "/users/logout")
-        self.assertEqual(template_args["login_url"], "/users/login?next=/path/")
-        self.assertEqual(template_args["is_mobile"], False)
-
-        with self.settings(GRAVATAR_URL="http://gravatar.url/", ALLOWED_DOMAIN=("a.com", "b.com")):
+        with self.settings(GRAVATAR_URL="http://gravatar.url/"):
             template_args = view_util.fill_template_values(request)
         self.assertEqual(template_args["user"].username, "user")
         self.assertEqual(
@@ -40,52 +29,8 @@ class TestViews(TestCase):
         template_args = view_util.fill_template_values(request)
         self.assertEqual(template_args["user"].username, "Guest User")
 
-    @mock.patch("socket.gethostbyaddr")
-    def test_check_credentials(self, mock_gethostbyaddr):
-        user = User.objects.create_user("user")
-        request = mock.MagicMock()
-        request.user = user
-        self.assertTrue(view_util._check_credentials(request))
-
-        request.user = AnonymousUser()
-
-        with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=[]):
-            self.assertFalse(view_util._check_credentials(request))
-
-        request.META = {"HTTP_X_REAL_IP": "1.2.3.4"}
-
-        mock_gethostbyaddr.return_value = ("hostname.gov", None, None)
-
-        with self.settings(ALLOWED_DOMAIN=".gov", ALLOWED_HOSTS=[]):
-            self.assertTrue(view_util._check_credentials(request))
-
-        mock_gethostbyaddr.return_value = ("localhost", None, None)
-
-        with self.settings(ALLOWED_DOMAIN=".gov", ALLOWED_HOSTS=[]):
-            self.assertTrue(view_util._check_credentials(request))
-
-        mock_gethostbyaddr.return_value = None
-
-        with self.settings(ALLOWED_DOMAIN=".gov", ALLOWED_HOSTS=[]):
-            self.assertFalse(view_util._check_credentials(request))
-
-        mock_gethostbyaddr.return_value = ("host1", None, None)
-
-        with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=["host1", "host2"]):
-            self.assertTrue(view_util._check_credentials(request))
-
-        mock_gethostbyaddr.return_value = ("host3", None, None)
-
-        with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=["host1", "host2"]):
-            self.assertFalse(view_util._check_credentials(request))
-
-        mock_gethostbyaddr.return_value = None
-
-        with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=["host1", "host2"]):
-            self.assertFalse(view_util._check_credentials(request))
-
-    def test_login_or_local_required(self):
-        request_processor = view_util.login_or_local_required(lambda x: x)
+    def test_login_required_401(self):
+        request_processor = view_util.login_required_401(lambda x: x)
 
         user = User.objects.create_user("user")
         request = mock.MagicMock()
@@ -95,31 +40,24 @@ class TestViews(TestCase):
         self.assertIs(return_request, request)
 
         request.user = AnonymousUser()
-        with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=[]):
-            return_request = request_processor(request)
-        self.assertIsNot(return_request, request)
-
-    def test_login_or_local_required_401(self):
-        request_processor = view_util.login_or_local_required_401(lambda x: x)
-
-        user = User.objects.create_user("user")
-        request = mock.MagicMock()
-        request.user = user
-
         return_request = request_processor(request)
-        self.assertIs(return_request, request)
-
-        request.user = AnonymousUser()
-        with self.settings(ALLOWED_DOMAIN="", ALLOWED_HOSTS=[]):
-            return_request = request_processor(request)
         self.assertIsNot(return_request, request)
         self.assertEqual(return_request.status_code, 401)
 
-        request_processor = view_util.login_or_local_required_401(None)
+        request_processor = view_util.login_required_401(None)
         request.user = user
         return_request = request_processor(request)
         self.assertIsNot(return_request, request)
         self.assertEqual(return_request.status_code, 500)
+
+    @mock.patch("socket.gethostbyaddr", return_value=("bl4b-ws1.sns.gov", [], ["127.0.0.1"]))
+    def test_login_required_401_ignores_where_the_request_comes_from(self, mock_gethostbyaddr):
+        # Anonymous requests that look local by address, header or reverse DNS still get 401
+        request_processor = view_util.login_required_401(lambda x: x)
+        request = mock.MagicMock()
+        request.user = AnonymousUser()
+        request.META = {"REMOTE_ADDR": "127.0.0.1", "HTTP_X_REAL_IP": "127.0.0.1"}
+        self.assertEqual(request_processor(request).status_code, 401)
 
     def test_is_instrument_staff(self):
         # is_staff

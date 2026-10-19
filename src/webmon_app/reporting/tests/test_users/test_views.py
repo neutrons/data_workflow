@@ -15,8 +15,7 @@ class TestViews(TestCase):
     def test_perform_logout(self):
         self.assertTrue(self.client.login(username="user", password="pw"))
 
-        with self.settings(ALLOWED_DOMAIN=[], ALLOWED_HOSTS=["*"]):
-            response = self.client.get(reverse("users:perform_logout"))
+        response = self.client.get(reverse("users:perform_logout"))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/dasmon/")
 

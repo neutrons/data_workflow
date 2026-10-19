@@ -4,14 +4,13 @@ View utility functions for user management
 """
 
 # import code for encoding urls and generating md5 hashes
+import functools
 import hashlib
 import logging
-import socket
 
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
-from django.shortcuts import redirect
 from django.urls import reverse
 
 from reporting.users.models import PageView
@@ -51,73 +50,18 @@ def fill_template_values(request, **template_args):
     return template_args
 
 
-def _check_credentials(request):
+def login_required_401(fn):
     """
-    Internal utility method to check whether a user has access to a view
-    """
-    # If we don't allow guests but the user is authenticated, return the function
-    if request.user.is_authenticated:
-        return True
+    Function decorator for AJAX views: like Django's login_required,
+    but answers 401 instead of redirecting to the login page.
 
-    # If we allow users on a domain, check the user's IP
-    if len(settings.ALLOWED_DOMAIN) > 0:
-        # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-        ip_addr = request.META["HTTP_X_REAL_IP"] if "HTTP_X_REAL_IP" in request.META else request.META["REMOTE_ADDR"]
-
-        try:
-            # If the user is on the allowed domain, return the function
-            if socket.gethostbyaddr(ip_addr)[0].endswith(settings.ALLOWED_DOMAIN):
-                return True
-            # If we allow a certain domain and the user is on the server, return the function
-            elif socket.gethostbyaddr(ip_addr)[0] == "localhost":
-                return True
-        except:  # noqa: E722
-            logging.error("Error processing IP address: %s", str(ip_addr))
-
-    if len(settings.ALLOWED_HOSTS) > 0:
-        # Use HTTP_X_REAL_IP when going through nginx reverse proxy, otherwise REMOTE_ADDR
-        ip_addr = request.META["HTTP_X_REAL_IP"] if "HTTP_X_REAL_IP" in request.META else request.META["REMOTE_ADDR"]
-
-        try:
-            host_name = socket.gethostbyaddr(ip_addr)[0]
-            for item in settings.ALLOWED_HOSTS:
-                if host_name.endswith(item):
-                    return True
-        except:  # noqa: E722
-            logging.error("Error processing IP address: %s", str(ip_addr))
-
-    return False
-
-
-def login_or_local_required(fn):
-    """
-    Function decorator to check whether a user is allowed
-    to see a view.
+    Access is never granted based on where the request comes from.
     """
 
-    def request_processor(request, *args, **kws):
-        if _check_credentials(request):
-            return fn(request, *args, **kws)
-
-        # If we made it here, we need to authenticate the user
-        redirect_url = reverse("users:perform_login")
-        redirect_url += "?next=%s" % request.path
-        return redirect(redirect_url)
-
-    return request_processor
-
-
-def login_or_local_required_401(fn):
-    """
-    Function decorator to check whether a user is allowed
-    to see a view.
-
-    Usually used for AJAX calls.
-    """
-
+    @functools.wraps(fn)
     def request_processor(request, *args, **kws):
         try:
-            if _check_credentials(request):
+            if request.user.is_authenticated:
                 return fn(request, *args, **kws)
             return HttpResponse(status=401)
         except:  # noqa: E722

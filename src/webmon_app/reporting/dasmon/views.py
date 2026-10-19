@@ -22,7 +22,7 @@ from reporting.users.models import SiteNotification
 from . import view_util
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -46,7 +46,7 @@ def dashboard(request):
     return render(request, "dasmon/dashboard.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -69,7 +69,7 @@ def dashboard_simple(request):
     return render(request, "dasmon/dashboard_simple.html", template_values)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 def dashboard_update(request):
@@ -86,7 +86,7 @@ def dashboard_update(request):
     return JsonResponse(data_dict)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -109,7 +109,7 @@ def expert_status(request):
     return render(request, "dasmon/expert_status.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -134,7 +134,7 @@ def run_summary(request):
     return render(request, "dasmon/run_summary.html", template_values)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 def run_summary_update(request):
     limit = int(request.GET.get("length", 10))
     offset = int(request.GET.get("start", 0))
@@ -190,7 +190,7 @@ def live_monitor(request, instrument):
     return render(request, "dasmon/live_monitor.html", template_values)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @vary_on_cookie
@@ -238,7 +238,7 @@ def live_runs(request, instrument):
     return render(request, "dasmon/live_runs.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @users_view_util.monitor
 def user_help(request):
     """
@@ -261,7 +261,7 @@ def user_help(request):
     return render(request, "dasmon/help.html", template_values)
 
 
-@users_view_util.login_or_local_required
+@login_required
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
@@ -322,7 +322,7 @@ def diagnostics(request, instrument):
     return render(request, "dasmon/diagnostics.html", template_values)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @vary_on_cookie
@@ -367,7 +367,7 @@ def get_update(request, instrument):
     return JsonResponse(data_dict)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 def summary_update(request):
     """
     Response to AJAX call to get updated health info for all instruments

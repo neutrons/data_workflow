@@ -8,7 +8,7 @@ import reporting.users.view_util as users_view_util
 from . import view_util
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def metrics(request):
     data = {}
@@ -19,25 +19,25 @@ def metrics(request):
     return JsonResponse(data)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def workflow_diagnostics(request):
     return JsonResponse(dasmon_view_util.workflow_diagnostics())
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def postprocessing_diagnostics(request):
     return JsonResponse(view_util.postprocessing_diagnostics(), safe=False)
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def instrument_status(request):
     return JsonResponse(view_util.instrument_status())
 
 
-@users_view_util.login_or_local_required_401
+@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 def run_statuses(request, minutes=60):
     return JsonResponse(view_util.run_statuses(minutes))
