@@ -124,6 +124,10 @@ class QueueNameGenerationTest(TestCase):
         # Losing the tier segment would move HIMEM instruments to the normal pool.
         assert per_instrument_queue_name("REDUCTION.HIMEM.DATA_READY", "vulcan") == "REDUCTION.HIMEM.VULCAN.DATA_READY"
 
+    def test_express_tier_segment_is_preserved(self):
+        # Losing the tier segment would move express instruments to the normal pool.
+        assert per_instrument_queue_name("REDUCTION.EXPRESS.DATA_READY", "cg3") == "REDUCTION.EXPRESS.CG3.DATA_READY"
+
     def test_catalog_queue_does_not_split(self):
         # Initial cataloging goes to OnCat, a single external service.
         assert per_instrument_queue_name("CATALOG.ONCAT.DATA_READY", "venus") is None
@@ -138,6 +142,7 @@ class QueueNameGenerationTest(TestCase):
         assert per_instrument_queue_name("REDUCTION.EQSANS.DATA_READY", "eqsans") is None
         assert per_instrument_queue_name("REDUCTION_CATALOG.EQSANS.DATA_READY", "eqsans") is None
         assert per_instrument_queue_name("REDUCTION.HIMEM.VULCAN.DATA_READY", "vulcan") is None
+        assert per_instrument_queue_name("REDUCTION.EXPRESS.CG3.DATA_READY", "cg3") is None
 
     def test_unrelated_queue_family_does_not_split(self):
         assert per_instrument_queue_name("FERMI_REDUCTION.DATA_READY", "eqsans") is None
@@ -361,6 +366,11 @@ class DbTaskRoutingTest(TestCase):
         message = json.dumps({"instrument": "vulcan", "run_number": 1, "facility": "SNS"})
         sent = self._run_task(["REDUCTION.HIMEM.DATA_READY"], message, flag=True)
         assert sent == ["/queue/REDUCTION.HIMEM.VULCAN.DATA_READY"]
+
+    def test_flag_on_preserves_express_tier(self):
+        message = json.dumps({"instrument": "cg3", "run_number": 1, "facility": "HFIR"})
+        sent = self._run_task(["REDUCTION.EXPRESS.DATA_READY"], message, flag=True)
+        assert sent == ["/queue/REDUCTION.EXPRESS.CG3.DATA_READY"]
 
     def test_flag_off_leaves_task_queues_untouched(self):
         message = json.dumps({"instrument": "eqsans", "run_number": 1, "facility": "SNS"})
