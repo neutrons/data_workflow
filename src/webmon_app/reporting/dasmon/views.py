@@ -76,8 +76,12 @@ def dashboard_update(request):
     """
     Response to AJAX call to get updated health info for all instruments.
 
-    The landing page polls this, so it doesn't require a login.
+    The landing page polls this, so it doesn't require a login. The run and error
+    rates (?plots) are for the full dashboard, which does.
     """
+    if "plots" in request.GET and not request.user.is_authenticated:
+        return HttpResponse(status=401)
+
     # Get the system health status
     data_dict = {
         "instruments": view_util.get_instrument_status_summary(),
@@ -328,6 +332,8 @@ def diagnostics(request, instrument):
 @cache_control(private=True)
 @vary_on_cookie
 def get_update(request, instrument):
+    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+
     if not request.user.is_authenticated:
         # WebMon's own pages poll this with jQuery, which marks the request as AJAX.
         # They get a 401 so the page can tell the user their session expired.
@@ -335,8 +341,7 @@ def get_update(request, instrument):
             return HttpResponse(status=401)
         # The AdaraMonitor IOCs on the beamlines poll this without logging in.
         # They get the system health and the last run and IPTS numbers, nothing else.
-        instrument_id = get_object_or_404(Instrument, name=instrument.lower())
-        current_status = report_view_util.get_current_status(instrument_id)
+        current_status = report_view_util.get_current_status(instrument_id, include_rates=False)
         data_dict = {key: current_status[key] for key in ("last_run", "last_expt") if key in current_status}
         data_dict["das_status"] = view_util.get_system_health(instrument_id)
         return JsonResponse(data_dict)
@@ -349,9 +354,6 @@ def get_update(request, instrument):
     date_search = request.GET.get("columns[1][search][value]", "")
     title_search = request.GET.get("columns[2][search][value]", "")
     status_search = request.GET.get("columns[3][search][value]", "")
-
-    # Get instrument
-    instrument_id = get_object_or_404(Instrument, name=instrument.lower())
 
     # Get last experiment and last run
     data_dict = report_view_util.get_current_status(instrument_id)

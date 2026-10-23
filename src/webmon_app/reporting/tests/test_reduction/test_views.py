@@ -250,7 +250,9 @@ class TestInstrumentTeamRequired(TestCase):
         self.assertTrue(self.client.login(username="outsider", password="pw"))
         url = reverse("reduction:configuration", args=["arcs"])
         self.assertEqual(self.client.get(url).status_code, 200)
-        self.assertEqual(self.client.post(url, data={"button_choice": "reset"}).status_code, 403)
+        response = self.client.post(url, data={"button_choice": "reset"})
+        self.assertEqual(response.status_code, 403)
+        self.assertIn(b"Only the ARCS instrument team", response.content)
 
         change = {"data": '[{"key": "grouping", "value": "x"}]'}
         response = self.client.post(reverse("reduction:configuration_change", args=["arcs"]), data=change)

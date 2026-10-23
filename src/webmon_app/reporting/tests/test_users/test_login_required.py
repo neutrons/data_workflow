@@ -44,6 +44,23 @@ class TestLoginRequired(TestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200, url)
 
+    def test_dashboard_rates_need_login(self, mock_gethostbyaddr):
+        # ?plots is only used by the full dashboard, which requires a login
+        url = reverse("dasmon:dashboard_update") + "?plots"
+        self.assertEqual(self.client.get(url, **LOCAL_LOOKING).status_code, 401)
+
+        self.assertTrue(self.client.login(username="user1", password="pw"))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("instrument_rates", response.json())
+
+    def test_unknown_instrument_update_is_404(self, mock_gethostbyaddr):
+        url = reverse("dasmon:get_update", args=["no_such_instrument"])
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+        self.assertTrue(self.client.login(username="user1", password="pw"))
+        self.assertEqual(self.client.get(url).status_code, 404)
+
     def test_instrument_update_only_shows_status_when_logged_out(self, mock_gethostbyaddr):
         url = reverse("dasmon:get_update", args=["ref_l"])
 

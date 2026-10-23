@@ -401,7 +401,7 @@ def error_rate(instrument_id, n_hours=24):
         raise
 
 
-def get_current_status(instrument_id):
+def get_current_status(instrument_id, include_rates=True):
     """
     Get current status information such as the last
     experiment/run for a given instrument.
@@ -409,6 +409,7 @@ def get_current_status(instrument_id):
     Used to populate AJAX response, so must not contain Model objects
 
     :param instrument_id: Instrument model object
+    :param include_rates: also compute the 24-hour run and error rates
     """
     # Get last experiment and last run
     last_run_id = DataRun.objects.get_last_cached_run(instrument_id)
@@ -417,8 +418,10 @@ def get_current_status(instrument_id):
     else:
         last_expt_id = last_run_id.ipts_id
 
-    r_rate, e_rate = retrieve_rates(instrument_id, last_run_id)
-    data_dict = {"run_rate": r_rate, "error_rate": e_rate}
+    data_dict = {}
+    if include_rates:
+        r_rate, e_rate = retrieve_rates(instrument_id, last_run_id)
+        data_dict = {"run_rate": r_rate, "error_rate": e_rate}
 
     if last_run_id is not None:
         localtime = timezone.localtime(last_run_id.created_on)
