@@ -403,8 +403,8 @@ class GetMonitoredPVTableViewTest(TestCase):
         assert "1100" in content
 
     def test_unknown_instrument_does_not_render_a_table(self):
-        # login_required_401 turns the Http404 into a 500, which is the
-        # same behaviour as the other AJAX endpoints, e.g. dasmon:get_update
+        # login_required_401 turns the Http404 into a 500, like the other
+        # AJAX endpoints that use it
         response = self.client.get(reverse("dasmon:get_monitored_pv_table", args=["no_such_instrument"]))
         self.assertEqual(response.status_code, 500)
 
