@@ -46,14 +46,15 @@ def dashboard(request):
     return render(request, "dasmon/dashboard.html", template_values)
 
 
-@login_required
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @users_view_util.monitor
 @vary_on_cookie
 def dashboard_simple(request):
     """
-    Dashboard view showing available instruments
+    Dashboard view showing available instruments.
+
+    This is the landing page, so it doesn't require a login.
     """
     # Get the system health status
     global_status_url = reverse(settings.LANDING_VIEW, args=[])
@@ -69,12 +70,13 @@ def dashboard_simple(request):
     return render(request, "dasmon/dashboard_simple.html", template_values)
 
 
-@users_view_util.login_required_401
 @cache_page(settings.SLOW_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 def dashboard_update(request):
     """
-    Response to AJAX call to get updated health info for all instruments
+    Response to AJAX call to get updated health info for all instruments.
+
+    The landing page polls this, so it doesn't require a login.
     """
     # Get the system health status
     data_dict = {
@@ -322,11 +324,23 @@ def diagnostics(request, instrument):
     return render(request, "dasmon/diagnostics.html", template_values)
 
 
-@users_view_util.login_required_401
 @cache_page(settings.FAST_PAGE_CACHE_TIMEOUT)
 @cache_control(private=True)
 @vary_on_cookie
 def get_update(request, instrument):
+    if not request.user.is_authenticated:
+        # WebMon's own pages poll this with jQuery, which marks the request as AJAX.
+        # They get a 401 so the page can tell the user their session expired.
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return HttpResponse(status=401)
+        # The AdaraMonitor IOCs on the beamlines poll this without logging in.
+        # They get the system health and the last run and IPTS numbers, nothing else.
+        instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+        current_status = report_view_util.get_current_status(instrument_id)
+        data_dict = {key: current_status[key] for key in ("last_run", "last_expt") if key in current_status}
+        data_dict["das_status"] = view_util.get_system_health(instrument_id)
+        return JsonResponse(data_dict)
+
     limit = int(request.GET.get("length", 10))
     offset = int(request.GET.get("start", 0))
     draw = int(request.GET.get("draw", 1))
@@ -367,10 +381,11 @@ def get_update(request, instrument):
     return JsonResponse(data_dict)
 
 
-@users_view_util.login_required_401
 def summary_update(request):
     """
-    Response to AJAX call to get updated health info for all instruments
+    Response to AJAX call to get updated health info for all instruments.
+
+    Same data as the landing page, so it doesn't require a login.
     """
     # Get the system health status
     data_dict = {

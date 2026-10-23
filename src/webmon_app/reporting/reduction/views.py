@@ -6,6 +6,7 @@ Automated reduction configuration view
 """
 
 import datetime
+import functools
 import json
 import logging
 
@@ -16,7 +17,6 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import dateparse, timezone
-from django.views.decorators.csrf import csrf_exempt
 
 import reporting.dasmon.view_util as dasmon_view_util
 import reporting.users.view_util as users_view_util
@@ -26,13 +26,31 @@ from reporting.report.models import Instrument
 from . import forms, view_util
 
 
+def instrument_team_required_for_changes(fn):
+    """
+    Function decorator for views that change an instrument's reduction settings:
+    anyone logged in can look, but only the instrument team can POST changes.
+
+    The pages already disable the form for everyone else, this enforces it.
+    """
+
+    @functools.wraps(fn)
+    def request_processor(request, instrument, *args, **kws):
+        if request.method == "POST":
+            instrument_id = get_object_or_404(Instrument, name=instrument.lower())
+            if not users_view_util.is_instrument_staff(request, instrument_id):
+                return HttpResponse(status=403)
+        return fn(request, instrument, *args, **kws)
+
+    return request_processor
+
+
 @login_required
+@instrument_team_required_for_changes
 def configuration(request, instrument):
     """
     View current automated reduction configuration and modification history
-    for a given instrument
-
-    #TODO: redirect to another page if you are not part of the instrument team
+    for a given instrument. Only the instrument team can change it.
 
     :param request: request object
     :param instrument: instrument name
@@ -420,8 +438,8 @@ def configuration_corelli(request, instrument):
     return render(request, "reduction/configuration_corelli.html", template_values)
 
 
-@csrf_exempt
 @users_view_util.login_required_401
+@instrument_team_required_for_changes
 def configuration_change(request, instrument):
     """
     AJAX call to update the reduction parameters for an instrument.

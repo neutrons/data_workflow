@@ -1,5 +1,6 @@
-from django.contrib.auth.models import User
-from django.test import TestCase
+from django.conf import settings
+from django.contrib.auth.models import Group, User
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from reporting.reduction.models import Choice, ReductionProperty
@@ -225,3 +226,38 @@ class TestView(TestCase):
         response = self.client.post(reverse("reduction:configuration_update", args=["inst"]))
         # should succeed with connection closed
         self.assertEqual(response.status_code, 200)
+
+    def test_configuration_change_checks_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username="user1", password="pw"))
+        response = client.post(reverse("reduction:configuration_change", args=["inst"]))
+        self.assertEqual(response.status_code, 403)
+
+
+class TestInstrumentTeamRequired(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User.objects.create_user(username="outsider", password="pw")
+        member = User.objects.create_user(username="member", password="pw")
+        team = Group.objects.create(name=f"ARCS{settings.INSTRUMENT_TEAM_SUFFIX}")
+        member.groups.add(team)
+
+        instrument = Instrument.objects.create(name="arcs")
+        grp_prop = ReductionProperty.objects.create(instrument=instrument, key="grouping")
+        Choice.objects.create(instrument=instrument, property=grp_prop, value="grp1", description="group1")
+
+    def test_outsider_can_look_but_not_change(self):
+        self.assertTrue(self.client.login(username="outsider", password="pw"))
+        url = reverse("reduction:configuration", args=["arcs"])
+        self.assertEqual(self.client.get(url).status_code, 200)
+        self.assertEqual(self.client.post(url, data={"button_choice": "reset"}).status_code, 403)
+
+        change = {"data": '[{"key": "grouping", "value": "x"}]'}
+        response = self.client.post(reverse("reduction:configuration_change", args=["arcs"]), data=change)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(ReductionProperty.objects.get(key="grouping").value, "")
+
+    def test_team_member_can_change(self):
+        self.assertTrue(self.client.login(username="member", password="pw"))
+        response = self.client.post(reverse("reduction:configuration", args=["arcs"]), data={"button_choice": "reset"})
+        self.assertEqual(response.status_code, 302)
