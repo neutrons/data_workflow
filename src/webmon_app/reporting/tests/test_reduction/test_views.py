@@ -261,3 +261,10 @@ class TestInstrumentTeamRequired(TestCase):
         self.assertTrue(self.client.login(username="member", password="pw"))
         response = self.client.post(reverse("reduction:configuration", args=["arcs"]), data={"button_choice": "reset"})
         self.assertEqual(response.status_code, 302)
+
+    def test_webmon_admin_can_change(self):
+        # admins aren't on the team but can already edit these settings in the Django admin
+        User.objects.create_user(username="admin", password="pw", is_staff=True)
+        self.assertTrue(self.client.login(username="admin", password="pw"))
+        response = self.client.post(reverse("reduction:configuration", args=["arcs"]), data={"button_choice": "reset"})
+        self.assertEqual(response.status_code, 302)

@@ -31,7 +31,9 @@ def instrument_team_required_for_changes(fn):
     Function decorator for views that change an instrument's reduction settings:
     anyone logged in can look, but only the instrument team can POST changes.
 
-    The pages already disable the form for everyone else, this enforces it.
+    "Instrument team" means is_instrument_staff, the same check the pages use to
+    enable the form, so WebMon admins count too. They can already edit these
+    settings in the Django admin.
     """
 
     @functools.wraps(fn)
