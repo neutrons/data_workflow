@@ -4,12 +4,16 @@ Guest User View
 .. toctree::
    :maxdepth: 2
 
-Anyone can see a list of instruments
+Anyone can see a list of instruments and whether each one is running.
 
 .. image:: images/example_guest_user.png
    :width: 100%
    :align: center
    :alt: guest user view example
+
+Everything else requires logging in with your `UCAMS/XCAMS <https://user.ornl.gov/Account/Login>`_
+credentials. Clicking on an instrument takes you to the login page, and the pages below are what you'll
+see once you're logged in.
 
 When clicking on any instrument one can see the status of the instrument. The status page shows a
 list of *monitored variables*. The sample logs to display can be configured in CSS (the frontend
@@ -52,8 +56,8 @@ Clicking on the instrument name in the breadcrumbs will display a list of `IPTS 
    :align: center
    :alt: example view of IPTS list viewed as guest user
 
-Note that guest users don't have access to the data, so clicking on any run will prompt the user to log in with
-their `UCAMS/XCAMS <https://user.ornl.gov/Account/Login>`_ credentials
+Run details are only shown to members of the experiment or the instrument team. Anyone else who clicks on a
+run will see that they don't have access to the data
 
 .. image:: images/example_data_access_denied.png
    :width: 100%

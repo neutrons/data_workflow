@@ -4,12 +4,23 @@ Manual testing
 Guest View
 ----------
 
-Every page and data update requires logging in, wherever you connect
-from. Being on the ORNL network no longer gives access without a login.
+Without logging in, the only page you can see is the landing page with the
+list of instruments (``/dasmon/``). Being on the ORNL network doesn't give
+any extra access.
 
-Without logging in, opening any page should redirect you to the login
-page, and data update URLs such as ``/pvmon/<instrument>/update/``
-should return 401. Check this both on and off the ORNL network.
+Without logging in, check both on and off the ORNL network that:
+    * ``/dasmon/``, ``/dasmon/update/`` and ``/dasmon/dashboard/update/`` load
+    * ``/dasmon/<instrument>/update/`` only returns ``das_status``, ``last_run``
+      and ``last_expt``. The AdaraMonitor IOCs on the beamlines poll it without
+      logging in and read those fields. If your session expires on the live
+      monitor page, you should still get the "session expired" alert
+    * ``/ht/`` still answers, since Prometheus uses it for health checks
+    * any other page redirects to the login page
+    * other data update URLs, such as ``/pvmon/<instrument>/update/``, return 401
+
+After logging in as someone who isn't on an instrument team, the reduction
+setup page for that instrument should show the form with its buttons disabled,
+and submitting it anyway should return 403.
 
 General User View
 -----------------

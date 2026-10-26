@@ -314,7 +314,7 @@ BROKERS = list(map(tuple, json.loads(env_amq_broker)))
 ICAT_USER = environ.get("ICAT_USER")
 ICAT_PASSCODE = environ.get("ICAT_PASS")
 
-HELPLINE_EMAIL = "adara_support@ornl.gov"
+HELPLINE_EMAIL = "linux@support.sns.gov"
 
 INSTRUMENT_REDUCTION_SETUP = ("seq", "arcs", "corelli", "cncs", "ref_m")
 
