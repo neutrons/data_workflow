@@ -253,7 +253,7 @@ class TestRunPageView:
         html = self.removeWhitespace(r.text)
 
         assert (
-            self.removeWhitespace("""Only instrument team members can use this form: contact adara_support@ornl.gov""")
+            self.removeWhitespace("""Only instrument team members can use this form: contact linux@support.sns.gov""")
             not in html
         )
         self.assertHtml(
@@ -277,7 +277,7 @@ class TestRunPageView:
         assert reduction_setup_page_general_user.status_code == 200
 
         self.assertHtml(
-            """Only instrument team members can use this form: contact adara_support@ornl.gov""",
+            """Only instrument team members can use this form: contact linux@support.sns.gov""",
             reduction_setup_page_general_user.text,
         )
 
