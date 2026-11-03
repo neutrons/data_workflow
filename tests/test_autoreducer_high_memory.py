@@ -1,5 +1,9 @@
 """This is to test that the reduction tasks go to the correct autoreducer node
-depending on if it requires high memoery or not"""
+depending on the reduction queue: regular, high memory or express.
+
+The express queue is a fast lane for instruments that temporarily need priority. In this
+test stack it is served by the autoreducer_himem container, so no extra container is needed.
+"""
 
 import time
 
@@ -43,6 +47,7 @@ class TestAutoreducerQueues:
         assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.STARTED")
         assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.DATA_READY")
         assert not db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.HIMEM.DATA_READY")
+        assert not db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.EXPRESS.DATA_READY")
 
         assert self.get_autoreducer_hostname(db_connection, run_id) == "autoreducer"
 
@@ -64,5 +69,29 @@ class TestAutoreducerQueues:
         assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.STARTED")
         assert not db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.DATA_READY")
         assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.HIMEM.DATA_READY")
+        assert not db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.EXPRESS.DATA_READY")
 
+        assert self.get_autoreducer_hostname(db_connection, run_id) == "autoreducer.himem"
+
+    def test_express_reduction_queue(self, db_connection, request_page):
+        # switch to the REDUCTION.EXPRESS.DATA_READY queue and check that the task goes to the node serving it
+        run_id = db_utils.add_instrument_data_run(db_connection, self.instrument, self.IPTS, self.run_number)
+        db_utils.clear_previous_runstatus(db_connection, run_id)
+
+        db_utils.set_reduction_request_queue(db_connection, "vulcan", "REDUCTION.EXPRESS.DATA_READY")
+        # login and send reduction request
+        response = request_page("/report/vulcan/12345/reduce/", self.user, self.pwd)
+        assert response.status_code == 200
+        assert response.url.endswith("/report/vulcan/12345/")
+
+        # wait for database to get updated
+        time.sleep(1.0)
+
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.REQUEST")
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.STARTED")
+        assert not db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.DATA_READY")
+        assert not db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.HIMEM.DATA_READY")
+        assert db_utils.check_run_status_exist(db_connection, run_id, "REDUCTION.EXPRESS.DATA_READY")
+
+        # the express queue is served by the himem container in this test stack
         assert self.get_autoreducer_hostname(db_connection, run_id) == "autoreducer.himem"

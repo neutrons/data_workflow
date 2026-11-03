@@ -26,11 +26,13 @@ from workflow.states import Postprocess_data_ready, Reduction_complete, Reductio
 # Not the instruments the other system tests drive, so nothing collides.
 REDUCTION_INSTRUMENT = "eqsans"
 HIMEM_INSTRUMENT = "cg2"
+EXPRESS_INSTRUMENT = "cg3"
 
 PER_INSTRUMENT_QUEUES = [
     "REDUCTION.EQSANS.DATA_READY",
     "REDUCTION_CATALOG.EQSANS.DATA_READY",
     "REDUCTION.HIMEM.CG2.DATA_READY",
+    "REDUCTION.EXPRESS.CG3.DATA_READY",
 ]
 
 DELIVERY_TIMEOUT_SECONDS = 15
@@ -163,6 +165,21 @@ class TestPerInstrumentDeliveryOverBroker:
         ):
             action({"destination": "/queue/POSTPROCESS.DATA_READY", "message-id": ""}, message)
         assert listener.wait_for(validation_id) == {"REDUCTION.HIMEM.CG2.DATA_READY"}
+
+    def test_db_task_express_queue_reaches_instrument_queue_preserving_tier(
+        self, producer_connection, routing_consumer
+    ):
+        """Same for the express tier: its instruments must stay in the fast lane."""
+        _conn, listener = routing_consumer
+        validation_id, message = _message(EXPRESS_INSTRUMENT)
+        task_def = json.dumps({"task_class": "", "task_queues": ["REDUCTION.EXPRESS.DATA_READY"]})
+        action = StateAction(connection=producer_connection, use_db_task=True)
+        with (
+            _patch_flag(True),
+            mock.patch("workflow.database.transactions.get_task", return_value=task_def),
+        ):
+            action({"destination": "/queue/POSTPROCESS.DATA_READY", "message-id": ""}, message)
+        assert listener.wait_for(validation_id) == {"REDUCTION.EXPRESS.CG3.DATA_READY"}
 
 
 class TestSharedQueuePaths:

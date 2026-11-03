@@ -32,6 +32,7 @@ _VALID_INSTRUMENT_RE = re.compile(r"^[a-z0-9_]+$")
 _PER_INSTRUMENT_QUEUES = (
     "REDUCTION.DATA_READY",
     "REDUCTION.HIMEM.DATA_READY",
+    "REDUCTION.EXPRESS.DATA_READY",
     "REDUCTION_CATALOG.DATA_READY",
 )
 
@@ -42,10 +43,12 @@ def per_instrument_queue_name(shared_queue: str, instrument: str) -> str | None:
 
         REDUCTION.DATA_READY          -> REDUCTION.EQSANS.DATA_READY
         REDUCTION.HIMEM.DATA_READY    -> REDUCTION.HIMEM.EQSANS.DATA_READY
+        REDUCTION.EXPRESS.DATA_READY  -> REDUCTION.EXPRESS.EQSANS.DATA_READY
         REDUCTION_CATALOG.DATA_READY  -> REDUCTION_CATALOG.EQSANS.DATA_READY
 
-    Inserting before the last segment keeps a tier segment (HIMEM) next to the
-    family root, so the high-memory worker pool keeps its own lane.
+    Inserting before the last segment keeps a tier segment (HIMEM, EXPRESS) next
+    to the family root, so the high-memory and express worker pools keep their
+    own lanes.
 
     :param shared_queue: queue name as configured today (no /queue/ prefix)
     :param instrument: validated, lowercase instrument name
