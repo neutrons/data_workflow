@@ -31,55 +31,39 @@ class TestDASMONPageView:
         assert "<li class='status_0' id='dasmon_status'>DASMON</li>" in dasmon_diagnostics.text
         assert "<li class='status_2' id='pvstreamer_status'>PVSD</li>" in dasmon_diagnostics.text
 
-        # parse HTML
-        parser = etree.HTMLParser()
-        tree = etree.parse(StringIO(dasmon_diagnostics.text), parser)
-        table_content = tree.xpath("//tr/td//text()")
-        # verify number of entries in the tables
-        expected_number_of_entries = 52  # Updated for current CI environment
-        assert len(table_content) == expected_number_of_entries
-        # -- DASMON diagnostics
-        status = table_content[1]
-        last_status_update = table_content[3]
-        last_pv_update = table_content[5]
-        last_amq_update = table_content[7]
-        assert status == "0"
-        assert len(last_status_update) > 0
-        assert len(last_pv_update) > 0
-        assert len(last_amq_update) > 0
-        # -- PVSD diagnostics
-        status = table_content[9]
-        last_status_update = table_content[11]
-        assert status == "-1"
-        assert len(last_status_update) > 0
-        # -- Workflow diagnostics
-        status = table_content[13]
-        last_status_update = table_content[15]
-        dasmon_listener_pid = table_content[17]
-        assert status == "0"
-        assert len(last_status_update) > 0
-        assert len(dasmon_listener_pid) > 0
-        # -- Cataloging & Reduction diagnostics
-        autoreducer = table_content[19]
-        autoreducer_pid = table_content[21]
-        assert len(autoreducer) > 0
-        assert len(autoreducer_pid) > 0
-        # -- Reduction queue lengths (search for entries instead of using fixed indices)
-        # Find the indices of the queue entries dynamically
-        if "REDUCTION.DATA_READY" in table_content:
-            reduction_data_ready_idx = table_content.index("REDUCTION.DATA_READY")
-            reduction_data_ready_entries = table_content[reduction_data_ready_idx + 1]
-            assert len(reduction_data_ready_entries) > 0
+        # check rows by label, not a cell count: the row count depends on what already ran
+        # (each autoreducer gets a "Last msg" row after its first job)
+        rows = table_rows(dasmon_diagnostics.text)
 
-        if "REDUCTION_CATALOG.DATA_READY" in table_content:
-            reduction_catalog_data_ready_idx = table_content.index("REDUCTION_CATALOG.DATA_READY")
-            reduction_catalog_data_ready_entries = table_content[reduction_catalog_data_ready_idx + 1]
-            assert len(reduction_catalog_data_ready_entries) > 0
+        # -- DASMON, PVSD and Workflow, in page order
+        assert [row[1] for row in rows if row[0] == "Last status:"] == ["0", "-1", "0"]
+        last_updates = [row for row in rows if row[0] == "Last status update:"]
+        assert len(last_updates) == 3
+        assert all(len(row) == 2 for row in last_updates)
+        assert any(row[0] == "Last PV update:" and len(row) == 2 for row in rows)
+        assert any(row[0] == "Last AMQ update:" and len(row) == 2 for row in rows)
+        assert any(row[0].startswith("Dasmon listener PID") and len(row) == 2 for row in rows)
 
-        if "POSTPROCESS.DATA_READY" in table_content:
-            postprocess_data_ready_idx = table_content.index("POSTPROCESS.DATA_READY")
-            postprocess_data_ready_entries = table_content[postprocess_data_ready_idx + 1]
-            assert len(postprocess_data_ready_entries) > 0
+        # -- Cataloging & Reduction
+        assert any(len(row) == 3 and row[0].startswith("autoreducer") and row[2].startswith("PID:") for row in rows)
+
+        # -- Reduction queue lengths, for the queues reported so far
+        for queue in ("REDUCTION.DATA_READY", "REDUCTION_CATALOG.DATA_READY", "POSTPROCESS.DATA_READY"):
+            for row in rows:
+                if row[0] == queue:
+                    assert len(row) == 3
+                    assert row[2].isdigit()
+
+
+def table_rows(html):
+    """Table rows as lists of their non-empty cell texts."""
+    tree = etree.parse(StringIO(html), etree.HTMLParser())
+    rows = []
+    for tr in tree.xpath("//tr[td]"):
+        cells = [text.strip() for text in tr.xpath("./td//text()") if text.strip()]
+        if cells:
+            rows.append(cells)
+    return rows
 
 
 if __name__ == "__main__":

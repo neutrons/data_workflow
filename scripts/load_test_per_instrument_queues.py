@@ -12,28 +12,51 @@ Usage:
     # Run load test
     python scripts/load_test_per_instrument_queues.py --scenario blocking
 
+    # Against the test env (password from the AMQ_PASSWORD env var)
+    python scripts/load_test_per_instrument_queues.py --scenario blocking \\
+        --host amqbroker-test.ornl.gov --user icat
+
     # Check results
     python scripts/load_test_per_instrument_queues.py --analyze results.json
 """
 
 import argparse
 import json
+import os
 import sys
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 import stomp
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiling"))
+import load_test_instruments  # noqa: E402
+
+RUN_BASE_EPOCH = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+
+def default_run_base(now=None):
+    """Minutes since 2026-01-01, times 1000.
+
+    Each invocation gets its own block of run numbers. A repeated (instrument, run number)
+    reuses the old DataRun and its created_on, so the metrics would miss it. Two invocations
+    in the same minute share a block, and run_number is 32-bit, so this lasts until 2030.
+    """
+    now = now or datetime.now(timezone.utc)
+    return int((now - RUN_BASE_EPOCH).total_seconds() // 60) * 1000
 
 
 class LoadTestClient:
     """Client for sending test messages to ActiveMQ."""
 
-    def __init__(self, host="localhost", port=61613, user="artemis", password="artemis"):
+    def __init__(self, host="localhost", port=61613, user="artemis", password="artemis", run_base=None):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
+        self.run_base = default_run_base() if run_base is None else run_base
+        self._next_run = {}
         self.conn = None
 
     def connect(self):
@@ -47,14 +70,31 @@ class LoadTestClient:
         if self.conn and self.conn.is_connected():
             self.conn.disconnect()
 
-    def send_run(self, instrument, run_number, data_file="/SNS/EQSANS/data.nxs", facility="SNS", ipts="IPTS-12345"):
-        """Send a single run message."""
+    def next_run_number(self, instrument):
+        """Count up from run_base, per instrument."""
+        run_number = self._next_run.get(instrument, self.run_base)
+        self._next_run[instrument] = run_number + 1
+        return run_number
+
+    def send_run(self, instrument, run_number=None, data_file=None, facility=None, ipts=None):
+        """Send a single run message.
+
+        Fills in the facility, IPTS and data file for the load test instruments, so the
+        run holds a worker instead of failing on a missing file.
+        """
+        if run_number is None:
+            run_number = self.next_run_number(instrument)
+        fake = load_test_instruments.INSTRUMENTS.get(instrument.lower())
+        if fake:
+            facility = facility or fake.facility
+            ipts = ipts or fake.ipts
+            data_file = data_file or load_test_instruments.data_file(instrument.lower())
         message = {
             "instrument": instrument,
             "run_number": run_number,
-            "data_file": data_file,
-            "facility": facility,
-            "ipts": ipts,
+            "data_file": data_file or "/SNS/EQSANS/data.nxs",
+            "facility": facility or "SNS",
+            "ipts": ipts or "IPTS-12345",
             "timestamp": datetime.now().isoformat(),
         }
 
@@ -123,7 +163,7 @@ class BlockingScenario(LoadTestScenario):
         # Phase 1: CG2 floods the queue
         print("Phase 1: CG2 sends 200 runs (creating backlog)...")
         for i in range(200):
-            msg = self.client.send_run("cg2", 10000 + i, facility="HFIR")
+            msg = self.client.send_run("cg2")
             self.messages_sent.append(msg)
 
             if (i + 1) % 50 == 0:
@@ -135,7 +175,7 @@ class BlockingScenario(LoadTestScenario):
         print("Phase 2: EQSANS sends 10 runs (should process immediately)...")
 
         for i in range(10):
-            msg = self.client.send_run("eqsans", 20000 + i, facility="SNS")
+            msg = self.client.send_run("eqsans")
             msg["eqsans_send_time"] = time.time()
             self.messages_sent.append(msg)
 
@@ -173,7 +213,7 @@ class LargeDatasetScenario(LoadTestScenario):
 
         # Phase 1: VENUS sends the large dataset
         print("Phase 1: VENUS sends large dataset run...")
-        msg = self.client.send_run("venus", 30000, facility="SNS", data_file="/SNS/VENUS/large_dataset_1000_files.nxs")
+        msg = self.client.send_run("venus")
         msg["large_dataset"] = True
         self.messages_sent.append(msg)
         print("✓ VENUS large dataset queued\n")
@@ -184,7 +224,7 @@ class LargeDatasetScenario(LoadTestScenario):
 
         for inst in normal_instruments:
             for i in range(5):
-                msg = self.client.send_run(inst, 40000 + i)
+                msg = self.client.send_run(inst)
                 self.messages_sent.append(msg)
             print(f"  ✓ {inst.upper()}: 5 runs sent")
 
@@ -217,11 +257,11 @@ class FairnessScenario(LoadTestScenario):
 
         self.start_time = time.time()
 
-        instruments = ["eqsans", "venus", "cg2", "hb2c", "nomad"]
+        instruments = ["eqsans", "venus", "cg2", "hb2c", "topaz"]
 
         for i in range(20):
             for inst in instruments:
-                msg = self.client.send_run(inst, 50000 + i * len(instruments) + instruments.index(inst))
+                msg = self.client.send_run(inst)
                 msg["batch"] = i
                 self.messages_sent.append(msg)
 
@@ -295,7 +335,10 @@ def main():
     parser.add_argument("--host", default="localhost", help="ActiveMQ host")
     parser.add_argument("--port", type=int, default=61613, help="ActiveMQ STOMP port")
     parser.add_argument("--user", default="artemis", help="ActiveMQ user")
-    parser.add_argument("--password", default="artemis", help="ActiveMQ password")
+    parser.add_argument(
+        "--password", default=os.environ.get("AMQ_PASSWORD", "artemis"), help="ActiveMQ password (env AMQ_PASSWORD)"
+    )
+    parser.add_argument("--run-base", type=int, help="first run number (default: unique per minute)")
     parser.add_argument("--analyze", help="Analyze results from JSON file")
     parser.add_argument("--output", default="load_test_results.json", help="Output file for results")
 
@@ -305,7 +348,8 @@ def main():
         analyze_results(args.analyze)
         return
 
-    client = LoadTestClient(args.host, args.port, args.user, args.password)
+    client = LoadTestClient(args.host, args.port, args.user, args.password, run_base=args.run_base)
+    print(f"run numbers start at {client.run_base}")
 
     try:
         client.connect()
