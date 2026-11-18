@@ -80,6 +80,8 @@ class LoadTestClient:
         """Count up from run_base, per instrument."""
         key = instrument.lower()  # the workflow manager lowercases instrument names
         run_number = self._next_run.get(key, self.run_base)
+        if run_number > MAX_RUN_NUMBER:
+            raise ValueError(f"no 32-bit run numbers left for {instrument}")
         self._next_run[key] = run_number + 1
         return run_number
 
@@ -194,8 +196,8 @@ class BlockingScenario(LoadTestScenario):
         print(f"✓ EQSANS runs sent at t={time.time() - self.start_time:.1f}s\n")
 
         print("Phase 3: Monitoring (30 seconds)...")
-        print("  Check database to see if EQSANS runs complete despite CG2 backlog")
-        print("  With per-instrument queues: EQSANS should complete in <5s")
+        print("  Compare EQSANS wait before REDUCTION.STARTED (see --analyze)")
+        print("  With per-instrument queues: EQSANS starts without waiting for the CG2 backlog")
         print("  Without per-instrument queues: EQSANS waits for CG2 to clear")
 
         time.sleep(30)

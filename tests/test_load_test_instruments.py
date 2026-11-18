@@ -169,6 +169,13 @@ class TestRunNumbers:
             client(run_base=2**31 - 1)
         client(run_base=2**31 - 1000)  # last base whose block still fits
 
+    def test_never_generates_past_the_32_bit_limit(self):
+        c = client()
+        assert c.send_run("cg2", 2**31 - 1)["run_number"] == 2**31 - 1  # explicit max is fine
+        with pytest.raises(ValueError):
+            c.send_run("cg2")
+        assert len(c.conn.sent) == 1
+
 
 class TestSendRun:
     def test_fills_in_load_test_instruments(self):
@@ -198,3 +205,8 @@ class TestBaselineScenarios:
             on_the_wire = [(msg["instrument"], msg["run_number"]) for _, msg in c.conn.sent]
             assert len(set(on_the_wire)) == len(on_the_wire), scenario
             assert set(on_the_wire) == sent, scenario
+
+    def test_timeout_names_runs_missing_from_the_database(self, monkeypatch, capsys):
+        monkeypatch.setattr(baseline_profile.metrics, "fetch_run_events", lambda since, db: [])
+        baseline_profile.wait_for_drain(None, {("cg2", 1000)}, None, timeout=0, poll_interval=0)
+        assert "1 sent runs never reached the database: [('cg2', 1000)]" in capsys.readouterr().out

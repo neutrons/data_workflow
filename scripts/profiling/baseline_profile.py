@@ -225,6 +225,10 @@ def wait_for_drain(since, sent, db, timeout, poll_interval):
             return ours
         if time.time() >= deadline:
             print(f"  TIMEOUT after {timeout}s with {finished}/{len(sent)} finished")
+            # the report only covers runs in the database, so name the ones that never got there
+            missing = sorted(sent - {(e.instrument, e.run_number) for e in ours})
+            if missing:
+                print(f"  {len(missing)} sent runs never reached the database: {missing}")
             return ours
         time.sleep(poll_interval)
 

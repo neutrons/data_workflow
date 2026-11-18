@@ -45,7 +45,10 @@ class TestDASMONPageView:
         assert any(row[0].startswith("Dasmon listener PID") and len(row) == 2 and row[1] for row in rows)
 
         # -- Cataloging & Reduction
-        assert any(len(row) == 3 and row[0].startswith("autoreducer") and row[2].startswith("PID:") for row in rows)
+        assert any(
+            len(row) == 3 and row[0].startswith("autoreducer") and row[2].startswith("PID:") and row[2][4:].strip()
+            for row in rows
+        )
 
         # -- Reduction queue lengths: every queue reported so far (no table until the first sample)
         queue_table = "//table[.//th[normalize-space()='Queue']]//tr[td]"
