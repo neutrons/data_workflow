@@ -84,6 +84,10 @@ class LoadTestClient:
         """
         if run_number is None:
             run_number = self.next_run_number(instrument)
+        else:
+            # don't hand this number out again later; never move the counter back
+            current = self._next_run.get(instrument, self.run_base)
+            self._next_run[instrument] = max(current, run_number + 1)
         fake = load_test_instruments.INSTRUMENTS.get(instrument.lower())
         if fake:
             facility = facility or fake.facility

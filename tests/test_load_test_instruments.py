@@ -142,6 +142,18 @@ class TestRunNumbers:
     def test_explicit_run_number_is_kept(self):
         assert client().send_run("cg2", 42)["run_number"] == 42
 
+    def test_explicit_run_number_is_not_reused(self):
+        c = client()
+        c.send_run("cg2", 1000)
+        assert c.send_run("cg2")["run_number"] == 1001
+
+    def test_explicit_run_number_does_not_move_the_counter_back(self):
+        c = client()
+        c.send_run("cg2")
+        c.send_run("cg2")
+        c.send_run("cg2", 42)
+        assert c.send_run("cg2")["run_number"] == 1002
+
 
 class TestSendRun:
     def test_fills_in_load_test_instruments(self):
