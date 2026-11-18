@@ -34,6 +34,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "pro
 import load_test_instruments  # noqa: E402
 
 RUN_BASE_EPOCH = datetime(2026, 1, 1, tzinfo=timezone.utc)
+RUN_BLOCK = 1000  # run numbers per instrument per invocation
+MAX_RUN_NUMBER = 2**31 - 1  # DataRun.run_number is a 32-bit integer
 
 
 def default_run_base(now=None):
@@ -41,10 +43,11 @@ def default_run_base(now=None):
 
     Each invocation gets its own block of run numbers. A repeated (instrument, run number)
     reuses the old DataRun and its created_on, so the metrics would miss it. Two invocations
-    in the same minute share a block, and run_number is 32-bit, so this lasts until 2030.
+    in the same minute share a block, so wait a minute before rerunning or pass --run-base.
+    run_number is 32-bit, so this lasts until 2030.
     """
     now = now or datetime.now(timezone.utc)
-    return int((now - RUN_BASE_EPOCH).total_seconds() // 60) * 1000
+    return int((now - RUN_BASE_EPOCH).total_seconds() // 60) * RUN_BLOCK
 
 
 class LoadTestClient:
@@ -56,6 +59,9 @@ class LoadTestClient:
         self.user = user
         self.password = password
         self.run_base = default_run_base() if run_base is None else run_base
+        # check up front, so a bad base fails before anything is sent
+        if not 0 < self.run_base <= MAX_RUN_NUMBER - RUN_BLOCK + 1:
+            raise ValueError(f"run base {self.run_base} leaves no room for {RUN_BLOCK} 32-bit run numbers")
         self._next_run = {}
         self.conn = None
 
@@ -72,8 +78,9 @@ class LoadTestClient:
 
     def next_run_number(self, instrument):
         """Count up from run_base, per instrument."""
-        run_number = self._next_run.get(instrument, self.run_base)
-        self._next_run[instrument] = run_number + 1
+        key = instrument.lower()  # the workflow manager lowercases instrument names
+        run_number = self._next_run.get(key, self.run_base)
+        self._next_run[key] = run_number + 1
         return run_number
 
     def send_run(self, instrument, run_number=None, data_file=None, facility=None, ipts=None):
@@ -86,8 +93,9 @@ class LoadTestClient:
             run_number = self.next_run_number(instrument)
         else:
             # don't hand this number out again later; never move the counter back
-            current = self._next_run.get(instrument, self.run_base)
-            self._next_run[instrument] = max(current, run_number + 1)
+            key = instrument.lower()
+            current = self._next_run.get(key, self.run_base)
+            self._next_run[key] = max(current, run_number + 1)
         fake = load_test_instruments.INSTRUMENTS.get(instrument.lower())
         if fake:
             facility = facility or fake.facility
@@ -202,6 +210,9 @@ class LargeDatasetScenario(LoadTestScenario):
     Simulates VENUS large dataset blocking workers.
 
     Tests that one large run doesn't prevent other instruments from processing.
+
+    VENUS sleeps as long as every other instrument unless the autoreducers set
+    REDUCE_SLEEP_VENUS (e.g. 60). Keep it under task_time_limit_minutes.
     """
 
     def run(self):
@@ -209,7 +220,7 @@ class LargeDatasetScenario(LoadTestScenario):
         print("\n" + "=" * 70)
         print("SCENARIO: Large Dataset Worker Monopolization")
         print("=" * 70)
-        print("Simulating VENUS sending large run (1000+ files, 60+ min)")
+        print("Simulating VENUS sending a long run (needs REDUCE_SLEEP_VENUS on the autoreducers)")
         print("While other instruments send normal runs")
         print()
 

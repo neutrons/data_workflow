@@ -11,7 +11,7 @@ database, then reports the three metrics.
 Run (with the stack up via ``docker compose up -d``)::
 
     python scripts/profiling/baseline_profile.py \\
-        --scenario blocking --capacity 10
+        --scenario blocking --capacity 1
 
 Against the test env, with passwords in AMQ_PASSWORD and DATABASE_PASS::
 
@@ -24,15 +24,18 @@ Scenarios:
     fairness        - 10 interleaved runs each from 5 instruments
     each-instrument - 1 run for each load test instrument, to check routing end to end
 
-Run numbers count up from --run-base, which defaults to a new block every minute,
-so a rerun never reuses a run the database already has.
+Run numbers count up from --run-base, which defaults to a new block every minute.
+Two runs in the same minute get the same numbers and the second one's runs drop
+out of the report, so wait a minute before rerunning or pass an unused --run-base.
 
 Notes:
   * For a clean baseline, pause the noise generator first:
         docker compose stop webmonchow
-  * "capacity" is how many runs can reduce at once. On STOMP that's nodes * max_procs
-    (local default 2 * 5 = 10). On AMQP each node takes one job at a time, so it's the
-    node count (3 on the test env).
+  * "capacity" is how many of these runs can reduce at once: the nodes that run
+    ReductionProcessor. Each node takes one job at a time, on STOMP too (the listener
+    reads a job's output to the end before taking the next message, so max_procs
+    doesn't add any). That's 1 locally, since autoreducer_himem only takes
+    REDUCTION.HIMEM runs, and 3 on the test env.
 """
 
 import argparse
@@ -243,7 +246,7 @@ def main():
         help="Postgres password (env DATABASE_PASS)",
     )
     parser.add_argument("--run-base", type=int, help="first run number (default: unique per minute)")
-    parser.add_argument("--capacity", type=int, default=10, help="runs that can reduce at once (see Notes)")
+    parser.add_argument("--capacity", type=int, default=1, help="runs that can reduce at once (see Notes)")
     parser.add_argument("--timeout", type=int, default=300, help="max seconds to wait for drain")
     parser.add_argument("--poll-interval", type=float, default=2.0)
     parser.add_argument("--output", default="baseline_profile.json")

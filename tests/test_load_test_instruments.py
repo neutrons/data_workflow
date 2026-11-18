@@ -7,6 +7,8 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+import pytest
+
 # scripts/ isn't on the pytest pythonpath
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _PROFILING_DIR = os.path.join(_REPO_ROOT, "scripts", "profiling")
@@ -96,7 +98,9 @@ class TestSleepSeconds:
 
     def test_run_like_the_agent_succeeds_with_empty_stderr(self, tmp_path):
         # run it the way the agent does; any stderr output fails the run
-        env = dict(os.environ, REDUCE_SLEEP="0")
+        # drop inherited overrides (the script's own name makes it look for REDUCE_SLEEP_SLEEP)
+        env = {key: value for key, value in os.environ.items() if not key.startswith("REDUCE_SLEEP")}
+        env["REDUCE_SLEEP"] = "0"
         result = subprocess.run(
             [sys.executable, SLEEP_SCRIPT, "/HFIR/CG2/IPTS-90102/nexus/CG2_1.nxs.h5", f"{tmp_path}/"],
             env=env,
@@ -154,6 +158,17 @@ class TestRunNumbers:
         c.send_run("cg2", 42)
         assert c.send_run("cg2")["run_number"] == 1002
 
+    def test_instrument_case_shares_one_counter(self):
+        c = client()
+        c.send_run("cg2")
+        c.send_run("CG2", 1001)
+        assert c.send_run("Cg2")["run_number"] == 1002
+
+    def test_rejects_a_base_without_room_for_a_block(self):
+        with pytest.raises(ValueError):
+            client(run_base=2**31 - 1)
+        client(run_base=2**31 - 1000)  # last base whose block still fits
+
 
 class TestSendRun:
     def test_fills_in_load_test_instruments(self):
@@ -179,4 +194,7 @@ class TestBaselineScenarios:
         for scenario in baseline_profile.SCENARIOS:
             c = client()
             sent = baseline_profile.send_workload(c, scenario, interleave=(scenario == "fairness"))
-            assert len(sent) == len(c.conn.sent), scenario
+            # check what went to the broker, not just what send_run returned
+            on_the_wire = [(msg["instrument"], msg["run_number"]) for _, msg in c.conn.sent]
+            assert len(set(on_the_wire)) == len(on_the_wire), scenario
+            assert set(on_the_wire) == sent, scenario

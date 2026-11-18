@@ -21,6 +21,7 @@ from metrics import (  # noqa: E402
     build_report,
     compute_concurrency_timeline,
     compute_total_time,
+    render_text,
     summarize_by_instrument,
     theoretical_min_seconds,
 )
@@ -117,3 +118,12 @@ def test_build_report_rolls_up_everything():
     assert report.max_concurrency == 1  # the two runs never overlap
     assert report.busy_node_seconds == 12.0
     assert report.theoretical_min_seconds == 1.2
+    assert report.failed_runs == 0
+
+
+def test_build_report_counts_failed_runs():
+    failed = RunEvent(instrument="cg2", run_number=2, submitted=at(0), started=at(0), errored=at(3))
+    events = [make_event("cg2", 1, submit=0, start=0, complete=6), failed]
+    report = build_report(events)
+    assert (report.completed_runs, report.failed_runs) == (2, 1)
+    assert "1 of the finished runs failed" in render_text(report)

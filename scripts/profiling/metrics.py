@@ -108,6 +108,7 @@ class ProfileReport:
     busy_node_seconds: float = 0.0
     theoretical_min_seconds: Optional[float] = None
     timeline: list = field(default_factory=list)
+    failed_runs: int = 0  # finished with REDUCTION.ERROR and never completed
 
 
 # Pure analysis functions (no database, directly unit-testable)
@@ -192,8 +193,9 @@ def compute_concurrency_timeline(events: list):
 def theoretical_min_seconds(busy_node_seconds: float, capacity: int) -> Optional[float]:
     """Fastest possible wall-clock: total work divided by worker capacity.
 
-    capacity = number of autoreducer nodes * max_procs per node. This is the
-    floor Pete described - we can never beat sum(processing_time) / nodes.
+    capacity = number of autoreducer nodes serving the queue (each runs one job
+    at a time). This is the floor Pete described - we can never beat
+    sum(processing_time) / nodes.
     """
     if not capacity:
         return None
@@ -222,6 +224,7 @@ def build_report(
         busy_node_seconds=busy,
         theoretical_min_seconds=(theoretical_min_seconds(busy, capacity) if capacity else None),
         timeline=samples,
+        failed_runs=sum(1 for e in completed if e.completed is None),
     )
 
 
@@ -242,6 +245,8 @@ def render_text(report: ProfileReport) -> str:
     lines.append(
         f"Runs         : {report.total_runs} ({report.completed_runs} finished, {report.incomplete_runs} incomplete)"
     )
+    if report.failed_runs:
+        lines.append(f"  {report.failed_runs} of the finished runs failed (REDUCTION.ERROR)")
     lines.append("")
     lines.append("METRIC 1 - Total time (first submit -> last finish)")
     lines.append(f"  {_fmt(report.total_time_seconds)}")
