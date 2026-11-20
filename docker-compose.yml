@@ -16,6 +16,9 @@ services:
     depends_on:
       webmon:
         condition: service_healthy
+      # nginx exits on startup if it can't resolve livedata
+      livedata:
+        condition: service_started
     networks:
       default:
         ipv4_address: 172.16.238.222

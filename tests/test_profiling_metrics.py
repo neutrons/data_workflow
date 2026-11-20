@@ -8,7 +8,10 @@ anywhere with::
     python -m pytest tests/test_profiling_metrics.py
 """
 
+import dataclasses
+import json
 import os
+import re
 import sys
 from datetime import datetime, timedelta
 
@@ -17,12 +20,16 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(_REPO_ROOT, "scripts", "profiling"))
 
 from metrics import (  # noqa: E402
+    DISPATCHED_PATTERN,
     RunEvent,
     build_report,
     compute_concurrency_timeline,
     compute_total_time,
+    render_json,
+    render_text,
     summarize_by_instrument,
     theoretical_min_seconds,
+    to_dict,
 )
 
 BASE = datetime(2026, 6, 29, 12, 0, 0)
@@ -117,3 +124,48 @@ def test_build_report_rolls_up_everything():
     assert report.max_concurrency == 1  # the two runs never overlap
     assert report.busy_node_seconds == 12.0
     assert report.theoretical_min_seconds == 1.2
+    assert report.failed_runs == 0
+
+
+def test_build_report_counts_failed_runs():
+    failed = RunEvent(instrument="cg2", run_number=2, submitted=at(0), started=at(0), errored=at(3))
+    events = [make_event("cg2", 1, submit=0, start=0, complete=6), failed]
+    report = build_report(events)
+    assert (report.completed_runs, report.failed_runs) == (2, 1)
+    assert "1 of the finished runs failed" in render_text(report)
+
+
+def test_json_report_lists_every_run_after_the_header():
+    dispatched = RunEvent(
+        instrument="cg2",
+        run_number=1,
+        submitted=at(0),
+        queue="REDUCTION.CG2.DATA_READY",
+        dispatched=at(1),
+    )
+    report = build_report([dispatched, make_event("eqsans", 2, submit=0)])
+    report = dataclasses.replace(report, label="per-inst-amqp", scenario="fairness", phases=[], run_base=1000)
+    data = to_dict(report)
+
+    assert list(data)[:4] == ["label", "scenario", "run_base", "phases"]
+    assert data["runs"][0] == {
+        "instrument": "cg2",
+        "run_number": 1,
+        "submitted": at(0).isoformat(),
+        "started": None,
+        "completed": None,
+        "errored": None,
+        "queue": "REDUCTION.CG2.DATA_READY",
+        "dispatched": at(1).isoformat(),
+    }
+    assert data["runs"][1]["queue"] is None
+    assert json.loads(render_json(report)) == data
+
+
+def test_dispatch_pattern_matches_reduction_queues_only():
+    # same rules as SQL LIKE: % is any run of characters, "." is literal
+    pattern = re.compile("^" + re.escape(DISPATCHED_PATTERN).replace("%", ".*").replace("_", ".") + "$")
+    for queue in ("REDUCTION.DATA_READY", "REDUCTION.CG2.DATA_READY", "REDUCTION.HIMEM.CG2.DATA_READY"):
+        assert pattern.match(queue), queue
+    for queue in ("REDUCTION_CATALOG.DATA_READY", "REDUCTION_CATALOG.CG2.DATA_READY", "REDUCTION.STARTED"):
+        assert not pattern.match(queue), queue

@@ -11,21 +11,35 @@ database, then reports the three metrics.
 Run (with the stack up via ``docker compose up -d``)::
 
     python scripts/profiling/baseline_profile.py \\
-        --scenario blocking --capacity 10
+        --scenario blocking --capacity 1
+
+Against the test env, with passwords in AMQ_PASSWORD and DATABASE_PASS::
+
+    python scripts/profiling/baseline_profile.py --scenario each-instrument --capacity 3 \\
+        --host amqbroker-test.ornl.gov --user icat --db-host workflowdb-test.ornl.gov
 
 Scenarios:
-    blocking      - 200 CG2 runs flood, then 10 EQSANS runs (March 2026 incident)
-    large-dataset - 1 VENUS "large" run alongside normal runs from 3 instruments
-    fairness      - 20 interleaved batches across 5 instruments
+    blocking        - 60 ARCS runs flood, then 8 REF_L runs (shape of the March 2026 incident)
+    large-dataset   - 1 VULCAN run ahead of normal runs from 3 instruments
+    fairness        - 10 interleaved runs each from 5 instruments
+    each-instrument - 1 run for each load test instrument, to check routing end to end
+
+Run numbers count up from --run-base, which defaults to a new block every minute.
+Two runs in the same minute get the same numbers and the second one's runs drop
+out of the report, so wait a minute before rerunning or pass an unused --run-base.
 
 Notes:
   * For a clean baseline, pause the noise generator first:
         docker compose stop webmonchow
-  * "capacity" is autoreducer nodes * max_procs. The default stack is
-    2 nodes (autoreducer + autoreducer_himem) * max_procs 5 = 10.
+  * "capacity" is how many of these runs can reduce at once: the nodes that run
+    ReductionProcessor. Each node takes one job at a time, on STOMP too (the listener
+    reads a job's output to the end before taking the next message, so max_procs
+    doesn't add any). That's 1 locally, since autoreducer_himem only takes
+    REDUCTION.HIMEM runs, and 3 on the test env.
 """
 
 import argparse
+import dataclasses
 import os
 import sys
 import time
@@ -35,6 +49,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from load_test_per_instrument_queues import LoadTestClient  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import load_test_instruments  # noqa: E402
 import metrics  # noqa: E402
 
 # Each scenario is an ordered list of phases, sent in order, so the first phase
@@ -56,7 +71,6 @@ SCENARIOS = {
         {
             "instrument": "arcs",
             "count": 60,
-            "base": 880200,
             "facility": "SNS",
             "ipts": "IPTS-27800",
             "data_file": ARCS_FILE,
@@ -64,7 +78,6 @@ SCENARIOS = {
         {
             "instrument": "ref_l",
             "count": 8,
-            "base": 870000,
             "facility": "SNS",
             "ipts": "IPTS-33077",
             "data_file": REF_L_FILE,
@@ -77,7 +90,6 @@ SCENARIOS = {
         {
             "instrument": "vulcan",
             "count": 1,
-            "base": 300000,
             "facility": "SNS",
             "ipts": "IPTS-1234",
             "data_file": VULCAN_FILE,
@@ -85,7 +97,6 @@ SCENARIOS = {
         {
             "instrument": "arcs",
             "count": 5,
-            "base": 310000,
             "facility": "SNS",
             "ipts": "IPTS-27800",
             "data_file": ARCS_FILE,
@@ -93,7 +104,6 @@ SCENARIOS = {
         {
             "instrument": "ref_l",
             "count": 5,
-            "base": 311000,
             "facility": "SNS",
             "ipts": "IPTS-33077",
             "data_file": REF_L_FILE,
@@ -101,7 +111,6 @@ SCENARIOS = {
         {
             "instrument": "ref_m",
             "count": 5,
-            "base": 312000,
             "facility": "SNS",
             "ipts": "IPTS-30794",
             "data_file": REF_M_FILE,
@@ -113,7 +122,6 @@ SCENARIOS = {
         {
             "instrument": "arcs",
             "count": 10,
-            "base": 500000,
             "facility": "SNS",
             "ipts": "IPTS-27800",
             "data_file": ARCS_FILE,
@@ -121,7 +129,6 @@ SCENARIOS = {
         {
             "instrument": "ref_l",
             "count": 10,
-            "base": 510000,
             "facility": "SNS",
             "ipts": "IPTS-33077",
             "data_file": REF_L_FILE,
@@ -129,7 +136,6 @@ SCENARIOS = {
         {
             "instrument": "ref_m",
             "count": 10,
-            "base": 520000,
             "facility": "SNS",
             "ipts": "IPTS-30794",
             "data_file": REF_M_FILE,
@@ -137,7 +143,6 @@ SCENARIOS = {
         {
             "instrument": "pg3",
             "count": 10,
-            "base": 530000,
             "facility": "SNS",
             "ipts": "IPTS-4321",
             "data_file": PG3_FILE,
@@ -145,12 +150,13 @@ SCENARIOS = {
         {
             "instrument": "nom",
             "count": 10,
-            "base": 540000,
             "facility": "SNS",
             "ipts": "IPTS-1001",
             "data_file": NOM_FILE,
         },
     ],
+    # one run per load test instrument; the client fills in facility, IPTS and data file
+    "each-instrument": [{"instrument": name, "count": 1} for name in sorted(load_test_instruments.INSTRUMENTS)],
 }
 
 
@@ -179,15 +185,14 @@ def send_workload(client, scenario, interleave):
     phases = SCENARIOS[scenario]
     sent = set()
 
-    def _send(p, rn):
-        client.send_run(
+    def _send(p):
+        msg = client.send_run(
             p["instrument"],
-            rn,
-            facility=p.get("facility", "SNS"),
-            data_file=p.get("data_file", "/SNS/EQSANS/data.nxs"),
-            ipts=p.get("ipts", "IPTS-12345"),
+            facility=p.get("facility"),
+            data_file=p.get("data_file"),
+            ipts=p.get("ipts"),
         )
-        sent.add((p["instrument"], rn))
+        sent.add((p["instrument"], msg["run_number"]))
 
     if interleave:
         # Round-robin one run per instrument per round (fairness scenario).
@@ -195,12 +200,12 @@ def send_workload(client, scenario, interleave):
         for i in range(max_count):
             for p in phases:
                 if i < p["count"]:
-                    _send(p, p["base"] + i)
+                    _send(p)
     else:
         for p in phases:
             print(f"  phase: {p['instrument']} x{p['count']}")
             for i in range(p["count"]):
-                _send(p, p["base"] + i)
+                _send(p)
     print(f"  sent {len(sent)} runs")
     return sent
 
@@ -221,6 +226,10 @@ def wait_for_drain(since, sent, db, timeout, poll_interval):
             return ours
         if time.time() >= deadline:
             print(f"  TIMEOUT after {timeout}s with {finished}/{len(sent)} finished")
+            # the report only covers runs in the database, so name the ones that never got there
+            missing = sorted(sent - {(e.instrument, e.run_number) for e in ours})
+            if missing:
+                print(f"  {len(missing)} sent runs never reached the database: {missing}")
             return ours
         time.sleep(poll_interval)
 
@@ -231,20 +240,31 @@ def main():
     parser.add_argument("--host", default="localhost", help="ActiveMQ host")
     parser.add_argument("--port", type=int, default=61613, help="ActiveMQ STOMP port")
     parser.add_argument("--user", default="artemis", help="ActiveMQ user")
-    parser.add_argument("--password", default="artemis", help="ActiveMQ password")
+    parser.add_argument(
+        "--password", default=os.environ.get("AMQ_PASSWORD", "artemis"), help="ActiveMQ password (env AMQ_PASSWORD)"
+    )
     parser.add_argument("--db-host", default="localhost", help="Postgres host")
     parser.add_argument("--db-port", type=int, default=5432, help="Postgres port")
-    parser.add_argument("--capacity", type=int, default=10, help="worker slots = nodes * max_procs (default 2*5=10)")
+    parser.add_argument(
+        "--db-password",
+        default=os.environ.get("DATABASE_PASS", "workflow"),
+        help="Postgres password (env DATABASE_PASS)",
+    )
+    parser.add_argument("--run-base", type=int, help="first run number (default: unique per minute)")
+    parser.add_argument("--capacity", type=int, default=1, help="runs that can reduce at once (see Notes)")
     parser.add_argument("--timeout", type=int, default=300, help="max seconds to wait for drain")
     parser.add_argument("--poll-interval", type=float, default=2.0)
     parser.add_argument("--output", default="baseline_profile.json")
+    parser.add_argument(
+        "--label", help="names the setup in the report, e.g. per-inst-amqp (the profiler can't detect it)"
+    )
     parser.add_argument(
         "--analyze-only", action="store_true", help="skip sending; profile runs created in the last --since-minutes"
     )
     parser.add_argument("--since-minutes", type=float, default=10.0, help="window for --analyze-only mode")
     args = parser.parse_args()
 
-    db = {"host": args.db_host, "port": args.db_port}
+    db = {"host": args.db_host, "port": args.db_port, "password": args.db_password}
 
     if args.analyze_only:
         from datetime import timedelta
@@ -256,7 +276,8 @@ def main():
         window_start = db_now(db)
         print(f"window start (db clock): {window_start.isoformat()}")
 
-        client = LoadTestClient(args.host, args.port, args.user, args.password)
+        client = LoadTestClient(args.host, args.port, args.user, args.password, run_base=args.run_base)
+        print(f"run numbers start at {client.run_base}")
         client.connect()
         try:
             print(f"sending scenario '{args.scenario}'...")
@@ -267,6 +288,10 @@ def main():
         print("waiting for drain...")
         events = wait_for_drain(window_start, sent, db, args.timeout, args.poll_interval)
         report = metrics.build_report(events, capacity=args.capacity, window_start=window_start, window_end=db_now(db))
+        report = dataclasses.replace(
+            report, scenario=args.scenario, phases=SCENARIOS[args.scenario], run_base=client.run_base
+        )
+    report = dataclasses.replace(report, label=args.label)
 
     print()
     print(metrics.render_text(report))

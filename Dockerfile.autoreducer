@@ -25,12 +25,16 @@ RUN ls ${DATA_TARBALL}
 RUN mkdir /SNS
 RUN cd /SNS && tar xzf ${DATA_TARBALL}
 
+# fake SNS and HFIR instruments for load testing
+COPY scripts/profiling/reduce_sleep.py scripts/profiling/load_test_instruments.py /opt/load_test/
+RUN python3 /opt/load_test/load_test_instruments.py --root / --script /opt/load_test/reduce_sleep.py
+
 # install pyoncat
 COPY tests/python3-pyoncat-2.1-1.noarch.rpm /tmp/
 RUN dnf install -y /tmp/python3-pyoncat-2.1-1.noarch.rpm
 
-# install postprocessing
-RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/v4.5.0/postprocessing-4.5.0-1.el9.noarch.rpm
+# install postprocessing (4.7.0 adds the AMQP consumer; this tag has no "v")
+RUN dnf install -y https://github.com/neutrons/post_processing_agent/releases/download/4.7.0/postprocessing-4.7.0-1.el9.noarch.rpm
 
 # Install dependencies
 ARG PLOTLY_VERSION=5
