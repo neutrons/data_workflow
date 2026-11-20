@@ -39,6 +39,7 @@ Notes:
 """
 
 import argparse
+import dataclasses
 import os
 import sys
 import time
@@ -255,6 +256,9 @@ def main():
     parser.add_argument("--poll-interval", type=float, default=2.0)
     parser.add_argument("--output", default="baseline_profile.json")
     parser.add_argument(
+        "--label", help="names the setup in the report, e.g. per-inst-amqp (the profiler can't detect it)"
+    )
+    parser.add_argument(
         "--analyze-only", action="store_true", help="skip sending; profile runs created in the last --since-minutes"
     )
     parser.add_argument("--since-minutes", type=float, default=10.0, help="window for --analyze-only mode")
@@ -284,6 +288,10 @@ def main():
         print("waiting for drain...")
         events = wait_for_drain(window_start, sent, db, args.timeout, args.poll_interval)
         report = metrics.build_report(events, capacity=args.capacity, window_start=window_start, window_end=db_now(db))
+        report = dataclasses.replace(
+            report, scenario=args.scenario, phases=SCENARIOS[args.scenario], run_base=client.run_base
+        )
+    report = dataclasses.replace(report, label=args.label)
 
     print()
     print(metrics.render_text(report))

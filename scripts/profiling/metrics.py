@@ -20,6 +20,9 @@ for the baseline (shared queue) and the per-instrument runs - the status queue
 names (REDUCTION.STARTED / REDUCTION.COMPLETE) are independent of how messages
 were routed to the workers.
 
+The JSON report also lists every run with its timestamps and the reduction queue
+it was sent to, so saved reports from different setups can be compared and plotted.
+
 The math lives in pure functions (no DB) so it can be unit tested directly.
 Database access is isolated to ``fetch_run_events`` and imports psycopg2 lazily.
 """
@@ -37,6 +40,9 @@ from typing import Optional
 STARTED_PREFIX = "REDUCTION.STARTED"
 COMPLETE_PREFIX = "REDUCTION.COMPLETE"
 ERROR_PREFIX = "REDUCTION.ERROR"
+# the shared or per-instrument reduction queue, e.g. REDUCTION.CG2.DATA_READY
+# (LIKE treats "." literally, so REDUCTION_CATALOG.* doesn't match)
+DISPATCHED_PATTERN = "REDUCTION.%DATA_READY"
 
 
 @dataclass
@@ -49,6 +55,8 @@ class RunEvent:
     started: Optional[datetime] = None  # first REDUCTION.STARTED
     completed: Optional[datetime] = None  # first REDUCTION.COMPLETE
     errored: Optional[datetime] = None  # first REDUCTION.ERROR
+    queue: Optional[str] = None  # reduction queue the workflow manager sent it to
+    dispatched: Optional[datetime] = None  # when it was sent there
 
     @property
     def finished(self) -> Optional[datetime]:
@@ -109,6 +117,16 @@ class ProfileReport:
     theoretical_min_seconds: Optional[float] = None
     timeline: list = field(default_factory=list)
     failed_runs: int = 0  # finished with REDUCTION.ERROR and never completed
+    runs: list = field(default_factory=list)  # every RunEvent, for plotting from saved reports
+    # set by the profiler; the label names the setup, since it can't detect the consumer protocol
+    label: Optional[str] = None
+    scenario: Optional[str] = None
+    phases: Optional[list] = None
+    run_base: Optional[int] = None
+
+
+# shown first in the JSON report
+_REPORT_HEADER = ("label", "scenario", "run_base", "phases")
 
 
 # Pure analysis functions (no database, directly unit-testable)
@@ -225,6 +243,7 @@ def build_report(
         theoretical_min_seconds=(theoretical_min_seconds(busy, capacity) if capacity else None),
         timeline=samples,
         failed_runs=sum(1 for e in completed if e.completed is None),
+        runs=list(events),
     )
 
 
@@ -238,6 +257,10 @@ def render_text(report: ProfileReport) -> str:
     lines.append("=" * 70)
     lines.append("AUTOREDUCTION PROFILE")
     lines.append("=" * 70)
+    if report.label:
+        lines.append(f"Label        : {report.label}")
+    if report.scenario:
+        lines.append(f"Scenario     : {report.scenario} (run base {report.run_base})")
     if report.window_start:
         lines.append(f"Window start : {report.window_start.isoformat()}")
     if report.window_end:
@@ -286,7 +309,9 @@ def to_dict(report: ProfileReport) -> dict:
             return [convert(v) for v in obj]
         return obj
 
-    return convert(asdict(report))
+    data = convert(asdict(report))
+    header = {key: data.pop(key) for key in _REPORT_HEADER}
+    return {**header, **data}
 
 
 def render_json(report: ProfileReport) -> str:
@@ -311,7 +336,9 @@ SELECT
     dr.created_on    AS submitted,
     MIN(CASE WHEN sq.name LIKE %(started)s THEN rs.created_on END)  AS started,
     MIN(CASE WHEN sq.name LIKE %(complete)s THEN rs.created_on END) AS completed,
-    MIN(CASE WHEN sq.name LIKE %(error)s THEN rs.created_on END)    AS errored
+    MIN(CASE WHEN sq.name LIKE %(error)s THEN rs.created_on END)    AS errored,
+    (ARRAY_AGG(sq.name ORDER BY rs.created_on) FILTER (WHERE sq.name LIKE %(dispatched)s))[1] AS queue,
+    MIN(CASE WHEN sq.name LIKE %(dispatched)s THEN rs.created_on END) AS dispatched
 FROM report_datarun dr
 JOIN report_instrument inst ON dr.instrument_id_id = inst.id
 LEFT JOIN report_runstatus rs ON rs.run_id_id = dr.id
@@ -344,6 +371,7 @@ def fetch_run_events(since: datetime, db: Optional[dict] = None) -> list:
                     "started": STARTED_PREFIX + "%",
                     "complete": COMPLETE_PREFIX + "%",
                     "error": ERROR_PREFIX + "%",
+                    "dispatched": DISPATCHED_PATTERN,
                     "since": since,
                 },
             )
@@ -352,7 +380,7 @@ def fetch_run_events(since: datetime, db: Optional[dict] = None) -> list:
         conn.close()
 
     events = []
-    for instrument, run_number, submitted, started, completed, errored in rows:
+    for instrument, run_number, submitted, started, completed, errored, queue, dispatched in rows:
         events.append(
             RunEvent(
                 instrument=instrument,
@@ -361,6 +389,8 @@ def fetch_run_events(since: datetime, db: Optional[dict] = None) -> list:
                 started=started,
                 completed=completed,
                 errored=errored,
+                queue=queue,
+                dispatched=dispatched,
             )
         )
     return events
